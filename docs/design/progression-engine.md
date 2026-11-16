@@ -53,7 +53,7 @@ Proposed when the score of these signals crosses a threshold (weights and thresh
 | RPE creep on several lifts over the last 2 weeks | v0.1 |
 | Performance drop: e1RM down > 3–5 % on several lifts | v0.1 |
 | Weeks since last deload ≥ planned interval (default 6) | v0.1 |
-| Acute:chronic ratio > 1.5 | v0.1 (strength), v0.2 (with running) |
+| Acute:chronic ratio > 1.5 | v0.1 (strength), v0.2 (with running and walking above baseline) |
 | HRV 7-day average below the normal range for ≥ 5 days | v0.2 |
 | Resting HR ≥ 5 bpm above baseline for several days | v0.2 |
 | Short sleep (< 6 h) on most nights of the week | v0.2 |
