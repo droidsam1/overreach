@@ -79,4 +79,8 @@ public actor InMemoryStore: WorkoutRepository, ExerciseRepository, CheckInReposi
     public func save(_ settings: ProgressionSettings, for exerciseID: UUID) {
         progressionByExercise[exerciseID] = settings
     }
+
+    public func allProgressionSettings() -> [UUID: ProgressionSettings] {
+        progressionByExercise
+    }
 }

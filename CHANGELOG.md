@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Backup and restore (#9): versioned JSON backup into an iCloud Drive folder after every session and when the
+  app goes to the background, 14 days of dated copies, manual export, restore from file (merged by id, no
+  duplicates) and a restore offer on a fresh install.
 - Plan tab: goal (with target date and priority lifts), current block (declared or detected), next-block
   advice, balance findings and the plan for the coming months.
 - Train tab: session focus (auto or declared), per-exercise focus and suggested rest; the focus picks the

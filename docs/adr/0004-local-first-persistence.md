@@ -17,6 +17,13 @@ backend and, during the prototype, no paid Apple Developer account. CloudKit syn
   (security-scoped bookmark), and restore from it after a reinstall.
 - Phase 4 (paid account): enable the CloudKit container so data syncs and restores automatically.
 
+## Implementation (v0.1)
+
+- `BackupDocument` / `BackupCodec` (Domain): format version 1, tolerant decoding, refuses newer formats.
+- `RepositoryBackupService` + `FolderBackupDestination` (Persistence): folder bookmark, `Overreach-backup.json`
+  plus 14 dated copies; restore merges by id and keeps a profile already set up on the device.
+- Triggers: after each finished session, when the app goes to the background, and manually in Settings.
+
 ## Consequences
 
 - Turning on CloudKit later is a configuration change, not a data migration.

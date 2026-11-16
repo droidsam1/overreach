@@ -48,6 +48,7 @@ public protocol ActivitySource: Sendable {
 public protocol ProgressionSettingsRepository: Sendable {
     func progressionSettings(for exerciseID: UUID) async throws -> ProgressionSettings?
     func save(_ settings: ProgressionSettings, for exerciseID: UUID) async throws
+    func allProgressionSettings() async throws -> [UUID: ProgressionSettings]
 }
 
 /// What an import would add, shown to the user before anything is saved (ADR-0011).
