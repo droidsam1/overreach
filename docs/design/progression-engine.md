@@ -1,6 +1,7 @@
 # Progression engine
 
-Status: design for v0.1 (phase 1), extended in v0.2 (phase 2). Lives in `OverreachCore/Analytics` as pure,
+Status: implemented for v0.1 training signals (`ProgressionTargets`, `StallDetection`, `DeloadAdvisor`);
+recovery signals join in v0.2 (phase 2). Evidence for every rule: `docs/evidence.md` (ADR-0012). Lives in `OverreachCore/Analytics` as pure,
 deterministic functions with tests. Every output carries the reasons behind it.
 
 ## Goals
@@ -44,7 +45,9 @@ An exercise is **stalled** when, over its last 3 exposures (or 3 weeks), the e1R
 
 ## Deload proposals
 
-A deload week = same exercises, about −40–50 % volume (fewer sets) and −10 % load, RPE ≤ 6–7.
+A deload week = same exercises, −50 % sets, −10 % load, RPE ≤ 7 (`DeloadPlan.standard`). Training is reduced,
+not stopped: a full week off mid-programme cost some strength in the only RCT (`deload-cost`). Time since the
+last deload alone never triggers one; a proposal needs a score ≥ 3, i.e. at least one performance signal.
 Proposed when the score of these signals crosses a threshold (weights and thresholds configurable):
 
 | Signal | Available from |

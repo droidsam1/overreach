@@ -1,0 +1,130 @@
+import Domain
+import Foundation
+
+/// Ways to get a stalled exercise moving again, in order of preference.
+public enum StallSuggestion: Hashable, Sendable {
+    /// The last miss was by one rep: use a smaller load jump.
+    case microload(incrementKg: Double)
+    /// Linear load stopped working: switch to double progression (rep progression works as well; Plotkin 2022).
+    case switchToDoubleProgression
+    /// Change the rep range (e.g. 8–12 → 6–10) to vary the stimulus.
+    case changeRepRange
+    /// Weekly fractional sets for the target muscle are below the range.
+    case addSet(weeklySets: Double)
+    /// Weekly fractional sets for the target muscle are above the range.
+    case removeSet(weeklySets: Double)
+    /// Swap to a close variation for a few weeks.
+    case swapVariation(weeks: ClosedRange<Int>)
+    /// Reduce this lift's load for a week.
+    case deloadLift(loadReduction: Double)
+
+    public var evidence: EvidenceReference {
+        switch self {
+        case .switchToDoubleProgression: ProgressionEvidence.loadOrRepProgression
+        case .addSet, .removeSet: ProgressionEvidence.volumeDoseResponse
+        case .deloadLift: ProgressionEvidence.deloadDesign
+        case .microload, .changeRepRange, .swapVariation: ProgressionEvidence.stallHeuristics
+        }
+    }
+}
+
+public enum ExerciseStatus: Hashable, Sendable {
+    case notEnoughData
+    case progressing
+    case holding
+    case stalled(suggestions: [StallSuggestion])
+
+    public var isStalled: Bool {
+        if case .stalled = self { return true }
+        return false
+    }
+}
+
+/// Stall detection (heuristic thresholds, configurable; see `docs/evidence.md#stall-heuristics`).
+public enum StallDetection {
+    public struct Thresholds: Hashable, Sendable {
+        /// Exposures looked at to decide whether the lift is stalled.
+        public var recentExposures = 3
+        /// Earlier exposures used as the comparison baseline.
+        public var baselineExposures = 6
+        /// e1RM improvement below this fraction counts as "no progress".
+        public var minimumImprovement = 0.01
+        /// Missed targets (within the recent exposures) needed to call a stall.
+        public var minimumMisses = 2
+        /// Weekly fractional sets per muscle considered adequate (dose-response with diminishing returns).
+        public var weeklySetRange: ClosedRange<Double> = 10...20
+
+        public init() {}
+    }
+
+    public static func status(
+        history: [ExerciseExposure],
+        settings: ProgressionSettings,
+        weeklyFractionalSets: Double? = nil,
+        thresholds: Thresholds = Thresholds()
+    ) -> ExerciseStatus {
+        let recentCount = max(1, thresholds.recentExposures)
+        guard history.count > recentCount else { return .notEnoughData }
+
+        let recentStart = history.count - recentCount
+        let baselineStart = max(0, recentStart - thresholds.baselineExposures)
+        let recent = history[recentStart...]
+        let baseline = history[baselineStart..<recentStart]
+
+        guard let bestRecent = recent.compactMap(\.bestEstimatedOneRepMax).max(),
+              let bestBefore = baseline.compactMap(\.bestEstimatedOneRepMax).max() else {
+            return .notEnoughData
+        }
+        if bestRecent > bestBefore * (1 + thresholds.minimumImprovement) { return .progressing }
+
+        var misses = 0
+        var lastShortfall: Int?
+        for index in recentStart..<history.count {
+            let target = ProgressionTargets.next(history: Array(history[..<index]), settings: settings)
+            guard ProgressionTargets.didMeet(target, in: history[index]) == false else { continue }
+            misses += 1
+            lastShortfall = shortfall(of: target, in: history[index])
+        }
+        guard misses >= thresholds.minimumMisses else { return .holding }
+
+        return .stalled(suggestions: suggestions(
+            settings: settings, lastShortfall: lastShortfall,
+            weeklyFractionalSets: weeklyFractionalSets, range: thresholds.weeklySetRange
+        ))
+    }
+
+    /// Largest rep gap between the plan and what was done.
+    static func shortfall(of target: ExerciseTarget, in exposure: ExerciseExposure) -> Int {
+        var worst = 0
+        for (index, planned) in target.sets.enumerated() {
+            let done = index < exposure.sets.count ? (exposure.sets[index].reps ?? 0) : 0
+            worst = max(worst, planned.reps - done)
+        }
+        return worst
+    }
+
+    private static func suggestions(
+        settings: ProgressionSettings, lastShortfall: Int?,
+        weeklyFractionalSets: Double?, range: ClosedRange<Double>
+    ) -> [StallSuggestion] {
+        var result: [StallSuggestion] = []
+        if let lastShortfall, lastShortfall <= 1, settings.incrementKg > 0 {
+            result.append(.microload(incrementKg: settings.incrementKg / 2))
+        }
+        if case .linearLoad = settings.scheme {
+            result.append(.switchToDoubleProgression)
+        } else {
+            result.append(.changeRepRange)
+        }
+        if let weeklyFractionalSets {
+            if weeklyFractionalSets < range.lowerBound {
+                result.append(.addSet(weeklySets: weeklyFractionalSets))
+            } else if weeklyFractionalSets > range.upperBound {
+                result.append(.removeSet(weeklySets: weeklyFractionalSets))
+            }
+        }
+        result.append(.swapVariation(weeks: 3...4))
+        result.append(.deloadLift(loadReduction: 0.1))
+        return result
+    }
+}
