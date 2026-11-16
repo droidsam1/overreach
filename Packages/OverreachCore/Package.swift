@@ -24,5 +24,6 @@ let package = Package(
         .testTarget(name: "DomainTests", dependencies: ["Domain"]),
         .testTarget(name: "AnalyticsTests", dependencies: ["Analytics", "Domain"]),
         .testTarget(name: "ReportsTests", dependencies: ["Reports", "Domain"]),
+        .testTarget(name: "StrongImportTests", dependencies: ["StrongImport", "Domain"]),
     ]
 )

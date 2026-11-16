@@ -15,7 +15,8 @@ all of it into daily, explainable training recommendations ("Should I train toda
   provider-agnostic `LLMProvider` (OpenAI default, Anthropic, any OpenAI-compatible API).
 - Not a medical device. Never present output as a diagnosis.
 
-Full product definition: `docs/product.md`. Architecture decisions: `docs/adr/`.
+Full product definition: `docs/product.md`. Architecture decisions: `docs/adr/`. Importing history:
+`docs/import.md` (ADR-0011).
 
 ## Repository layout
 
