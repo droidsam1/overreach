@@ -3,12 +3,14 @@ import Foundation
 
 /// In-memory implementation of the repositories, used in phase 0, previews and tests.
 ///
-/// Phase 1 adds a SwiftData store behind the same protocols, with a CloudKit-compatible model
-/// (all properties optional or defaulted, no unique constraints) — see ADR-0004.
-public actor InMemoryStore: WorkoutRepository, ExerciseRepository, CheckInRepository {
+/// The app uses `SwiftDataStore` (ADR-0004); this one keeps previews and tests fast and dependency-free.
+public actor InMemoryStore: WorkoutRepository, ExerciseRepository, CheckInRepository, ProfileRepository,
+    ProgressionSettingsRepository {
     private var sessionsByID: [UUID: StrengthSession]
     private var exercisesByID: [UUID: Exercise]
     private var checkInsByDay: [CalendarDay: CheckIn]
+    private var storedProfile = AthleteProfile()
+    private var progressionByExercise: [UUID: ProgressionSettings] = [:]
 
     public init(exercises: [Exercise] = [], sessions: [StrengthSession] = [], checkIns: [CheckIn] = []) {
         exercisesByID = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
@@ -56,5 +58,25 @@ public actor InMemoryStore: WorkoutRepository, ExerciseRepository, CheckInReposi
 
     public func save(_ checkIn: CheckIn) {
         checkInsByDay[checkIn.day] = checkIn
+    }
+
+    // MARK: ProfileRepository
+
+    public func profile() -> AthleteProfile {
+        storedProfile
+    }
+
+    public func save(_ profile: AthleteProfile) {
+        storedProfile = profile
+    }
+
+    // MARK: ProgressionSettingsRepository
+
+    public func progressionSettings(for exerciseID: UUID) -> ProgressionSettings? {
+        progressionByExercise[exerciseID]
+    }
+
+    public func save(_ settings: ProgressionSettings, for exerciseID: UUID) {
+        progressionByExercise[exerciseID] = settings
     }
 }
