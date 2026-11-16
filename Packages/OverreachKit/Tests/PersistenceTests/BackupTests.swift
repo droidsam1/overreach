@@ -75,6 +75,18 @@ struct BackupServiceTests {
         #expect(try await target.profile().goal?.kind == .hypertrophy)
     }
 
+    @Test func neverReplacesABackupWithAnEmptyOne() async throws {
+        let destination = MemoryDestination()
+        _ = try await makeService(store: await populatedStore(), destination: destination).backUp(now: .now)
+
+        let empty = makeService(store: InMemoryStore(), destination: destination)
+        await #expect(throws: BackupError.wouldOverwriteWithEmpty) {
+            try await empty.backUp(now: .now)
+        }
+        #expect(await empty.backUpIfConfigured(now: .now) == false)
+        #expect(try await empty.latestBackup()?.sessions.count == 1)
+    }
+
     @Test func automaticBackupIsSkippedWithoutAFolder() async {
         let service = makeService(store: InMemoryStore(), destination: MemoryDestination(configured: false))
         #expect(await service.backUpIfConfigured(now: .now) == false)

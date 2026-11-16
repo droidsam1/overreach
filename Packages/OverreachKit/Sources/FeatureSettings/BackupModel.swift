@@ -47,7 +47,10 @@ public final class BackupModel {
         do {
             try await service.configure(folder: url)
             await load()
-            await backUpNow()
+            // A folder with an existing backup on a device without data (e.g. after a reinstall): offer to restore
+            // instead of backing up an empty store over it.
+            await checkRestoreOffer()
+            if restoreOffer == nil { await backUpNow() }
         } catch {
             message = "Could not use that folder."
         }
@@ -61,6 +64,8 @@ public final class BackupModel {
             message = nil
         } catch BackupError.notConfigured {
             message = "Choose a backup folder first."
+        } catch BackupError.wouldOverwriteWithEmpty {
+            message = "The folder has a backup and this device has no sessions yet. Restore it first."
         } catch {
             message = "Backup failed. Check that the folder is still available."
         }

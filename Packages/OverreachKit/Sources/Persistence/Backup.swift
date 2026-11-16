@@ -50,6 +50,9 @@ public actor RepositoryBackupService: BackupService {
     public func backUp(now: Date) async throws -> BackupSummary {
         guard await destination.isConfigured() else { throw BackupError.notConfigured }
         let document = try await makeDocument(now: now)
+        if document.sessions.isEmpty, let existing = try? await latestBackup(), !existing.sessions.isEmpty {
+            throw BackupError.wouldOverwriteWithEmpty
+        }
         try await destination.write(try BackupCodec.encode(document), at: now)
         return document.summary
     }

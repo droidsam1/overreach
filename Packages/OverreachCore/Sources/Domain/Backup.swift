@@ -104,6 +104,9 @@ public enum BackupError: Error, Equatable, Sendable {
     case notConfigured
     /// The chosen folder can no longer be accessed (moved, deleted or permission lost).
     case folderUnavailable
+    /// This device has no sessions but the folder holds a backup with sessions: writing would replace it with an
+    /// empty one (typically right after a reinstall). Restore first.
+    case wouldOverwriteWithEmpty
 }
 
 /// Encoding, decoding and selection rules for backups. Pure, so it is tested on Linux.
