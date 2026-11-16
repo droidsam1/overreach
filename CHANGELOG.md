@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Evidence-first policy for all recommendation logic (ADR-0012) and evidence register (`docs/evidence.md`).
+- Domain types: `AthleteProfile` (sex, cycle tracking mode, walking routine), menstrual cycle and daily
+  activity types, `EvidenceLevel`/`EvidenceReference`, and `ProfileRepository`, `CycleSource`,
+  `ActivitySource` protocols.
 - Strong CSV importer (`StrongImport`): header-based columns, `,`/`;` delimiters, warm-up/failure/drop sets,
   durations, kg/lb, stable ids for idempotent re-imports, unknown exercises flagged for muscle mapping.
 - Built-in exercise catalog (73 exercises, Strong-style names, Spanish aliases, stable ids).
