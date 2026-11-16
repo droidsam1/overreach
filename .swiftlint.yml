@@ -1,0 +1,32 @@
+included:
+  - Packages
+  - App/Sources
+excluded:
+  - Packages/*/.build
+  - App/Overreach.xcodeproj
+
+opt_in_rules:
+  - empty_count
+  - explicit_init
+  - first_where
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - sorted_first_last
+  - unused_import
+  - vertical_whitespace_closing_braces
+
+disabled_rules:
+  - todo            # TODOs are allowed during the prototype phases
+  - trailing_comma  # trailing commas in multi-line literals keep diffs small
+
+line_length:
+  warning: 120
+  error: 160
+
+identifier_name:
+  excluded: [id, kg, hr, rm, db]
+
+type_body_length:
+  warning: 300
+file_length:
+  warning: 500

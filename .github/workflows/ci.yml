@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core-linux:
+    name: Core tests (Linux)
+    runs-on: ubuntu-latest
+    container: swift:6.0
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test OverreachCore
+        run: swift test --package-path Packages/OverreachCore
+
+  apple:
+    name: Kit tests, lint and app build (macOS)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app || sudo xcode-select -s /Applications/Xcode.app
+      - name: Install tools
+        run: brew install xcodegen swiftlint
+      - name: Lint
+        # Warnings do not fail the build yet; switch to --strict once the codebase settles (phase 1).
+        run: swiftlint
+      - name: Test OverreachCore
+        run: swift test --package-path Packages/OverreachCore
+      - name: Test OverreachKit
+        run: swift test --package-path Packages/OverreachKit
+      - name: Generate Xcode project
+        working-directory: App
+        run: xcodegen generate
+      - name: Build app (simulator, unsigned)
+        run: |
+          xcodebuild build \
+            -project App/Overreach.xcodeproj \
+            -scheme Overreach \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO

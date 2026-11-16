@@ -1,0 +1,9 @@
+// Shared build settings for the Overreach app.
+// Per-developer signing values go in Local.xcconfig (git-ignored). Copy Local.xcconfig.example to start.
+
+BUNDLE_ID_PREFIX = io.github.overreach
+DEVELOPMENT_TEAM =
+PRODUCT_BUNDLE_IDENTIFIER = $(BUNDLE_ID_PREFIX).Overreach
+
+// Must stay last so local values override the defaults above.
+#include? "Local.xcconfig"

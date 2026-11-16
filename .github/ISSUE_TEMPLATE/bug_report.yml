@@ -1,0 +1,41 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open …
+        2. Tap …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version / commit
+  - type: input
+    id: device
+    attributes:
+      label: iPhone model and iOS version
+  - type: dropdown
+    id: sources
+    attributes:
+      label: Connected data sources
+      multiple: true
+      options:
+        - Apple Health
+        - Garmin Connect
+        - Strong import
+        - None
+  - type: markdown
+    attributes:
+      value: "Please do not attach real health exports or personal data. Anonymise anything you share."

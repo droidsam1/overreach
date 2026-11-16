@@ -1,0 +1,91 @@
+# XcodeGen spec for the Overreach app (ADR-0008).
+# Generate the project with:  cd App && xcodegen generate
+# The generated Overreach.xcodeproj is git-ignored.
+name: Overreach
+
+options:
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+
+configFiles:
+  Debug: Config/Base.xcconfig
+  Release: Config/Base.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+packages:
+  OverreachCore:
+    path: ../Packages/OverreachCore
+  OverreachKit:
+    path: ../Packages/OverreachKit
+
+targets:
+  Overreach:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: Resources
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: Overreach
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSHealthShareUsageDescription: >-
+          Overreach reads your heart rate, HRV, sleep and workouts to recommend how hard to train.
+        NSHealthUpdateUsageDescription: Overreach saves your strength workouts to Apple Health.
+        ITSAppUsesNonExemptEncryption: false
+    entitlements:
+      path: Overreach.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    dependencies:
+      - sdk: HealthKit.framework
+      - package: OverreachCore
+        product: Domain
+      - package: OverreachKit
+        product: Persistence
+      - package: OverreachKit
+        product: HealthKitSource
+      - package: OverreachKit
+        product: GarminSource
+      - package: OverreachKit
+        product: FeatureToday
+      - package: OverreachKit
+        product: FeatureWorkout
+      - package: OverreachKit
+        product: FeatureHistory
+      - package: OverreachKit
+        product: FeatureTrends
+      - package: OverreachKit
+        product: FeatureSettings
+
+schemes:
+  Overreach:
+    build:
+      targets:
+        Overreach: all
+    run:
+      config: Debug
+    archive:
+      config: Release

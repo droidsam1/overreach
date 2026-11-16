@@ -1,0 +1,9 @@
+// Copy to Local.xcconfig (git-ignored) and fill in your own values.
+//
+// DEVELOPMENT_TEAM: your Apple team id. With a free Apple ID, open Xcode > Settings > Accounts, add your
+// Apple ID, then look up the "Personal Team" id (or select the team once in Signing & Capabilities and copy
+// the value Xcode writes).
+// BUNDLE_ID_PREFIX: must be unique to you, e.g. com.yourname
+
+DEVELOPMENT_TEAM = ABCDE12345
+BUNDLE_ID_PREFIX = com.yourname
