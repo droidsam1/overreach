@@ -105,7 +105,8 @@ or previews, so keep views thin and push logic into models and `OverreachCore` w
   next-session targets from history, stall detection with suggestions, deload proposals from training
   signals (`docs/design/progression-engine.md`).
 - Phase 2 (v0.2) — Recovery: Health + Garmin sync, daily check-in, Today screen, readiness traffic light;
-  deload proposals also use HRV, resting HR, sleep, stress and sickness.
+  deload proposals also use HRV, resting HR, sleep, stress and sickness; cycle phase as context with
+  phase-aware baselines (ADR-0009, `docs/design/cycle-aware-training.md`).
 - Phase 3 — Intelligence: plan, load/progression analysis, recommendations, shareable report, Trends.
 - Phase 4 — Validation & distribution: paid Apple Developer account, CloudKit sync, TestFlight,
   in-app chat via API.

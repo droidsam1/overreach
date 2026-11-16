@@ -60,6 +60,9 @@ Proposed when the score of these signals crosses a threshold (weights and thresh
 | High average stress (Garmin) | v0.2 |
 | Sickness in check-ins → return-to-training protocol instead of a deload | v0.2 |
 
+For naturally cycling users, the HRV and resting-HR signals compare against phase-aware baselines, so normal
+luteal shifts don't fire a deload (`docs/design/cycle-aware-training.md`, ADR-0009).
+
 The proposal names the signals that fired, e.g. *"Deload suggested: bench and squat stalled for 3 weeks,
 RPE up 1 point at the same loads, 7 weeks since the last deload."* The user accepts, postpones or dismisses it;
 the choice is recorded.
