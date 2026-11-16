@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Training focus (strength, hypertrophy, mixed, endurance) declared per block/session/exercise or inferred
+  from the sets; focus prescriptions (reps, RPE, %1RM, rest, scheme); balance findings against the goal; block
+  suggestions and a plan up to a year ahead (ADR-0013, `docs/design/training-focus.md`).
 - SwiftData persistence (`SwiftDataStore`): CloudKit-compatible records storing versioned JSON, built-in
   catalog merged with custom exercises, profile and per-exercise progression settings (ADR-0004).
 - Train tab: live session logger with sets prefilled from the progression engine, target reasons with their

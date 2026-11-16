@@ -37,6 +37,8 @@ Non-goals: medical diagnosis, App Store publication (for now), sharing data betw
 - Run/lift interference and "what if I run X km today?" simulation.
 - Daily steps and walks vs the personal baseline: walking above baseline as low-weight leg load, walks as
   active recovery, walking routine (e.g. a dog) as a constraint (`docs/design/daily-activity.md`).
+- Training focus per block/session/exercise (declared or inferred), balance findings against the goal, and
+  block planning months ahead (`docs/design/training-focus.md`).
 - Readiness traffic light (rules, thresholds configurable, always shows the reasons).
 
 ## Screens

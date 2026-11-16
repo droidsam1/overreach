@@ -56,6 +56,10 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
     public var restingHeartRate: Double?
     public var cycleTracking: CycleTrackingMode
     public var walkingRoutine: WalkingRoutine
+    /// Current goal; `nil` until the user sets one (the app then assumes `.general`).
+    public var goal: TrainingGoal?
+    /// Blocks the user declared (newest last). Inferred blocks are computed, not stored.
+    public var declaredBlocks: [TrainingBlock]
 
     public init(
         sex: BiologicalSex? = nil,
@@ -64,7 +68,9 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         maxHeartRate: Double? = nil,
         restingHeartRate: Double? = nil,
         cycleTracking: CycleTrackingMode = .off,
-        walkingRoutine: WalkingRoutine = WalkingRoutine()
+        walkingRoutine: WalkingRoutine = WalkingRoutine(),
+        goal: TrainingGoal? = nil,
+        declaredBlocks: [TrainingBlock] = []
     ) {
         self.sex = sex
         self.birthYear = birthYear
@@ -73,8 +79,35 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         self.restingHeartRate = restingHeartRate
         self.cycleTracking = cycleTracking
         self.walkingRoutine = walkingRoutine
+        self.goal = goal
+        self.declaredBlocks = declaredBlocks
     }
 
     /// Whether cycle-aware logic applies: only when the user chose a natural cycle explicitly.
     public var usesCyclePhase: Bool { cycleTracking.estimatesPhase }
+}
+
+extension AthleteProfile {
+    private enum CodingKeys: String, CodingKey {
+        case sex, birthYear, bodyMassKg, maxHeartRate, restingHeartRate, cycleTracking, walkingRoutine, goal
+        case declaredBlocks
+    }
+
+    /// Tolerant decoding: fields added in later versions fall back to their defaults, so older stores and
+    /// backups keep loading.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            sex: try container.decodeIfPresent(BiologicalSex.self, forKey: .sex),
+            birthYear: try container.decodeIfPresent(Int.self, forKey: .birthYear),
+            bodyMassKg: try container.decodeIfPresent(Double.self, forKey: .bodyMassKg),
+            maxHeartRate: try container.decodeIfPresent(Double.self, forKey: .maxHeartRate),
+            restingHeartRate: try container.decodeIfPresent(Double.self, forKey: .restingHeartRate),
+            cycleTracking: try container.decodeIfPresent(CycleTrackingMode.self, forKey: .cycleTracking) ?? .off,
+            walkingRoutine: try container.decodeIfPresent(WalkingRoutine.self, forKey: .walkingRoutine)
+                ?? WalkingRoutine(),
+            goal: try container.decodeIfPresent(TrainingGoal.self, forKey: .goal),
+            declaredBlocks: try container.decodeIfPresent([TrainingBlock].self, forKey: .declaredBlocks) ?? []
+        )
+    }
 }

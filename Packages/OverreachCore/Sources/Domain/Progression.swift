@@ -38,11 +38,16 @@ public struct ProgressionSettings: Hashable, Codable, Sendable {
     public var incrementKg: Double
     /// Main lifts weigh more in deload decisions (e.g. squat, bench, deadlift, row, overhead press).
     public var isMainLift: Bool
+    /// Declared focus of this exercise. `nil` = inherit from the session/block, or infer from the sets.
+    public var focus: TrainingFocus?
 
-    public init(scheme: ProgressionScheme = .default, incrementKg: Double, isMainLift: Bool = false) {
+    public init(
+        scheme: ProgressionScheme = .default, incrementKg: Double, isMainLift: Bool = false, focus: TrainingFocus? = nil
+    ) {
         self.scheme = scheme
         self.incrementKg = max(0, incrementKg)
         self.isMainLift = isMainLift
+        self.focus = focus
     }
 
     public init(for exercise: Exercise, scheme: ProgressionScheme = .default, isMainLift: Bool = false) {

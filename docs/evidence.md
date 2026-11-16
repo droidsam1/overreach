@@ -96,3 +96,31 @@ Reviewed 2026-11-16.
 ### `acwr` — heuristic
 Acute:chronic workload ratio > 1.5 as a weak signal only; its injury-prediction validity is disputed.
 Reviewed 2026-11-16.
+
+## Training focus and blocks
+
+### `loading-by-goal` — strong
+1RM gains are larger with heavy loads (> 60 % 1RM); hypertrophy is similar across a wide loading range when sets
+go to or near failure. → Strength focus uses heavy loads; hypertrophy focus is flexible on load.
+Refs: Schoenfeld et al. 2017, J Strength Cond Res 31:3508 (meta-analysis, 21 studies); Lopez et al. 2021, Med
+Sci Sports Exerc (network meta-analysis); Schoenfeld et al. 2021, Sports 9:32 (review). Reviewed 2026-11-16.
+
+### `rest-hypertrophy` — moderate
+Small hypertrophy benefit of rests > 60 s; no appreciable difference beyond ~90 s. → Hypertrophy rest 90–180 s.
+Refs: Singer et al. 2024, Front Sports Act Living 6:1429789 (Bayesian meta-analysis, 9 studies). Reviewed
+2026-11-16.
+
+### `rest-strength` — moderate
+Longer rests (3 min vs 1 min) improved strength and hypertrophy in trained men. → Strength rest 3–5 min.
+Refs: Schoenfeld et al. 2016, J Strength Cond Res (RCT). Reviewed 2026-11-16.
+
+### `periodization` — strong
+With volume equated, periodised training improves 1RM more than non-periodised, not hypertrophy; undulating
+beats linear for 1RM in trained lifters. Linear vs daily undulating give similar hypertrophy.
+→ Block suggestions for strength goals; for hypertrophy goals periodisation is optional.
+Refs: Moesgaard et al. 2022, Sports Med 52:1647 (meta-analysis, 35 studies); Grgic et al. 2017, PeerJ 5:e3695.
+Reviewed 2026-11-16.
+
+### `focus-heuristics` — heuristic
+Set classification cut-offs (≤ 6 reps at ≥ 78 % e1RM = strength; ≥ 15 reps = endurance; 60 % majority), streak
+lengths, block lengths (4–8 weeks), templates and deload placement. All configurable. Reviewed 2026-11-16.
