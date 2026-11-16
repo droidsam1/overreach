@@ -63,6 +63,15 @@ private struct SessionList: View {
 
     var body: some View {
         List {
+            Picker("Session focus", selection: $model.sessionFocus) {
+                Text("Auto").tag(TrainingFocus?.none)
+                ForEach(TrainingFocus.allCases, id: \.self) { focus in
+                    Text(focus.title).tag(TrainingFocus?.some(focus))
+                }
+            }
+            .onChange(of: model.sessionFocus) {
+                Task { await model.refreshTargets() }
+            }
             if let message = model.errorMessage {
                 Label(message, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red)
@@ -119,16 +128,31 @@ private struct TargetSummary: View {
             .font(.footnote)
             .foregroundStyle(.secondary)
         } label: {
-            HStack {
-                Text(targetLine).font(.subheadline.monospacedDigit())
-                Spacer()
-                if let status = exercise.status.text {
-                    Text(status)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(exercise.status.isStalled ? .orange : .secondary)
+            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                HStack {
+                    Text(targetLine).font(.subheadline.monospacedDigit())
+                    Spacer()
+                    if let status = exercise.status.text {
+                        Text(status)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(exercise.status.isStalled ? .orange : .secondary)
+                    }
                 }
+                Text(focusLine)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
+    }
+
+    private var focusLine: String {
+        let rest = "rest \(Self.minutes(exercise.restSeconds.lowerBound))–\(Self.minutes(exercise.restSeconds.upperBound))"
+        guard let focus = exercise.focus else { return rest.capitalized }
+        return "\(focus.title)\(exercise.isFocusInferred ? " (detected)" : "") · \(rest)"
+    }
+
+    private static func minutes(_ seconds: Int) -> String {
+        "\(seconds / 60):\(String(format: "%02d", seconds % 60))"
     }
 
     private var targetLine: String {

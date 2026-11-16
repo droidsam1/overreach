@@ -49,3 +49,28 @@ public protocol ProgressionSettingsRepository: Sendable {
     func progressionSettings(for exerciseID: UUID) async throws -> ProgressionSettings?
     func save(_ settings: ProgressionSettings, for exerciseID: UUID) async throws
 }
+
+/// What an import would add, shown to the user before anything is saved (ADR-0011).
+public struct ImportPreview: Sendable {
+    public var sessions: [StrengthSession]
+    /// Exercises not in the catalog; created as custom exercises that still need a muscle mapping.
+    public var newExercises: [Exercise]
+    /// 1-based line numbers that could not be read.
+    public var skippedLines: [Int]
+
+    public init(sessions: [StrengthSession], newExercises: [Exercise], skippedLines: [Int]) {
+        self.sessions = sessions
+        self.newExercises = newExercises
+        self.skippedLines = skippedLines
+    }
+
+    public var setCount: Int {
+        sessions.reduce(0) { total, session in total + session.entries.reduce(0) { $0 + $1.sets.count } }
+    }
+}
+
+/// Reads training history in the canonical CSV format (Strong's columns). Implemented in the App with
+/// `StrongImport`, so features don't depend on the parser.
+public protocol TrainingHistoryImporter: Sendable {
+    func preview(csv: String, weightUnit: WeightUnit, catalog: [Exercise]) throws -> ImportPreview
+}

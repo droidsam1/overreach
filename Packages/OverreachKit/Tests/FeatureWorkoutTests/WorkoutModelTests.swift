@@ -80,3 +80,28 @@ struct WorkoutModelTests {
         #expect(model.exercises[0].sets[3].weightKg == 40)
     }
 }
+
+@MainActor
+@Suite("WorkoutModel focus")
+struct WorkoutModelFocusTests {
+    @Test func sessionFocusPicksTheDefaultSchemeAndRest() async {
+        let bench = Exercise(name: "Bench Press", primaryMuscles: [.chest], equipment: .barbell)
+        let store = InMemoryStore(exercises: [bench])
+        let model = WorkoutModel(workouts: store, exercises: store, progression: store)
+        model.start()
+        model.sessionFocus = .strength
+        await model.add(bench)
+
+        let exercise = model.exercises.first
+        #expect(exercise?.focus == .strength)
+        #expect(exercise?.isFocusInferred == false)
+        #expect(exercise?.sets.count == 4)  // strength default: 4 × 4 @ RPE 8
+        #expect(exercise?.sets.first?.reps == 4)
+        #expect((exercise?.restSeconds.lowerBound ?? 0) >= 180)
+
+        model.sessionFocus = .hypertrophy
+        await model.refreshTargets()
+        #expect(model.exercises.first?.sets.count == 3)
+        #expect(model.exercises.first?.focus == .hypertrophy)
+    }
+}

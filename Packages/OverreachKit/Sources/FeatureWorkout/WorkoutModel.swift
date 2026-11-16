@@ -27,6 +27,11 @@ public struct DraftExercise: Identifiable, Hashable, Sendable {
     public var target: ExerciseTarget
     public var status: ExerciseStatus
     public var sets: [DraftSet]
+    /// Focus used for this exercise (declared, from the session, or inferred from its recent sets).
+    public var focus: TrainingFocus?
+    public var isFocusInferred: Bool
+    /// Suggested rest between working sets for the focus, in seconds.
+    public var restSeconds: ClosedRange<Int>
 }
 
 /// The live session logger (phase 1). Targets come from the progression engine; only completed sets are saved.
@@ -37,6 +42,8 @@ public final class WorkoutModel {
     /// Start time of the session in progress; `nil` when no session is open.
     public private(set) var startedAt: Date?
     public var sessionName = "Workout"
+    /// Declared focus of the session; `nil` = automatic (per exercise). Call `refreshTargets()` after changing it.
+    public var sessionFocus: TrainingFocus?
     /// Exercises of the session in progress. Views bind to it directly (`$model.exercises`).
     public var exercises: [DraftExercise] = []
     public private(set) var errorMessage: String?
@@ -74,6 +81,7 @@ public final class WorkoutModel {
     public func start(name: String = "Workout") {
         guard startedAt == nil else { return }
         sessionName = name
+        sessionFocus = nil
         exercises = []
         errorMessage = nil
         startedAt = clock()
@@ -82,15 +90,44 @@ public final class WorkoutModel {
     /// Adds `exercise` with sets prefilled from its next progression target.
     public func add(_ exercise: Exercise) async {
         guard isSessionActive else { return }
+        exercises.append(await prepare(exercise, id: UUID()))
+    }
+
+    /// Recomputes targets for exercises with no completed set (e.g. after changing the session focus).
+    public func refreshTargets() async {
+        let pending = exercises.filter { !$0.sets.contains(where: \.isDone) }
+        for current in pending {
+            let refreshed = await prepare(current.exercise, id: current.id)
+            if let position = exercises.firstIndex(where: { $0.id == current.id }) {
+                exercises[position] = refreshed
+            }
+        }
+    }
+
+    /// Target, status, focus and rest for `exercise`. A declared exercise focus wins over the session focus;
+    /// without stored settings, the focus picks the default scheme (`FocusPrescription`).
+    private func prepare(_ exercise: Exercise, id: UUID) async -> DraftExercise {
         let history = await history(of: exercise.id)
         let stored = try? await progression.progressionSettings(for: exercise.id)
-        let settings = stored ?? ProgressionSettings(for: exercise)
+        let declaredFocus = stored?.focus ?? sessionFocus
+        var settings = stored ?? ProgressionSettings(for: exercise)
+        if stored == nil, let declaredFocus {
+            settings.scheme = FocusPrescription.for(declaredFocus).defaultScheme
+        }
+        let inferredFocus = FocusClassifier.dominant(history.indices.suffix(3).compactMap { index in
+            FocusClassifier.focus(of: history[index], previous: Array(history[..<index]))
+        })
+        let focus = declaredFocus ?? inferredFocus
         let target = ProgressionTargets.next(history: history, settings: settings)
         let status = StallDetection.status(history: history, settings: settings)
         let sets = target.sets.map { planned in
             DraftSet(weightKg: planned.weightKg ?? history.last?.workingWeightKg, reps: planned.reps)
         }
-        exercises.append(DraftExercise(id: UUID(), exercise: exercise, target: target, status: status, sets: sets))
+        return DraftExercise(
+            id: id, exercise: exercise, target: target, status: status, sets: sets, focus: focus,
+            isFocusInferred: declaredFocus == nil && focus != nil,
+            restSeconds: FocusPrescription.for(focus ?? .hypertrophy).restSeconds
+        )
     }
 
     public func removeExercise(_ exerciseID: DraftExercise.ID) {
@@ -124,7 +161,9 @@ public final class WorkoutModel {
             close()
             return true
         }
-        let finished = StrengthSession(name: sessionName, startedAt: startedAt, endedAt: now, entries: entries)
+        let finished = StrengthSession(
+            name: sessionName, startedAt: startedAt, endedAt: now, entries: entries, focus: sessionFocus
+        )
         do {
             try await workouts.save(finished)
             close()

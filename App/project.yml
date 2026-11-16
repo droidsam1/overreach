@@ -76,7 +76,11 @@ targets:
       - package: OverreachKit
         product: FeatureHistory
       - package: OverreachKit
+        product: FeaturePlan
+      - package: OverreachKit
         product: FeatureTrends
+      - package: OverreachCore
+        product: StrongImport
       - package: OverreachKit
         product: FeatureSettings
 
