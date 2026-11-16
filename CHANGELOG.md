@@ -7,6 +7,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Plan tab: goal (with target date and priority lifts), current block (declared or detected), next-block
+  advice, balance findings and the plan for the coming months.
+- Train tab: session focus (auto or declared), per-exercise focus and suggested rest; the focus picks the
+  default progression scheme.
+- Settings: import a Strong CSV with a preview (sessions, sets, new exercises, skipped lines).
 - Training focus (strength, hypertrophy, mixed, endurance) declared per block/session/exercise or inferred
   from the sets; focus prescriptions (reps, RPE, %1RM, rest, scheme); balance findings against the goal; block
   suggestions and a plan up to a year ahead (ADR-0013, `docs/design/training-focus.md`).

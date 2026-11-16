@@ -1,5 +1,7 @@
 import Domain
 import FeatureHistory
+import FeaturePlan
+import FeatureSettings
 import FeatureToday
 import FeatureWorkout
 import Foundation
@@ -17,6 +19,8 @@ final class AppContainer {
     let exercises: any ExerciseRepository
     let checkIns: any CheckInRepository
     let progression: any ProgressionSettingsRepository
+    let profiles: any ProfileRepository
+    let importer: any TrainingHistoryImporter
     /// In priority order: when two sources report the same value, the first wins.
     let metricsSources: [any MetricsSource]
 
@@ -25,12 +29,16 @@ final class AppContainer {
         exercises: any ExerciseRepository,
         checkIns: any CheckInRepository,
         progression: any ProgressionSettingsRepository,
+        profiles: any ProfileRepository,
+        importer: any TrainingHistoryImporter = StrongHistoryImporter(),
         metricsSources: [any MetricsSource]
     ) {
         self.workouts = workouts
         self.exercises = exercises
         self.checkIns = checkIns
         self.progression = progression
+        self.profiles = profiles
+        self.importer = importer
         self.metricsSources = metricsSources
     }
 
@@ -41,12 +49,14 @@ final class AppContainer {
         do {
             let store = SwiftDataStore.make(container: try PersistenceContainer.make())
             return AppContainer(
-                workouts: store, exercises: store, checkIns: store, progression: store, metricsSources: sources
+                workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
+                metricsSources: sources
             )
         } catch {
             let store = InMemoryStore(exercises: ExerciseCatalog.builtIn)
             return AppContainer(
-                workouts: store, exercises: store, checkIns: store, progression: store, metricsSources: sources
+                workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
+                metricsSources: sources
             )
         }
     }
@@ -63,5 +73,13 @@ final class AppContainer {
 
     func makeHistoryModel() -> HistoryModel {
         HistoryModel(workouts: workouts, exercises: exercises)
+    }
+
+    func makePlanModel() -> PlanModel {
+        PlanModel(profiles: profiles, workouts: workouts, exercises: exercises, progression: progression)
+    }
+
+    func makeImportModel() -> ImportModel {
+        ImportModel(importer: importer, workouts: workouts, exercises: exercises)
     }
 }
