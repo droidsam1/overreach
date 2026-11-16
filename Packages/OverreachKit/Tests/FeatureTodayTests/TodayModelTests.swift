@@ -33,7 +33,7 @@ struct TodayModelTests {
 
         #expect(model.metrics?.hrvNightlyAverageMs == 37)
         #expect(model.metrics?.restingHeartRate == 52)
-        #expect(model.metrics?.sleepSeconds == 7 * 3600)
+        #expect(model.metrics?.sleepSeconds == 25_200.0)  // 7 h
         #expect(model.failedSources.isEmpty)
     }
 
