@@ -43,3 +43,9 @@ public protocol CycleSource: Sendable {
 public protocol ActivitySource: Sendable {
     func dailyActivity(in range: ClosedRange<CalendarDay>) async throws -> [DailyActivity]
 }
+
+/// Per-exercise progression configuration. `nil` means "use the default for the exercise".
+public protocol ProgressionSettingsRepository: Sendable {
+    func progressionSettings(for exerciseID: UUID) async throws -> ProgressionSettings?
+    func save(_ settings: ProgressionSettings, for exerciseID: UUID) async throws
+}

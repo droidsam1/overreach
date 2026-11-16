@@ -62,6 +62,9 @@ let package = Package(
 
         // MARK: Tests
         .testTarget(name: "PersistenceTests", dependencies: ["Persistence", .product(name: "Domain", package: core)]),
+        .testTarget(name: "FeatureWorkoutTests", dependencies: [
+            "FeatureWorkout", "Persistence", .product(name: "Domain", package: core),
+        ]),
         .testTarget(name: "FeatureTodayTests", dependencies: ["FeatureToday", .product(name: "Domain", package: core)]),
     ]
 )
