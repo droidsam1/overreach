@@ -21,6 +21,7 @@ final class AppContainer {
     let progression: any ProgressionSettingsRepository
     let profiles: any ProfileRepository
     let importer: any TrainingHistoryImporter
+    let backup: any BackupService
     /// In priority order: when two sources report the same value, the first wins.
     let metricsSources: [any MetricsSource]
 
@@ -31,6 +32,7 @@ final class AppContainer {
         progression: any ProgressionSettingsRepository,
         profiles: any ProfileRepository,
         importer: any TrainingHistoryImporter = StrongHistoryImporter(),
+        backupDestination: any BackupDestination = FolderBackupDestination(),
         metricsSources: [any MetricsSource]
     ) {
         self.workouts = workouts
@@ -39,6 +41,11 @@ final class AppContainer {
         self.progression = progression
         self.profiles = profiles
         self.importer = importer
+        self.backup = RepositoryBackupService(
+            workouts: workouts, exercises: exercises, checkIns: checkIns, profiles: profiles, progression: progression,
+            destination: backupDestination,
+            appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+        )
         self.metricsSources = metricsSources
     }
 
@@ -68,7 +75,7 @@ final class AppContainer {
     }
 
     func makeWorkoutModel() -> WorkoutModel {
-        WorkoutModel(workouts: workouts, exercises: exercises, progression: progression)
+        WorkoutModel(workouts: workouts, exercises: exercises, progression: progression, backup: backup)
     }
 
     func makeHistoryModel() -> HistoryModel {
@@ -77,6 +84,10 @@ final class AppContainer {
 
     func makePlanModel() -> PlanModel {
         PlanModel(profiles: profiles, workouts: workouts, exercises: exercises, progression: progression)
+    }
+
+    func makeBackupModel() -> BackupModel {
+        BackupModel(service: backup)
     }
 
     func makeImportModel() -> ImportModel {

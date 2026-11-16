@@ -212,6 +212,14 @@ public actor SwiftDataStore: WorkoutRepository, ExerciseRepository, CheckInRepos
         return try records.first.map { try decoder.decode(ProgressionSettings.self, from: $0.payload) }
     }
 
+    public func allProgressionSettings() throws -> [UUID: ProgressionSettings] {
+        var result: [UUID: ProgressionSettings] = [:]
+        for record in try modelContext.fetch(FetchDescriptor<ProgressionSettingsRecord>()) {
+            result[record.exerciseID] = try decoder.decode(ProgressionSettings.self, from: record.payload)
+        }
+        return result
+    }
+
     public func save(_ settings: ProgressionSettings, for exerciseID: UUID) throws {
         let payload = try encoder.encode(settings)
         let existing = try modelContext.fetch(

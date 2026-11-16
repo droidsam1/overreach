@@ -53,6 +53,7 @@ public final class WorkoutModel {
     private let workouts: any WorkoutRepository
     private let exerciseRepository: any ExerciseRepository
     private let progression: any ProgressionSettingsRepository
+    private let backup: (any BackupService)?
     private let clock: @Sendable () -> Date
 
     /// How far back history is read to compute targets and stalls.
@@ -62,11 +63,13 @@ public final class WorkoutModel {
         workouts: any WorkoutRepository,
         exercises: any ExerciseRepository,
         progression: any ProgressionSettingsRepository,
+        backup: (any BackupService)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
         self.exerciseRepository = exercises
         self.progression = progression
+        self.backup = backup
         self.clock = clock
     }
 
@@ -167,6 +170,7 @@ public final class WorkoutModel {
         do {
             try await workouts.save(finished)
             close()
+            await backup?.backUpIfConfigured(now: now)
             return true
         } catch {
             errorMessage = "Could not save the session. It is still open."
