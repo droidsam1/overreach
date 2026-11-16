@@ -50,7 +50,7 @@ struct StrongCSVImporterTests {
         let components = DateComponents(year: 2026, month: 10, day: 20, hour: 18, minute: 30)
         let start = try #require(calendar.date(from: components))
         #expect(torso.startedAt == start)
-        #expect(torso.durationSeconds == 66 * 60)
+        #expect(abs((torso.durationSeconds ?? 0) - 3960) < 0.001)  // 1h 6m
         #expect(torso.source == .strongImport)
         let expectedExercises = [
             try catalogExercise("Bench Press (Barbell)").id,
@@ -58,7 +58,7 @@ struct StrongCSVImporterTests {
             try catalogExercise("Plank").id,
         ]
         #expect(torso.entries.map(\.exerciseID) == expectedExercises)
-        #expect(result.sessions[1].durationSeconds == 37 * 60)
+        #expect(abs((result.sessions[1].durationSeconds ?? 0) - 2220) < 0.001)  // 37m
     }
 
     @Test func readsSetKindsWeightsRepsRPEAndTime() throws {
