@@ -24,6 +24,7 @@ Non-goals: medical diagnosis, App Store publication (for now), sharing data betw
 | Resting HR, HR, sleep, steps, runs | Apple Health (written by Garmin Connect) | Official, automatic |
 | Nightly HRV, Body Battery, stress, respiration, SpO2, training status/readiness, load, recovery time, VO2max, race predictions, activity details | Garmin Connect (unofficial API) | Optional; tokens in Keychain; direct from iPhone |
 | Subjective state (sick, energy, soreness) | Daily check-in | 10 seconds |
+| Menstrual cycle (flow, symptoms) | Apple Health (Cycle Tracking, Flo, Clue…) + check-in | Optional; context only (ADR-0009) |
 
 ## Core analytics
 
@@ -41,14 +42,16 @@ Today · Train · History · Trends · Exercises · Plan · Assistant · Setting
 
 ## Phases
 
-0. Foundation — repo, modules, CI, design system, domain model, docs.
+0. Foundation — repo, modules, CI, design system, domain model (incl. athlete profile and cycle types), docs.
 1. Replace Strong (v0.1) — logger, CSV import, write workouts to Health, JSON backup in iCloud Drive, and the
    progression engine: next-session targets, stall detection with suggestions, deload proposals from training
    signals (see `docs/design/progression-engine.md`).
 2. Recovery (v0.2) — Health + Garmin sync, check-in, Today, traffic light; deloads also weigh HRV, resting HR,
-   sleep, stress and sickness.
-3. Intelligence — plan, load/progression, recommendations, shareable report, Trends.
+   sleep, stress and sickness; onboarding asks sex and cycle tracking; cycle phase estimate and
+   phase-aware HRV/resting-HR baselines (see `docs/design/cycle-aware-training.md`).
+3. Intelligence — plan, load/progression, recommendations, shareable report, Trends; symptom-driven
+   autoregulation and personal per-phase patterns for naturally cycling users.
 4. Validation & distribution — paid developer account, CloudKit sync, TestFlight, in-app chat via API.
 
 Later: Shortcuts actions and widget, morning notification, Connect IQ watch app for own HRV, HRV written
-to Health, more data sources, nutrition, optional remote MCP connector.
+to Health, more data sources, nutrition (cycle- and load-aware macros), optional remote MCP connector.
