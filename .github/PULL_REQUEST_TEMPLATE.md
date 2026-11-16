@@ -14,5 +14,6 @@
 - [ ] Missing data handled gracefully (all metrics optional)
 - [ ] User-facing strings localizable; Dynamic Type and VoiceOver checked
 - [ ] `CHANGELOG.md` updated if user-visible
+- [ ] Recommendation/evaluation rules researched and recorded in `docs/evidence.md` (ADR-0012)
 - [ ] ADR added if this is an architectural decision
 - [ ] No personal data, real exports or secrets included

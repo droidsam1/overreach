@@ -15,7 +15,7 @@ all of it into daily, explainable training recommendations ("Should I train toda
   provider-agnostic `LLMProvider` (OpenAI default, Anthropic, any OpenAI-compatible API).
 - Not a medical device. Never present output as a diagnosis.
 
-Full product definition: `docs/product.md`. Architecture decisions: `docs/adr/`. Importing history:
+Full product definition: `docs/product.md`. Evidence register: `docs/evidence.md`. Architecture decisions: `docs/adr/`. Importing history:
 `docs/import.md` (ADR-0011).
 
 ## Repository layout
@@ -67,6 +67,11 @@ existing modules to do it.
 - Units: store SI (kg, meters, seconds, ms for HRV). Convert only in the UI.
 - Every metric is optional. Missing data must degrade gracefully, never crash or block.
 - Explainability: anything that produces a recommendation returns the reasons with it.
+- **Evidence first (ADR-0012).** Any rule that recommends, proposes or evaluates (progression, stalls,
+  deloads, readiness, load, cycle, walking, nutrition) is based on the most robust and most recent evidence
+  available — search for current meta-analyses, position stands and RCTs before writing it — and on the best
+  labelled heuristics where evidence runs out. Record it in `docs/evidence.md` and cite its key in code
+  (`EvidenceReference`); reasons carry the evidence level.
 - Tests: Swift Testing (`import Testing`, `@Test`, `#expect`). Pure logic in `OverreachCore` must be
   covered; use realistic fixtures.
 - Strings shown to users go through String Catalogs (es, en). Code, comments and docs in English.

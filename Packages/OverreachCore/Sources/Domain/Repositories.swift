@@ -28,3 +28,18 @@ public protocol MetricsSource: Sendable {
     func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics]
     func runs(from start: Date, to end: Date) async throws -> [RunActivity]
 }
+
+public protocol ProfileRepository: Sendable {
+    func profile() async throws -> AthleteProfile
+    func save(_ profile: AthleteProfile) async throws
+}
+
+/// A source of menstrual cycle data (Apple Health, manual check-in entries). ADR-0009.
+public protocol CycleSource: Sendable {
+    func menstrualEvents(in range: ClosedRange<CalendarDay>) async throws -> [MenstrualEvent]
+}
+
+/// A source of everyday steps and walks (Apple Health, Garmin). ADR-0010.
+public protocol ActivitySource: Sendable {
+    func dailyActivity(in range: ClosedRange<CalendarDay>) async throws -> [DailyActivity]
+}
