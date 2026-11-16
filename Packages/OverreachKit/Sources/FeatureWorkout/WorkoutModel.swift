@@ -44,7 +44,7 @@ public final class WorkoutModel {
     public var isSessionActive: Bool { startedAt != nil }
 
     private let workouts: any WorkoutRepository
-    private let exercises: any ExerciseRepository
+    private let exerciseRepository: any ExerciseRepository
     private let progression: any ProgressionSettingsRepository
     private let clock: @Sendable () -> Date
 
@@ -58,14 +58,14 @@ public final class WorkoutModel {
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
-        self.exercises = exercises
+        self.exerciseRepository = exercises
         self.progression = progression
         self.clock = clock
     }
 
     public func load() async {
         do {
-            catalog = try await exercises.allExercises()
+            catalog = try await exerciseRepository.allExercises()
         } catch {
             errorMessage = "Could not load exercises."
         }
