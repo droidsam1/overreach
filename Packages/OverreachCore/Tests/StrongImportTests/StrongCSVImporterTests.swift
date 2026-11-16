@@ -98,10 +98,11 @@ struct StrongCSVImporterTests {
     }
 
     @Test func supportsSemicolonsDecimalCommasAndEscapedQuotes() throws {
-        let csv = """
+        // Raw string: the CSV contains `"""`, which would close a normal multi-line literal.
+        let csv = #"""
         Date;Workout Name;Exercise Name;Set Order;Weight;Reps
         2026-01-05 10:00:00;"Día ""pesado""";Squat (Barbell);1;"102,5";3
-        """
+        """#
         let result = try importSample(csv)
         let session = try #require(result.sessions.first)
         #expect(session.name == "Día \"pesado\"")
