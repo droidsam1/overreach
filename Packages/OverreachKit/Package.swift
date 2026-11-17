@@ -71,6 +71,9 @@ let package = Package(
             "FeatureSettings", "Persistence", .product(name: "Domain", package: core),
             .product(name: "Fixtures", package: core),
         ]),
+        .testTarget(name: "FeatureExercisesTests", dependencies: [
+            "FeatureExercises", "Persistence", .product(name: "Domain", package: core),
+        ]),
         .testTarget(name: "FeatureHistoryTests", dependencies: [
             "FeatureHistory", "Persistence", .product(name: "Domain", package: core),
         ]),

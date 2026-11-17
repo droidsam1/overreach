@@ -50,6 +50,10 @@ public actor InMemoryStore: WorkoutRepository, ExerciseRepository, CheckInReposi
         exercisesByID[exercise.id] = exercise
     }
 
+    public func deleteExercise(id: UUID) {
+        exercisesByID[id] = nil
+    }
+
     // MARK: CheckInRepository
 
     public func checkIn(for day: CalendarDay) -> CheckIn? {

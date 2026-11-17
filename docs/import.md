@@ -7,8 +7,11 @@ Overreach imports history from one CSV format — the one Strong exports (ADR-00
 1. In Strong: **Settings → Export Strong Data**. Save the CSV to Files or share it to Overreach.
 2. In Overreach: **Settings → Import → Strong CSV**, pick the file and confirm the weight unit you used in
    Strong (the file does not include it).
-3. Review the preview: sessions, sets, and any exercise names Overreach does not know. Map those to muscle
-   groups so their volume counts.
+3. Review the preview: sessions, sets, and any exercise names Overreach does not know. They are imported as
+   custom exercises without muscles, so their volume does not count yet.
+4. Open **Settings → Exercises** (the badge shows how many need muscles). For each one, assign its muscles
+   (or copy them from a similar catalog exercise), or **merge** it into a catalog exercise: its history moves
+   there and its name becomes an alias, so importing the same file again maps it directly.
 
 Importing the same file again does not create duplicates.
 

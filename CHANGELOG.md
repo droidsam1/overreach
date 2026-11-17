@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Exercises screen (Settings → Exercises, #13): imported exercises without muscles listed first with a badge;
+  assign primary/secondary muscles and equipment, copy them from similar catalog exercises (name matching
+  across Spanish aliases, accents and plurals), or merge into another exercise (history, progression settings
+  and the name as alias move to the target).
 - Backup and restore (#9): versioned JSON backup into an iCloud Drive folder after every session and when the
   app goes to the background, 14 days of dated copies, manual export, restore from file (merged by id, no
   duplicates) and a restore offer on a fresh install.
