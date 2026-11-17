@@ -32,14 +32,17 @@ Packages/
     Analytics             Load, progression, fatigue, ACWR, readiness rules (pure functions)
     StrongImport          Strong CSV parsing + exercise → muscle-group mapping
     Reports               Markdown report for sharing with ChatGPT/Claude
+    Presentation/         Per-feature screen state, intents and texts (ADR-0014). Linux-testable.
+      PresentationKit     Display names, search, L10n
+      <X>Presentation     @Observable models of feature X (being migrated feature by feature)
   OverreachKit/           Apple frameworks (SwiftUI, SwiftData, HealthKit, Keychain)
     Persistence           Repositories (in-memory now, SwiftData CloudKit-ready in phase 1)
     HealthKitSource       Apple Health reader/writer
     GarminSource          Unofficial Garmin Connect client (optional, isolated)
     AIKit                 LLMProvider protocol + adapters
     DesignSystem          Colors, spacing, reusable components and charts
-    Feature*              One module per screen/flow (Today, Workout, History, Trends,
-                          Exercises, Plan, Assistant, Settings, Onboarding)
+    Feature*              SwiftUI views of one screen/flow (Today, Workout, History, Trends,
+                          Exercises, Plan, Assistant, Settings, Onboarding). UI only (ADR-0014).
 docs/                     Product definition and ADRs
 ```
 
@@ -51,7 +54,9 @@ docs/                     Product definition and ADRs
    (+ `Reports` for `AIKit`) and implement its protocols.
 4. `Feature*` modules depend on `Domain`, `Analytics`, `DesignSystem` (and `AIKit` only for Today and
    Assistant). **A feature never imports another feature or a concrete data module.**
-5. `App` is the only place that knows concrete implementations. It builds `AppContainer` and injects
+5. `<X>Presentation` depends on `Domain`, `Analytics` and `PresentationKit`; never on SwiftUI or another
+   presentation module. A migrated `FeatureX` depends on `XPresentation` + `DesignSystem`, **not Analytics**.
+6. `App` is the only place that knows concrete implementations. It builds `AppContainer` and injects
    protocols into features.
 
 Adding a capability (nutrition, another watch) = a new data module + a new feature module. Do not grow
@@ -62,7 +67,12 @@ existing modules to do it.
 - Swift 6, strict concurrency. Domain types are `Sendable` value types; repositories are actors or
   `Sendable` protocols with `async` APIs.
 - UI: SwiftUI + `@Observable` models (`@MainActor`), no third-party architecture frameworks (ADR-0003).
-  Pattern per feature: `XView` (SwiftUI) + `XModel` (`@Observable`, holds state, calls use cases).
+- **Views only render (ADR-0014).** `XModel` and its screen state live in `XPresentation` (OverreachCore);
+  `XView` in `FeatureX` renders state and calls intents. Views keep layout, styling, accessibility, static
+  copy and purely visual `@State` (sheet open, focus) — never rule-based `if`s, computations, `.filter`/`.sorted`
+  over data, or texts derived from rules. One model per screen/flow; sub-screens get a model from the parent.
+  Presentation tests are the feature's contract: a redesign is safe if they pass. Migrated: Exercises, Workout,
+  History, Plan, Settings, Today. Placeholders (Trends, Assistant, Onboarding) get a presentation module when built.
 - Dates: daily data is keyed by `CalendarDay` (year/month/day in the user's calendar), never by raw `Date`.
 - Units: store SI (kg, meters, seconds, ms for HRV). Convert only in the UI.
 - Every metric is optional. Missing data must degrade gracefully, never crash or block.
@@ -84,6 +94,9 @@ existing modules to do it.
 # Pure-Swift core (works on macOS and Linux)
 swift test --package-path Packages/OverreachCore
 
+# Same, in Docker (Windows/any machine without Swift; same image as CI)
+./scripts/test-core.sh            # or: ./scripts/test-core.ps1 ; extra args go to swift test
+
 # Apple-framework modules (macOS)
 swift build --package-path Packages/OverreachKit
 
@@ -98,7 +111,8 @@ swift format lint --recursive Packages App/Sources
 
 ## Building without a Mac
 
-Logic in `OverreachCore` can be developed and tested anywhere Swift runs (Linux, Windows). The iOS app is
+Logic in `OverreachCore` (including presentation models) can be developed and tested anywhere Swift runs, or
+in Docker with `scripts/test-core.*`. The iOS app is
 built by the **Build IPA** workflow (`.github/workflows/ipa.yml`) on every push to `main`; the artifact is
 sideloaded with Sideloadly/AltStore (`docs/install-without-mac.md`). UI work without a Mac has no simulator
 or previews, so keep views thin and push logic into models and `OverreachCore` where it can be tested.

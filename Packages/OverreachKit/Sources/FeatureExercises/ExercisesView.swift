@@ -1,13 +1,14 @@
-import Analytics
 import DesignSystem
-import Domain
+import ExercisesPresentation
 import SwiftUI
 
+// Views only: layout, styling and navigation. Every decision, filter and text derived from rules comes from
+// `ExercisesPresentation` (ADR-0014), so this file can be redesigned freely.
+
 /// Exercise list. Phase 1: assign muscles to imported exercises and merge duplicates (issue #13).
-/// Progress, e1RM, PRs and stalls per exercise come in phase 3. Pushed inside the caller's navigation stack.
+/// Pushed inside the caller's navigation stack.
 public struct ExercisesView: View {
     @State private var model: ExercisesModel
-    @State private var searchText = ""
 
     public init(model: ExercisesModel) {
         _model = State(initialValue: model)
@@ -18,10 +19,10 @@ public struct ExercisesView: View {
             if let message = model.errorMessage {
                 Text(message).foregroundStyle(.red)
             }
-            if searchText.isEmpty, !model.needsMapping.isEmpty {
+            if !model.needsMappingRows.isEmpty {
                 Section {
-                    ForEach(model.needsMapping) { exercise in
-                        row(exercise)
+                    ForEach(model.needsMappingRows) { row in
+                        ExerciseRowLink(model: model, row: row)
                     }
                 } header: {
                     Text("Needs muscles")
@@ -31,79 +32,86 @@ public struct ExercisesView: View {
                 }
             }
             Section("All exercises") {
-                ForEach(filtered) { exercise in
-                    row(exercise)
+                ForEach(model.allRows) { row in
+                    ExerciseRowLink(model: model, row: row)
                 }
             }
         }
         .navigationTitle("Exercises")
-        .searchable(text: $searchText)
+        .searchable(text: $model.searchText)
         .overlay {
-            if model.isLoading, model.exercises.isEmpty { ProgressView() }
+            if model.showsLoadingIndicator { ProgressView() }
         }
         .task { await model.load() }
         .refreshable { await model.load() }
     }
+}
 
-    private var filtered: [Exercise] {
-        guard !searchText.isEmpty else { return model.exercises }
-        let query = searchText.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
-        return model.exercises.filter { exercise in
-            ([exercise.name] + exercise.aliases).contains {
-                $0.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil).contains(query)
-            }
-        }
-    }
+private struct ExerciseRowLink: View {
+    let model: ExercisesModel
+    let row: ExerciseRow
 
-    private func row(_ exercise: Exercise) -> some View {
+    var body: some View {
         NavigationLink {
-            ExerciseMappingView(model: model, exerciseID: exercise.id)
+            EditorScreen(list: model, exerciseID: row.id)
         } label: {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(exercise.name)
+            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                Text(row.name)
                 Group {
-                    if exercise.needsMuscleMapping {
+                    if row.needsMuscles {
                         Label("No muscles assigned", systemImage: "exclamationmark.circle")
                             .foregroundStyle(.orange)
                     } else {
-                        Text(MuscleText.list(exercise.primaryMuscles))
+                        Text(row.muscles)
                     }
                 }
                 .font(.footnote)
                 .foregroundStyle(.secondary)
             }
         }
-        .badge(model.sessionCount(of: exercise.id))
+        .badge(row.sessionCount)
+    }
+}
+
+/// Holds the editor for as long as the screen is shown, so the draft survives re-renders of the list.
+private struct EditorScreen: View {
+    @State private var editor: ExerciseEditorModel?
+
+    init(list: ExercisesModel, exerciseID: UUID) {
+        _editor = State(initialValue: list.editor(for: exerciseID))
+    }
+
+    var body: some View {
+        if let editor {
+            ExerciseEditorView(model: editor)
+        } else {
+            ContentUnavailableView("Exercise removed", systemImage: "trash")
+        }
     }
 }
 
 /// Edit an exercise's muscles and equipment, copy them from a similar exercise, or merge into another one.
-struct ExerciseMappingView: View {
-    let model: ExercisesModel
-    let exerciseID: UUID
-
-    @State private var primary: Set<MuscleGroup> = []
-    @State private var secondary: Set<MuscleGroup> = []
-    @State private var equipment: Equipment = .other
-    @State private var hasLoaded = false
-    @State private var mergeTarget: Exercise?
+struct ExerciseEditorView: View {
+    @Bindable var model: ExerciseEditorModel
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        if let exercise = model.exercise(id: exerciseID) {
-            form(exercise)
+        if model.exists {
+            form
         } else {
             ContentUnavailableView("Exercise removed", systemImage: "trash")
         }
     }
 
-    private func form(_ exercise: Exercise) -> some View {
+    private var form: some View {
         Form {
-            let suggestions = model.suggestions(for: exercise)
-            if !suggestions.isEmpty {
+            if let message = model.errorMessage {
+                Text(message).foregroundStyle(.red)
+            }
+            if !model.suggestions.isEmpty {
                 Section {
-                    ForEach(suggestions, id: \.exercise.id) { suggestion in
-                        suggestionRow(suggestion.exercise, canMerge: exercise.isCustom)
+                    ForEach(model.suggestions) { suggestion in
+                        suggestionRow(suggestion)
                     }
                 } header: {
                     Text("Similar exercises")
@@ -112,188 +120,108 @@ struct ExerciseMappingView: View {
                 }
             }
             Section {
-                Picker("Equipment", selection: $equipment) {
-                    ForEach(Equipment.allCases, id: \.self) { item in
-                        Text(MuscleText.equipment(item)).tag(item)
+                Picker("Equipment", selection: $model.draft.equipment) {
+                    ForEach(model.equipmentOptions) { option in
+                        Text(option.name).tag(option.value)
                     }
                 }
             }
-            muscleSection("Primary muscles", footer: "Each working set counts as one set for these muscles.",
-                          selection: $primary, other: $secondary)
-            muscleSection("Secondary muscles", footer: "Each working set counts as half a set for these muscles.",
-                          selection: $secondary, other: $primary)
-            if exercise.isCustom {
+            Section {
+                ForEach(model.muscleOptions) { option in
+                    Toggle(option.name, isOn: Binding(
+                        get: { model.isPrimary(option.value) },
+                        set: { model.setPrimary(option.value, $0) }
+                    ))
+                }
+            } header: {
+                Text("Primary muscles")
+            } footer: {
+                Text("Each working set counts as one set for these muscles.")
+            }
+            Section {
+                ForEach(model.muscleOptions) { option in
+                    Toggle(option.name, isOn: Binding(
+                        get: { model.isSecondary(option.value) },
+                        set: { model.setSecondary(option.value, $0) }
+                    ))
+                }
+            } header: {
+                Text("Secondary muscles")
+            } footer: {
+                Text("Each working set counts as half a set for these muscles.")
+            }
+            if model.canMerge {
                 Section {
                     NavigationLink("Merge into another exercise…") {
-                        MergeTargetList(model: model, source: exercise) { mergeTarget = $0 }
+                        MergeTargetList(model: model)
                     }
                 }
             }
         }
-        .navigationTitle(exercise.name)
+        .navigationTitle(model.title)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Save") {
-                    Task {
-                        if await model.saveMapping(
-                            for: exerciseID, primary: primary, secondary: secondary, equipment: equipment
-                        ) {
-                            dismiss()
-                        }
-                    }
+                    Task { if await model.save() { dismiss() } }
                 }
-                .disabled(primary.isEmpty)
+                .disabled(!model.canSave)
             }
-        }
-        .onAppear {
-            guard !hasLoaded else { return }
-            hasLoaded = true
-            primary = exercise.primaryMuscles
-            secondary = exercise.secondaryMuscles
-            equipment = exercise.equipment
         }
         .confirmationDialog(
             "Merge exercises?",
-            isPresented: Binding(get: { mergeTarget != nil }, set: { if !$0 { mergeTarget = nil } }),
+            isPresented: Binding(get: { model.pendingMerge != nil }, set: { if !$0 { model.cancelMerge() } }),
             titleVisibility: .visible,
-            presenting: mergeTarget
-        ) { target in
-            Button("Merge into \(target.name)") {
-                Task {
-                    if await model.merge(exerciseID, into: target.id) { dismiss() }
-                }
+            presenting: model.pendingMerge
+        ) { confirmation in
+            Button(confirmation.confirmLabel) {
+                Task { if await model.confirmMerge() { dismiss() } }
             }
-            Button("Cancel", role: .cancel) {}
-        } message: { target in
-            Text("\(model.sessionCount(of: exerciseID)) sessions with \(exercise.name) will use \(target.name). "
-                + "\(exercise.name) is removed and its name is kept as an alias, so importing it again maps to "
-                + "\(target.name).")
+            Button("Cancel", role: .cancel) { model.cancelMerge() }
+        } message: { confirmation in
+            Text(confirmation.message)
         }
     }
 
-    private func suggestionRow(_ candidate: Exercise, canMerge: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(candidate.name)
-            Text(MuscleText.list(candidate.primaryMuscles))
+    private func suggestionRow(_ suggestion: SuggestionRow) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            Text(suggestion.name)
+            Text(suggestion.muscles)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
             HStack {
-                Button("Copy muscles") {
-                    primary = candidate.primaryMuscles
-                    secondary = candidate.secondaryMuscles
-                    if equipment == .other { equipment = candidate.equipment }
-                }
-                if canMerge {
+                Button("Copy muscles") { model.copyMuscles(from: suggestion.id) }
+                if model.canMerge {
                     Spacer()
-                    Button("Merge") { mergeTarget = candidate }
+                    Button("Merge") { model.requestMerge(into: suggestion.id) }
                 }
             }
             .buttonStyle(.borderless)
             .font(.callout)
         }
     }
-
-    private func muscleSection(
-        _ title: LocalizedStringKey,
-        footer: LocalizedStringKey,
-        selection: Binding<Set<MuscleGroup>>,
-        other: Binding<Set<MuscleGroup>>
-    ) -> some View {
-        Section {
-            ForEach(MuscleGroup.allCases, id: \.self) { muscle in
-                Toggle(MuscleText.muscle(muscle), isOn: Binding(
-                    get: { selection.wrappedValue.contains(muscle) },
-                    set: { isOn in
-                        if isOn {
-                            selection.wrappedValue.insert(muscle)
-                            other.wrappedValue.remove(muscle)
-                        } else {
-                            selection.wrappedValue.remove(muscle)
-                        }
-                    }
-                ))
-            }
-        } header: {
-            Text(title)
-        } footer: {
-            Text(footer)
-        }
-    }
 }
 
 /// Every mapped exercise, searchable, to pick a merge target.
 private struct MergeTargetList: View {
-    let model: ExercisesModel
-    let source: Exercise
-    let onPick: (Exercise) -> Void
-
-    @State private var searchText = ""
+    @Bindable var model: ExerciseEditorModel
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        List(targets) { target in
+        List(model.mergeTargets) { target in
             Button {
-                onPick(target)
+                model.requestMerge(into: target.id)
                 dismiss()
             } label: {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Spacing.xSmall) {
                     Text(target.name).foregroundStyle(.primary)
-                    Text(MuscleText.list(target.primaryMuscles)).font(.footnote).foregroundStyle(.secondary)
+                    Text(target.muscles).font(.footnote).foregroundStyle(.secondary)
                 }
             }
         }
         .navigationTitle("Merge into")
-        .searchable(text: $searchText)
-    }
-
-    private var targets: [Exercise] {
-        let all = model.mergeTargets(for: source)
-        guard !searchText.isEmpty else { return all }
-        let query = searchText.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
-        return all.filter { exercise in
-            ([exercise.name] + exercise.aliases).contains {
-                $0.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil).contains(query)
-            }
-        }
-    }
-}
-
-/// Display names for muscles and equipment.
-enum MuscleText {
-    static func muscle(_ muscle: MuscleGroup) -> LocalizedStringKey {
-        switch muscle {
-        case .chest: "Chest"
-        case .back: "Back"
-        case .shoulders: "Shoulders"
-        case .biceps: "Biceps"
-        case .triceps: "Triceps"
-        case .forearms: "Forearms"
-        case .quadriceps: "Quadriceps"
-        case .hamstrings: "Hamstrings"
-        case .glutes: "Glutes"
-        case .calves: "Calves"
-        case .core: "Core"
-        }
-    }
-
-    static func equipment(_ equipment: Equipment) -> LocalizedStringKey {
-        switch equipment {
-        case .barbell: "Barbell"
-        case .dumbbell: "Dumbbell"
-        case .machine: "Machine"
-        case .cable: "Cable"
-        case .bodyweight: "Bodyweight"
-        case .kettlebell: "Kettlebell"
-        case .band: "Band"
-        case .other: "Other"
-        }
-    }
-
-    /// "Chest, Triceps" — for compact rows.
-    static func list(_ muscles: Set<MuscleGroup>) -> String {
-        MuscleGroup.allCases.filter(muscles.contains).map { $0.rawValue.capitalized }.joined(separator: ", ")
+        .searchable(text: $model.mergeSearchText)
     }
 }

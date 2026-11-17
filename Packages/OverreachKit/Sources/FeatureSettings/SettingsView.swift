@@ -1,5 +1,6 @@
 import DesignSystem
 import Domain
+import SettingsPresentation
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -69,9 +70,8 @@ public struct SettingsView<Library: View>: View {
                 Button("Restore") { Task { await backupModel.confirmRestore() } }
                 Button("Cancel", role: .cancel) { backupModel.cancelRestore() }
             } message: {
-                if let summary = backupModel.pendingRestore {
-                    Text("\(summary.sessions) sessions from \(summary.createdAt.formatted(date: .abbreviated, time: .shortened)). "
-                        + "Items are merged by id: nothing is duplicated.")
+                if let message = backupModel.pendingRestoreMessage {
+                    Text(message)
                 }
             }
             .task { await backupModel.load() }
@@ -107,8 +107,8 @@ public struct SettingsView<Library: View>: View {
             Button(backupModel.isConfigured ? "Change folder…" : "Choose iCloud Drive folder…", systemImage: "folder") {
                 pick(.backupFolder)
             }
-            if let last = backupModel.lastBackup {
-                LabeledContent("Last backup", value: last.createdAt.formatted(date: .abbreviated, time: .shortened))
+            if let last = backupModel.lastBackupText {
+                LabeledContent("Last backup", value: last)
             }
             Button("Back up now", systemImage: "arrow.up.doc") { Task { await backupModel.backUpNow() } }
                 .disabled(!backupModel.isConfigured || backupModel.isWorking)
@@ -138,18 +138,18 @@ public struct SettingsView<Library: View>: View {
             if let preview = importModel.preview {
                 LabeledContent("Sessions", value: "\(preview.sessions.count)")
                 LabeledContent("Sets", value: "\(preview.setCount)")
-                if !preview.newExercises.isEmpty {
-                    DisclosureGroup("New exercises: \(preview.newExercises.count)") {
-                        ForEach(preview.newExercises) { exercise in
-                            Text(exercise.name)
+                if !importModel.newExerciseNames.isEmpty {
+                    DisclosureGroup("New exercises: \(importModel.newExerciseNames.count)") {
+                        ForEach(importModel.newExerciseNames, id: \.self) { name in
+                            Text(name)
                         }
                         Text("They are added as custom exercises. Assign their muscles later so their volume counts.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
                 }
-                if !preview.skippedLines.isEmpty {
-                    Text("\(preview.skippedLines.count) lines could not be read and will be skipped.")
+                if importModel.skippedLineCount > 0 {
+                    Text("\(importModel.skippedLineCount) lines could not be read and will be skipped.")
                         .font(.footnote)
                         .foregroundStyle(.orange)
                 }
@@ -158,9 +158,9 @@ public struct SettingsView<Library: View>: View {
                 Button("Cancel", role: .cancel) { importModel.reset() }
             }
         case .importing:
-            if let total = importModel.preview?.sessions.count, total > 0 {
-                ProgressView(value: Double(importModel.importedSessions), total: Double(total)) {
-                    Text("Importing… \(importModel.importedSessions) of \(total) sessions")
+            if let progress = importModel.progress {
+                ProgressView(value: Double(progress.done), total: Double(progress.total)) {
+                    Text("Importing… \(progress.done) of \(progress.total) sessions")
                 }
             } else {
                 HStack {

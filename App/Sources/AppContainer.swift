@@ -1,5 +1,5 @@
 import Domain
-import FeatureExercises
+import ExercisesPresentation
 import FeatureHistory
 import FeaturePlan
 import FeatureSettings
@@ -8,8 +8,13 @@ import FeatureWorkout
 import Foundation
 import GarminSource
 import HealthKitSource
+import HistoryPresentation
 import Observation
 import Persistence
+import PlanPresentation
+import SettingsPresentation
+import TodayPresentation
+import WorkoutPresentation
 
 /// Composition root: the only place that knows the concrete implementations (ADR-0002).
 /// Features receive `Domain` protocols from here and never construct their own dependencies.

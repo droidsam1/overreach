@@ -1,6 +1,7 @@
 import DesignSystem
 import Domain
 import SwiftUI
+import TodayPresentation
 
 /// "How should I train today?" — readiness, key recovery metrics and (phase 3) today's proposed session.
 public struct TodayView: View {
@@ -19,18 +20,13 @@ public struct TodayView: View {
                     ReadinessBadge(readiness: model.readiness)
 
                     LazyVGrid(columns: columns, spacing: Spacing.medium) {
-                        MetricTile(title: "HRV", value: model.metrics?.hrvNightlyAverageMs, unit: "ms")
-                        MetricTile(title: "Resting HR", value: model.metrics?.restingHeartRate, unit: "bpm")
-                        MetricTile(
-                            title: "Sleep",
-                            value: model.metrics?.sleepSeconds.map { $0 / 3600 },
-                            unit: "h",
-                            fractionDigits: 1
-                        )
-                        MetricTile(title: "Body Battery", value: model.metrics?.bodyBatteryHigh, unit: "")
+                        MetricTile(title: "HRV", value: model.hrvMs, unit: "ms")
+                        MetricTile(title: "Resting HR", value: model.restingHeartRate, unit: "bpm")
+                        MetricTile(title: "Sleep", value: model.sleepHours, unit: "h", fractionDigits: 1)
+                        MetricTile(title: "Body Battery", value: model.bodyBattery, unit: "")
                     }
 
-                    if !model.failedSources.isEmpty {
+                    if model.showsSourceWarning {
                         Label("Some sources could not be updated.", systemImage: "exclamationmark.triangle")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -40,7 +36,7 @@ public struct TodayView: View {
             }
             .navigationTitle("Today")
             .overlay {
-                if model.isLoading && model.metrics == nil {
+                if model.showsLoadingIndicator {
                     ProgressView()
                 }
             }

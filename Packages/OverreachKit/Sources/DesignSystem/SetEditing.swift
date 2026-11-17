@@ -1,8 +1,9 @@
 import Domain
+import Foundation
 import SwiftUI
 
 // Set editing components shared by the live logger (FeatureWorkout) and session editing (FeatureHistory).
-// Features cannot import each other, so shared UI lives here.
+// Features cannot import each other, so shared UI lives here. Components take display values only.
 
 /// Weight, reps and RPE fields of one set. The caller adds the set number and trailing controls.
 public struct SetValueFields: View {
@@ -73,28 +74,6 @@ extension TrainingFocus {
     }
 }
 
-extension SetKind {
-    /// User-facing name of the set kind.
-    public var title: LocalizedStringKey {
-        switch self {
-        case .warmup: "Warm-up"
-        case .working: "Working"
-        case .dropSet: "Drop set"
-        case .failure: "Failure"
-        }
-    }
-
-    /// Short badge for rows; `nil` for ordinary working sets.
-    public var badge: LocalizedStringKey? {
-        switch self {
-        case .warmup: "W"
-        case .working: nil
-        case .dropSet: "D"
-        case .failure: "F"
-        }
-    }
-}
-
 extension View {
     /// A numeric keyboard on iOS; nothing elsewhere.
     @ViewBuilder
@@ -107,37 +86,43 @@ extension View {
     }
 }
 
-/// Searchable list of exercises, presented as a sheet.
+/// An item of `ExercisePicker`: what to show and the names search should match.
+public struct PickerItem: Identifiable, Hashable {
+    public let id: UUID
+    public let title: String
+    public let searchTerms: [String]
+
+    public init(id: UUID, title: String, searchTerms: [String]) {
+        self.id = id
+        self.title = title
+        self.searchTerms = searchTerms
+    }
+}
+
+/// Searchable list of items (exercises), presented as a sheet.
 public struct ExercisePicker: View {
     private let title: LocalizedStringKey
-    private let exercises: [Exercise]
-    private let onPick: (Exercise) -> Void
+    private let items: [PickerItem]
+    private let onPick: (UUID) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
 
-    public init(
-        title: LocalizedStringKey = "Add exercise",
-        exercises: [Exercise],
-        onPick: @escaping (Exercise) -> Void
-    ) {
+    public init(title: LocalizedStringKey = "Add exercise", items: [PickerItem], onPick: @escaping (UUID) -> Void) {
         self.title = title
-        self.exercises = exercises
+        self.items = items
         self.onPick = onPick
     }
 
-    private var filtered: [Exercise] {
-        guard !query.isEmpty else { return exercises }
-        return exercises.filter { exercise in
-            exercise.name.localizedCaseInsensitiveContains(query)
-                || exercise.aliases.contains { $0.localizedCaseInsensitiveContains(query) }
-        }
+    private var filtered: [PickerItem] {
+        guard !query.isEmpty else { return items }
+        return items.filter { item in item.searchTerms.contains { $0.localizedStandardContains(query) } }
     }
 
     public var body: some View {
         NavigationStack {
-            List(filtered) { exercise in
-                Button(exercise.name) {
-                    onPick(exercise)
+            List(filtered) { item in
+                Button(item.title) {
+                    onPick(item.id)
                     dismiss()
                 }
             }
