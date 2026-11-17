@@ -20,7 +20,7 @@ public struct HistoryView: View {
                 }
                 ForEach(model.summaries) { summary in
                     NavigationLink {
-                        SessionDetail(session: summary.session, name: model.name(of:))
+                        SessionDetail(model: model, sessionID: summary.id)
                     } label: {
                         SessionRow(summary: summary)
                     }
@@ -70,14 +70,31 @@ private struct SessionRow: View {
     }
 }
 
+/// One session's sets, with an Edit button. Reads the session from the model so it reflects saved edits.
 private struct SessionDetail: View {
-    let session: StrengthSession
-    let name: (UUID) -> String
+    let model: HistoryModel
+    let sessionID: UUID
+    @State private var editor: SessionEditorModel?
 
     var body: some View {
+        if let session = model.session(id: sessionID) {
+            content(session)
+                .toolbar {
+                    Button("Edit") { editor = model.makeEditor(for: session) }
+                }
+                .sheet(item: $editor) { editor in
+                    SessionEditorView(model: editor) { model.didSave($0) }
+                }
+        } else {
+            ContentUnavailableView("Session not found", systemImage: "calendar.badge.exclamationmark")
+        }
+    }
+
+    private func content(_ session: StrengthSession) -> some View {
         List {
+            SessionInfo(session: session)
             ForEach(session.entries) { entry in
-                Section(name(entry.exerciseID)) {
+                Section(model.name(of: entry.exerciseID)) {
                     ForEach(Array(entry.sets.enumerated()), id: \.element.id) { index, set in
                         HStack {
                             Text("\(index + 1)").foregroundStyle(.secondary)
@@ -90,6 +107,9 @@ private struct SessionDetail: View {
                             }
                         }
                     }
+                    if let notes = entry.notes {
+                        Text(notes).font(.footnote).foregroundStyle(.secondary)
+                    }
                 }
             }
         }
@@ -101,12 +121,41 @@ private struct SessionDetail: View {
         if let weight = set.weightKg { parts.append("\(weight.formatted()) kg") }
         if let reps = set.reps { parts.append("× \(reps)") }
         if let rpe = set.rpe { parts.append("@ \(rpe.formatted())") }
-        if set.kind == .warmup { parts.append("(warm-up)") }
+        switch set.kind {
+        case .warmup: parts.append("(warm-up)")
+        case .dropSet: parts.append("(drop set)")
+        case .failure: parts.append("(failure)")
+        case .working: break
+        }
         return parts.joined(separator: " ")
     }
 
     private func estimate(of set: WorkoutSet) -> Double? {
         guard set.isWorking, let weight = set.weightKg, let reps = set.reps else { return nil }
         return LoadPrescription.estimatedOneRepMax(weightKg: weight, reps: reps, rpe: set.rpe)
+    }
+}
+
+/// Date, duration, focus and notes of a session.
+private struct SessionInfo: View {
+    let session: StrengthSession
+
+    var body: some View {
+        Section {
+            LabeledContent("Date") {
+                Text(session.startedAt, format: .dateTime.weekday().day().month().year().hour().minute())
+            }
+            if let duration = session.durationSeconds {
+                LabeledContent("Duration") {
+                    Text(Duration.seconds(duration), format: .units(allowed: [.hours, .minutes], width: .abbreviated))
+                }
+            }
+            if let focus = session.focus {
+                LabeledContent("Focus", value: focus.title)
+            }
+            if let notes = session.notes {
+                Text(notes).font(.callout)
+            }
+        }
     }
 }

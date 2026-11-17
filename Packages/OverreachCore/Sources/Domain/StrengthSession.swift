@@ -1,6 +1,6 @@
 import Foundation
 
-public enum SetKind: String, Codable, Sendable {
+public enum SetKind: String, Codable, Sendable, CaseIterable {
     case warmup, working, dropSet, failure
 }
 

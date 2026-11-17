@@ -1,4 +1,5 @@
 import Analytics
+import DesignSystem
 import Domain
 import Foundation
 
@@ -11,17 +12,6 @@ extension EvidenceLevel {
         case .moderate: "moderate evidence"
         case .limited: "limited evidence"
         case .heuristic: "coaching heuristic"
-        }
-    }
-}
-
-extension TrainingFocus {
-    var title: String {
-        switch self {
-        case .strength: "Strength"
-        case .hypertrophy: "Hypertrophy"
-        case .mixed: "Mixed"
-        case .endurance: "Endurance"
         }
     }
 }
