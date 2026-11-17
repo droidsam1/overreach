@@ -1,5 +1,5 @@
 import Domain
-import FeatureExercises
+import ExercisesPresentation
 import FeatureHistory
 import FeaturePlan
 import FeatureSettings

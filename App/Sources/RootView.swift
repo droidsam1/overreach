@@ -1,3 +1,4 @@
+import ExercisesPresentation
 import FeatureExercises
 import FeatureHistory
 import FeaturePlan

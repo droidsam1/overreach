@@ -85,6 +85,8 @@ targets:
         product: FeatureSettings
       - package: OverreachKit
         product: FeatureExercises
+      - package: OverreachCore
+        product: ExercisesPresentation
 
 schemes:
   Overreach:

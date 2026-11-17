@@ -54,7 +54,10 @@ let package = Package(
         .target(name: "FeatureWorkout", dependencies: featureDependencies),
         .target(name: "FeatureHistory", dependencies: featureDependencies),
         .target(name: "FeatureTrends", dependencies: featureDependencies),
-        .target(name: "FeatureExercises", dependencies: featureDependencies),
+        // UI only (ADR-0014): no Analytics; logic comes from the presentation module.
+        .target(name: "FeatureExercises", dependencies: [
+            "DesignSystem", .product(name: "ExercisesPresentation", package: core),
+        ]),
         .target(name: "FeaturePlan", dependencies: featureDependencies),
         .target(name: "FeatureAssistant", dependencies: featureDependencies + ["AIKit"]),
         .target(name: "FeatureSettings", dependencies: featureDependencies),
@@ -70,9 +73,6 @@ let package = Package(
         .testTarget(name: "FeatureSettingsTests", dependencies: [
             "FeatureSettings", "Persistence", .product(name: "Domain", package: core),
             .product(name: "Fixtures", package: core),
-        ]),
-        .testTarget(name: "FeatureExercisesTests", dependencies: [
-            "FeatureExercises", "Persistence", .product(name: "Domain", package: core),
         ]),
         .testTarget(name: "FeatureHistoryTests", dependencies: [
             "FeatureHistory", "Persistence", .product(name: "Domain", package: core),
