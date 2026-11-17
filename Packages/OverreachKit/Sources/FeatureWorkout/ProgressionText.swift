@@ -75,13 +75,3 @@ extension ExerciseStatus {
     }
 }
 
-extension TrainingFocus {
-    var title: String {
-        switch self {
-        case .strength: "Strength"
-        case .hypertrophy: "Hypertrophy"
-        case .mixed: "Mixed"
-        case .endurance: "Endurance"
-        }
-    }
-}

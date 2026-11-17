@@ -80,7 +80,7 @@ final class AppContainer {
     }
 
     func makeHistoryModel() -> HistoryModel {
-        HistoryModel(workouts: workouts, exercises: exercises)
+        HistoryModel(workouts: workouts, exercises: exercises, backup: backup)
     }
 
     func makePlanModel() -> PlanModel {
