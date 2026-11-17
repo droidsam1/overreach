@@ -1,0 +1,166 @@
+import Domain
+import ExercisesPresentation
+import Fixtures
+import Foundation
+import Testing
+
+@Suite("MappingDraft")
+struct MappingDraftTests {
+    @Test func aMuscleIsEitherPrimaryOrSecondary() {
+        var draft = MappingDraft(primary: [.chest], secondary: [.chest, .triceps])
+        #expect(draft.secondary == [.triceps])
+
+        draft.setSecondary(.chest, true)
+        #expect(draft.primary.isEmpty)
+        #expect(draft.secondary == [.chest, .triceps])
+
+        draft.setPrimary(.triceps, true)
+        #expect(draft.primary == [.triceps])
+        #expect(draft.secondary == [.chest])
+    }
+
+    @Test func canSaveOnlyWithAPrimaryMuscle() {
+        var draft = MappingDraft(secondary: [.core])
+        #expect(!draft.canSave)
+        draft.setPrimary(.quadriceps, true)
+        #expect(draft.canSave)
+    }
+
+    @Test func copyTakesMusclesAndKeepsChosenEquipment() {
+        let squat = Exercise(name: "Squat (Barbell)", primaryMuscles: [.quadriceps], secondaryMuscles: [.core], equipment: .barbell)
+        var unknown = MappingDraft()
+        unknown.copy(from: squat)
+        #expect(unknown.primary == [.quadriceps])
+        #expect(unknown.secondary == [.core])
+        #expect(unknown.equipment == .barbell)
+
+        var chosen = MappingDraft(equipment: .machine)
+        chosen.copy(from: squat)
+        #expect(chosen.equipment == .machine)
+    }
+}
+
+@MainActor
+@Suite("ExerciseEditorModel")
+struct ExerciseEditorModelTests {
+    private let bench = Exercise(
+        name: "Bench Press (Barbell)", primaryMuscles: [.chest], secondaryMuscles: [.triceps], equipment: .barbell,
+        aliases: ["press banca"]
+    )
+    private let row = Exercise(name: "Seated Row (Cable)", primaryMuscles: [.back], equipment: .cable)
+    private let imported = Exercise(name: "Press Banca Pausa", primaryMuscles: [], isCustom: true)
+
+    private func makeList(failing: Bool = false) async -> (ExercisesModel, TestStore) {
+        let session = StrengthSession(
+            name: "Push",
+            startedAt: Date(timeIntervalSince1970: 86_400),
+            entries: [ExerciseEntry(exerciseID: imported.id, sets: [WorkoutSet(weightKg: 60, reps: 5)])]
+        )
+        let store = TestStore(exercises: [bench, row, imported], sessions: [session])
+        let list = ExercisesModel(workouts: store, exercises: store, progression: store)
+        await list.load()
+        await store.setFailing(failing)
+        return (list, store)
+    }
+
+    @Test func startsFromTheExerciseAndOffersSimilarOnes() async throws {
+        let (list, _) = await makeList()
+        let editor = try #require(list.editor(for: imported.id))
+
+        #expect(editor.title == "Press Banca Pausa")
+        #expect(!editor.canSave)
+        #expect(editor.canMerge)
+        #expect(editor.suggestions.map(\.name) == ["Bench Press (Barbell)"])
+        #expect(editor.suggestions.first?.muscles == "Chest")
+        #expect(editor.muscleOptions.count == MuscleGroup.allCases.count)
+    }
+
+    @Test func copyThenSaveMapsTheExercise() async throws {
+        let (list, store) = await makeList()
+        let editor = try #require(list.editor(for: imported.id))
+
+        editor.copyMuscles(from: bench.id)
+        #expect(editor.isPrimary(.chest))
+        #expect(editor.isSecondary(.triceps))
+        #expect(await editor.save())
+
+        #expect(list.needsMappingCount == 0)
+        let stored = try #require(await store.allExercises().first { $0.id == imported.id })
+        #expect(stored.primaryMuscles == [.chest])
+        #expect(stored.equipment == .barbell)
+    }
+
+    @Test func builtInExercisesCannotBeMergedAway() async throws {
+        let (list, _) = await makeList()
+        let editor = try #require(list.editor(for: bench.id))
+        #expect(!editor.canMerge)
+        editor.requestMerge(into: row.id)
+        #expect(editor.pendingMerge == nil)
+    }
+
+    @Test func mergeAsksForConfirmationThenMerges() async throws {
+        let (list, store) = await makeList()
+        let editor = try #require(list.editor(for: imported.id))
+
+        editor.requestMerge(into: bench.id)
+        let confirmation = try #require(editor.pendingMerge)
+        #expect(confirmation.confirmLabel == "Merge into Bench Press (Barbell)")
+        #expect(confirmation.message.hasPrefix("1 sessions with Press Banca Pausa will use Bench Press (Barbell)."))
+
+        #expect(await editor.confirmMerge())
+        #expect(!editor.exists)
+        #expect(editor.pendingMerge == nil)
+        #expect(try await store.allExercises().map(\.id).contains(imported.id) == false)
+    }
+
+    @Test func cancellingKeepsEverything() async throws {
+        let (list, _) = await makeList()
+        let editor = try #require(list.editor(for: imported.id))
+        editor.requestMerge(into: bench.id)
+        editor.cancelMerge()
+        #expect(editor.pendingMerge == nil)
+        #expect(editor.exists)
+    }
+
+    @Test func mergeTargetsExcludeItselfAndUnmappedAndFollowTheSearch() async throws {
+        let (list, _) = await makeList()
+        let editor = try #require(list.editor(for: imported.id))
+        #expect(editor.mergeTargets.map(\.name) == ["Bench Press (Barbell)", "Seated Row (Cable)"])
+
+        editor.mergeSearchText = "PRESS banca"
+        #expect(editor.mergeTargets.map(\.name) == ["Bench Press (Barbell)"])
+    }
+
+    @Test func failedSaveShowsAnErrorAndKeepsTheScreen() async throws {
+        let (list, _) = await makeList(failing: true)
+        let editor = try #require(list.editor(for: imported.id))
+        editor.setPrimary(.chest, true)
+
+        #expect(await editor.save() == false)
+        #expect(editor.errorMessage == "Could not save the muscles.")
+        #expect(list.needsMappingCount == 1)
+    }
+}
+
+@MainActor
+@Suite("ExercisesModel search")
+struct ExercisesSearchTests {
+    @Test func searchFiltersByNameAndAliasAndHidesTheNeedsMusclesSection() async {
+        let store = TestStore(exercises: [
+            Exercise(name: "Bench Press (Barbell)", primaryMuscles: [.chest], aliases: ["press de banca"]),
+            Exercise(name: "Squat (Barbell)", primaryMuscles: [.quadriceps]),
+            Exercise(name: "Zercher Squat", primaryMuscles: [], isCustom: true),
+        ])
+        let model = ExercisesModel(workouts: store, exercises: store, progression: store)
+        await model.load()
+        #expect(model.needsMappingRows.map(\.name) == ["Zercher Squat"])
+
+        model.searchText = "PRÉSS  de"
+        #expect(model.allRows.map(\.name) == ["Bench Press (Barbell)"])
+        #expect(model.needsMappingRows.isEmpty)
+
+        model.searchText = "squat"
+        #expect(model.allRows.map(\.name) == ["Squat (Barbell)", "Zercher Squat"])
+        #expect(model.allRows.last?.needsMuscles == true)
+    }
+}

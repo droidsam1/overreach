@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- Presentation layer (ADR-0014): screen state, intents and texts move to `<Feature>Presentation` modules in
+  `OverreachCore` (Linux-testable); `Feature*` modules only render. Exercises migrated first.
+- `scripts/test-core.sh` / `.ps1` run the core and presentation tests in Docker (same image as CI).
+
 ### Added
 - Exercises screen (Settings → Exercises, #13): imported exercises without muscles listed first with a badge;
   assign primary/secondary muscles and equipment, copy them from similar catalog exercises (name matching

@@ -10,6 +10,9 @@ let package = Package(
         .library(name: "Analytics", targets: ["Analytics"]),
         .library(name: "StrongImport", targets: ["StrongImport"]),
         .library(name: "Reports", targets: ["Reports"]),
+        // Presentation (ADR-0014): screen state, intents and texts. SwiftUI views in OverreachKit only render them.
+        .library(name: "PresentationKit", targets: ["PresentationKit"]),
+        .library(name: "ExercisesPresentation", targets: ["ExercisesPresentation"]),
         // Generated test data (large anonymised history). Tests only; never linked by the app.
         .library(name: "Fixtures", targets: ["Fixtures"]),
     ],
@@ -23,6 +26,14 @@ let package = Package(
         // Markdown report shared with ChatGPT/Claude, and context for the in-app assistant.
         .target(name: "Reports", dependencies: ["Domain", "Analytics"]),
 
+        // Presentation layer (ADR-0014). One module per feature; they never import each other or SwiftUI.
+        .target(name: "PresentationKit", dependencies: ["Domain"], path: "Sources/Presentation/PresentationKit"),
+        .target(
+            name: "ExercisesPresentation",
+            dependencies: ["Domain", "Analytics", "PresentationKit"],
+            path: "Sources/Presentation/ExercisesPresentation"
+        ),
+
         // Generated test data shared by test targets in both packages.
         .target(name: "Fixtures", dependencies: ["Domain"]),
 
@@ -30,6 +41,8 @@ let package = Package(
         .testTarget(name: "AnalyticsTests", dependencies: ["Analytics", "Domain"]),
         .testTarget(name: "ReportsTests", dependencies: ["Reports", "Domain"]),
         .testTarget(name: "StrongImportTests", dependencies: ["StrongImport", "Domain"]),
+        .testTarget(name: "PresentationKitTests", dependencies: ["PresentationKit", "Domain"]),
+        .testTarget(name: "ExercisesPresentationTests", dependencies: ["ExercisesPresentation", "Domain", "Fixtures"]),
         .testTarget(name: "PerformanceTests", dependencies: ["Analytics", "StrongImport", "Domain", "Fixtures"]),
     ]
 )

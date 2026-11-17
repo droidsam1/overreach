@@ -15,7 +15,7 @@ Thanks for your interest! Overreach is a small project; these rules keep it main
 3. Write tests for logic in `OverreachCore`. UI changes should include a SwiftUI preview.
 4. Run locally before pushing:
    ```bash
-   swift test --package-path Packages/OverreachCore
+   swift test --package-path Packages/OverreachCore   # or ./scripts/test-core.sh (Docker)
    swiftlint
    swift format lint --recursive Packages App/Sources
    ```
@@ -27,6 +27,8 @@ Thanks for your interest! Overreach is a small project; these rules keep it main
 
 - Swift 6 with strict concurrency; no warnings.
 - Features never import other features or concrete data modules — depend on `Domain` protocols.
+- Views only render (ADR-0014): logic, filtering and rule texts go in the feature's presentation module in
+  `OverreachCore`, with tests.
 - All metrics are optional; handle missing data gracefully.
 - User-facing strings go through String Catalogs (English and Spanish).
 - Accessibility: support Dynamic Type and VoiceOver in every new view.

@@ -1,7 +1,7 @@
 import Domain
-import FeatureExercises
+import ExercisesPresentation
+import Fixtures
 import Foundation
-import Persistence
 import Testing
 
 @MainActor
@@ -22,8 +22,8 @@ struct ExercisesModelTests {
         )
     }
 
-    private func makeModel() -> (ExercisesModel, InMemoryStore) {
-        let store = InMemoryStore(
+    private func makeModel() -> (ExercisesModel, TestStore) {
+        let store = TestStore(
             exercises: [bench, imported, zercher],
             sessions: [session(1, [imported.id]), session(2, [imported.id, bench.id]), session(3, [zercher.id])]
         )
@@ -35,7 +35,7 @@ struct ExercisesModelTests {
         await model.load()
 
         #expect(model.needsMappingCount == 2)
-        #expect(model.needsMapping.map(\.id) == [imported.id, zercher.id])
+        #expect(model.needsMappingRows.map(\.id) == [imported.id, zercher.id])
         #expect(model.sessionCount(of: imported.id) == 2)
     }
 
@@ -67,7 +67,7 @@ struct ExercisesModelTests {
         let (model, _) = makeModel()
         await model.load()
 
-        #expect(model.suggestions(for: imported).map(\.exercise.id) == [bench.id])
+        #expect(model.editor(for: imported.id)?.suggestions.map(\.id) == [bench.id])
     }
 
     @Test func mergeMovesHistoryAliasesAndSettingsThenRemovesTheSource() async throws {
