@@ -78,9 +78,7 @@ public actor RepositoryBackupService: BackupService {
         for exercise in document.exercises {
             try await exercises.save(exercise)
         }
-        for session in document.sessions {
-            try await workouts.save(session)
-        }
+        try await workouts.save(document.sessions)
         for checkIn in document.checkIns {
             try await checkIns.save(checkIn)
         }

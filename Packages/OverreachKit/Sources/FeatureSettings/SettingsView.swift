@@ -152,9 +152,15 @@ public struct SettingsView: View {
                 Button("Cancel", role: .cancel) { importModel.reset() }
             }
         case .importing:
-            HStack {
-                ProgressView()
-                Text("Importing…")
+            if let total = importModel.preview?.sessions.count, total > 0 {
+                ProgressView(value: Double(importModel.importedSessions), total: Double(total)) {
+                    Text("Importing… \(importModel.importedSessions) of \(total) sessions")
+                }
+            } else {
+                HStack {
+                    ProgressView()
+                    Text("Importing…")
+                }
             }
         case let .done(sessions, sets):
             Label("Imported \(sessions) sessions and \(sets) sets.", systemImage: "checkmark.circle.fill")

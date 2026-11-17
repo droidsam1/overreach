@@ -51,13 +51,18 @@ public enum BlockAdvisor {
 
     /// Groups training into weeks, takes each week's dominant focus, and merges consecutive equal weeks.
     public static func inferBlocks(sessions: [StrengthSession], calendar: Calendar = .current) -> [TrainingBlock] {
-        let sorted = sessions.sorted { $0.startedAt < $1.startedAt }
+        inferBlocks(index: ExposureIndex(sessions: sessions), calendar: calendar)
+    }
+
+    /// Same as `inferBlocks(sessions:calendar:)`, reusing an index built once.
+    public static func inferBlocks(index: ExposureIndex, calendar: Calendar = .current) -> [TrainingBlock] {
+        let sorted = index.sessions
         guard let first = sorted.first else { return [] }
         let origin = calendar.startOfDay(for: first.startedAt)
 
         var weekly: [Int: [TrainingFocus]] = [:]
         for session in sorted {
-            guard let focus = FocusClassifier.focus(of: session, history: sorted) else { continue }
+            guard let focus = FocusClassifier.focus(of: session, index: index) else { continue }
             let days = calendar.dateComponents([.day], from: origin, to: session.startedAt).day ?? 0
             weekly[days / 7, default: []].append(focus)
         }

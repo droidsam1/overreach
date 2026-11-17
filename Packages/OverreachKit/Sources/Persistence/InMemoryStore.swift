@@ -30,6 +30,12 @@ public actor InMemoryStore: WorkoutRepository, ExerciseRepository, CheckInReposi
         sessionsByID[session.id] = session
     }
 
+    public func save(_ sessions: [StrengthSession]) {
+        for session in sessions {
+            sessionsByID[session.id] = session
+        }
+    }
+
     public func deleteSession(id: UUID) {
         sessionsByID[id] = nil
     }

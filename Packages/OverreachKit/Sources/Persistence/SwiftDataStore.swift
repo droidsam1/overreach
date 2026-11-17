@@ -123,6 +123,26 @@ public actor SwiftDataStore: WorkoutRepository, ExerciseRepository, CheckInRepos
         try modelContext.save()
     }
 
+    /// One fetch for the existing records and one commit for the whole batch (imports of thousands of sets).
+    public func save(_ sessions: [StrengthSession]) throws {
+        guard !sessions.isEmpty else { return }
+        let ids = sessions.map(\.id)
+        let existing = try modelContext.fetch(FetchDescriptor<SessionRecord>(predicate: #Predicate { ids.contains($0.id) }))
+        var records = Dictionary(existing.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        for session in sessions {
+            let payload = try encoder.encode(session)
+            if let record = records[session.id] {
+                record.startedAt = session.startedAt
+                record.payload = payload
+            } else {
+                let record = SessionRecord(id: session.id, startedAt: session.startedAt, payload: payload)
+                modelContext.insert(record)
+                records[session.id] = record
+            }
+        }
+        try modelContext.save()
+    }
+
     public func deleteSession(id: UUID) throws {
         try modelContext.delete(model: SessionRecord.self, where: #Predicate { $0.id == id })
         try modelContext.save()

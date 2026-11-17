@@ -6,7 +6,18 @@ import Foundation
 public protocol WorkoutRepository: Sendable {
     func sessions(from start: Date, to end: Date) async throws -> [StrengthSession]
     func save(_ session: StrengthSession) async throws
+    /// Saves many sessions in one go (import, restore), replacing sessions with the same id.
+    func save(_ sessions: [StrengthSession]) async throws
     func deleteSession(id: UUID) async throws
+}
+
+extension WorkoutRepository {
+    /// Default: one save per session. Stores override it to write a batch at once.
+    public func save(_ sessions: [StrengthSession]) async throws {
+        for session in sessions {
+            try await save(session)
+        }
+    }
 }
 
 public protocol ExerciseRepository: Sendable {

@@ -61,12 +61,15 @@ let package = Package(
         .target(name: "FeatureOnboarding", dependencies: featureDependencies),
 
         // MARK: Tests
-        .testTarget(name: "PersistenceTests", dependencies: ["Persistence", .product(name: "Domain", package: core)]),
+        .testTarget(name: "PersistenceTests", dependencies: [
+            "Persistence", .product(name: "Domain", package: core), .product(name: "Fixtures", package: core),
+        ]),
         .testTarget(name: "FeatureWorkoutTests", dependencies: [
             "FeatureWorkout", "Persistence", .product(name: "Domain", package: core),
         ]),
         .testTarget(name: "FeatureSettingsTests", dependencies: [
             "FeatureSettings", "Persistence", .product(name: "Domain", package: core),
+            .product(name: "Fixtures", package: core),
         ]),
         .testTarget(name: "FeatureHistoryTests", dependencies: [
             "FeatureHistory", "Persistence", .product(name: "Domain", package: core),
