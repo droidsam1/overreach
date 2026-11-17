@@ -1,7 +1,7 @@
 import Domain
-@testable import FeatureToday
 import Foundation
 import Testing
+@testable import TodayPresentation
 
 private struct StubSource: MetricsSource {
     let kind: DataSourceKind

@@ -1,6 +1,7 @@
 import Domain
 import Foundation
 import Observation
+import PresentationKit
 
 /// Import of training history from a Strong CSV export (ADR-0011): read → preview → confirm → save.
 /// Re-importing the same file is safe: imported ids are stable, so sessions are replaced, not duplicated.
@@ -31,6 +32,19 @@ public final class ImportModel {
     private let workouts: any WorkoutRepository
     private let exercises: any ExerciseRepository
 
+    // MARK: Screen state
+
+    /// Names of the exercises the import would add without muscles.
+    public var newExerciseNames: [String] { preview?.newExercises.map(\.name) ?? [] }
+
+    public var skippedLineCount: Int { preview?.skippedLines.count ?? 0 }
+
+    /// Sessions saved and total while importing; `nil` when the total is unknown.
+    public var progress: (done: Int, total: Int)? {
+        guard state == .importing, let total = preview?.sessions.count, total > 0 else { return nil }
+        return (importedSessions, total)
+    }
+
     public init(
         importer: any TrainingHistoryImporter,
         workouts: any WorkoutRepository,
@@ -45,7 +59,7 @@ public final class ImportModel {
     public func load(fileData: Data) async {
         let decoded = String(data: fileData, encoding: .utf8) ?? String(data: fileData, encoding: .isoLatin1)
         guard let text = decoded else {
-            state = .failed("The file is not a text CSV.")
+            state = .failed(L10n.text("The file is not a text CSV."))
             return
         }
         csv = text
@@ -66,7 +80,7 @@ public final class ImportModel {
             state = .preview
         } catch {
             preview = nil
-            state = .failed("Could not read the file: \(error)")
+            state = .failed(L10n.text("Could not read the file: \(error)"))
         }
     }
 
@@ -91,7 +105,9 @@ public final class ImportModel {
             self.preview = nil
             csv = nil
         } catch {
-            state = .failed("Import stopped: \(error). Already imported sessions are kept; importing again is safe.")
+            state = .failed(
+                L10n.text("Import stopped: \(error). Already imported sessions are kept; importing again is safe.")
+            )
         }
     }
 

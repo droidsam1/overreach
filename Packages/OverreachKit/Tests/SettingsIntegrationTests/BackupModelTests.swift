@@ -1,7 +1,7 @@
 import Domain
-import FeatureSettings
 import Foundation
 import Persistence
+import SettingsPresentation
 import Testing
 
 private actor MemoryDestination: BackupDestination {

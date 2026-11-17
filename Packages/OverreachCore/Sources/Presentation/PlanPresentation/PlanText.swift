@@ -1,34 +1,19 @@
 import Analytics
-import DesignSystem
 import Domain
 import Foundation
+import PresentationKit
 
 // Plain-language descriptions for the Plan screen. Every line names its evidence level.
 
-extension EvidenceLevel {
-    var label: String {
-        switch self {
-        case .strong: "strong evidence"
-        case .moderate: "moderate evidence"
-        case .limited: "limited evidence"
-        case .heuristic: "coaching heuristic"
-        }
-    }
-}
-
 extension TrainingGoal.Kind {
-    var title: String {
+    public var displayName: String {
         switch self {
-        case .strength: "Strength"
-        case .hypertrophy: "Muscle"
-        case .general: "Strength and muscle"
-        case .hybrid: "Hybrid (with running)"
+        case .strength: L10n.text("Strength")
+        case .hypertrophy: L10n.text("Muscle")
+        case .general: L10n.text("Strength and muscle")
+        case .hybrid: L10n.text("Hybrid (with running)")
         }
     }
-}
-
-extension MuscleGroup {
-    var title: String { rawValue.capitalized }
 }
 
 extension BlockReason {
@@ -54,21 +39,21 @@ extension BalanceFinding {
     func text(names: [UUID: String]) -> String {
         switch self {
         case let .focusStreak(focus, sessions):
-            return "\(sessions) \(focus.title.lowercased()) sessions in a row. Intentional? Declare a block, or vary the focus."
+            return "\(sessions) \(focus.displayName.lowercased()) sessions in a row. Intentional? Declare a block, or vary the focus."
         case let .exerciseFocusMismatch(exerciseID, declared, observed):
             let name = names[exerciseID] ?? "An exercise"
-            return "\(name) is set to \(declared.title.lowercased()) but trained as \(observed.title.lowercased()). "
+            return "\(name) is set to \(declared.displayName.lowercased()) but trained as \(observed.displayName.lowercased()). "
                 + "Adjust its reps and load, or its focus."
         case let .sessionFocusMismatch(_, declared, observed):
-            return "A \(declared.title.lowercased()) session was trained as \(observed.title.lowercased())."
+            return "A \(declared.displayName.lowercased()) session was trained as \(observed.displayName.lowercased())."
         case let .noHeavyWorkOnPriorityLift(exerciseID, days):
             let name = names[exerciseID] ?? "A priority lift"
             return "\(name): no heavy sets (≤ 6 reps near your max) in \(days) days. 1RM strength needs heavy loads."
         case let .muscleSingleFocus(muscle, focus):
-            return "\(muscle.title) is only trained for \(focus.title.lowercased()). Your goal needs both strength and size."
+            return "\(muscle.displayName) is only trained for \(focus.displayName.lowercased()). Your goal needs both strength and size."
         case let .lowVolume(muscle, weeklySets):
             let sets = weeklySets.formatted(.number.precision(.fractionLength(1)))
-            return "\(muscle.title): \(sets) sets/week, below the useful range."
+            return "\(muscle.displayName): \(sets) sets/week, below the useful range."
         }
     }
 }

@@ -2,8 +2,8 @@ import Domain
 import Foundation
 import Observation
 
-/// State and actions of the Today screen. Reference implementation of the feature pattern (ADR-0003):
-/// dependencies come in as `Domain` protocols, the view only reads state and calls actions.
+/// State and actions of the Today screen (ADR-0003, ADR-0014): dependencies come in as `Domain` protocols, the
+/// view only reads state and calls actions.
 @MainActor
 @Observable
 public final class TodayModel {
@@ -18,6 +18,17 @@ public final class TodayModel {
 
     /// - Parameter sources: metric sources in priority order. When two sources report the same value,
     ///   the first one wins (e.g. `[garmin, appleHealth]`).
+    // MARK: Screen state
+
+    public var hrvMs: Double? { metrics?.hrvNightlyAverageMs }
+    public var restingHeartRate: Double? { metrics?.restingHeartRate }
+    /// Sleep in hours (stored in seconds).
+    public var sleepHours: Double? { metrics?.sleepSeconds.map { $0 / 3_600 } }
+    public var bodyBattery: Double? { metrics?.bodyBatteryHigh }
+
+    public var showsLoadingIndicator: Bool { isLoading && metrics == nil }
+    public var showsSourceWarning: Bool { !failedSources.isEmpty }
+
     public init(sources: [any MetricsSource], calendar: Calendar = .current) {
         self.sources = sources
         self.calendar = calendar

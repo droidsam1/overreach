@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 - Presentation layer (ADR-0014): screen state, intents and texts move to `<Feature>Presentation` modules in
-  `OverreachCore` (Linux-testable); `Feature*` modules only render. Migrated: Exercises, Workout, History.
+  `OverreachCore` (Linux-testable); `Feature*` modules only render. Migrated: Exercises, Workout, History, Plan, Settings, Today.
 - `scripts/test-core.sh` / `.ps1` run the core and presentation tests in Docker (same image as CI).
 
 ### Added

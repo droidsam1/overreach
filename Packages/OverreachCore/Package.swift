@@ -15,6 +15,9 @@ let package = Package(
         .library(name: "ExercisesPresentation", targets: ["ExercisesPresentation"]),
         .library(name: "WorkoutPresentation", targets: ["WorkoutPresentation"]),
         .library(name: "HistoryPresentation", targets: ["HistoryPresentation"]),
+        .library(name: "PlanPresentation", targets: ["PlanPresentation"]),
+        .library(name: "SettingsPresentation", targets: ["SettingsPresentation"]),
+        .library(name: "TodayPresentation", targets: ["TodayPresentation"]),
         // Generated test data (large anonymised history). Tests only; never linked by the app.
         .library(name: "Fixtures", targets: ["Fixtures"]),
     ],
@@ -45,6 +48,21 @@ let package = Package(
             dependencies: ["Domain", "Analytics", "PresentationKit"],
             path: "Sources/Presentation/HistoryPresentation"
         ),
+        .target(
+            name: "PlanPresentation",
+            dependencies: ["Domain", "Analytics", "PresentationKit"],
+            path: "Sources/Presentation/PlanPresentation"
+        ),
+        .target(
+            name: "SettingsPresentation",
+            dependencies: ["Domain", "Analytics", "PresentationKit"],
+            path: "Sources/Presentation/SettingsPresentation"
+        ),
+        .target(
+            name: "TodayPresentation",
+            dependencies: ["Domain", "Analytics", "PresentationKit"],
+            path: "Sources/Presentation/TodayPresentation"
+        ),
 
         // Generated test data shared by test targets in both packages.
         .target(name: "Fixtures", dependencies: ["Domain"]),
@@ -62,6 +80,18 @@ let package = Package(
         .testTarget(
             name: "HistoryPresentationTests",
             dependencies: ["HistoryPresentation", "PresentationKit", "Domain", "Fixtures"]
+        ),
+        .testTarget(
+            name: "PlanPresentationTests",
+            dependencies: ["PlanPresentation", "PresentationKit", "Domain", "Fixtures"]
+        ),
+        .testTarget(
+            name: "SettingsPresentationTests",
+            dependencies: ["SettingsPresentation", "PresentationKit", "Domain", "Fixtures"]
+        ),
+        .testTarget(
+            name: "TodayPresentationTests",
+            dependencies: ["TodayPresentation", "PresentationKit", "Domain", "Fixtures"]
         ),
         .testTarget(name: "PerformanceTests", dependencies: ["Analytics", "StrongImport", "Domain", "Fixtures"]),
     ]

@@ -91,6 +91,12 @@ targets:
         product: WorkoutPresentation
       - package: OverreachCore
         product: HistoryPresentation
+      - package: OverreachCore
+        product: PlanPresentation
+      - package: OverreachCore
+        product: SettingsPresentation
+      - package: OverreachCore
+        product: TodayPresentation
 
 schemes:
   Overreach:

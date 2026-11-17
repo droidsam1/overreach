@@ -1,6 +1,7 @@
 import Domain
 import Foundation
 import Observation
+import PresentationKit
 
 /// Backup folder, manual backup/export, restore, and the "restore your data?" offer on a fresh install.
 @MainActor
@@ -23,6 +24,34 @@ public final class BackupModel {
     public init(service: any BackupService, clock: @escaping @Sendable () -> Date = { Date() }) {
         self.service = service
         self.clock = clock
+    }
+
+    // MARK: Screen state
+
+    /// "120 sessions from 17 Nov 2026 at 10:30. Items are merged by id: nothing is duplicated."
+    public var pendingRestoreMessage: String? {
+        pendingRestore.map {
+            Self.describe($0) + " " + L10n.text("Items are merged by id: nothing is duplicated.")
+        }
+    }
+
+    /// "A backup with 120 sessions from … was found in your backup folder."
+    public var restoreOfferMessage: String? {
+        restoreOffer.map {
+            L10n.text(
+                "A backup with \($0.sessions) sessions from \(Self.dateText($0.createdAt)) was found in your backup folder."
+            )
+        }
+    }
+
+    public var lastBackupText: String? { lastBackup.map { Self.dateText($0.createdAt) } }
+
+    static func describe(_ summary: BackupSummary) -> String {
+        L10n.text("\(summary.sessions) sessions from \(dateText(summary.createdAt)).")
+    }
+
+    static func dateText(_ date: Date) -> String {
+        date.formatted(date: .abbreviated, time: .shortened)
     }
 
     /// Drives the restore confirmation; setting it to `false` cancels.
@@ -52,7 +81,7 @@ public final class BackupModel {
             await checkRestoreOffer()
             if restoreOffer == nil { await backUpNow() }
         } catch {
-            message = "Could not use that folder."
+            message = L10n.text("Could not use that folder.")
         }
     }
 
@@ -63,11 +92,11 @@ public final class BackupModel {
             lastBackup = try await service.backUp(now: clock())
             message = nil
         } catch BackupError.notConfigured {
-            message = "Choose a backup folder first."
+            message = L10n.text("Choose a backup folder first.")
         } catch BackupError.wouldOverwriteWithEmpty {
-            message = "The folder has a backup and this device has no sessions yet. Restore it first."
+            message = L10n.text("The folder has a backup and this device has no sessions yet. Restore it first.")
         } catch {
-            message = "Backup failed. Check that the folder is still available."
+            message = L10n.text("Backup failed. Check that the folder is still available.")
         }
     }
 
@@ -79,7 +108,7 @@ public final class BackupModel {
             try data.write(to: url, options: .atomic)
             return url
         } catch {
-            message = "Could not export your data."
+            message = L10n.text("Could not export your data.")
             return nil
         }
     }
@@ -91,9 +120,9 @@ public final class BackupModel {
             pendingData = fileData
             message = nil
         } catch BackupError.newerFormat {
-            message = "This backup was made by a newer version of Overreach. Update the app first."
+            message = L10n.text("This backup was made by a newer version of Overreach. Update the app first.")
         } catch {
-            message = "That file is not an Overreach backup."
+            message = L10n.text("That file is not an Overreach backup.")
         }
     }
 
@@ -125,7 +154,7 @@ public final class BackupModel {
             guard let backup = try await service.latestBackup() else { return }
             await restore(try BackupCodec.encode(backup))
         } catch {
-            message = "Restore failed."
+            message = L10n.text("Restore failed.")
         }
     }
 
@@ -145,9 +174,9 @@ public final class BackupModel {
         defer { isWorking = false }
         do {
             let summary = try await service.restore(from: data)
-            message = "Restored \(summary.sessions) sessions."
+            message = L10n.text("Restored \(summary.sessions) sessions.")
         } catch {
-            message = "Restore failed. Nothing already on this device was removed."
+            message = L10n.text("Restore failed. Nothing already on this device was removed.")
         }
     }
 }

@@ -1,8 +1,7 @@
 import Domain
-import FeatureSettings
 import Fixtures
 import Foundation
-import Persistence
+import SettingsPresentation
 import Testing
 
 private struct FakeImporter: TrainingHistoryImporter {
@@ -22,7 +21,7 @@ struct ImportModelTests {
             entries: [ExerciseEntry(exerciseID: newExercise.id, sets: [WorkoutSet(weightKg: 80, reps: 8)])],
             source: .strongImport
         )
-        let store = InMemoryStore()
+        let store = TestStore()
         let model = ImportModel(
             importer: FakeImporter(preview: ImportPreview(sessions: [session], newExercises: [newExercise], skippedLines: [7])),
             workouts: store,
@@ -45,7 +44,7 @@ struct ImportModelTests {
 struct LargeImportModelTests {
     @Test func importsSixHundredSessionsInBatches() async throws {
         let history = LargeHistory()
-        let store = InMemoryStore()
+        let store = TestStore()
         let model = ImportModel(
             importer: FakeImporter(preview: ImportPreview(sessions: history.sessions, newExercises: [], skippedLines: [])),
             workouts: store,

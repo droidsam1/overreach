@@ -58,7 +58,9 @@ let package = Package(
         .target(name: "DesignSystem", dependencies: [.product(name: "Domain", package: core)]),
 
         // MARK: Features
-        .target(name: "FeatureToday", dependencies: featureDependencies + ["AIKit"]),
+        .target(name: "FeatureToday", dependencies: uiDependencies + [
+            "AIKit", .product(name: "TodayPresentation", package: core),
+        ]),
         // UI only (ADR-0014): no Analytics; logic comes from the presentation modules.
         .target(name: "FeatureWorkout", dependencies: uiDependencies + [
             .product(name: "WorkoutPresentation", package: core),
@@ -70,19 +72,23 @@ let package = Package(
         .target(name: "FeatureExercises", dependencies: uiDependencies + [
             .product(name: "ExercisesPresentation", package: core),
         ]),
-        .target(name: "FeaturePlan", dependencies: featureDependencies),
+        .target(name: "FeaturePlan", dependencies: uiDependencies + [
+            .product(name: "PlanPresentation", package: core),
+        ]),
         .target(name: "FeatureAssistant", dependencies: featureDependencies + ["AIKit"]),
-        .target(name: "FeatureSettings", dependencies: featureDependencies),
+        .target(name: "FeatureSettings", dependencies: uiDependencies + [
+            .product(name: "SettingsPresentation", package: core),
+        ]),
         .target(name: "FeatureOnboarding", dependencies: featureDependencies),
 
         // MARK: Tests
         .testTarget(name: "PersistenceTests", dependencies: [
             "Persistence", .product(name: "Domain", package: core), .product(name: "Fixtures", package: core),
         ]),
-        .testTarget(name: "FeatureSettingsTests", dependencies: [
-            "FeatureSettings", "Persistence", .product(name: "Domain", package: core),
-            .product(name: "Fixtures", package: core),
+        // Backup model against the real backup service (Persistence); the rest of Settings is tested in Core.
+        .testTarget(name: "SettingsIntegrationTests", dependencies: [
+            "Persistence", .product(name: "Domain", package: core),
+            .product(name: "SettingsPresentation", package: core),
         ]),
-        .testTarget(name: "FeatureTodayTests", dependencies: ["FeatureToday", .product(name: "Domain", package: core)]),
     ]
 )

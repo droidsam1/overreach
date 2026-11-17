@@ -11,6 +11,9 @@ import HealthKitSource
 import HistoryPresentation
 import Observation
 import Persistence
+import PlanPresentation
+import SettingsPresentation
+import TodayPresentation
 import WorkoutPresentation
 
 /// Composition root: the only place that knows the concrete implementations (ADR-0002).

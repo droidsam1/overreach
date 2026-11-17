@@ -6,7 +6,10 @@ import FeatureSettings
 import FeatureToday
 import FeatureWorkout
 import HistoryPresentation
+import PlanPresentation
+import SettingsPresentation
 import SwiftUI
+import TodayPresentation
 import WorkoutPresentation
 
 /// Top-level navigation. Cross-feature navigation is wired here, never inside a feature.
@@ -75,9 +78,8 @@ struct RootView: View {
             Button("Restore") { Task { await backupModel.acceptRestoreOffer() } }
             Button("Not now", role: .cancel) { backupModel.declineRestoreOffer() }
         } message: {
-            if let offer = backupModel.restoreOffer {
-                Text("A backup with \(offer.sessions) sessions from "
-                    + "\(offer.createdAt.formatted(date: .abbreviated, time: .shortened)) was found in your backup folder.")
+            if let message = backupModel.restoreOfferMessage {
+                Text(message)
             }
         }
     }
