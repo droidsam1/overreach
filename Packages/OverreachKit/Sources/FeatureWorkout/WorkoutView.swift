@@ -167,30 +167,10 @@ private struct SetRow: View {
     let number: Int
     @Binding var set: DraftSet
 
-    private static let rpeValues: [Double] = Array(stride(from: 6.0, through: 10.0, by: 0.5))
-
     var body: some View {
         HStack(spacing: Spacing.small) {
-            Text("\(number)")
-                .font(.subheadline.monospacedDigit())
-                .foregroundStyle(.secondary)
-                .frame(width: 20)
-            TextField("kg", value: $set.weightKg, format: .number)
-                .numericKeyboard(decimal: true)
-                .multilineTextAlignment(.trailing)
-            Text("kg").foregroundStyle(.secondary)
-            TextField("reps", value: $set.reps, format: .number)
-                .numericKeyboard(decimal: false)
-                .multilineTextAlignment(.trailing)
-            Text("reps").foregroundStyle(.secondary)
-            Picker("RPE", selection: $set.rpe) {
-                Text("RPE –").tag(Double?.none)
-                ForEach(Self.rpeValues, id: \.self) { value in
-                    Text("RPE \(value.formatted())").tag(Double?.some(value))
-                }
-            }
-            .pickerStyle(.menu)
-            .labelsHidden()
+            SetNumberLabel(number)
+            SetValueFields(weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe)
             Toggle(isOn: $set.isDone) {
                 Image(systemName: set.isDone ? "checkmark.circle.fill" : "circle")
             }
@@ -198,50 +178,5 @@ private struct SetRow: View {
             .accessibilityLabel("Set \(number) done")
         }
         .opacity(set.isDone ? 0.6 : 1)
-    }
-}
-
-private extension View {
-    @ViewBuilder
-    func numericKeyboard(decimal: Bool) -> some View {
-        #if os(iOS)
-        keyboardType(decimal ? .decimalPad : .numberPad)
-        #else
-        self
-        #endif
-    }
-}
-
-/// Searchable list of exercises.
-private struct ExercisePicker: View {
-    let exercises: [Exercise]
-    let onPick: (Exercise) -> Void
-    @Environment(\.dismiss) private var dismiss
-    @State private var query = ""
-
-    private var filtered: [Exercise] {
-        guard !query.isEmpty else { return exercises }
-        return exercises.filter { exercise in
-            exercise.name.localizedCaseInsensitiveContains(query)
-                || exercise.aliases.contains { $0.localizedCaseInsensitiveContains(query) }
-        }
-    }
-
-    var body: some View {
-        NavigationStack {
-            List(filtered) { exercise in
-                Button(exercise.name) {
-                    onPick(exercise)
-                    dismiss()
-                }
-            }
-            .searchable(text: $query)
-            .navigationTitle("Add exercise")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-            }
-        }
     }
 }
