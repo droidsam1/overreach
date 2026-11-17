@@ -39,3 +39,47 @@ extension Equipment {
         }
     }
 }
+
+extension TrainingFocus {
+    public var displayName: String {
+        switch self {
+        case .strength: L10n.text("Strength")
+        case .hypertrophy: L10n.text("Hypertrophy")
+        case .mixed: L10n.text("Mixed")
+        case .endurance: L10n.text("Endurance")
+        }
+    }
+}
+
+extension SetKind {
+    public var displayName: String {
+        switch self {
+        case .warmup: L10n.text("Warm-up")
+        case .working: L10n.text("Working")
+        case .dropSet: L10n.text("Drop set")
+        case .failure: L10n.text("Failure")
+        }
+    }
+
+    /// Short badge for set rows; `nil` for ordinary working sets.
+    public var badge: String? {
+        switch self {
+        case .warmup: L10n.text("W")
+        case .working: nil
+        case .dropSet: L10n.text("D")
+        case .failure: L10n.text("F")
+        }
+    }
+}
+
+extension EvidenceLevel {
+    /// How strong the evidence behind a rule is, as shown next to its explanation.
+    public var displayName: String {
+        switch self {
+        case .strong: L10n.text("strong evidence")
+        case .moderate: L10n.text("moderate evidence")
+        case .limited: L10n.text("limited evidence")
+        case .heuristic: L10n.text("coaching heuristic")
+        }
+    }
+}

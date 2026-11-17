@@ -1,7 +1,11 @@
-import Analytics
 import DesignSystem
 import Domain
+import PresentationKit
 import SwiftUI
+import WorkoutPresentation
+
+// Views only: layout, styling and navigation. Targets, texts and decisions come from `WorkoutPresentation`
+// (ADR-0014), so this file can be redesigned freely.
 
 /// The live session logger (phase 1). Routines come in a later PR.
 public struct WorkoutView: View {
@@ -29,11 +33,11 @@ public struct WorkoutView: View {
                     }
                 }
             }
-            .navigationTitle(model.isSessionActive ? model.sessionName : "Train")
+            .navigationTitle(model.isSessionActive ? model.sessionName : String(localized: "Train"))
             .toolbar { toolbar }
             .sheet(isPresented: $isPickingExercise) {
-                ExercisePicker(exercises: model.catalog) { exercise in
-                    Task { await model.add(exercise) }
+                ExercisePicker(items: model.exerciseChoices.map(PickerItem.init)) { id in
+                    Task { await model.add(exerciseID: id) }
                 }
             }
             .confirmationDialog("Discard this session?", isPresented: $isConfirmingDiscard) {
@@ -63,14 +67,14 @@ private struct SessionList: View {
 
     var body: some View {
         List {
-            Picker("Session focus", selection: $model.sessionFocus) {
+            Picker("Session focus", selection: Binding(
+                get: { model.sessionFocus },
+                set: { focus in Task { await model.setSessionFocus(focus) } }
+            )) {
                 Text("Auto").tag(TrainingFocus?.none)
-                ForEach(TrainingFocus.allCases, id: \.self) { focus in
-                    Text(focus.title).tag(TrainingFocus?.some(focus))
+                ForEach(model.focusOptions) { option in
+                    Text(option.name).tag(TrainingFocus?.some(option.value))
                 }
-            }
-            .onChange(of: model.sessionFocus) {
-                Task { await model.refreshTargets() }
             }
             if let message = model.errorMessage {
                 Label(message, systemImage: "exclamationmark.triangle")
@@ -78,9 +82,9 @@ private struct SessionList: View {
             }
             ForEach($model.exercises) { $exercise in
                 Section {
-                    TargetSummary(exercise: exercise)
+                    TargetSummaryView(summary: exercise.summary)
                     ForEach($exercise.sets) { $set in
-                        SetRow(number: (exercise.sets.firstIndex { $0.id == set.id } ?? 0) + 1, set: $set)
+                        SetRow(number: exercise.number(of: set.id), set: $set)
                             .swipeActions {
                                 Button("Delete", role: .destructive) {
                                     model.removeSet(set.id, from: exercise.id)
@@ -90,7 +94,7 @@ private struct SessionList: View {
                     Button("Add set", systemImage: "plus") { model.addSet(to: exercise.id) }
                 } header: {
                     HStack {
-                        Text(exercise.exercise.name)
+                        Text(exercise.name)
                         Spacer()
                         Menu {
                             Button("Remove exercise", systemImage: "trash", role: .destructive) {
@@ -109,20 +113,16 @@ private struct SessionList: View {
 }
 
 /// The engine's target and status for one exercise, with reasons and their evidence level.
-private struct TargetSummary: View {
-    let exercise: DraftExercise
+private struct TargetSummaryView: View {
+    let summary: TargetSummary
 
     var body: some View {
         DisclosureGroup {
             VStack(alignment: .leading, spacing: Spacing.small) {
-                ForEach(Array(exercise.target.reasons.enumerated()), id: \.offset) { _, reason in
-                    Text("\(reason.text) (\(reason.evidence.level.label))")
-                }
-                if case let .stalled(suggestions) = exercise.status {
+                ForEach(Array(summary.reasons.enumerated()), id: \.offset) { Text($0.element) }
+                if !summary.stallSuggestions.isEmpty {
                     Text("Stalled — try, in order:").bold()
-                    ForEach(Array(suggestions.enumerated()), id: \.offset) { index, suggestion in
-                        Text("\(index + 1). \(suggestion.text) (\(suggestion.evidence.level.label))")
-                    }
+                    ForEach(Array(summary.stallSuggestions.enumerated()), id: \.offset) { Text($0.element) }
                 }
             }
             .font(.footnote)
@@ -130,36 +130,19 @@ private struct TargetSummary: View {
         } label: {
             VStack(alignment: .leading, spacing: Spacing.xSmall) {
                 HStack {
-                    Text(targetLine).font(.subheadline.monospacedDigit())
+                    Text(summary.targetLine).font(.subheadline.monospacedDigit())
                     Spacer()
-                    if let status = exercise.status.text {
+                    if let status = summary.status {
                         Text(status)
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(exercise.status.isStalled ? .orange : .secondary)
+                            .foregroundStyle(summary.isStalled ? .orange : .secondary)
                     }
                 }
-                Text(focusLine)
+                Text(summary.focusLine)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
-    }
-
-    private var focusLine: String {
-        let rest = "rest \(Self.minutes(exercise.restSeconds.lowerBound))–\(Self.minutes(exercise.restSeconds.upperBound))"
-        guard let focus = exercise.focus else { return rest.capitalized }
-        return "\(focus.title)\(exercise.isFocusInferred ? " (detected)" : "") · \(rest)"
-    }
-
-    private static func minutes(_ seconds: Int) -> String {
-        "\(seconds / 60):\(String(format: "%02d", seconds % 60))"
-    }
-
-    private var targetLine: String {
-        guard let first = exercise.target.sets.first else { return "Target: –" }
-        let weight = first.weightKg.map { "\($0.formatted()) kg × " } ?? ""
-        let reps = exercise.target.sets.map { String($0.reps) }.joined(separator: "/")
-        return "Target: \(weight)\(reps) @ RPE \(first.targetRPE.formatted())"
     }
 }
 
@@ -178,5 +161,11 @@ private struct SetRow: View {
             .accessibilityLabel("Set \(number) done")
         }
         .opacity(set.isDone ? 0.6 : 1)
+    }
+}
+
+extension PickerItem {
+    init(_ choice: ExerciseChoice) {
+        self.init(id: choice.id, title: choice.name, searchTerms: choice.searchTerms)
     }
 }

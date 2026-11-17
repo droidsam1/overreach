@@ -1,8 +1,11 @@
 import DesignSystem
 import Domain
+import HistoryPresentation
+import PresentationKit
 import SwiftUI
 
 /// Sheet to correct a past session. Reuses the logger's set fields (`SetValueFields`).
+/// Views only (ADR-0014): validation, options and edits live in `SessionEditorModel`.
 struct SessionEditorView: View {
     @State private var model: SessionEditorModel
     let onSaved: (StrengthSession) -> Void
@@ -20,13 +23,13 @@ struct SessionEditorView: View {
         NavigationStack {
             Form {
                 SessionFields(model: model)
-                if !model.issues.isEmpty || model.errorMessage != nil {
+                if !model.issueMessages.isEmpty || model.errorMessage != nil {
                     Section {
                         if let message = model.errorMessage {
                             Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
                         }
-                        ForEach(model.issues, id: \.self) { issue in
-                            Label(issue.message, systemImage: "exclamationmark.circle").foregroundStyle(.orange)
+                        ForEach(model.issueMessages, id: \.self) { message in
+                            Label(message, systemImage: "exclamationmark.circle").foregroundStyle(.orange)
                         }
                     }
                 }
@@ -47,17 +50,21 @@ struct SessionEditorView: View {
             .toolbar { toolbar }
             .interactiveDismissDisabled(model.hasChanges)
             .sheet(isPresented: $isAddingExercise) {
-                ExercisePicker(exercises: model.catalog) { model.addExercise($0) }
+                ExercisePicker(items: pickerItems) { model.addExercise(id: $0) }
             }
             .sheet(item: $replacing) { target in
-                ExercisePicker(title: "Replace exercise", exercises: model.catalog) { exercise in
-                    model.replaceExercise(of: target.id, with: exercise)
+                ExercisePicker(title: "Replace exercise", items: pickerItems) { id in
+                    model.replaceExercise(of: target.id, withID: id)
                 }
             }
             .confirmationDialog("Discard your changes?", isPresented: $isConfirmingDiscard) {
                 Button("Discard changes", role: .destructive) { dismiss() }
             }
         }
+    }
+
+    private var pickerItems: [PickerItem] {
+        model.exerciseChoices.map { PickerItem(id: $0.id, title: $0.name, searchTerms: $0.searchTerms) }
     }
 
     @ToolbarContentBuilder
@@ -103,23 +110,17 @@ private struct SessionFields: View {
                         Button("Remove end time", role: .destructive) { model.setEnd(nil) }
                     }
             } else {
-                Button("Add end time", systemImage: "clock") {
-                    model.setEnd(model.draft.startedAt.addingTimeInterval(3_600))
-                }
+                Button("Add end time", systemImage: "clock") { model.addEndTime() }
             }
             Picker("Focus", selection: $model.draft.focus) {
                 Text("Auto").tag(TrainingFocus?.none)
-                ForEach(TrainingFocus.allCases, id: \.self) { focus in
-                    Text(focus.title).tag(TrainingFocus?.some(focus))
+                ForEach(model.focusOptions) { option in
+                    Text(option.name).tag(TrainingFocus?.some(option.value))
                 }
             }
-            TextField("Notes", text: notes, axis: .vertical)
+            TextField("Notes", text: $model.notesText, axis: .vertical)
                 .lineLimit(1...5)
         }
-    }
-
-    private var notes: Binding<String> {
-        Binding(get: { model.draft.notes ?? "" }, set: { model.draft.notes = $0 })
     }
 }
 
@@ -133,12 +134,12 @@ private struct EntrySection: View {
         Section {
             ForEach($entry.sets) { $set in
                 HStack(spacing: Spacing.small) {
-                    SetNumberLabel((entry.sets.firstIndex { $0.id == set.id } ?? 0) + 1)
+                    SetNumberLabel(model.number(of: set.id, in: entry.id))
                     SetValueFields(weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe)
                     Menu {
                         Picker("Set type", selection: $set.kind) {
-                            ForEach(SetKind.allCases, id: \.self) { kind in
-                                Text(kind.title).tag(kind)
+                            ForEach(model.setKindOptions) { option in
+                                Text(option.name).tag(option.value)
                             }
                         }
                     } label: {
@@ -160,9 +161,9 @@ private struct EntrySection: View {
                 Menu {
                     Button("Replace exercise", systemImage: "arrow.left.arrow.right", action: onReplace)
                     Button("Move up", systemImage: "arrow.up") { model.moveExercise(entry.id, by: -1) }
-                        .disabled(model.draft.entries.first?.id == entry.id)
+                        .disabled(!model.canMoveUp(entry.id))
                     Button("Move down", systemImage: "arrow.down") { model.moveExercise(entry.id, by: 1) }
-                        .disabled(model.draft.entries.last?.id == entry.id)
+                        .disabled(!model.canMoveDown(entry.id))
                     Button("Remove exercise", systemImage: "trash", role: .destructive) {
                         model.removeExercise(entry.id)
                     }
@@ -171,17 +172,6 @@ private struct EntrySection: View {
                 }
                 .accessibilityLabel("Exercise options")
             }
-        }
-    }
-}
-
-extension SessionEditIssue {
-    var message: LocalizedStringKey {
-        switch self {
-        case .missingName: "Give the session a name."
-        case .noSets: "Add at least one set, or delete the session from History."
-        case .endsBeforeStart: "The end time is before the start time."
-        case .invalidValues: "Weights and reps can't be negative, and RPE goes from 1 to 10."
         }
     }
 }

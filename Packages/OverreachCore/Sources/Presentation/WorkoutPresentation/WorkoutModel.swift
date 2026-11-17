@@ -2,6 +2,7 @@ import Analytics
 import Domain
 import Foundation
 import Observation
+import PresentationKit
 
 /// A set being logged. Prefilled from the progression target; `isDone` marks it as performed.
 public struct DraftSet: Identifiable, Hashable, Sendable {
@@ -32,6 +33,67 @@ public struct DraftExercise: Identifiable, Hashable, Sendable {
     public var isFocusInferred: Bool
     /// Suggested rest between working sets for the focus, in seconds.
     public var restSeconds: ClosedRange<Int>
+
+    /// 1-based position of a set, for its row label.
+    public func number(of setID: DraftSet.ID) -> Int {
+        (sets.firstIndex { $0.id == setID } ?? 0) + 1
+    }
+}
+
+/// What the logger shows about an exercise's target: one-line summary plus the reasons behind it.
+public struct TargetSummary: Hashable, Sendable {
+    /// "Target: 62.5 kg × 8/8/8 @ RPE 8"
+    public let targetLine: String
+    /// "Hypertrophy (detected) · rest 1:30–2:00"
+    public let focusLine: String
+    /// "Progressing", "Stalled", …; `nil` without enough history.
+    public let status: String?
+    public let isStalled: Bool
+    /// Each reason with its evidence level, e.g. "All reps completed: add load. (strong evidence)".
+    public let reasons: [String]
+    /// Ordered suggestions when stalled, numbered: "1. Use smaller jumps (1.25 kg). (moderate evidence)".
+    public let stallSuggestions: [String]
+}
+
+extension DraftExercise {
+    public var name: String { exercise.name }
+
+    public var summary: TargetSummary { summary(format: Format()) }
+
+    public func summary(format: Format) -> TargetSummary {
+        let rest = L10n.text("rest") + " \(format.minutesAndSeconds(restSeconds.lowerBound))–"
+            + format.minutesAndSeconds(restSeconds.upperBound)
+        let focusLine: String
+        if let focus {
+            focusLine = focus.displayName + (isFocusInferred ? " " + L10n.text("(detected)") : "") + " · " + rest
+        } else {
+            focusLine = rest.prefix(1).uppercased() + rest.dropFirst()
+        }
+
+        let targetLine: String
+        if let first = target.sets.first {
+            let weight = first.weightKg.map { format.kilograms($0) + " × " } ?? ""
+            let reps = target.sets.map { String($0.reps) }.joined(separator: "/")
+            targetLine = L10n.text("Target:") + " \(weight)\(reps) @ RPE \(format.number(first.targetRPE))"
+        } else {
+            targetLine = L10n.text("Target:") + " –"
+        }
+
+        var suggestions: [String] = []
+        if case let .stalled(list) = status {
+            suggestions = list.enumerated().map { index, suggestion in
+                "\(index + 1). \(suggestion.text) (\(suggestion.evidence.level.displayName))"
+            }
+        }
+        return TargetSummary(
+            targetLine: targetLine,
+            focusLine: focusLine,
+            status: status.text,
+            isStalled: status.isStalled,
+            reasons: target.reasons.map { "\($0.text) (\($0.evidence.level.displayName))" },
+            stallSuggestions: suggestions
+        )
+    }
 }
 
 /// The live session logger (phase 1). Targets come from the progression engine; only completed sets are saved.
@@ -42,13 +104,19 @@ public final class WorkoutModel {
     /// Start time of the session in progress; `nil` when no session is open.
     public private(set) var startedAt: Date?
     public var sessionName = "Workout"
-    /// Declared focus of the session; `nil` = automatic (per exercise). Call `refreshTargets()` after changing it.
-    public var sessionFocus: TrainingFocus?
+    /// Declared focus of the session; `nil` = automatic (per exercise). Change it with `setSessionFocus(_:)`.
+    public private(set) var sessionFocus: TrainingFocus?
     /// Exercises of the session in progress. Views bind to it directly (`$model.exercises`).
     public var exercises: [DraftExercise] = []
     public private(set) var errorMessage: String?
 
     public var isSessionActive: Bool { startedAt != nil }
+
+    /// Exercises offered by the "Add exercise" picker.
+    public var exerciseChoices: [ExerciseChoice] { catalog.map(ExerciseChoice.init) }
+
+    /// Focus values for the session focus picker ("Auto" = `nil` is added by the view).
+    public let focusOptions: [Option<TrainingFocus>] = Option.trainingFocuses
 
     private let workouts: any WorkoutRepository
     private let exerciseRepository: any ExerciseRepository
@@ -77,7 +145,7 @@ public final class WorkoutModel {
         do {
             catalog = try await exerciseRepository.allExercises()
         } catch {
-            errorMessage = "Could not load exercises."
+            errorMessage = L10n.text("Could not load exercises.")
         }
     }
 
@@ -94,6 +162,19 @@ public final class WorkoutModel {
     public func add(_ exercise: Exercise) async {
         guard isSessionActive else { return }
         exercises.append(await prepare(exercise, id: UUID()))
+    }
+
+    /// Adds the catalog exercise with `exerciseID` (from `exerciseChoices`).
+    public func add(exerciseID: UUID) async {
+        guard let exercise = catalog.first(where: { $0.id == exerciseID }) else { return }
+        await add(exercise)
+    }
+
+    /// Declares the session focus (`nil` = automatic) and recomputes targets that have no completed set.
+    public func setSessionFocus(_ focus: TrainingFocus?) async {
+        guard focus != sessionFocus else { return }
+        sessionFocus = focus
+        await refreshTargets()
     }
 
     /// Recomputes targets for exercises with no completed set (e.g. after changing the session focus).
@@ -173,7 +254,7 @@ public final class WorkoutModel {
             await backup?.backUpIfConfigured(now: now)
             return true
         } catch {
-            errorMessage = "Could not save the session. It is still open."
+            errorMessage = L10n.text("Could not save the session. It is still open.")
             return false
         }
     }

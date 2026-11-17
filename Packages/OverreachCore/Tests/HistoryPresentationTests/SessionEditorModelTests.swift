@@ -1,7 +1,7 @@
 import Domain
-import FeatureHistory
+import Fixtures
 import Foundation
-import Persistence
+import HistoryPresentation
 import Testing
 
 /// Records backups requested after saving.
@@ -61,8 +61,8 @@ struct SessionEditorModelTests {
     private func makeEditor(
         _ session: StrengthSession,
         backup: BackupSpy? = nil
-    ) -> (SessionEditorModel, InMemoryStore) {
-        let store = InMemoryStore(exercises: [squat, frontSquat, row], sessions: [session])
+    ) -> (SessionEditorModel, TestStore) {
+        let store = TestStore(exercises: [squat, frontSquat, row], sessions: [session])
         let fixedNow = now
         let editor = SessionEditorModel(
             session: session, catalog: [squat, frontSquat, row], workouts: store, backup: backup, clock: { fixedNow }
@@ -70,7 +70,7 @@ struct SessionEditorModelTests {
         return (editor, store)
     }
 
-    private func stored(_ store: InMemoryStore) async throws -> [StrengthSession] {
+    private func stored(_ store: TestStore) async throws -> [StrengthSession] {
         try await store.sessions(from: .distantPast, to: .distantFuture)
     }
 
@@ -223,7 +223,7 @@ struct HistoryModelEditingTests {
 
     @Test func savedEditsUpdateTheListInDateOrder() async throws {
         let sessions = [session("Push A", daysAgo: 6), session("Push B", daysAgo: 4), session("Push C", daysAgo: 2)]
-        let store = InMemoryStore(exercises: [bench], sessions: sessions)
+        let store = TestStore(exercises: [bench], sessions: sessions)
         let fixedNow = now
         let history = HistoryModel(workouts: store, exercises: store, clock: { fixedNow })
         await history.load()

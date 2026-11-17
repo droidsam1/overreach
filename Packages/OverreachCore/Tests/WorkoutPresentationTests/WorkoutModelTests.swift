@@ -1,8 +1,8 @@
 import Domain
-import FeatureWorkout
+import Fixtures
 import Foundation
-import Persistence
 import Testing
+import WorkoutPresentation
 
 @MainActor
 @Suite("WorkoutModel")
@@ -10,8 +10,8 @@ struct WorkoutModelTests {
     private let now = Date(timeIntervalSince1970: 1_790_000_000)
     private let bench = Exercise(name: "Bench Press", primaryMuscles: [.chest], equipment: .barbell)
 
-    private func makeModel(sessions: [StrengthSession] = []) -> (WorkoutModel, InMemoryStore) {
-        let store = InMemoryStore(exercises: [bench], sessions: sessions)
+    private func makeModel(sessions: [StrengthSession] = []) -> (WorkoutModel, TestStore) {
+        let store = TestStore(exercises: [bench], sessions: sessions)
         let fixedNow = now
         let model = WorkoutModel(workouts: store, exercises: store, progression: store, clock: { fixedNow })
         return (model, store)
@@ -86,10 +86,10 @@ struct WorkoutModelTests {
 struct WorkoutModelFocusTests {
     @Test func sessionFocusPicksTheDefaultSchemeAndRest() async {
         let bench = Exercise(name: "Bench Press", primaryMuscles: [.chest], equipment: .barbell)
-        let store = InMemoryStore(exercises: [bench])
+        let store = TestStore(exercises: [bench])
         let model = WorkoutModel(workouts: store, exercises: store, progression: store)
         model.start()
-        model.sessionFocus = .strength
+        await model.setSessionFocus(.strength)
         await model.add(bench)
 
         let exercise = model.exercises.first
@@ -99,8 +99,7 @@ struct WorkoutModelFocusTests {
         #expect(exercise?.sets.first?.reps == 4)
         #expect((exercise?.restSeconds.lowerBound ?? 0) >= 180)
 
-        model.sessionFocus = .hypertrophy
-        await model.refreshTargets()
+        await model.setSessionFocus(.hypertrophy)
         #expect(model.exercises.first?.sets.count == 3)
         #expect(model.exercises.first?.focus == .hypertrophy)
     }

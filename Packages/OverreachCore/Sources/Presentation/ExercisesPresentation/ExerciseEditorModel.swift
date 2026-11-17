@@ -48,13 +48,6 @@ public struct MappingDraft: Hashable, Sendable {
     }
 }
 
-/// A selectable muscle or equipment option with its display name.
-public struct Option<Value: Hashable & Sendable>: Identifiable, Hashable, Sendable {
-    public let value: Value
-    public let name: String
-    public var id: Value { value }
-}
-
 /// A similar catalog exercise offered while editing.
 public struct SuggestionRow: Identifiable, Hashable, Sendable {
     public let id: UUID
