@@ -155,7 +155,7 @@ struct ExercisesSearchTests {
         await model.load()
         #expect(model.needsMappingRows.map(\.name) == ["Zercher Squat"])
 
-        model.searchText = "prés de"
+        model.searchText = "PRÉSS  de"
         #expect(model.allRows.map(\.name) == ["Bench Press (Barbell)"])
         #expect(model.needsMappingRows.isEmpty)
 
