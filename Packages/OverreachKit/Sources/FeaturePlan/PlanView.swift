@@ -22,6 +22,12 @@ public struct PlanView: View {
                 if let message = model.errorMessage {
                     Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
                 }
+                if model.isAnalysing {
+                    HStack {
+                        ProgressView()
+                        Text("Analysing your history…").foregroundStyle(.secondary)
+                    }
+                }
                 goalSection
                 blockSection
                 if let suggestion = model.suggestion {

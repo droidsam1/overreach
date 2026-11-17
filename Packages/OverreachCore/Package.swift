@@ -10,6 +10,8 @@ let package = Package(
         .library(name: "Analytics", targets: ["Analytics"]),
         .library(name: "StrongImport", targets: ["StrongImport"]),
         .library(name: "Reports", targets: ["Reports"]),
+        // Generated test data (large anonymised history). Tests only; never linked by the app.
+        .library(name: "Fixtures", targets: ["Fixtures"]),
     ],
     targets: [
         // Entities and protocols. Depends on nothing.
@@ -21,9 +23,13 @@ let package = Package(
         // Markdown report shared with ChatGPT/Claude, and context for the in-app assistant.
         .target(name: "Reports", dependencies: ["Domain", "Analytics"]),
 
+        // Generated test data shared by test targets in both packages.
+        .target(name: "Fixtures", dependencies: ["Domain"]),
+
         .testTarget(name: "DomainTests", dependencies: ["Domain"]),
         .testTarget(name: "AnalyticsTests", dependencies: ["Analytics", "Domain"]),
         .testTarget(name: "ReportsTests", dependencies: ["Reports", "Domain"]),
         .testTarget(name: "StrongImportTests", dependencies: ["StrongImport", "Domain"]),
+        .testTarget(name: "PerformanceTests", dependencies: ["Analytics", "StrongImport", "Domain", "Fixtures"]),
     ]
 )

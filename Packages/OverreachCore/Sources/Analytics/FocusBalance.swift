@@ -47,13 +47,28 @@ public enum FocusBalance {
         now: Date,
         settings: Settings = Settings()
     ) -> [BalanceFinding] {
+        findings(
+            index: ExposureIndex(sessions: sessions), exercises: exercises, exerciseSettings: exerciseSettings,
+            profile: profile, now: now, settings: settings
+        )
+    }
+
+    /// Same as `findings(sessions:exercises:exerciseSettings:profile:now:settings:)`, reusing an index.
+    public static func findings(
+        index: ExposureIndex,
+        exercises: [UUID: Exercise],
+        exerciseSettings: [UUID: ProgressionSettings] = [:],
+        profile: AthleteProfile,
+        now: Date,
+        settings: Settings = Settings()
+    ) -> [BalanceFinding] {
         let goal = profile.goal?.kind ?? .general
-        let sorted = sessions.sorted { $0.startedAt < $1.startedAt }
+        let sorted = index.sessions
         let windowStart = now.addingTimeInterval(-Double(settings.windowDays) * 86_400)
         let recent = sorted.filter { $0.startedAt >= windowStart && $0.startedAt <= now }
         guard !recent.isEmpty else { return [] }
 
-        let observed = recent.map { session in (session, FocusClassifier.focus(of: session, history: sorted)) }
+        let observed = recent.map { session in (session, FocusClassifier.focus(of: session, index: index)) }
         let blockFocus = activeDeclaredBlock(in: profile, now: now)?.focus
         var result: [BalanceFinding] = []
 
@@ -67,11 +82,11 @@ public enum FocusBalance {
         // Declared exercise focus vs its last three exposures.
         for (exerciseID, config) in exerciseSettings.sorted(by: { $0.key.uuidString < $1.key.uuidString }) {
             guard let declared = config.focus else { continue }
-            let history = ExerciseExposure.history(of: exerciseID, in: sorted.filter { $0.startedAt <= now })
+            let history = index.exposures(of: exerciseID).prefix { $0.date <= now }
             let lastThree = history.suffix(3)
             guard lastThree.count == 3 else { continue }
-            let foci = lastThree.indices.compactMap { index in
-                FocusClassifier.focus(of: history[index], previous: Array(history[..<index]))
+            let foci = lastThree.indices.compactMap { position in
+                FocusClassifier.focus(of: history[position], previous: history[..<position])
             }
             if let dominant = FocusClassifier.dominant(foci), !compatible(declared: declared, observed: dominant) {
                 result.append(.exerciseFocusMismatch(exerciseID: exerciseID, declared: declared, observed: dominant))
@@ -91,10 +106,10 @@ public enum FocusBalance {
         if goal == .strength, let priority = profile.goal?.priorityLifts {
             let heavyStart = now.addingTimeInterval(-Double(settings.heavyWorkWindowDays) * 86_400)
             for liftID in priority {
-                let history = ExerciseExposure.history(of: liftID, in: sorted.filter { $0.startedAt <= now })
+                let history = index.exposures(of: liftID).prefix { $0.date <= now }
                 guard let firstRecent = history.firstIndex(where: { $0.date >= heavyStart }) else { continue }
-                let heavy = (firstRecent..<history.count).contains { index in
-                    FocusClassifier.focus(of: history[index], previous: Array(history[..<index])) == .strength
+                let heavy = (firstRecent..<history.endIndex).contains { position in
+                    FocusClassifier.focus(of: history[position], previous: history[..<position]) == .strength
                 }
                 if !heavy {
                     result.append(.noHeavyWorkOnPriorityLift(exerciseID: liftID, days: settings.heavyWorkWindowDays))
@@ -104,7 +119,7 @@ public enum FocusBalance {
 
         // Per-muscle volume and focus mix.
         let weeks = Double(settings.windowDays) / 7
-        let perMuscle = muscleFocusSets(observedSessions: recent, history: sorted, exercises: exercises)
+        let perMuscle = muscleFocusSets(observedSessions: recent, index: index, exercises: exercises)
         let tracked: [MuscleGroup] = MuscleGroup.allCases.filter { $0 != .core && $0 != .forearms }
         for muscle in tracked {
             let byFocus = perMuscle[muscle] ?? [:]
@@ -148,25 +163,17 @@ public enum FocusBalance {
 
     /// Fractional working sets per muscle and focus (primary 1, secondary 0.5).
     private static func muscleFocusSets(
-        observedSessions: [StrengthSession], history: [StrengthSession], exercises: [UUID: Exercise]
+        observedSessions: [StrengthSession], index: ExposureIndex, exercises: [UUID: Exercise]
     ) -> [MuscleGroup: [TrainingFocus: Double]] {
         var result: [MuscleGroup: [TrainingFocus: Double]] = [:]
         for session in observedSessions {
-            for entry in session.entries {
-                guard let exercise = exercises[entry.exerciseID] else { continue }
-                let previous = ExerciseExposure.history(
-                    of: entry.exerciseID, in: history.filter { $0.startedAt < session.startedAt }
-                )
-                let current = ExerciseExposure(date: session.startedAt, sets: entry.sets)
-                let reference = (previous.suffix(6) + [current]).compactMap(\.bestEstimatedOneRepMax).max()
-                for set in current.sets {
-                    guard let focus = FocusClassifier.focus(of: set, oneRepMaxKg: reference) else { continue }
-                    for muscle in exercise.primaryMuscles {
-                        result[muscle, default: [:]][focus, default: 0] += 1
-                    }
-                    for muscle in exercise.secondaryMuscles where !exercise.primaryMuscles.contains(muscle) {
-                        result[muscle, default: [:]][focus, default: 0] += 0.5
-                    }
+            for (exerciseID, focus) in FocusClassifier.setFoci(of: session, index: index) {
+                guard let exercise = exercises[exerciseID] else { continue }
+                for muscle in exercise.primaryMuscles {
+                    result[muscle, default: [:]][focus, default: 0] += 1
+                }
+                for muscle in exercise.secondaryMuscles where !exercise.primaryMuscles.contains(muscle) {
+                    result[muscle, default: [:]][focus, default: 0] += 0.5
                 }
             }
         }

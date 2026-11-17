@@ -38,21 +38,36 @@ public enum FocusClassifier {
         return Double(best.value) / Double(foci.count) >= majority ? best.key : .mixed
     }
 
-    /// Focus of one exposure, using the best e1RM seen in `previous` exposures (or this one) as reference.
-    public static func focus(of exposure: ExerciseExposure, previous: [ExerciseExposure]) -> TrainingFocus? {
-        let reference = (previous.suffix(6) + [exposure]).compactMap(\.bestEstimatedOneRepMax).max()
+    /// Focus of one exposure, using the best e1RM of the last `previous` exposures (or this one) as reference.
+    public static func focus(
+        of exposure: ExerciseExposure, previous: some BidirectionalCollection<ExerciseExposure>
+    ) -> TrainingFocus? {
+        let reference = (Array(previous.suffix(ExposureIndex.referenceExposures)) + [exposure])
+            .compactMap(\.bestEstimatedOneRepMax).max()
         return dominant(exposure.sets.compactMap { focus(of: $0, oneRepMaxKg: reference) })
     }
 
     /// Focus of a whole session (all its working sets), with per-exercise e1RM references from `history`.
+    /// To classify many sessions, build one `ExposureIndex` and use `focus(of:index:)`.
     public static func focus(of session: StrengthSession, history: [StrengthSession]) -> TrainingFocus? {
-        var foci: [TrainingFocus] = []
+        focus(of: session, index: ExposureIndex(sessions: history))
+    }
+
+    /// Focus of a whole session, with per-exercise e1RM references from the exposures before it in `index`.
+    public static func focus(of session: StrengthSession, index: ExposureIndex) -> TrainingFocus? {
+        dominant(setFoci(of: session, index: index).map(\.focus))
+    }
+
+    /// Focus of each working set of `session`, with the exercise it belongs to.
+    static func setFoci(of session: StrengthSession, index: ExposureIndex) -> [(exerciseID: UUID, focus: TrainingFocus)] {
+        var result: [(exerciseID: UUID, focus: TrainingFocus)] = []
         for entry in session.entries {
-            let previous = ExerciseExposure.history(of: entry.exerciseID, in: history.filter { $0.startedAt < session.startedAt })
             let current = ExerciseExposure(date: session.startedAt, sets: entry.sets)
-            let reference = (previous.suffix(6) + [current]).compactMap(\.bestEstimatedOneRepMax).max()
-            foci += current.sets.compactMap { focus(of: $0, oneRepMaxKg: reference) }
+            let reference = index.referenceOneRepMax(for: entry.exerciseID, at: session.startedAt, current: current)
+            for set in current.sets {
+                if let focus = focus(of: set, oneRepMaxKg: reference) { result.append((entry.exerciseID, focus)) }
+            }
         }
-        return dominant(foci)
+        return result
     }
 }

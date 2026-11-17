@@ -18,6 +18,11 @@ public final class ImportModel {
     public var weightUnit: WeightUnit = .kilograms
     public private(set) var state: State = .idle
     public private(set) var preview: ImportPreview?
+    /// Sessions saved so far while importing, for the progress bar.
+    public private(set) var importedSessions = 0
+
+    /// Sessions written per batch: large enough to be fast, small enough to show progress and keep memory low.
+    static let batchSize = 100
 
     private var csv: String?
     private let importer: any TrainingHistoryImporter
@@ -71,8 +76,13 @@ public final class ImportModel {
             for exercise in preview.newExercises {
                 try await exercises.save(exercise)
             }
-            for session in preview.sessions {
-                try await workouts.save(session)
+            importedSessions = 0
+            var start = 0
+            while start < preview.sessions.count {
+                let batch = Array(preview.sessions[start..<min(start + Self.batchSize, preview.sessions.count)])
+                try await workouts.save(batch)
+                start += batch.count
+                importedSessions = start
             }
             state = .done(sessions: preview.sessions.count, sets: preview.setCount)
             self.preview = nil

@@ -15,6 +15,8 @@ public final class PlanModel {
     public private(set) var exerciseNames: [UUID: String] = [:]
     public private(set) var catalog: [Exercise] = []
     public private(set) var errorMessage: String?
+    /// True while the history is being analysed (off the main actor).
+    public private(set) var isAnalysing = false
 
     private let profiles: any ProfileRepository
     private let workouts: any WorkoutRepository
@@ -106,31 +108,23 @@ public final class PlanModel {
         }
     }
 
+    /// Runs `PlanAnalysis` off the main actor: with years of history it is the heaviest work in the app.
     private func analyse(sessions: [StrengthSession], now: Date) async {
-        let today = CalendarDay(now, calendar: calendar)
-        let inferred = BlockAdvisor.inferBlocks(sessions: sessions, calendar: calendar)
-        currentBlock = FocusBalance.activeDeclaredBlock(in: profile, now: now, calendar: calendar) ?? inferred.last
-
-        var settings: [UUID: ProgressionSettings] = [:]
-        let exerciseIDs = Set(sessions.flatMap { $0.entries.map(\.exerciseID) })
-        for id in exerciseIDs {
-            if let stored = try? await progression.progressionSettings(for: id) {
-                settings[id] = stored
-            }
-        }
-        let byID = Dictionary(catalog.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        let stalled = exerciseIDs.filter { id in
-            let history = ExerciseExposure.history(of: id, in: sessions)
-            let config = settings[id] ?? byID[id].map { ProgressionSettings(for: $0) } ?? ProgressionSettings(incrementKg: 2.5)
-            return StallDetection.status(history: history, settings: config).isStalled
-        }.count
-
-        suggestion = BlockAdvisor.suggestion(
-            goal: profile.goal, current: currentBlock, today: today, stalledLifts: stalled, calendar: calendar
-        )
-        plan = BlockAdvisor.plan(goal: profile.goal, current: currentBlock, today: today, calendar: calendar)
-        findings = FocusBalance.findings(
-            sessions: sessions, exercises: byID, exerciseSettings: settings, profile: profile, now: now
-        )
+        isAnalysing = true
+        defer { isAnalysing = false }
+        let settings = (try? await progression.allProgressionSettings()) ?? [:]
+        let exercises = Dictionary(catalog.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let profile = profile
+        let calendar = calendar
+        let analysis = await Task.detached(priority: .userInitiated) {
+            PlanAnalysis.run(
+                profile: profile, sessions: sessions, exercises: exercises, settings: settings, now: now,
+                calendar: calendar
+            )
+        }.value
+        currentBlock = analysis.currentBlock
+        suggestion = analysis.suggestion
+        plan = analysis.plan
+        findings = analysis.findings
     }
 }
