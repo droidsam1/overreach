@@ -13,6 +13,8 @@ let package = Package(
         // Presentation (ADR-0014): screen state, intents and texts. SwiftUI views in OverreachKit only render them.
         .library(name: "PresentationKit", targets: ["PresentationKit"]),
         .library(name: "ExercisesPresentation", targets: ["ExercisesPresentation"]),
+        .library(name: "WorkoutPresentation", targets: ["WorkoutPresentation"]),
+        .library(name: "HistoryPresentation", targets: ["HistoryPresentation"]),
         // Generated test data (large anonymised history). Tests only; never linked by the app.
         .library(name: "Fixtures", targets: ["Fixtures"]),
     ],
@@ -33,6 +35,16 @@ let package = Package(
             dependencies: ["Domain", "Analytics", "PresentationKit"],
             path: "Sources/Presentation/ExercisesPresentation"
         ),
+        .target(
+            name: "WorkoutPresentation",
+            dependencies: ["Domain", "Analytics", "PresentationKit"],
+            path: "Sources/Presentation/WorkoutPresentation"
+        ),
+        .target(
+            name: "HistoryPresentation",
+            dependencies: ["Domain", "Analytics", "PresentationKit"],
+            path: "Sources/Presentation/HistoryPresentation"
+        ),
 
         // Generated test data shared by test targets in both packages.
         .target(name: "Fixtures", dependencies: ["Domain"]),
@@ -43,6 +55,14 @@ let package = Package(
         .testTarget(name: "StrongImportTests", dependencies: ["StrongImport", "Domain"]),
         .testTarget(name: "PresentationKitTests", dependencies: ["PresentationKit", "Domain"]),
         .testTarget(name: "ExercisesPresentationTests", dependencies: ["ExercisesPresentation", "Domain", "Fixtures"]),
+        .testTarget(
+            name: "WorkoutPresentationTests",
+            dependencies: ["WorkoutPresentation", "PresentationKit", "Domain", "Fixtures"]
+        ),
+        .testTarget(
+            name: "HistoryPresentationTests",
+            dependencies: ["HistoryPresentation", "PresentationKit", "Domain", "Fixtures"]
+        ),
         .testTarget(name: "PerformanceTests", dependencies: ["Analytics", "StrongImport", "Domain", "Fixtures"]),
     ]
 )

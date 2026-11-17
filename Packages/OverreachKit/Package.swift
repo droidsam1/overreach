@@ -13,6 +13,14 @@ let featureDependencies: [Target.Dependency] = [
     "DesignSystem",
 ]
 
+/// What a migrated, UI-only feature may depend on (ADR-0014): value types, shared display helpers and the design
+/// system. Its own presentation module is added per target. No Analytics: views can't run rules.
+let uiDependencies: [Target.Dependency] = [
+    .product(name: "Domain", package: core),
+    .product(name: "PresentationKit", package: core),
+    "DesignSystem",
+]
+
 let package = Package(
     name: "OverreachKit",
     defaultLocalization: "en",
@@ -51,12 +59,16 @@ let package = Package(
 
         // MARK: Features
         .target(name: "FeatureToday", dependencies: featureDependencies + ["AIKit"]),
-        .target(name: "FeatureWorkout", dependencies: featureDependencies),
-        .target(name: "FeatureHistory", dependencies: featureDependencies),
+        // UI only (ADR-0014): no Analytics; logic comes from the presentation modules.
+        .target(name: "FeatureWorkout", dependencies: uiDependencies + [
+            .product(name: "WorkoutPresentation", package: core),
+        ]),
+        .target(name: "FeatureHistory", dependencies: uiDependencies + [
+            .product(name: "HistoryPresentation", package: core),
+        ]),
         .target(name: "FeatureTrends", dependencies: featureDependencies),
-        // UI only (ADR-0014): no Analytics; logic comes from the presentation module.
-        .target(name: "FeatureExercises", dependencies: [
-            "DesignSystem", .product(name: "ExercisesPresentation", package: core),
+        .target(name: "FeatureExercises", dependencies: uiDependencies + [
+            .product(name: "ExercisesPresentation", package: core),
         ]),
         .target(name: "FeaturePlan", dependencies: featureDependencies),
         .target(name: "FeatureAssistant", dependencies: featureDependencies + ["AIKit"]),
@@ -67,15 +79,9 @@ let package = Package(
         .testTarget(name: "PersistenceTests", dependencies: [
             "Persistence", .product(name: "Domain", package: core), .product(name: "Fixtures", package: core),
         ]),
-        .testTarget(name: "FeatureWorkoutTests", dependencies: [
-            "FeatureWorkout", "Persistence", .product(name: "Domain", package: core),
-        ]),
         .testTarget(name: "FeatureSettingsTests", dependencies: [
             "FeatureSettings", "Persistence", .product(name: "Domain", package: core),
             .product(name: "Fixtures", package: core),
-        ]),
-        .testTarget(name: "FeatureHistoryTests", dependencies: [
-            "FeatureHistory", "Persistence", .product(name: "Domain", package: core),
         ]),
         .testTarget(name: "FeatureTodayTests", dependencies: ["FeatureToday", .product(name: "Domain", package: core)]),
     ]

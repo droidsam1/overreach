@@ -1,6 +1,7 @@
 import Domain
 import Foundation
 import Observation
+import PresentationKit
 
 /// Edits a past session: name, times, focus, notes, exercises and sets. Changes are kept in `draft` and only
 /// written when `save()` succeeds; targets and analyses pick them up because they are computed from history.
@@ -39,8 +40,30 @@ public final class SessionEditorModel: Identifiable {
     public var issues: [SessionEditIssue] { draft.editIssues }
     public var canSave: Bool { hasChanges && issues.isEmpty && !isSaving }
 
+    /// Why the draft can't be saved yet, in plain language.
+    public var issueMessages: [String] { issues.map(\.message) }
+
+    public var exerciseChoices: [ExerciseChoice] { catalog.map(ExerciseChoice.init) }
+    public let focusOptions: [Option<TrainingFocus>] = Option.trainingFocuses
+    public let setKindOptions: [Option<SetKind>] = Option.setKinds
+
+    /// Notes as editable text; an empty text removes them.
+    public var notesText: String {
+        get { draft.notes ?? "" }
+        set { draft.notes = newValue.isEmpty ? nil : newValue }
+    }
+
+    public func canMoveUp(_ entryID: ExerciseEntry.ID) -> Bool { draft.entries.first?.id != entryID }
+    public func canMoveDown(_ entryID: ExerciseEntry.ID) -> Bool { draft.entries.last?.id != entryID }
+
+    /// 1-based position of a set within its exercise.
+    public func number(of setID: WorkoutSet.ID, in entryID: ExerciseEntry.ID) -> Int {
+        guard let entry = draft.entries.first(where: { $0.id == entryID }) else { return 1 }
+        return (entry.sets.firstIndex { $0.id == setID } ?? 0) + 1
+    }
+
     public func name(of exerciseID: UUID) -> String {
-        exerciseNames[exerciseID] ?? "Unknown exercise"
+        exerciseNames[exerciseID] ?? L10n.text("Unknown exercise")
     }
 
     // MARK: Times
@@ -48,6 +71,11 @@ public final class SessionEditorModel: Identifiable {
     /// Moves the session to `date`, keeping its duration and set times.
     public func moveStart(to date: Date) {
         draft = draft.movingStart(to: date)
+    }
+
+    /// Adds an end time one hour after the start, to be adjusted by the user.
+    public func addEndTime() {
+        draft.endedAt = draft.startedAt.addingTimeInterval(3_600)
     }
 
     /// Sets the end time; `nil` removes it (unknown duration).
@@ -59,6 +87,16 @@ public final class SessionEditorModel: Identifiable {
 
     public func addExercise(_ exercise: Exercise) {
         draft.entries.append(ExerciseEntry(exerciseID: exercise.id, sets: [WorkoutSet()]))
+    }
+
+    public func addExercise(id exerciseID: UUID) {
+        guard let exercise = catalog.first(where: { $0.id == exerciseID }) else { return }
+        addExercise(exercise)
+    }
+
+    public func replaceExercise(of entryID: ExerciseEntry.ID, withID exerciseID: UUID) {
+        guard let exercise = catalog.first(where: { $0.id == exerciseID }) else { return }
+        replaceExercise(of: entryID, with: exercise)
     }
 
     /// Re-points an entry to another exercise (e.g. logged as the wrong variation), keeping its sets.
@@ -110,8 +148,19 @@ public final class SessionEditorModel: Identifiable {
             await backup?.backUpIfConfigured(now: clock())
             return cleaned
         } catch {
-            errorMessage = "Could not save your changes."
+            errorMessage = L10n.text("Could not save your changes.")
             return nil
+        }
+    }
+}
+
+extension SessionEditIssue {
+    public var message: String {
+        switch self {
+        case .missingName: L10n.text("Give the session a name.")
+        case .noSets: L10n.text("Add at least one set, or delete the session from History.")
+        case .endsBeforeStart: L10n.text("The end time is before the start time.")
+        case .invalidValues: L10n.text("Weights and reps can't be negative, and RPE goes from 1 to 10.")
         }
     }
 }

@@ -71,8 +71,8 @@ existing modules to do it.
   `XView` in `FeatureX` renders state and calls intents. Views keep layout, styling, accessibility, static
   copy and purely visual `@State` (sheet open, focus) — never rule-based `if`s, computations, `.filter`/`.sorted`
   over data, or texts derived from rules. One model per screen/flow; sub-screens get a model from the parent.
-  Presentation tests are the feature's contract: a redesign is safe if they pass. Not yet migrated: Workout,
-  History, Plan, Settings, Today (their models still live in `FeatureX`; move them when touching them).
+  Presentation tests are the feature's contract: a redesign is safe if they pass. Migrated: Exercises, Workout,
+  History. Not yet migrated: Plan, Settings, Today (their models still live in `FeatureX`; move them when touching them).
 - Dates: daily data is keyed by `CalendarDay` (year/month/day in the user's calendar), never by raw `Date`.
 - Units: store SI (kg, meters, seconds, ms for HRV). Convert only in the UI.
 - Every metric is optional. Missing data must degrade gracefully, never crash or block.

@@ -5,7 +5,9 @@ import FeaturePlan
 import FeatureSettings
 import FeatureToday
 import FeatureWorkout
+import HistoryPresentation
 import SwiftUI
+import WorkoutPresentation
 
 /// Top-level navigation. Cross-feature navigation is wired here, never inside a feature.
 struct RootView: View {

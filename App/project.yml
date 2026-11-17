@@ -87,6 +87,10 @@ targets:
         product: FeatureExercises
       - package: OverreachCore
         product: ExercisesPresentation
+      - package: OverreachCore
+        product: WorkoutPresentation
+      - package: OverreachCore
+        product: HistoryPresentation
 
 schemes:
   Overreach:

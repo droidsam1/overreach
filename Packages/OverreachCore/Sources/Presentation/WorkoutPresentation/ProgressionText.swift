@@ -1,19 +1,9 @@
 import Analytics
 import Domain
 import Foundation
+import PresentationKit
 
 // Plain-language descriptions of engine output for the logger. Every line names its evidence level.
-
-extension EvidenceLevel {
-    var label: String {
-        switch self {
-        case .strong: "strong evidence"
-        case .moderate: "moderate evidence"
-        case .limited: "limited evidence"
-        case .heuristic: "coaching heuristic"
-        }
-    }
-}
 
 extension ProgressionReason {
     var text: String {
