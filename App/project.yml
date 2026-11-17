@@ -83,6 +83,8 @@ targets:
         product: StrongImport
       - package: OverreachKit
         product: FeatureSettings
+      - package: OverreachKit
+        product: FeatureExercises
 
 schemes:
   Overreach:

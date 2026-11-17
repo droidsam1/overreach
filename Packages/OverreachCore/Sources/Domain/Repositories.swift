@@ -23,6 +23,9 @@ extension WorkoutRepository {
 public protocol ExerciseRepository: Sendable {
     func allExercises() async throws -> [Exercise]
     func save(_ exercise: Exercise) async throws
+    /// Removes a user exercise (e.g. after merging it into another one). For a built-in exercise this only drops
+    /// the user's edits; the built-in definition stays.
+    func deleteExercise(id: UUID) async throws
 }
 
 public protocol CheckInRepository: Sendable {

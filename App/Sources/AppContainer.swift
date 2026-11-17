@@ -1,4 +1,5 @@
 import Domain
+import FeatureExercises
 import FeatureHistory
 import FeaturePlan
 import FeatureSettings
@@ -84,6 +85,10 @@ final class AppContainer {
 
     func makePlanModel() -> PlanModel {
         PlanModel(profiles: profiles, workouts: workouts, exercises: exercises, progression: progression)
+    }
+
+    func makeExercisesModel() -> ExercisesModel {
+        ExercisesModel(workouts: workouts, exercises: exercises, progression: progression)
     }
 
     func makeBackupModel() -> BackupModel {

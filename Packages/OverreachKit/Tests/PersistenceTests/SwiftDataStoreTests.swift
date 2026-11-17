@@ -32,6 +32,23 @@ struct SwiftDataStoreTests {
         #expect(remaining.map(\.name) == ["Push"])
     }
 
+    @Test func deletingExercisesRemovesCustomOnesAndResetsBuiltIns() async throws {
+        let store = try makeStore()
+        let custom = Exercise(name: "Zercher Squat", primaryMuscles: [], isCustom: true)
+        var bench = try #require(ExerciseCatalog.builtIn.first { $0.name == "Bench Press (Barbell)" })
+        let original = bench
+        bench.aliases.insert("Press banca pausa")
+        try await store.save(custom)
+        try await store.save(bench)
+
+        try await store.deleteExercise(id: custom.id)
+        try await store.deleteExercise(id: bench.id)
+
+        let all = try await store.allExercises()
+        #expect(!all.contains { $0.id == custom.id })
+        #expect(all.first { $0.id == bench.id } == original)
+    }
+
     @Test func exercisesIncludeTheCatalogAndCustomOnes() async throws {
         let store = try makeStore()
         let custom = Exercise(name: "Zercher Squat", primaryMuscles: [.quadriceps], equipment: .barbell, isCustom: true)

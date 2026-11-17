@@ -5,7 +5,10 @@ import UniformTypeIdentifiers
 
 /// Settings. Phase 1: backup and import from Strong. Later: connections (Health, Garmin), readiness
 /// thresholds, report template, and in phase 4 the AI provider, model and API key.
-public struct SettingsView: View {
+///
+/// `Library` holds rows the App injects for other features (e.g. the exercise list), since a feature never
+/// imports another feature.
+public struct SettingsView<Library: View>: View {
     /// One file importer serves every picker (several `.fileImporter` modifiers on one view conflict).
     private enum FilePick {
         case strongCSV, backupFolder, backupFile
@@ -24,15 +27,18 @@ public struct SettingsView: View {
     @State private var isPickingFile = false
     @State private var filePick: FilePick = .strongCSV
     @State private var exportURL: URL?
+    private let library: Library
 
-    public init(importModel: ImportModel, backupModel: BackupModel) {
+    public init(importModel: ImportModel, backupModel: BackupModel, @ViewBuilder library: () -> Library) {
         _importModel = State(initialValue: importModel)
         _backupModel = State(initialValue: backupModel)
+        self.library = library()
     }
 
     public var body: some View {
         NavigationStack {
             Form {
+                Section("Library") { library }
                 backupSection
                 Section {
                     Picker("Weights in the file", selection: $importModel.weightUnit) {
@@ -165,9 +171,20 @@ public struct SettingsView: View {
         case let .done(sessions, sets):
             Label("Imported \(sessions) sessions and \(sets) sets.", systemImage: "checkmark.circle.fill")
                 .foregroundStyle(.green)
+            if importModel.lastImportNewExercises > 0 {
+                Text("\(importModel.lastImportNewExercises) new exercises need their muscles. Assign them in Exercises.")
+                    .font(.footnote)
+                    .foregroundStyle(.orange)
+            }
         case let .failed(message):
             Label(message, systemImage: "exclamationmark.triangle")
                 .foregroundStyle(.red)
         }
+    }
+}
+
+extension SettingsView where Library == EmptyView {
+    public init(importModel: ImportModel, backupModel: BackupModel) {
+        self.init(importModel: importModel, backupModel: backupModel) { EmptyView() }
     }
 }

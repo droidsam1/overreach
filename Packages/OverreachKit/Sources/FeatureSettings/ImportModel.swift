@@ -20,6 +20,8 @@ public final class ImportModel {
     public private(set) var preview: ImportPreview?
     /// Sessions saved so far while importing, for the progress bar.
     public private(set) var importedSessions = 0
+    /// Exercises the last import added without muscles, to point the user to the exercise list.
+    public private(set) var lastImportNewExercises = 0
 
     /// Sessions written per batch: large enough to be fast, small enough to show progress and keep memory low.
     static let batchSize = 100
@@ -84,6 +86,7 @@ public final class ImportModel {
                 start += batch.count
                 importedSessions = start
             }
+            lastImportNewExercises = preview.newExercises.count(where: \.needsMuscleMapping)
             state = .done(sessions: preview.sessions.count, sets: preview.setCount)
             self.preview = nil
             csv = nil

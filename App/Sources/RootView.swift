@@ -1,3 +1,4 @@
+import FeatureExercises
 import FeatureHistory
 import FeaturePlan
 import FeatureSettings
@@ -13,6 +14,7 @@ struct RootView: View {
     @State private var planModel: PlanModel
     @State private var importModel: ImportModel
     @State private var backupModel: BackupModel
+    @State private var exercisesModel: ExercisesModel
     @Environment(\.scenePhase) private var scenePhase
 
     init(container: AppContainer) {
@@ -22,6 +24,7 @@ struct RootView: View {
         _planModel = State(initialValue: container.makePlanModel())
         _importModel = State(initialValue: container.makeImportModel())
         _backupModel = State(initialValue: container.makeBackupModel())
+        _exercisesModel = State(initialValue: container.makeExercisesModel())
     }
 
     var body: some View {
@@ -39,10 +42,27 @@ struct RootView: View {
                 PlanView(model: planModel)
             }
             Tab("Settings", systemImage: "gearshape") {
-                SettingsView(importModel: importModel, backupModel: backupModel)
+                SettingsView(importModel: importModel, backupModel: backupModel) {
+                    NavigationLink {
+                        ExercisesView(model: exercisesModel)
+                    } label: {
+                        Label("Exercises", systemImage: "figure.strengthtraining.traditional")
+                    }
+                    .badge(exercisesModel.needsMappingCount)
+                }
+            }
+            .badge(exercisesModel.needsMappingCount)
+        }
+        .task {
+            await backupModel.checkRestoreOffer()
+            await exercisesModel.load()
+        }
+        .onChange(of: importModel.state) {
+            // New exercises from an import need muscles: refresh the badge.
+            if case .done = importModel.state {
+                Task { await exercisesModel.load() }
             }
         }
-        .task { await backupModel.checkRestoreOffer() }
         .onChange(of: scenePhase) {
             if scenePhase == .background {
                 Task { await backupModel.backUpIfConfigured() }

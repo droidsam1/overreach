@@ -173,6 +173,12 @@ public actor SwiftDataStore: WorkoutRepository, ExerciseRepository, CheckInRepos
         try modelContext.save()
     }
 
+    /// Deletes the user's record. A built-in exercise falls back to its built-in definition.
+    public func deleteExercise(id: UUID) throws {
+        try modelContext.delete(model: ExerciseRecord.self, where: #Predicate { $0.id == id })
+        try modelContext.save()
+    }
+
     // MARK: CheckInRepository
 
     public func checkIn(for day: CalendarDay) throws -> CheckIn? {
