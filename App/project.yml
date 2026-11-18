@@ -70,6 +70,8 @@ targets:
       - package: OverreachKit
         product: GarminSource
       - package: OverreachKit
+        product: LocalAlerts
+      - package: OverreachKit
         product: FeatureToday
       - package: OverreachKit
         product: FeatureWorkout

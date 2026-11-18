@@ -28,6 +28,18 @@ public struct FocusPrescription: Hashable, Sendable {
     public var defaultScheme: ProgressionScheme
     public var evidence: [EvidenceReference]
 
+    /// The rest timer starts from the shortest suggested rest; the user can extend it.
+    public var defaultRestSeconds: Int { restSeconds.lowerBound }
+
+    /// What supports `restSeconds`.
+    public var restEvidence: EvidenceReference {
+        switch focus {
+        case .strength: FocusEvidence.restStrength
+        case .hypertrophy: FocusEvidence.restHypertrophy
+        case .mixed, .endurance: FocusEvidence.focusHeuristics
+        }
+    }
+
     public static func `for`(_ focus: TrainingFocus) -> FocusPrescription {
         switch focus {
         case .strength:

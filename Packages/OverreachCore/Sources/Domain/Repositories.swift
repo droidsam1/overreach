@@ -74,6 +74,12 @@ public protocol ProgressionSettingsRepository: Sendable {
     func allProgressionSettings() async throws -> [UUID: ProgressionSettings]
 }
 
+/// Alerts the user when a rest ends while the app is in the background. There is at most one pending alert.
+public protocol RestAlertScheduler: Sendable {
+    func scheduleRestEnd(at date: Date, title: String, body: String) async
+    func cancelRestEnd() async
+}
+
 /// What an import would add, shown to the user before anything is saved (ADR-0011).
 public struct ImportPreview: Sendable {
     public var sessions: [StrengthSession]
