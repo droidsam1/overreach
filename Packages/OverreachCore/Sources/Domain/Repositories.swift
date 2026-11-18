@@ -74,6 +74,12 @@ public protocol ProgressionSettingsRepository: Sendable {
     func allProgressionSettings() async throws -> [UUID: ProgressionSettings]
 }
 
+/// Whether this device already went through, or skipped, the first-run setup.
+public protocol OnboardingStatusStore: Sendable {
+    func isOnboardingCompleted() async -> Bool
+    func markOnboardingCompleted() async
+}
+
 /// Alerts the user when a rest ends while the app is in the background. There is at most one pending alert.
 public protocol RestAlertScheduler: Sendable {
     func scheduleRestEnd(at date: Date, title: String, body: String) async

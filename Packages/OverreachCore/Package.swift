@@ -18,6 +18,7 @@ let package = Package(
         .library(name: "PlanPresentation", targets: ["PlanPresentation"]),
         .library(name: "SettingsPresentation", targets: ["SettingsPresentation"]),
         .library(name: "TodayPresentation", targets: ["TodayPresentation"]),
+        .library(name: "OnboardingPresentation", targets: ["OnboardingPresentation"]),
         // Generated test data (large anonymised history). Tests only; never linked by the app.
         .library(name: "Fixtures", targets: ["Fixtures"]),
     ],
@@ -63,6 +64,11 @@ let package = Package(
             dependencies: ["Domain", "Analytics", "PresentationKit"],
             path: "Sources/Presentation/TodayPresentation"
         ),
+        .target(
+            name: "OnboardingPresentation",
+            dependencies: ["Domain", "PresentationKit"],
+            path: "Sources/Presentation/OnboardingPresentation"
+        ),
 
         // Generated test data shared by test targets in both packages.
         .target(name: "Fixtures", dependencies: ["Domain"]),
@@ -95,6 +101,10 @@ let package = Package(
         .testTarget(
             name: "TodayPresentationTests",
             dependencies: ["TodayPresentation", "PresentationKit", "Domain", "Fixtures"]
+        ),
+        .testTarget(
+            name: "OnboardingPresentationTests",
+            dependencies: ["OnboardingPresentation", "Domain", "Fixtures"]
         ),
         .testTarget(name: "PerformanceTests", dependencies: ["Analytics", "StrongImport", "Domain", "Fixtures"]),
     ]
