@@ -62,11 +62,15 @@ public struct MergeConfirmation: Hashable, Sendable {
     public let message: String
 }
 
-/// Edit one exercise: muscles, equipment, copy from a similar exercise, or merge into another one.
+/// Create or edit one exercise: names (not for built-in exercises), muscles and equipment, copy from a similar
+/// exercise, or merge into another one.
 @MainActor
 @Observable
 public final class ExerciseEditorModel {
     public var draft: MappingDraft
+    public var name: String
+    /// Other names, separated by commas. Used by search and to match imported exercises.
+    public var aliasesText: String
     /// Text typed in the merge-target search.
     public var mergeSearchText = ""
     /// Set when the user picked a merge target; cleared by confirming or cancelling.
@@ -77,30 +81,71 @@ public final class ExerciseEditorModel {
 
     private let list: ExercisesModel
     private let exerciseID: UUID
+    private let isNew: Bool
+    private let initialAliasesText: String
 
+    /// Edits an existing exercise.
     init(list: ExercisesModel, exerciseID: UUID) {
         self.list = list
         self.exerciseID = exerciseID
-        draft = list.exercise(id: exerciseID).map(MappingDraft.init) ?? MappingDraft()
+        isNew = false
+        let exercise = list.exercise(id: exerciseID)
+        draft = exercise.map(MappingDraft.init) ?? MappingDraft()
+        name = exercise?.name ?? ""
+        initialAliasesText = exercise?.aliases.sorted().joined(separator: ", ") ?? ""
+        aliasesText = initialAliasesText
+    }
+
+    /// Creates a new custom exercise.
+    init(creatingIn list: ExercisesModel) {
+        self.list = list
+        exerciseID = UUID()
+        isNew = true
+        draft = MappingDraft()
+        name = ""
+        initialAliasesText = ""
+        aliasesText = ""
     }
 
     // MARK: Screen state
 
     private var exercise: Exercise? { list.exercise(id: exerciseID) }
 
+    private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
+
     /// False once the exercise was merged away or deleted.
-    public var exists: Bool { exercise != nil }
+    public var exists: Bool { isNew || exercise != nil }
 
-    public var title: String { exercise?.name ?? "" }
+    public var title: String { exercise?.name ?? (isNew ? L10n.text("New exercise") : "") }
 
-    public var canSave: Bool { draft.canSave }
+    /// Built-in exercises keep their names; new, created and imported ones can change them.
+    public var canEditNames: Bool { isNew || exercise?.isCustom == true }
+
+    /// Why the typed names can't be used: another exercise already answers to one of them, which would make
+    /// search and imports ambiguous.
+    public var nameMessage: String? {
+        guard canEditNames else { return nil }
+        let currentNames = exercise.map { [$0.name] + $0.aliases } ?? []
+        let ownKeys = Set(currentNames.map(SearchText.normalize))
+        for candidate in [trimmedName] + editedAliases.sorted() {
+            let key = SearchText.normalize(candidate)
+            guard !key.isEmpty, !ownKeys.contains(key),
+                  let other = list.exercise(answeringTo: key, excluding: exerciseID) else { continue }
+            return L10n.text("“\(candidate)” is already used by \(other.name).")
+        }
+        return nil
+    }
+
+    public var canSave: Bool {
+        draft.canSave && (!canEditNames || (!trimmedName.isEmpty && nameMessage == nil))
+    }
 
     /// Only custom exercises can be merged away; built-in ones stay in the catalog.
     public var canMerge: Bool { exercise?.isCustom ?? false }
 
     public var suggestions: [SuggestionRow] {
-        guard let exercise else { return [] }
-        return list.suggestions(for: exercise).map {
+        guard let subject = exercise ?? newExercisePreview else { return [] }
+        return list.suggestions(for: subject).map {
             SuggestionRow(id: $0.exercise.id, name: $0.exercise.name, muscles: MuscleGroup.displayList($0.exercise.primaryMuscles))
         }
     }
@@ -130,9 +175,24 @@ public final class ExerciseEditorModel {
 
     /// Saves the draft. Returns true when the screen can close.
     public func save() async -> Bool {
-        await list.saveMapping(
-            for: exerciseID, primary: draft.primary, secondary: draft.secondary, equipment: draft.equipment
-        )
+        guard canSave else { return false }
+        guard canEditNames else {
+            return await list.saveMapping(
+                for: exerciseID, primary: draft.primary, secondary: draft.secondary, equipment: draft.equipment
+            )
+        }
+        var edited = exercise ?? Exercise(id: exerciseID, name: trimmedName, primaryMuscles: [], isCustom: true)
+        var aliases = editedAliases
+        // A renamed exercise keeps answering to its old name, so importing it again does not duplicate it.
+        if SearchText.normalize(edited.name) != SearchText.normalize(trimmedName) {
+            aliases.insert(edited.name)
+        }
+        edited.name = trimmedName
+        edited.aliases = aliases
+        edited.primaryMuscles = draft.primary
+        edited.secondaryMuscles = draft.secondary
+        edited.equipment = draft.equipment
+        return await list.saveExercise(edited)
     }
 
     /// Asks for confirmation before merging into `targetID`.
@@ -156,5 +216,32 @@ public final class ExerciseEditorModel {
         guard let pending = pendingMerge else { return false }
         pendingMerge = nil
         return await list.merge(exerciseID, into: pending.targetID)
+    }
+
+    // MARK: Helpers
+
+    /// What is being created so far, to look for similar exercises while typing.
+    private var newExercisePreview: Exercise? {
+        guard isNew, !trimmedName.isEmpty else { return nil }
+        return Exercise(id: exerciseID, name: trimmedName, primaryMuscles: [], equipment: draft.equipment)
+    }
+
+    /// The typed aliases without blanks, repeats or the exercise's own name. Untouched text keeps the stored
+    /// aliases as they are, since an imported name may itself contain a comma.
+    private var editedAliases: Set<String> {
+        let entries: [String] = aliasesText == initialAliasesText
+            ? exercise?.aliases.sorted() ?? []
+            : aliasesText.split(whereSeparator: { $0 == "," || $0.isNewline }).map {
+                $0.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        var seen: Set<String> = [SearchText.normalize(trimmedName)]
+        var aliases: Set<String> = []
+        for entry in entries {
+            let key = SearchText.normalize(entry)
+            if !key.isEmpty, seen.insert(key).inserted {
+                aliases.insert(entry)
+            }
+        }
+        return aliases
     }
 }

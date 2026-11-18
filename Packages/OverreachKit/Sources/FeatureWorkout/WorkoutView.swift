@@ -39,6 +39,8 @@ public struct WorkoutView: View {
                 ExercisePicker(items: model.exerciseChoices.map(PickerItem.init)) { id in
                     Task { await model.add(exerciseID: id) }
                 }
+                // Exercises may have been created since this screen first appeared.
+                .task { await model.load() }
             }
             .confirmationDialog("Discard this session?", isPresented: $isConfirmingDiscard) {
                 Button("Discard", role: .destructive) { model.discard() }

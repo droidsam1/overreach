@@ -13,6 +13,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - `scripts/test-core.sh` / `.ps1` run the core and presentation tests in Docker (same image as CI).
 
 ### Added
+- Custom exercises (#17): create them from the Exercises screen with name, other names, equipment and muscles.
+  Names already used by another exercise are rejected; custom and imported exercises can be renamed and keep
+  their old name for future imports. They appear in the logger and session-editing pickers.
 - Exercises screen (Settings → Exercises, #13): imported exercises without muscles listed first with a badge;
   assign primary/secondary muscles and equipment, copy them from similar catalog exercises (name matching
   across Spanish aliases, accents and plurals), or merge into another exercise (history, progression settings

@@ -68,6 +68,11 @@ public final class ExercisesModel {
         return ExerciseEditorModel(list: self, exerciseID: exerciseID)
     }
 
+    /// The form to create a custom exercise.
+    public func newExerciseEditor() -> ExerciseEditorModel {
+        ExerciseEditorModel(creatingIn: self)
+    }
+
     // MARK: Intents
 
     public func load() async {
@@ -115,6 +120,19 @@ public final class ExercisesModel {
         }
     }
 
+    /// Saves a new or edited exercise and refreshes the list. Returns false on failure.
+    @discardableResult
+    public func saveExercise(_ exercise: Exercise) async -> Bool {
+        do {
+            try await exerciseRepository.save(exercise)
+        } catch {
+            errorMessage = L10n.text("Could not save the exercise.")
+            return false
+        }
+        await load()
+        return true
+    }
+
     /// Moves the history of `sourceID` to `targetID` and removes the source. The source's names become aliases
     /// of the target (so re-imports resolve to it) and its progression settings move over if the target has
     /// none. Order keeps every session pointing to an existing exercise even if a step fails.
@@ -147,6 +165,14 @@ public final class ExercisesModel {
 
     func suggestions(for exercise: Exercise) -> [ExerciseSuggestion] {
         ExerciseSuggestions.similar(to: exercise, in: exercises)
+    }
+
+    /// Another exercise whose name or alias has the normalized form `key`.
+    func exercise(answeringTo key: String, excluding excludedID: UUID) -> Exercise? {
+        exercises.first { candidate in
+            candidate.id != excludedID
+                && ([candidate.name] + candidate.aliases).contains { SearchText.normalize($0) == key }
+        }
     }
 
     func mergeTargets(for exercise: Exercise) -> [Exercise] {

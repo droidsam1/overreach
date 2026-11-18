@@ -5,10 +5,11 @@ import SwiftUI
 // Views only: layout, styling and navigation. Every decision, filter and text derived from rules comes from
 // `ExercisesPresentation` (ADR-0014), so this file can be redesigned freely.
 
-/// Exercise list. Phase 1: assign muscles to imported exercises and merge duplicates (issue #13).
+/// Exercise list: create exercises (issue #17), assign muscles to imported ones and merge duplicates (issue #13).
 /// Pushed inside the caller's navigation stack.
 public struct ExercisesView: View {
     @State private var model: ExercisesModel
+    @State private var isCreating = false
 
     public init(model: ExercisesModel) {
         _model = State(initialValue: model)
@@ -39,6 +40,14 @@ public struct ExercisesView: View {
         }
         .navigationTitle("Exercises")
         .searchable(text: $model.searchText)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("New exercise", systemImage: "plus") { isCreating = true }
+            }
+        }
+        .sheet(isPresented: $isCreating) {
+            NavigationStack { NewExerciseScreen(list: model) }
+        }
         .overlay {
             if model.showsLoadingIndicator { ProgressView() }
         }
@@ -90,7 +99,26 @@ private struct EditorScreen: View {
     }
 }
 
-/// Edit an exercise's muscles and equipment, copy them from a similar exercise, or merge into another one.
+/// The form to create an exercise, presented as a sheet.
+private struct NewExerciseScreen: View {
+    @State private var editor: ExerciseEditorModel
+    @Environment(\.dismiss) private var dismiss
+
+    init(list: ExercisesModel) {
+        _editor = State(initialValue: list.newExerciseEditor())
+    }
+
+    var body: some View {
+        ExerciseEditorView(model: editor)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+    }
+}
+
+/// Create or edit an exercise: names, muscles and equipment, copy them from a similar exercise, or merge it.
 struct ExerciseEditorView: View {
     @Bindable var model: ExerciseEditorModel
     @Environment(\.dismiss) private var dismiss
@@ -107,6 +135,9 @@ struct ExerciseEditorView: View {
         Form {
             if let message = model.errorMessage {
                 Text(message).foregroundStyle(.red)
+            }
+            if model.canEditNames {
+                namesSection
             }
             if !model.suggestions.isEmpty {
                 Section {
@@ -182,6 +213,18 @@ struct ExerciseEditorView: View {
             Button("Cancel", role: .cancel) { model.cancelMerge() }
         } message: { confirmation in
             Text(confirmation.message)
+        }
+    }
+
+    private var namesSection: some View {
+        Section {
+            TextField("Name", text: $model.name)
+            TextField("Other names", text: $model.aliasesText)
+            if let message = model.nameMessage {
+                Text(message).font(.footnote).foregroundStyle(.red)
+            }
+        } footer: {
+            Text("Separate other names with commas. Search and imports use them too.")
         }
     }
 
