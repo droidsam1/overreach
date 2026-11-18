@@ -24,5 +24,6 @@ which also build and test on Linux, where String Catalogs are not available.
 
 ## Consequences
 
-- A new language means adding it to the catalog, `CFBundleLocalizations` and the script's list.
+- A new language means adding it to both catalogs (`Localizable`, `InfoPlist`), `CFBundleLocalizations` and the
+  script's list.
 - Plural variants are not modelled yet. Translations prefer wordings that read well with any number.

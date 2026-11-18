@@ -2,7 +2,7 @@ import Domain
 import Foundation
 import HealthKit
 
-/// Reads recovery metrics and runs from Apple Health (phase 2) and writes strength workouts (phase 1).
+/// Reads recovery metrics and runs from Apple Health (phase 2).
 ///
 /// Garmin Connect writes heart rate, resting heart rate, sleep, steps and activities to Health, but not HRV
 /// in Garmin's RMSSD form — that comes from `GarminSource`. An Apple Watch user gets HRV (SDNN) from here.

@@ -18,6 +18,7 @@ public final class SessionEditorModel: Identifiable {
     private let exerciseNames: [UUID: String]
     private let workouts: any WorkoutRepository
     private let backup: (any BackupService)?
+    private let health: (any HealthWorkoutWriter)?
     private let clock: @Sendable () -> Date
 
     public init(
@@ -25,6 +26,7 @@ public final class SessionEditorModel: Identifiable {
         catalog: [Exercise],
         workouts: any WorkoutRepository,
         backup: (any BackupService)? = nil,
+        health: (any HealthWorkoutWriter)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.draft = session
@@ -33,6 +35,7 @@ public final class SessionEditorModel: Identifiable {
         self.exerciseNames = Dictionary(catalog.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
         self.workouts = workouts
         self.backup = backup
+        self.health = health
         self.clock = clock
     }
 
@@ -146,6 +149,10 @@ public final class SessionEditorModel: Identifiable {
             try await workouts.save(cleaned)
             errorMessage = nil
             await backup?.backUpIfConfigured(now: clock())
+            // A workout in the health app holds only the session's times.
+            if cleaned.startedAt != original.startedAt || cleaned.endedAt != original.endedAt {
+                await health?.sync(cleaned)
+            }
             return cleaned
         } catch {
             errorMessage = L10n.text("Could not save your changes.")
