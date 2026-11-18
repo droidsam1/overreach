@@ -64,6 +64,17 @@ final class ProgressionSettingsRecord {
     }
 }
 
+@Model
+final class RoutineRecord {
+    var id = UUID()
+    var payload = Data()
+
+    init(id: UUID, payload: Data) {
+        self.id = id
+        self.payload = payload
+    }
+}
+
 // MARK: - Container
 
 public enum PersistenceContainer {
@@ -76,6 +87,7 @@ public enum PersistenceContainer {
             CheckInRecord.self,
             ProfileRecord.self,
             ProgressionSettingsRecord.self,
+            RoutineRecord.self,
         ])
         let configuration = ModelConfiguration(
             schema: schema,
@@ -91,7 +103,7 @@ public enum PersistenceContainer {
 /// SwiftData implementation of the repositories. All access is serialised on this actor's model context.
 @ModelActor
 public actor SwiftDataStore: WorkoutRepository, ExerciseRepository, CheckInRepository, ProfileRepository,
-    ProgressionSettingsRepository {
+    ProgressionSettingsRepository, RoutineRepository {
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 
@@ -176,6 +188,31 @@ public actor SwiftDataStore: WorkoutRepository, ExerciseRepository, CheckInRepos
     /// Deletes the user's record. A built-in exercise falls back to its built-in definition.
     public func deleteExercise(id: UUID) throws {
         try modelContext.delete(model: ExerciseRecord.self, where: #Predicate { $0.id == id })
+        try modelContext.save()
+    }
+
+    // MARK: RoutineRepository
+
+    public func allRoutines() throws -> [Routine] {
+        try modelContext.fetch(FetchDescriptor<RoutineRecord>())
+            .map { try decoder.decode(Routine.self, from: $0.payload) }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    public func save(_ routine: Routine) throws {
+        let id = routine.id
+        let payload = try encoder.encode(routine)
+        let existing = try modelContext.fetch(FetchDescriptor<RoutineRecord>(predicate: #Predicate { $0.id == id }))
+        if let record = existing.first {
+            record.payload = payload
+        } else {
+            modelContext.insert(RoutineRecord(id: id, payload: payload))
+        }
+        try modelContext.save()
+    }
+
+    public func deleteRoutine(id: UUID) throws {
+        try modelContext.delete(model: RoutineRecord.self, where: #Predicate { $0.id == id })
         try modelContext.save()
     }
 

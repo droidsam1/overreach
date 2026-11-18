@@ -23,7 +23,7 @@ struct HistoryModelTests {
     private func model(_ sessions: [StrengthSession]) async -> (HistoryModel, TestStore) {
         let store = TestStore(exercises: [squat], sessions: sessions)
         let fixedNow = now
-        let model = HistoryModel(workouts: store, exercises: store, clock: { fixedNow })
+        let model = HistoryModel(workouts: store, exercises: store, routines: store, clock: { fixedNow })
         await model.load()
         return (model, store)
     }

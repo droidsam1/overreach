@@ -16,7 +16,7 @@ private actor MemoryDestination: BackupDestination {
 
 private func service(_ store: InMemoryStore, _ destination: MemoryDestination) -> RepositoryBackupService {
     RepositoryBackupService(
-        workouts: store, exercises: store, checkIns: store, profiles: store, progression: store,
+        workouts: store, exercises: store, checkIns: store, profiles: store, progression: store, routines: store,
         destination: destination
     )
 }

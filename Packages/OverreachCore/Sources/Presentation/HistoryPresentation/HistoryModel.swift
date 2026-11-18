@@ -59,9 +59,12 @@ public final class HistoryModel {
     public private(set) var catalog: [Exercise] = []
     public private(set) var isLoading = false
     public private(set) var errorMessage: String?
+    /// Result of saving a session as a routine, until the user dismisses it.
+    public private(set) var routineNotice: String?
 
     private let workouts: any WorkoutRepository
     private let exercises: any ExerciseRepository
+    private let routines: any RoutineRepository
     private let backup: (any BackupService)?
     private let clock: @Sendable () -> Date
 
@@ -71,11 +74,13 @@ public final class HistoryModel {
     public init(
         workouts: any WorkoutRepository,
         exercises: any ExerciseRepository,
+        routines: any RoutineRepository,
         backup: (any BackupService)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
         self.exercises = exercises
+        self.routines = routines
         self.backup = backup
         self.clock = clock
     }
@@ -104,6 +109,26 @@ public final class HistoryModel {
             errorMessage = L10n.text("Could not delete the session.")
         }
     }
+
+    /// Creates a routine with the session's name, focus and exercises, unless an identical one exists.
+    public func saveAsRoutine(sessionID: UUID) async {
+        guard let session = session(id: sessionID) else { return }
+        let routine = Routine(from: session)
+        do {
+            let existing = try await routines.allRoutines()
+            if existing.contains(where: { $0.name == routine.name && $0.exerciseIDs == routine.exerciseIDs }) {
+                routineNotice = L10n.text("“\(routine.name)” is already in your routines.")
+                return
+            }
+            try await routines.save(routine)
+            routineNotice = L10n.text("Saved “\(routine.name)” to your routines.")
+            await backup?.backUpIfConfigured(now: clock())
+        } catch {
+            routineNotice = L10n.text("Could not save the routine.")
+        }
+    }
+
+    public func clearRoutineNotice() { routineNotice = nil }
 
     /// "No sessions yet" is shown only when loading finished without sessions or errors.
     public var showsEmptyState: Bool { summaries.isEmpty && !isLoading && errorMessage == nil }

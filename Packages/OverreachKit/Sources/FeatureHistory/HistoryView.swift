@@ -79,10 +79,22 @@ private struct SessionDetailView: View {
         if let detail = model.detail(for: sessionID) {
             content(detail)
                 .toolbar {
+                    Button("Save as routine", systemImage: "square.and.arrow.down") {
+                        Task { await model.saveAsRoutine(sessionID: sessionID) }
+                    }
                     Button("Edit") { editor = model.makeEditor(forSessionID: sessionID) }
                 }
                 .sheet(item: $editor) { editor in
                     SessionEditorView(model: editor) { model.didSave($0) }
+                }
+                .alert(
+                    model.routineNotice ?? "",
+                    isPresented: Binding(
+                        get: { model.routineNotice != nil },
+                        set: { if !$0 { model.clearRoutineNotice() } }
+                    )
+                ) {
+                    Button("OK", role: .cancel) {}
                 }
         } else {
             ContentUnavailableView("Session not found", systemImage: "calendar.badge.exclamationmark")

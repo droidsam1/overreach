@@ -225,7 +225,7 @@ struct HistoryModelEditingTests {
         let sessions = [session("Push A", daysAgo: 6), session("Push B", daysAgo: 4), session("Push C", daysAgo: 2)]
         let store = TestStore(exercises: [bench], sessions: sessions)
         let fixedNow = now
-        let history = HistoryModel(workouts: store, exercises: store, clock: { fixedNow })
+        let history = HistoryModel(workouts: store, exercises: store, routines: store, clock: { fixedNow })
         await history.load()
         #expect(history.summaries.map(\.session.name) == ["Push C", "Push B", "Push A"])
 

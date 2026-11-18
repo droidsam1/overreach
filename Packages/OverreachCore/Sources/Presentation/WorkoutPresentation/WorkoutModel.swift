@@ -158,6 +158,23 @@ public final class WorkoutModel {
         startedAt = clock()
     }
 
+    /// Opens a session from `routine`: its name, focus and exercises, with sets prefilled from each exercise's next
+    /// progression target. Exercises that no longer exist are skipped. Does nothing if a session is open.
+    public func start(_ routine: Routine) async {
+        guard !isSessionActive else { return }
+        start(name: routine.name)
+        sessionFocus = routine.focus
+        let session = startedAt
+        await load()
+        for exerciseID in routine.exerciseIDs {
+            guard let exercise = catalog.first(where: { $0.id == exerciseID }) else { continue }
+            let prepared = await prepare(exercise, id: UUID())
+            // The session may have been discarded while the target was computed.
+            guard startedAt == session else { return }
+            exercises.append(prepared)
+        }
+    }
+
     /// Adds `exercise` with sets prefilled from its next progression target.
     public func add(_ exercise: Exercise) async {
         guard isSessionActive else { return }

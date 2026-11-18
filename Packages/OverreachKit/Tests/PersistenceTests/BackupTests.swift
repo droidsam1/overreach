@@ -21,7 +21,7 @@ private actor MemoryDestination: BackupDestination {
 
 private func makeService(store: InMemoryStore, destination: any BackupDestination) -> RepositoryBackupService {
     RepositoryBackupService(
-        workouts: store, exercises: store, checkIns: store, profiles: store, progression: store,
+        workouts: store, exercises: store, checkIns: store, profiles: store, progression: store, routines: store,
         destination: destination, appVersion: "test"
     )
 }
@@ -29,6 +29,18 @@ private func makeService(store: InMemoryStore, destination: any BackupDestinatio
 @Suite("Backup service")
 struct BackupServiceTests {
     private let custom = Exercise(name: "Zercher Squat", primaryMuscles: [.quadriceps], equipment: .barbell, isCustom: true)
+
+    @Test func routinesAreBackedUpAndRestored() async throws {
+        let source = InMemoryStore(exercises: ExerciseCatalog.builtIn + [custom])
+        let routine = Routine(name: "Legs", focus: .strength, exerciseIDs: [custom.id])
+        await source.save(routine)
+        let data = try await makeService(store: source, destination: MemoryDestination()).exportData(now: .now)
+
+        let target = InMemoryStore(exercises: ExerciseCatalog.builtIn)
+        _ = try await makeService(store: target, destination: MemoryDestination()).restore(from: data)
+
+        #expect(await target.allRoutines() == [routine])
+    }
 
     private func populatedStore() async -> InMemoryStore {
         let store = InMemoryStore(exercises: ExerciseCatalog.builtIn + [custom])

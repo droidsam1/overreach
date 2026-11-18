@@ -26,6 +26,7 @@ public struct BackupDocument: Hashable, Codable, Sendable {
     public var checkIns: [CheckIn]
     public var profile: AthleteProfile
     public var progressionSettings: [ProgressionSettingsEntry]
+    public var routines: [Routine]
 
     public init(
         formatVersion: Int = BackupDocument.currentFormatVersion,
@@ -35,7 +36,8 @@ public struct BackupDocument: Hashable, Codable, Sendable {
         exercises: [Exercise] = [],
         checkIns: [CheckIn] = [],
         profile: AthleteProfile = AthleteProfile(),
-        progressionSettings: [ProgressionSettingsEntry] = []
+        progressionSettings: [ProgressionSettingsEntry] = [],
+        routines: [Routine] = []
     ) {
         self.formatVersion = formatVersion
         self.createdAt = createdAt
@@ -45,10 +47,12 @@ public struct BackupDocument: Hashable, Codable, Sendable {
         self.checkIns = checkIns
         self.profile = profile
         self.progressionSettings = progressionSettings
+        self.routines = routines
     }
 
     private enum CodingKeys: String, CodingKey {
         case formatVersion, createdAt, appVersion, sessions, exercises, checkIns, profile, progressionSettings
+        case routines
     }
 
     /// Tolerant decoding: sections added in later versions fall back to empty, so old backups keep loading.
@@ -64,7 +68,8 @@ public struct BackupDocument: Hashable, Codable, Sendable {
             profile: try container.decodeIfPresent(AthleteProfile.self, forKey: .profile) ?? AthleteProfile(),
             progressionSettings: try container.decodeIfPresent(
                 [ProgressionSettingsEntry].self, forKey: .progressionSettings
-            ) ?? []
+            ) ?? [],
+            routines: try container.decodeIfPresent([Routine].self, forKey: .routines) ?? []
         )
     }
 

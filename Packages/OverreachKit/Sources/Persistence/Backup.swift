@@ -11,6 +11,7 @@ public actor RepositoryBackupService: BackupService {
     private let checkIns: any CheckInRepository
     private let profiles: any ProfileRepository
     private let progression: any ProgressionSettingsRepository
+    private let routines: any RoutineRepository
     private let destination: any BackupDestination
     private let appVersion: String?
 
@@ -23,6 +24,7 @@ public actor RepositoryBackupService: BackupService {
         checkIns: any CheckInRepository,
         profiles: any ProfileRepository,
         progression: any ProgressionSettingsRepository,
+        routines: any RoutineRepository,
         destination: any BackupDestination,
         appVersion: String? = nil
     ) {
@@ -31,6 +33,7 @@ public actor RepositoryBackupService: BackupService {
         self.checkIns = checkIns
         self.profiles = profiles
         self.progression = progression
+        self.routines = routines
         self.destination = destination
         self.appVersion = appVersion
     }
@@ -85,6 +88,9 @@ public actor RepositoryBackupService: BackupService {
         for entry in document.progressionSettings {
             try await progression.save(entry.settings, for: entry.exerciseID)
         }
+        for routine in document.routines {
+            try await routines.save(routine)
+        }
         // Keep a profile the user already set up on this device; otherwise take the backup's.
         if try await profiles.profile() == AthleteProfile() {
             try await profiles.save(document.profile)
@@ -107,7 +113,8 @@ public actor RepositoryBackupService: BackupService {
             profile: try await profiles.profile(),
             progressionSettings: try await progression.allProgressionSettings()
                 .map { ProgressionSettingsEntry(exerciseID: $0.key, settings: $0.value) }
-                .sorted { $0.exerciseID.uuidString < $1.exerciseID.uuidString }
+                .sorted { $0.exerciseID.uuidString < $1.exerciseID.uuidString },
+            routines: try await routines.allRoutines()
         )
     }
 }

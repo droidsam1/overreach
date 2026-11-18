@@ -21,6 +21,17 @@ public enum ExerciseMerge {
         }
     }
 
+    /// The routines that use `sourceID`, now using `targetID` in its place (a routine that already had the target
+    /// keeps it once, at its first position). Routines that don't use the source are left out.
+    public static func repoint(_ routines: [Routine], from sourceID: UUID, to targetID: UUID) -> [Routine] {
+        routines.compactMap { routine in
+            guard routine.exerciseIDs.contains(sourceID) else { return nil }
+            var changed = routine
+            changed.setExercises(routine.exerciseIDs.map { $0 == sourceID ? targetID : $0 })
+            return changed
+        }
+    }
+
     /// `target` with the source's name and aliases added to its aliases (the target's own name is not repeated).
     public static func absorbing(_ source: Exercise, into target: Exercise) -> Exercise {
         var merged = target
