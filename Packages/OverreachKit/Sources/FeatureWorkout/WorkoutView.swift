@@ -99,7 +99,9 @@ private struct SessionList: View {
                 Section {
                     TargetSummaryView(summary: exercise.summary)
                     ForEach($exercise.sets) { $set in
-                        SetRow(number: exercise.number(of: set.id), set: $set)
+                        SetRow(number: exercise.number(of: set.id), set: $set) { isDone in
+                            model.setDone(isDone, set: set.id, in: exercise.id)
+                        }
                             .swipeActions {
                                 Button("Delete", role: .destructive) {
                                     model.removeSet(set.id, from: exercise.id)
@@ -123,6 +125,11 @@ private struct SessionList: View {
                 }
             }
             Button("Add exercise", systemImage: "plus.circle.fill") { isPickingExercise = true }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if model.rest.isActive {
+                RestTimerView(model: model.rest)
+            }
         }
     }
 }
@@ -164,12 +171,13 @@ private struct TargetSummaryView: View {
 private struct SetRow: View {
     let number: Int
     @Binding var set: DraftSet
+    let onDoneChange: (Bool) -> Void
 
     var body: some View {
         HStack(spacing: Spacing.small) {
             SetNumberLabel(number)
             SetValueFields(weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe)
-            Toggle(isOn: $set.isDone) {
+            Toggle(isOn: Binding(get: { set.isDone }, set: onDoneChange)) {
                 Image(systemName: set.isDone ? "checkmark.circle.fill" : "circle")
             }
             .toggleStyle(.button)

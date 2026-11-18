@@ -40,6 +40,7 @@ Packages/
     HealthKitSource       Apple Health reader/writer
     GarminSource          Unofficial Garmin Connect client (optional, isolated)
     AIKit                 LLMProvider protocol + adapters
+    LocalAlerts           Local notifications (rest timer)
     DesignSystem          Colors, spacing, reusable components and charts. No domain types.
     Feature*              SwiftUI views of one screen/flow (Today, Workout, History, Trends,
                           Exercises, Plan, Assistant, Settings, Onboarding). UI only (ADR-0014).
@@ -50,7 +51,7 @@ docs/                     Product definition and ADRs
 
 1. `Domain` depends on nothing.
 2. `Analytics`, `StrongImport`, `Reports` depend only on `Domain` (and `Reports` on `Analytics`).
-3. Data modules (`Persistence`, `HealthKitSource`, `GarminSource`, `AIKit`) depend on `Domain`
+3. Data modules (`Persistence`, `HealthKitSource`, `GarminSource`, `AIKit`, `LocalAlerts`) depend on `Domain`
    (+ `Reports` for `AIKit`) and implement its protocols.
 4. `FeatureX` depends on `XPresentation`, `PresentationKit`, `DesignSystem` and `Domain` (value types only;
    `AIKit` only for Today and Assistant). **It never imports `Analytics`, another feature or a concrete data

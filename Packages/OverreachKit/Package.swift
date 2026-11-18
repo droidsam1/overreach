@@ -24,6 +24,7 @@ let package = Package(
         .library(name: "HealthKitSource", targets: ["HealthKitSource"]),
         .library(name: "GarminSource", targets: ["GarminSource"]),
         .library(name: "AIKit", targets: ["AIKit"]),
+        .library(name: "LocalAlerts", targets: ["LocalAlerts"]),
         .library(name: "DesignSystem", targets: ["DesignSystem"]),
         .library(name: "FeatureToday", targets: ["FeatureToday"]),
         .library(name: "FeatureWorkout", targets: ["FeatureWorkout"]),
@@ -47,6 +48,8 @@ let package = Package(
             .product(name: "Domain", package: core),
             .product(name: "Reports", package: core),
         ]),
+
+        .target(name: "LocalAlerts", dependencies: [.product(name: "Domain", package: core)]),
 
         // MARK: UI foundation
         // Generic components that take display values: no domain types (ADR-0014).

@@ -9,6 +9,7 @@ import Foundation
 import GarminSource
 import HealthKitSource
 import HistoryPresentation
+import LocalAlerts
 import Observation
 import Persistence
 import PlanPresentation
@@ -29,6 +30,7 @@ final class AppContainer {
     let routines: any RoutineRepository
     let importer: any TrainingHistoryImporter
     let backup: any BackupService
+    let restAlerts: any RestAlertScheduler
     /// In priority order: when two sources report the same value, the first wins.
     let metricsSources: [any MetricsSource]
 
@@ -41,6 +43,7 @@ final class AppContainer {
         routines: any RoutineRepository,
         importer: any TrainingHistoryImporter = StrongHistoryImporter(),
         backupDestination: any BackupDestination = FolderBackupDestination(),
+        restAlerts: any RestAlertScheduler = LocalRestAlerts(),
         metricsSources: [any MetricsSource]
     ) {
         self.workouts = workouts
@@ -50,6 +53,7 @@ final class AppContainer {
         self.profiles = profiles
         self.routines = routines
         self.importer = importer
+        self.restAlerts = restAlerts
         self.backup = RepositoryBackupService(
             workouts: workouts, exercises: exercises, checkIns: checkIns, profiles: profiles, progression: progression,
             routines: routines, destination: backupDestination,
@@ -86,7 +90,10 @@ final class AppContainer {
     }
 
     func makeWorkoutModel() -> WorkoutModel {
-        WorkoutModel(workouts: workouts, exercises: exercises, progression: progression, backup: backup)
+        WorkoutModel(
+            workouts: workouts, exercises: exercises, progression: progression, backup: backup,
+            restAlerts: restAlerts
+        )
     }
 
     func makeRoutinesModel() -> RoutinesModel {

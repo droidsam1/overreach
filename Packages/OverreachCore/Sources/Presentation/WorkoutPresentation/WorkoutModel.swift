@@ -111,6 +111,8 @@ public final class WorkoutModel {
     /// Exercises of the session in progress. Views bind to it directly (`$model.exercises`).
     public var exercises: [DraftExercise] = []
     public private(set) var errorMessage: String?
+    /// The rest between sets.
+    public let rest: RestTimerModel
 
     public var isSessionActive: Bool { startedAt != nil }
 
@@ -134,6 +136,7 @@ public final class WorkoutModel {
         exercises: any ExerciseRepository,
         progression: any ProgressionSettingsRepository,
         backup: (any BackupService)? = nil,
+        restAlerts: (any RestAlertScheduler)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
@@ -141,6 +144,7 @@ public final class WorkoutModel {
         self.progression = progression
         self.backup = backup
         self.clock = clock
+        rest = RestTimerModel(alerts: restAlerts, clock: clock)
     }
 
     public func load() async {
@@ -256,6 +260,7 @@ public final class WorkoutModel {
 
     public func removeExercise(_ exerciseID: DraftExercise.ID) {
         exercises.removeAll { $0.id == exerciseID }
+        rest.stop(exerciseID: exerciseID)
     }
 
     /// Adds a set copying the last set's values.
@@ -268,6 +273,20 @@ public final class WorkoutModel {
     public func removeSet(_ setID: DraftSet.ID, from exerciseID: DraftExercise.ID) {
         guard let index = exercises.firstIndex(where: { $0.id == exerciseID }) else { return }
         exercises[index].sets.removeAll { $0.id == setID }
+        rest.stop(setID: setID)
+    }
+
+    /// Marks a set as performed, which starts the rest, or undoes it, which stops the rest it started.
+    public func setDone(_ isDone: Bool, set setID: DraftSet.ID, in exerciseID: DraftExercise.ID) {
+        guard let index = exercises.firstIndex(where: { $0.id == exerciseID }),
+              let setIndex = exercises[index].sets.firstIndex(where: { $0.id == setID }),
+              exercises[index].sets[setIndex].isDone != isDone else { return }
+        exercises[index].sets[setIndex].isDone = isDone
+        if isDone {
+            rest.start(after: setID, of: exercises[index])
+        } else {
+            rest.stop(setID: setID)
+        }
     }
 
     /// Saves the completed sets and closes the session. Returns `false` if saving failed (the draft is kept).
@@ -304,6 +323,7 @@ public final class WorkoutModel {
     }
 
     private func close() {
+        rest.stop()
         startedAt = nil
         exercises = []
         errorMessage = nil
