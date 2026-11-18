@@ -240,7 +240,13 @@ public final class WorkoutModel {
     /// without stored settings, the focus picks the default scheme (`FocusPrescription`).
     private func prepare(_ exercise: Exercise, id: UUID) async -> DraftExercise {
         let history = await history(of: exercise.id)
-        let stored = try? await progression.progressionSettings(for: exercise.id)
+        let stored: ProgressionSettings?
+        do {
+            stored = try await progression.progressionSettings(for: exercise.id)
+        } catch {
+            stored = nil
+            warnAboutTargets()
+        }
         let declaredFocus = stored?.focus ?? sessionFocus
         var settings = stored ?? ProgressionSettings(for: exercise)
         if stored == nil, let declaredFocus {
@@ -337,7 +343,16 @@ public final class WorkoutModel {
 
     private func history(of exerciseID: UUID) async -> [ExerciseExposure] {
         let now = clock()
-        let sessions = (try? await workouts.sessions(from: now.addingTimeInterval(-Self.historyWindow), to: now)) ?? []
-        return ExerciseExposure.history(of: exerciseID, in: sessions)
+        do {
+            let sessions = try await workouts.sessions(from: now.addingTimeInterval(-Self.historyWindow), to: now)
+            return ExerciseExposure.history(of: exerciseID, in: sessions)
+        } catch {
+            warnAboutTargets()
+            return []
+        }
+    }
+
+    private func warnAboutTargets() {
+        errorMessage = L10n.text("Could not read your history, so these targets may be off.")
     }
 }

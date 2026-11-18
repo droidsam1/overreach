@@ -239,6 +239,23 @@
         }
       }
     },
+    "Add an exercise to see its target from your history.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade un ejercicio para ver su objetivo según tu historial."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Engade un exercicio para ver o seu obxectivo segundo o teu historial."
+          }
+        }
+      }
+    },
     "Add at least one set, or delete the session from History.": {
       "extractionState": "manual",
       "localizations": {
@@ -1174,19 +1191,70 @@
         }
       }
     },
-    "Could not read the file: {1}": {
+    "Could not open that file. Try choosing it again.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "No se ha podido leer el archivo: {1}"
+            "value": "No se pudo abrir ese archivo. Prueba a elegirlo de nuevo."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Non se puido ler o ficheiro: {1}"
+            "value": "Non se puido abrir ese ficheiro. Proba a escollelo de novo."
+          }
+        }
+      }
+    },
+    "Could not open that folder. Try choosing it again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo abrir esa carpeta. Prueba a elegirla de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido abrir ese cartafol. Proba a escollelo de novo."
+          }
+        }
+      }
+    },
+    "Could not read this file. Check that it is a CSV exported from Strong.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo leer este archivo. Comprueba que sea un CSV exportado desde Strong."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido ler este ficheiro. Comproba que sexa un CSV exportado desde Strong."
+          }
+        }
+      }
+    },
+    "Could not read your history, so these targets may be off.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo leer tu historial, así que estos objetivos pueden no ser correctos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido ler o teu historial, así que estes obxectivos poden non ser correctos."
           }
         }
       }
@@ -1310,19 +1378,19 @@
         }
       }
     },
-    "Could not save.": {
+    "Could not save your plan. Try again.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "No se ha podido guardar."
+            "value": "No se pudo guardar tu plan. Inténtalo de nuevo."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Non se puido gardar."
+            "value": "Non se puido gardar o teu plan. Inténtao de novo."
           }
         }
       }
@@ -2381,19 +2449,19 @@
         }
       }
     },
-    "Import stopped: {1}. Already imported sessions are kept; importing again is safe.": {
+    "Import stopped. Already imported sessions are kept; importing again is safe.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "La importación se ha detenido: {1}. Las sesiones ya importadas se conservan y puedes volver a importar sin problema."
+            "value": "La importación se detuvo. Las sesiones ya importadas se conservan y puedes volver a importar sin riesgo."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "A importación detívose: {1}. As sesións xa importadas consérvanse e podes volver importar sen problema."
+            "value": "A importación detívose. As sesións xa importadas consérvanse e podes volver importar sen risco."
           }
         }
       }
@@ -3095,6 +3163,23 @@
         }
       }
     },
+    "No exercises": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin ejercicios"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen exercicios"
+          }
+        }
+      }
+    },
     "No history yet: pick a weight you could lift for a couple more reps.": {
       "extractionState": "manual",
       "localizations": {
@@ -3125,6 +3210,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen músculos asignados"
+          }
+        }
+      }
+    },
+    "No other exercises": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay otros ejercicios"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai outros exercicios"
+          }
+        }
+      }
+    },
+    "No recent backup found in this folder. Check that it is still available, then back up now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay ninguna copia reciente en esta carpeta. Comprueba que siga disponible y haz una copia ahora."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai ningunha copia recente neste cartafol. Comproba que siga dispoñible e fai unha copia agora."
           }
         }
       }
@@ -3537,6 +3656,23 @@
         }
       }
     },
+    "Recovery data will appear here once Apple Health or Garmin is connected.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los datos de recuperación aparecerán aquí cuando conectes Apple Salud o Garmin."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os datos de recuperación aparecerán aquí cando conectes Apple Saúde ou Garmin."
+          }
+        }
+      }
+    },
     "Red": {
       "extractionState": "manual",
       "localizations": {
@@ -3652,6 +3788,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ciclo de repeticións"
+          }
+        }
+      }
+    },
+    "Repetitions": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeticiones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeticións"
           }
         }
       }
@@ -4081,6 +4234,23 @@
         }
       }
     },
+    "Set %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serie %lld"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serie %lld"
+          }
+        }
+      }
+    },
     "Set %lld done": {
       "extractionState": "manual",
       "localizations": {
@@ -4298,6 +4468,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sono"
+          }
+        }
+      }
+    },
+    "Some exercise settings could not be read, so this analysis may be incomplete.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudieron leer algunos ajustes de ejercicios, así que este análisis puede estar incompleto."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puideron ler algúns axustes de exercicios, así que esta análise pode estar incompleta."
           }
         }
       }
@@ -4659,6 +4846,23 @@
         }
       }
     },
+    "The file is empty. Export it again from Strong.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El archivo está vacío. Vuelve a exportarlo desde Strong."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O ficheiro está baleiro. Volve exportalo desde Strong."
+          }
+        }
+      }
+    },
     "The file is not a text CSV.": {
       "extractionState": "manual",
       "localizations": {
@@ -4774,6 +4978,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Este bloque leva {1} semanas."
+          }
+        }
+      }
+    },
+    "This file is missing these columns: {1}. Export it again from Strong.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A este archivo le faltan estas columnas: {1}. Vuelve a exportarlo desde Strong."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A este ficheiro fáltanlle estas columnas: {1}. Volve exportalo desde Strong."
           }
         }
       }
@@ -5046,6 +5267,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quecemento"
+          }
+        }
+      }
+    },
+    "Weight in kilograms": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peso en kilos"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peso en quilos"
           }
         }
       }

@@ -20,14 +20,20 @@ public struct SetValueFields: View {
     }
 
     public var body: some View {
-        TextField("kg", value: $weightKg, format: .number)
-            .numericKeyboard(decimal: true)
-            .multilineTextAlignment(.trailing)
-        Text("kg").foregroundStyle(.secondary)
-        TextField("reps", value: $reps, format: .number)
-            .numericKeyboard(decimal: false)
-            .multilineTextAlignment(.trailing)
-        Text("reps").foregroundStyle(.secondary)
+        HStack {
+            TextField("kg", value: $weightKg, format: .number)
+                .numericKeyboard(decimal: true)
+                .multilineTextAlignment(.trailing)
+                .accessibilityLabel("Weight in kilograms")
+            Text("kg").foregroundStyle(.secondary).accessibilityHidden(true)
+        }
+        HStack {
+            TextField("reps", value: $reps, format: .number)
+                .numericKeyboard(decimal: false)
+                .multilineTextAlignment(.trailing)
+                .accessibilityLabel("Repetitions")
+            Text("reps").foregroundStyle(.secondary).accessibilityHidden(true)
+        }
         Picker("RPE", selection: $rpe) {
             Text("RPE –").tag(Double?.none)
             // Keep a value outside the usual range (e.g. imported RPE 5) selectable.
@@ -48,6 +54,7 @@ public struct SetValueFields: View {
 /// The set number shown at the start of a set row.
 public struct SetNumberLabel: View {
     private let number: Int
+    @ScaledMetric(relativeTo: .subheadline) private var width: CGFloat = 20
 
     public init(_ number: Int) {
         self.number = number
@@ -57,7 +64,8 @@ public struct SetNumberLabel: View {
         Text("\(number)")
             .font(.subheadline.monospacedDigit())
             .foregroundStyle(.secondary)
-            .frame(width: 20)
+            .frame(minWidth: width)
+            .accessibilityLabel("Set \(number)")
     }
 }
 
@@ -111,6 +119,11 @@ public struct ExercisePicker: View {
                 Button(item.title) {
                     onPick(item.id)
                     dismiss()
+                }
+            }
+            .overlay {
+                if filtered.isEmpty {
+                    ListEmptyState(query: query, title: "No exercises", systemImage: "dumbbell")
                 }
             }
             .searchable(text: $query)

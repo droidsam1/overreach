@@ -51,7 +51,11 @@ public struct ExercisesView: View {
             NavigationStack { NewExerciseScreen(list: model) }
         }
         .overlay {
-            if model.showsLoadingIndicator { ProgressView() }
+            if model.showsLoadingIndicator {
+                ProgressView()
+            } else if model.showsNoResults {
+                ListEmptyState(query: model.searchText, title: "No exercises", systemImage: "dumbbell")
+            }
         }
         .task { await model.load() }
         .refreshable { await model.load() }
@@ -271,6 +275,11 @@ private struct MergeTargetList: View {
                     Text(target.name).foregroundStyle(.primary)
                     Text(target.muscles).font(.footnote).foregroundStyle(.secondary)
                 }
+            }
+        }
+        .overlay {
+            if model.mergeTargets.isEmpty {
+                ListEmptyState(query: model.mergeSearchText, title: "No other exercises", systemImage: "dumbbell")
             }
         }
         .navigationTitle("Merge into")

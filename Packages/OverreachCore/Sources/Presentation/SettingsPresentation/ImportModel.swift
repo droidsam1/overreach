@@ -80,7 +80,7 @@ public final class ImportModel {
             state = .preview
         } catch {
             preview = nil
-            state = .failed(L10n.format("Could not read the file: {1}", String(describing: error)))
+            state = .failed(Self.message(for: error))
         }
     }
 
@@ -105,12 +105,27 @@ public final class ImportModel {
             self.preview = nil
             csv = nil
         } catch {
-            state = .failed(
-                L10n.format(
-                    "Import stopped: {1}. Already imported sessions are kept; importing again is safe.",
-                    String(describing: error)
-                )
+            state = .failed(L10n.text("Import stopped. Already imported sessions are kept; importing again is safe."))
+        }
+    }
+
+    /// The chosen file could not be opened, so there is nothing to read.
+    public func fileCouldNotBeOpened() {
+        reset()
+        state = .failed(L10n.text("Could not open that file. Try choosing it again."))
+    }
+
+    private static func message(for error: any Error) -> String {
+        switch error as? HistoryImportError {
+        case .emptyFile:
+            L10n.text("The file is empty. Export it again from Strong.")
+        case let .missingColumns(columns):
+            L10n.format(
+                "This file is missing these columns: {1}. Export it again from Strong.",
+                columns.joined(separator: ", ")
             )
+        case nil:
+            L10n.text("Could not read this file. Check that it is a CSV exported from Strong.")
         }
     }
 

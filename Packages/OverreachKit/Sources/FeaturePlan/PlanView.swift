@@ -106,7 +106,7 @@ public struct PlanView: View {
     private var planSection: some View {
         Section {
             ForEach(model.planRows) { row in
-                HStack {
+                AdaptiveStack {
                     Text(row.title)
                         .foregroundStyle(row.isDeload ? .secondary : .primary)
                     Spacer()
@@ -114,6 +114,7 @@ public struct PlanView: View {
                         .foregroundStyle(.secondary)
                     Text("\(row.weeks) wk").monospacedDigit()
                 }
+                .accessibilityElement(children: .combine)
             }
         } header: {
             Text("Coming months")
@@ -152,6 +153,12 @@ private struct PriorityLiftsView: View {
                         Image(systemName: "checkmark")
                     }
                 }
+            }
+            .accessibilityAddTraits(row.isSelected ? .isSelected : [])
+        }
+        .overlay {
+            if model.priorityLiftRows.isEmpty {
+                ListEmptyState(query: model.priorityLiftSearch, title: "No exercises", systemImage: "dumbbell")
             }
         }
         .searchable(text: $model.priorityLiftSearch)

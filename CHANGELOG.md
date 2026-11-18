@@ -13,6 +13,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - `scripts/test-core.sh` / `.ps1` run the core and presentation tests in Docker (same image as CI).
 
 ### Added
+- App icon, an accent colour for light and dark mode, clearer error messages, empty states for lists and searches,
+  and better VoiceOver and large-text support (#21).
 - Finished strength sessions are saved to Apple Health (#20), without duplicates when edited, and removed with
   the session (ADR-0016).
 - Spanish and Galician (#19): every screen, message and training explanation follows the language chosen for the

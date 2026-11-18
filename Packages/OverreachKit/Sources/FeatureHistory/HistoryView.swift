@@ -107,7 +107,7 @@ private struct SessionDetailView: View {
             ForEach(detail.entries) { entry in
                 Section(entry.name) {
                     ForEach(entry.sets) { set in
-                        HStack {
+                        AdaptiveStack {
                             Text("\(set.number)").foregroundStyle(.secondary)
                             Text(set.text).monospacedDigit()
                             Spacer()
@@ -117,6 +117,7 @@ private struct SessionDetailView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
+                        .accessibilityElement(children: .combine)
                     }
                     if let notes = entry.notes {
                         Text(notes).font(.footnote).foregroundStyle(.secondary)
