@@ -87,6 +87,8 @@ targets:
         product: FeatureSettings
       - package: OverreachKit
         product: FeatureExercises
+      - package: OverreachKit
+        product: FeatureOnboarding
       - package: OverreachCore
         product: ExercisesPresentation
       - package: OverreachCore
@@ -99,6 +101,8 @@ targets:
         product: SettingsPresentation
       - package: OverreachCore
         product: TodayPresentation
+      - package: OverreachCore
+        product: OnboardingPresentation
 
 schemes:
   Overreach:

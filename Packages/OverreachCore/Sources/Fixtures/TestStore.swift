@@ -4,12 +4,13 @@ import Foundation
 /// In-memory repositories for presentation tests in `OverreachCore` (the app's stores live in OverreachKit).
 /// `failing` makes every write throw, to test error handling.
 public actor TestStore: WorkoutRepository, ExerciseRepository, ProgressionSettingsRepository, ProfileRepository,
-    RoutineRepository {
+    RoutineRepository, OnboardingStatusStore {
     private var sessionsByID: [UUID: StrengthSession]
     private var exercisesByID: [UUID: Exercise]
     private var settingsByExercise: [UUID: ProgressionSettings] = [:]
     private var routinesByID: [UUID: Routine]
     private var storedProfile = AthleteProfile()
+    private var onboardingCompleted = false
     private var failing = false
 
     public struct WriteFailed: Error {}
@@ -94,6 +95,12 @@ public actor TestStore: WorkoutRepository, ExerciseRepository, ProgressionSettin
     }
 
     public func allProgressionSettings() -> [UUID: ProgressionSettings] { settingsByExercise }
+
+    // MARK: OnboardingStatusStore
+
+    public func isOnboardingCompleted() -> Bool { onboardingCompleted }
+
+    public func markOnboardingCompleted() { onboardingCompleted = true }
 
     // MARK: ProfileRepository
 

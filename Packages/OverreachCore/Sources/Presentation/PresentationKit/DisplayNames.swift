@@ -94,3 +94,35 @@ extension EvidenceLevel {
         }
     }
 }
+
+extension TrainingGoal.Kind {
+    public var displayName: String {
+        switch self {
+        case .strength: L10n.text("Strength")
+        case .hypertrophy: L10n.text("Muscle")
+        case .general: L10n.text("Strength and muscle")
+        case .hybrid: L10n.text("Hybrid (with running)")
+        }
+    }
+}
+
+extension BiologicalSex {
+    public var displayName: String {
+        switch self {
+        case .female: L10n.text("Female")
+        case .male: L10n.text("Male")
+        case .unspecified: L10n.text("Prefer not to say")
+        }
+    }
+}
+
+extension CycleTrackingMode {
+    public var displayName: String {
+        switch self {
+        case .off: L10n.text("Don't use")
+        case .naturalCycle: L10n.text("Natural cycle")
+        case .hormonalContraception: L10n.text("Hormonal contraception")
+        case .menopause: L10n.text("Peri- or post-menopause")
+        }
+    }
+}

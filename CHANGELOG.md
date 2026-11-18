@@ -13,6 +13,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - `scripts/test-core.sh` / `.ps1` run the core and presentation tests in Docker (same image as CI).
 
 ### Added
+- Optional first-run setup (#18): goal, sex and cycle tracking, walking routine, then import from Strong or start
+  from the catalog. Every step can be skipped, it is not shown to existing users or before a restore offer is
+  answered, and it can be reopened from Settings → Training profile.
 - Rest timer (#16): completing a set starts the suggested rest for the exercise's focus, with ±15 s, skip, the
   evidence behind the suggestion and a local notification when the app is in the background.
 - Per-exercise progression settings (#14): from an exercise, choose the scheme and its parameters, load

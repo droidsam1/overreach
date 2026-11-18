@@ -76,7 +76,9 @@ let package = Package(
         .target(name: "FeatureSettings", dependencies: uiDependencies + [
             .product(name: "SettingsPresentation", package: core),
         ]),
-        .target(name: "FeatureOnboarding", dependencies: uiDependencies),
+        .target(name: "FeatureOnboarding", dependencies: uiDependencies + [
+            .product(name: "OnboardingPresentation", package: core),
+        ]),
 
         // MARK: Tests
         .testTarget(name: "PersistenceTests", dependencies: [

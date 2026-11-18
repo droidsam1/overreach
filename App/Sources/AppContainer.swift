@@ -11,6 +11,7 @@ import HealthKitSource
 import HistoryPresentation
 import LocalAlerts
 import Observation
+import OnboardingPresentation
 import Persistence
 import PlanPresentation
 import SettingsPresentation
@@ -31,6 +32,7 @@ final class AppContainer {
     let importer: any TrainingHistoryImporter
     let backup: any BackupService
     let restAlerts: any RestAlertScheduler
+    let onboardingStatus: any OnboardingStatusStore
     /// In priority order: when two sources report the same value, the first wins.
     let metricsSources: [any MetricsSource]
 
@@ -44,6 +46,7 @@ final class AppContainer {
         importer: any TrainingHistoryImporter = StrongHistoryImporter(),
         backupDestination: any BackupDestination = FolderBackupDestination(),
         restAlerts: any RestAlertScheduler = LocalRestAlerts(),
+        onboardingStatus: any OnboardingStatusStore = DefaultsOnboardingStatus(),
         metricsSources: [any MetricsSource]
     ) {
         self.workouts = workouts
@@ -54,6 +57,7 @@ final class AppContainer {
         self.routines = routines
         self.importer = importer
         self.restAlerts = restAlerts
+        self.onboardingStatus = onboardingStatus
         self.backup = RepositoryBackupService(
             workouts: workouts, exercises: exercises, checkIns: checkIns, profiles: profiles, progression: progression,
             routines: routines, destination: backupDestination,
@@ -112,6 +116,10 @@ final class AppContainer {
         ExercisesModel(
             workouts: workouts, exercises: exercises, progression: progression, routines: routines, backup: backup
         )
+    }
+
+    func makeOnboardingModel() -> OnboardingModel {
+        OnboardingModel(profiles: profiles, workouts: workouts, status: onboardingStatus)
     }
 
     func makeBackupModel() -> BackupModel {

@@ -5,17 +5,6 @@ import PresentationKit
 
 // Plain-language descriptions for the Plan screen. Every line names its evidence level.
 
-extension TrainingGoal.Kind {
-    public var displayName: String {
-        switch self {
-        case .strength: L10n.text("Strength")
-        case .hypertrophy: L10n.text("Muscle")
-        case .general: L10n.text("Strength and muscle")
-        case .hybrid: L10n.text("Hybrid (with running)")
-        }
-    }
-}
-
 extension BlockReason {
     var text: String {
         switch self {
