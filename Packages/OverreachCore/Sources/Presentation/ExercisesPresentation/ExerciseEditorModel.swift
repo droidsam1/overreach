@@ -158,6 +158,11 @@ public final class ExerciseEditorModel {
 
     public var errorMessage: String? { list.errorMessage }
 
+    /// A new exercise gets its settings once it exists.
+    public var canEditSettings: Bool { exercise != nil }
+
+    public func settingsEditor() -> ExerciseSettingsModel? { list.settingsEditor(for: exerciseID) }
+
     public func isPrimary(_ muscle: MuscleGroup) -> Bool { draft.primary.contains(muscle) }
 
     public func isSecondary(_ muscle: MuscleGroup) -> Bool { draft.secondary.contains(muscle) }

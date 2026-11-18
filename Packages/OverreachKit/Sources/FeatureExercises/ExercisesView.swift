@@ -181,6 +181,13 @@ struct ExerciseEditorView: View {
             } footer: {
                 Text("Each working set counts as half a set for these muscles.")
             }
+            if model.canEditSettings {
+                Section {
+                    NavigationLink("Progression settings") {
+                        ExerciseSettingsScreen(editor: model)
+                    }
+                }
+            }
             if model.canMerge {
                 Section {
                     NavigationLink("Merge into another exercise…") {

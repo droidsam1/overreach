@@ -53,6 +53,8 @@ public struct WorkoutView: View {
                 await model.load()
                 await routines.load()
             }
+            // Progression settings may have changed in another tab.
+            .onAppear { Task { await model.applySettingsChanges() } }
         }
     }
 

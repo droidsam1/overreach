@@ -105,6 +105,10 @@ public actor InMemoryStore: WorkoutRepository, ExerciseRepository, CheckInReposi
         progressionByExercise[exerciseID] = settings
     }
 
+    public func deleteProgressionSettings(for exerciseID: UUID) {
+        progressionByExercise[exerciseID] = nil
+    }
+
     public func allProgressionSettings() -> [UUID: ProgressionSettings] {
         progressionByExercise
     }
