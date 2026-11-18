@@ -128,6 +128,7 @@ public final class WorkoutModel {
     private let exerciseRepository: any ExerciseRepository
     private let progression: any ProgressionSettingsRepository
     private let backup: (any BackupService)?
+    private let health: (any HealthWorkoutWriter)?
     private let clock: @Sendable () -> Date
 
     /// How far back history is read to compute targets and stalls.
@@ -138,6 +139,7 @@ public final class WorkoutModel {
         exercises: any ExerciseRepository,
         progression: any ProgressionSettingsRepository,
         backup: (any BackupService)? = nil,
+        health: (any HealthWorkoutWriter)? = nil,
         restAlerts: (any RestAlertScheduler)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
@@ -145,6 +147,7 @@ public final class WorkoutModel {
         self.exerciseRepository = exercises
         self.progression = progression
         self.backup = backup
+        self.health = health
         self.clock = clock
         rest = RestTimerModel(alerts: restAlerts, clock: clock)
     }
@@ -313,6 +316,7 @@ public final class WorkoutModel {
             try await workouts.save(finished)
             close()
             await backup?.backUpIfConfigured(now: now)
+            await health?.sync(finished)
             return true
         } catch {
             errorMessage = L10n.text("Could not save the session. It is still open.")

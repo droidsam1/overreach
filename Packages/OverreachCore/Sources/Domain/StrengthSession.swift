@@ -94,4 +94,9 @@ public struct StrengthSession: Identifiable, Hashable, Codable, Sendable {
     public var durationSeconds: Double? {
         endedAt.map { $0.timeIntervalSince(startedAt) }
     }
+
+    /// Logged in this app with a real duration. Imported history stays out of the health app (ADR-0016).
+    public var belongsInHealth: Bool {
+        source == .app && (durationSeconds ?? 0) > 0
+    }
 }

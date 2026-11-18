@@ -1,0 +1,52 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "NSHealthShareUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach reads your heart rate, HRV, sleep and workouts to recommend how hard to train."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach lee tu frecuencia cardíaca, VFC, sueño y entrenamientos para recomendarte con qué intensidad entrenar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach le a túa frecuencia cardíaca, VFC, sono e adestramentos para recomendarche con que intensidade adestrar."
+          }
+        }
+      }
+    },
+    "NSHealthUpdateUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach saves your strength workouts to Apple Health."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach guarda tus entrenamientos de fuerza en Apple Salud."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach garda os teus adestramentos de forza en Apple Saúde."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

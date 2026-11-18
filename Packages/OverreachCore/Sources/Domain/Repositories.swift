@@ -86,6 +86,30 @@ public protocol RestAlertScheduler: Sendable {
     func cancelRestEnd() async
 }
 
+/// Keeps logged sessions in the user's health app (ADR-0016). Implementations ask for permission when needed and
+/// do nothing if it is refused.
+public protocol HealthWorkoutWriter: Sendable {
+    /// Writes the workout of `session`, replacing any workout already written for it.
+    func saveWorkout(for session: StrengthSession) async throws
+    func deleteWorkout(forSessionID sessionID: UUID) async throws
+}
+
+extension HealthWorkoutWriter {
+    /// Brings the health app in line with `session`. Best effort: the session is already safe in the app.
+    public func sync(_ session: StrengthSession) async {
+        if session.belongsInHealth {
+            try? await saveWorkout(for: session)
+        } else {
+            await removeWorkout(forSessionID: session.id)
+        }
+    }
+
+    /// Removes the workout of a session, if there is one. Best effort.
+    public func removeWorkout(forSessionID sessionID: UUID) async {
+        try? await deleteWorkout(forSessionID: sessionID)
+    }
+}
+
 /// What an import would add, shown to the user before anything is saved (ADR-0011).
 public struct ImportPreview: Sendable {
     public var sessions: [StrengthSession]

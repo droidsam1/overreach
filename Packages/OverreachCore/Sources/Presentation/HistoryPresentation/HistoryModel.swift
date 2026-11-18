@@ -66,6 +66,7 @@ public final class HistoryModel {
     private let exercises: any ExerciseRepository
     private let routines: any RoutineRepository
     private let backup: (any BackupService)?
+    private let health: (any HealthWorkoutWriter)?
     private let clock: @Sendable () -> Date
 
     /// How far back the list goes.
@@ -76,12 +77,14 @@ public final class HistoryModel {
         exercises: any ExerciseRepository,
         routines: any RoutineRepository,
         backup: (any BackupService)? = nil,
+        health: (any HealthWorkoutWriter)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
         self.exercises = exercises
         self.routines = routines
         self.backup = backup
+        self.health = health
         self.clock = clock
     }
 
@@ -105,6 +108,7 @@ public final class HistoryModel {
             try await workouts.deleteSession(id: sessionID)
             summaries.removeAll { $0.id == sessionID }
             await backup?.backUpIfConfigured(now: clock())
+            await health?.removeWorkout(forSessionID: sessionID)
         } catch {
             errorMessage = L10n.text("Could not delete the session.")
         }
@@ -195,7 +199,9 @@ public final class HistoryModel {
 
     /// An editor for `session`. Call `didSave(_:)` with what it returns to refresh the list.
     public func makeEditor(for session: StrengthSession) -> SessionEditorModel {
-        SessionEditorModel(session: session, catalog: catalog, workouts: workouts, backup: backup, clock: clock)
+        SessionEditorModel(
+            session: session, catalog: catalog, workouts: workouts, backup: backup, health: health, clock: clock
+        )
     }
 
     /// Replaces an edited session in the list, keeping it sorted newest first.

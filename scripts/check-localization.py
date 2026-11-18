@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CATALOG = ROOT / "App/Resources/Localizable.xcstrings"
+INFO_PLIST_CATALOG = ROOT / "App/Resources/InfoPlist.xcstrings"
 LANGUAGES = ["es", "gl"]
 PRESENTATION = ROOT / "Packages/OverreachCore/Sources/Presentation"
 UI_ROOTS = [
@@ -119,6 +120,10 @@ def main():
                 problems.append(f"Missing {language}: {key!r}")
             elif placeholders(value) != placeholders(key):
                 problems.append(f"Different values in {language}: {key!r}")
+    for key, entry in sorted(json.loads(INFO_PLIST_CATALOG.read_text(encoding="utf-8"))["strings"].items()):
+        for language in LANGUAGES:
+            if not entry.get("localizations", {}).get(language, {}).get("stringUnit", {}).get("value"):
+                problems.append(f"Missing {language} in InfoPlist: {key!r}")
     print("\n".join(problems) or f"{len(strings)} strings translated into {', '.join(LANGUAGES)}.")
     return 1 if problems else 0
 
