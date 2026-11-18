@@ -86,7 +86,9 @@ existing modules to do it.
   (`EvidenceReference`); reasons carry the evidence level.
 - Tests: Swift Testing (`import Testing`, `@Test`, `#expect`). Pure logic in `OverreachCore` must be
   covered; use realistic fixtures.
-- Strings shown to users go through String Catalogs (es, en). Code, comments and docs in English.
+- Strings shown to users go through `App/Resources/Localizable.xcstrings` (en, es, gl; ADR-0015). Models use
+  `L10n.text` or `L10n.format("Step {1} of {2}", …)`; check with `python3 scripts/check-localization.py`. Code,
+  comments and docs in English.
 - No secrets in the repo. Signing settings live in `App/Config/Local.xcconfig` (git-ignored).
 - Every non-obvious decision gets an ADR (`docs/adr/NNNN-title.md`).
 

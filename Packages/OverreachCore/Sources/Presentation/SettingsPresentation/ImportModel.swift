@@ -80,7 +80,7 @@ public final class ImportModel {
             state = .preview
         } catch {
             preview = nil
-            state = .failed(L10n.text("Could not read the file: \(error)"))
+            state = .failed(L10n.format("Could not read the file: {1}", String(describing: error)))
         }
     }
 
@@ -106,7 +106,10 @@ public final class ImportModel {
             csv = nil
         } catch {
             state = .failed(
-                L10n.text("Import stopped: \(error). Already imported sessions are kept; importing again is safe.")
+                L10n.format(
+                    "Import stopped: {1}. Already imported sessions are kept; importing again is safe.",
+                    String(describing: error)
+                )
             )
         }
     }

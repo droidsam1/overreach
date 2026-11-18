@@ -85,8 +85,10 @@ public final class RestTimerModel {
         let duration = prescription.defaultRestSeconds
         let range = prescription.restSeconds
         let evidence = prescription.restEvidence
-        let suggestion = L10n.text("Suggested") + " \(format.minutesAndSeconds(range.lowerBound))–"
-            + "\(format.minutesAndSeconds(range.upperBound)) · \(evidence.level.displayName) (\(evidence.key))"
+        let suggestion = L10n.format(
+            "Suggested {1}–{2} · {3} ({4})", format.minutesAndSeconds(range.lowerBound),
+            format.minutesAndSeconds(range.upperBound), evidence.level.displayName, evidence.key
+        )
         running = Running(
             setID: setID, exerciseID: exercise.id, exerciseName: exercise.name, suggestion: suggestion,
             endsAt: clock().addingTimeInterval(TimeInterval(duration)), durationSeconds: duration
@@ -129,7 +131,7 @@ public final class RestTimerModel {
         guard let running else { return }
         let date = running.endsAt
         let title = L10n.text("Rest over")
-        let body = L10n.text("Next set: \(running.exerciseName)")
+        let body = L10n.format("Next set: {1}", running.exerciseName)
         enqueueAlert { await $0.scheduleRestEnd(at: date, title: title, body: body) }
     }
 

@@ -118,12 +118,12 @@ public final class PlanModel {
         guard let suggestion else { return nil }
         let when = suggestion.switchInWeeks == 0
             ? L10n.text("now")
-            : L10n.text("in \(suggestion.switchInWeeks) weeks")
-        let length = "\(suggestion.nextLengthWeeks.lowerBound)–\(suggestion.nextLengthWeeks.upperBound) "
-            + L10n.text("weeks")
+            : L10n.format("in {1} weeks", suggestion.switchInWeeks)
         return NextBlockState(
-            headline: "\(suggestion.next.displayName) " + L10n.text("block") + " \(when), " + L10n.text("for")
-                + " \(length).",
+            headline: L10n.format(
+                "{1} block {2}, for {3}–{4} weeks.", suggestion.next.displayName, when,
+                suggestion.nextLengthWeeks.lowerBound, suggestion.nextLengthWeeks.upperBound
+            ),
             reasons: suggestion.reasons.map { ExplainedLine(text: $0.text, evidence: $0.evidence.level.displayName) }
         )
     }

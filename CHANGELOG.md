@@ -13,6 +13,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - `scripts/test-core.sh` / `.ps1` run the core and presentation tests in Docker (same image as CI).
 
 ### Added
+- Spanish and Galician (#19): every screen, message and training explanation follows the language chosen for the
+  app, and a CI check keeps the translations complete (ADR-0015).
 - Optional first-run setup (#18): goal, sex and cycle tracking, walking routine, then import from Strong or start
   from the catalog. Every step can be skipped, it is not shown to existing users or before a restore offer is
   answered, and it can be reopened from Settings → Training profile.

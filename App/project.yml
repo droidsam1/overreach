@@ -7,6 +7,7 @@ options:
   deploymentTarget:
     iOS: "18.0"
   createIntermediateGroups: true
+  developmentLanguage: en
 
 configFiles:
   Debug: Config/Base.xcconfig
@@ -37,6 +38,7 @@ targets:
       path: Info.plist
       properties:
         CFBundleDisplayName: Overreach
+        CFBundleLocalizations: [en, es, gl]
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}

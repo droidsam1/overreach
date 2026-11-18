@@ -63,8 +63,10 @@ extension DraftExercise {
     public var summary: TargetSummary { summary(format: Format()) }
 
     public func summary(format: Format) -> TargetSummary {
-        let rest = L10n.text("rest") + " \(format.minutesAndSeconds(restSeconds.lowerBound))–"
-            + format.minutesAndSeconds(restSeconds.upperBound)
+        let rest = L10n.format(
+            "rest {1}–{2}", format.minutesAndSeconds(restSeconds.lowerBound),
+            format.minutesAndSeconds(restSeconds.upperBound)
+        )
         let focusLine: String
         if let focus {
             focusLine = focus.displayName + (isFocusInferred ? " " + L10n.text("(detected)") : "") + " · " + rest
@@ -76,7 +78,7 @@ extension DraftExercise {
         if let first = target.sets.first {
             let weight = first.weightKg.map { format.kilograms($0) + " × " } ?? ""
             let reps = target.sets.map { String($0.reps) }.joined(separator: "/")
-            targetLine = L10n.text("Target:") + " \(weight)\(reps) @ RPE \(format.number(first.targetRPE))"
+            targetLine = L10n.format("Target: {1}{2} @ RPE {3}", weight, reps, format.number(first.targetRPE))
         } else {
             targetLine = L10n.text("Target:") + " –"
         }
@@ -155,7 +157,7 @@ public final class WorkoutModel {
         }
     }
 
-    public func start(name: String = "Workout") {
+    public func start(name: String = L10n.text("Workout")) {
         guard startedAt == nil else { return }
         sessionName = name
         sessionFocus = nil

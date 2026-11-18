@@ -113,7 +113,7 @@ public final class ExerciseSettingsModel {
 
     public var repBlocksMessage: String? {
         guard showsRepBlocks, repBlocks == nil else { return nil }
-        return L10n.text("Enter rep counts from 1 to \(Self.maxRepsAllowed), separated by commas.")
+        return L10n.format("Enter rep counts from 1 to {1}, separated by commas.", Self.maxRepsAllowed)
     }
 
     /// "Suggested for Strength: 4 × 4 @ RPE 8 · +2.5 kg · rest 3:00–5:00"
@@ -126,9 +126,10 @@ public final class ExerciseSettingsModel {
         var label = L10n.text("Default:")
         if let focus {
             let rest = FocusPrescription.for(focus).restSeconds
-            parts.append(L10n.text("rest") + " \(format.minutesAndSeconds(rest.lowerBound))–"
-                + format.minutesAndSeconds(rest.upperBound))
-            label = L10n.text("Suggested for \(focus.displayName):")
+            parts.append(L10n.format(
+                "rest {1}–{2}", format.minutesAndSeconds(rest.lowerBound), format.minutesAndSeconds(rest.upperBound)
+            ))
+            label = L10n.format("Suggested for {1}:", focus.displayName)
         }
         return label + " " + parts.joined(separator: " · ")
     }

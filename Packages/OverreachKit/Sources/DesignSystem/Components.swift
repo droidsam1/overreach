@@ -2,12 +2,12 @@ import SwiftUI
 
 /// A card showing one metric, e.g. "HRV 37 ms". Shows "–" when the value is missing.
 public struct MetricTile: View {
-    private let title: String
+    private let title: LocalizedStringKey
     private let value: Double?
-    private let unit: String
+    private let unit: LocalizedStringKey
     private let fractionDigits: Int
 
-    public init(title: String, value: Double?, unit: String, fractionDigits: Int = 0) {
+    public init(title: LocalizedStringKey, value: Double?, unit: LocalizedStringKey, fractionDigits: Int = 0) {
         self.title = title
         self.value = value
         self.unit = unit
@@ -63,11 +63,11 @@ public struct StatusBadge: View {
 
 /// Placeholder for screens that arrive in a later phase.
 public struct ComingSoonView: View {
-    private let title: String
+    private let title: LocalizedStringKey
     private let systemImage: String
     private let phase: Int
 
-    public init(title: String, systemImage: String, phase: Int) {
+    public init(title: LocalizedStringKey, systemImage: String, phase: Int) {
         self.title = title
         self.systemImage = systemImage
         self.phase = phase

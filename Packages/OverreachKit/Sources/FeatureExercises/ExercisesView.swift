@@ -28,8 +28,10 @@ public struct ExercisesView: View {
                 } header: {
                     Text("Needs muscles")
                 } footer: {
-                    Text("Imported exercises that are not in the catalog. Their volume does not count until you assign "
-                        + "their muscles or merge them into a catalog exercise.")
+                    Text("""
+                        Imported exercises that are not in the catalog. Their volume does not count until you assign \
+                        their muscles or merge them into a catalog exercise.
+                        """)
                 }
             }
             Section("All exercises") {
