@@ -1,4 +1,3 @@
-import Domain
 import SwiftUI
 
 /// A card showing one metric, e.g. "HRV 37 ms". Shows "–" when the value is missing.
@@ -42,21 +41,23 @@ public struct MetricTile: View {
     }
 }
 
-/// The readiness traffic light with its level.
-public struct ReadinessBadge: View {
-    private let readiness: Readiness
+/// A capsule with a status and its tone, e.g. a traffic light.
+public struct StatusBadge: View {
+    private let title: String
+    private let tone: StatusTone
 
-    public init(readiness: Readiness) {
-        self.readiness = readiness
+    public init(title: String, tone: StatusTone) {
+        self.title = title
+        self.tone = tone
     }
 
     public var body: some View {
-        Label(readiness.level.rawValue.capitalized, systemImage: readiness.level.symbolName)
+        Label(title, systemImage: tone.symbolName)
             .font(.headline)
-            .foregroundStyle(readiness.level.color)
+            .foregroundStyle(tone.color)
             .padding(.horizontal, Spacing.medium)
             .padding(.vertical, Spacing.small)
-            .background(readiness.level.color.opacity(0.15), in: .capsule)
+            .background(tone.color.opacity(0.15), in: .capsule)
     }
 }
 
@@ -86,7 +87,7 @@ public struct ComingSoonView: View {
 
 #Preview("Components") {
     VStack(spacing: Spacing.medium) {
-        ReadinessBadge(readiness: Readiness(level: .amber, reasons: [.hrvBelowBaseline(nights: 4)]))
+        StatusBadge(title: "Amber", tone: .caution)
         HStack {
             MetricTile(title: "HRV", value: 37, unit: "ms")
             MetricTile(title: "Sleep", value: nil, unit: "h")

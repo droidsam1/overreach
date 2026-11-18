@@ -56,4 +56,11 @@ struct TodayModelTests {
         #expect(model.metrics == nil)
         #expect(model.readiness.level == .unknown)
     }
+
+    @Test func readinessIsReadyToDisplay() {
+        let model = TodayModel(sources: [])
+
+        #expect(model.readinessLevel == .unknown)
+        #expect(model.readinessTitle == "Unknown")
+    }
 }

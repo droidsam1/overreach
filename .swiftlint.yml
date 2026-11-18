@@ -30,3 +30,19 @@ type_body_length:
   warning: 300
 file_length:
   warning: 500
+
+# Views only render (ADR-0014). SwiftPM does not stop a target importing a transitive dependency, so the
+# boundary is checked here.
+custom_rules:
+  no_analytics_in_ui:
+    name: "No Analytics in UI"
+    included: ".*/(Packages/OverreachKit/Sources/(Feature[^/]+|DesignSystem)/.*|App/Sources/RootView)\\.swift"
+    regex: "^\\s*(@testable\\s+)?import\\s+Analytics\\b"
+    message: "UI must not run rules: expose the result from the feature's presentation model (ADR-0014)."
+    severity: error
+  no_data_logic_in_views:
+    name: "No data logic in views"
+    included: ".*/(Packages/OverreachKit/Sources/Feature[^/]+/[^/]*View|App/Sources/RootView)\\.swift"
+    regex: "\\.(filter|sorted)\\s*[({]"
+    message: "Filter and sort in the presentation model, not in the view (ADR-0014)."
+    severity: warning

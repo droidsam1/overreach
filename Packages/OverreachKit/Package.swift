@@ -6,15 +6,9 @@ import PackageDescription
 
 let core = "OverreachCore"
 
-/// What every feature may depend on: domain protocols, analytics and the design system. Nothing else.
-let featureDependencies: [Target.Dependency] = [
-    .product(name: "Domain", package: core),
-    .product(name: "Analytics", package: core),
-    "DesignSystem",
-]
-
-/// What a migrated, UI-only feature may depend on (ADR-0014): value types, shared display helpers and the design
-/// system. Its own presentation module is added per target. No Analytics: views can't run rules.
+/// What every feature may depend on (ADR-0014): value types, shared display helpers and the design system. Its own
+/// presentation module is added per target. No Analytics: views don't run rules (also checked by SwiftLint, because
+/// SwiftPM lets a target import the modules of its transitive dependencies).
 let uiDependencies: [Target.Dependency] = [
     .product(name: "Domain", package: core),
     .product(name: "PresentationKit", package: core),
@@ -55,31 +49,31 @@ let package = Package(
         ]),
 
         // MARK: UI foundation
-        .target(name: "DesignSystem", dependencies: [.product(name: "Domain", package: core)]),
+        // Generic components that take display values: no domain types (ADR-0014).
+        .target(name: "DesignSystem"),
 
-        // MARK: Features
+        // MARK: Features (UI only; logic comes from the presentation modules)
         .target(name: "FeatureToday", dependencies: uiDependencies + [
             "AIKit", .product(name: "TodayPresentation", package: core),
         ]),
-        // UI only (ADR-0014): no Analytics; logic comes from the presentation modules.
         .target(name: "FeatureWorkout", dependencies: uiDependencies + [
             .product(name: "WorkoutPresentation", package: core),
         ]),
         .target(name: "FeatureHistory", dependencies: uiDependencies + [
             .product(name: "HistoryPresentation", package: core),
         ]),
-        .target(name: "FeatureTrends", dependencies: featureDependencies),
+        .target(name: "FeatureTrends", dependencies: uiDependencies),
         .target(name: "FeatureExercises", dependencies: uiDependencies + [
             .product(name: "ExercisesPresentation", package: core),
         ]),
         .target(name: "FeaturePlan", dependencies: uiDependencies + [
             .product(name: "PlanPresentation", package: core),
         ]),
-        .target(name: "FeatureAssistant", dependencies: featureDependencies + ["AIKit"]),
+        .target(name: "FeatureAssistant", dependencies: uiDependencies + ["AIKit"]),
         .target(name: "FeatureSettings", dependencies: uiDependencies + [
             .product(name: "SettingsPresentation", package: core),
         ]),
-        .target(name: "FeatureOnboarding", dependencies: featureDependencies),
+        .target(name: "FeatureOnboarding", dependencies: uiDependencies),
 
         // MARK: Tests
         .testTarget(name: "PersistenceTests", dependencies: [

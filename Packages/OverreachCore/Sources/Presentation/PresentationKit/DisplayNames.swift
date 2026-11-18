@@ -72,6 +72,17 @@ extension SetKind {
     }
 }
 
+extension ReadinessLevel {
+    public var displayName: String {
+        switch self {
+        case .green: L10n.text("Green")
+        case .amber: L10n.text("Amber")
+        case .red: L10n.text("Red")
+        case .unknown: L10n.text("Unknown")
+        }
+    }
+}
+
 extension EvidenceLevel {
     /// How strong the evidence behind a rule is, as shown next to its explanation.
     public var displayName: String {

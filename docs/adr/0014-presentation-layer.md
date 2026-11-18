@@ -27,7 +27,9 @@ expose UI state, unidirectional data flow, domain and data layers below) and Swi
    and every text derived from rules. They depend on `Domain`, `Analytics` and `PresentationKit`; never on
    SwiftUI or on another presentation module. They build and test on Linux.
 2. **`Feature*` modules in `OverreachKit` are UI only.** They depend on their presentation module and
-   `DesignSystem`, **not on `Analytics`** (enforced in `Package.swift`). A view:
+   `DesignSystem`, **not on `Analytics`**. `Package.swift` declares this; because SwiftPM still lets a target
+   import transitive modules, SwiftLint fails on `import Analytics` in UI code and warns on `.filter`/`.sorted`
+   in views. A view:
    - renders the model's state and calls its intents;
    - may keep purely visual `@State` (a sheet is open, keyboard focus, animation), never business state;
    - holds layout, styling, accessibility and static copy (titles, button labels);
@@ -36,12 +38,10 @@ expose UI state, unidirectional data flow, domain and data layers below) and Swi
    model (e.g. `ExercisesModel.editor(for:)` → `ExerciseEditorModel`).
 4. **Text from presentation goes through `L10n.text`** (String Catalog on Apple platforms, English on Linux).
    Static UI copy stays as `LocalizedStringKey` in the views.
-5. **`DesignSystem` becomes domain-agnostic**: generic components taking display values.
+5. **`DesignSystem` is domain-agnostic**: generic components taking display values (`StatusBadge` takes a title
+   and a `StatusTone`; the feature's view decides which tone each state gets).
 6. Presentation tests are the feature's contract: a redesigned view is safe if they still pass.
    `scripts/test-core.sh` / `scripts/test-core.ps1` run them locally in Docker (`swift:6.0`, same as CI).
-
-Migration is incremental, one PR per group of features (Exercises first; then Workout + History; then Plan,
-Settings and Today; then removing `Analytics` from `featureDependencies` and `Domain` from `DesignSystem`).
 
 ## Consequences
 

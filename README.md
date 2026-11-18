@@ -39,9 +39,10 @@ metrics into a report you can hand to ChatGPT or Claude.
 
 A modular Swift Package Manager setup with strict dependency rules:
 
-- `Packages/OverreachCore` — pure Swift (domain, analytics, Strong import, reports). Builds and tests on Linux.
+- `Packages/OverreachCore` — pure Swift (domain, analytics, Strong import, reports and each screen's state and
+  logic). Builds and tests on Linux.
 - `Packages/OverreachKit` — Apple frameworks: persistence, HealthKit, Garmin, AI providers, design system,
-  and one module per feature.
+  and one UI-only module per feature, so screens can be redesigned without touching the logic.
 - `App` — the composition root, generated with [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
 See [`CLAUDE.md`](CLAUDE.md) for the full map and [`docs/adr`](docs/adr) for the decisions behind it.
