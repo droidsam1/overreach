@@ -22,6 +22,9 @@ body:
     id: version
     attributes:
       label: App version / commit
+      description: Release (for example v0.1.0) or the commit in the .ipa name. On the iPhone, see Settings → General → iPhone Storage → Overreach.
+    validations:
+      required: true
   - type: input
     id: device
     attributes:

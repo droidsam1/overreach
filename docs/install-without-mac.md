@@ -6,7 +6,13 @@ iPhone from Windows (or Linux/macOS) with a sideloading tool and your own Apple 
 
 > GitHub Actions macOS minutes are free for public repositories.
 
+Testers should use the IPA attached to the latest
+[GitHub Release](https://github.com/droidsam1/overreach/releases) and follow the
+[tester guide](beta-guide.es.md) (Spanish).
+
 ## 1. Download the IPA
+
+To try the latest development build instead:
 
 1. Open the repository on GitHub → **Actions** → **Build IPA**.
 2. Open the latest successful run (or press **Run workflow** to build one now).
