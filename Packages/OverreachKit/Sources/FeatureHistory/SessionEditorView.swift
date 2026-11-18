@@ -133,7 +133,7 @@ private struct EntrySection: View {
     var body: some View {
         Section {
             ForEach($entry.sets) { $set in
-                HStack(spacing: Spacing.small) {
+                AdaptiveStack(spacing: Spacing.small) {
                     SetNumberLabel(model.number(of: set.id, in: entry.id))
                     SetValueFields(weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe)
                     Menu {

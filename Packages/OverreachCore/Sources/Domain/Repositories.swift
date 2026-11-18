@@ -129,6 +129,12 @@ public struct ImportPreview: Sendable {
     }
 }
 
+/// Why a training history file could not be read.
+public enum HistoryImportError: Error, Sendable, Equatable {
+    case emptyFile
+    case missingColumns([String])
+}
+
 /// Reads training history in the canonical CSV format (Strong's columns). Implemented in the App with
 /// `StrongImport`, so features don't depend on the parser.
 public protocol TrainingHistoryImporter: Sendable {

@@ -66,6 +66,7 @@ public final class ExercisesModel {
     public var needsMappingCount: Int { exercises.count(where: \.needsMuscleMapping) }
 
     public var showsLoadingIndicator: Bool { isLoading && exercises.isEmpty }
+    public var showsNoResults: Bool { !isLoading && allRows.isEmpty }
 
     public func sessionCount(of exerciseID: UUID) -> Int { sessionCounts[exerciseID] ?? 0 }
 

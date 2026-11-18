@@ -153,8 +153,8 @@ public final class PlanModel {
             exerciseNames = Dictionary(catalog.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
             let now = clock()
             let sessions = try await workouts.sessions(from: now.addingTimeInterval(-365 * 86_400), to: now)
-            await analyse(sessions: sessions, now: now)
             errorMessage = nil
+            await analyse(sessions: sessions, now: now)
         } catch {
             errorMessage = L10n.text("Could not load your plan.")
         }
@@ -228,7 +228,7 @@ public final class PlanModel {
             profile = updated
             await load()
         } catch {
-            errorMessage = L10n.text("Could not save.")
+            errorMessage = L10n.text("Could not save your plan. Try again.")
         }
     }
 
@@ -236,7 +236,13 @@ public final class PlanModel {
     private func analyse(sessions: [StrengthSession], now: Date) async {
         isAnalysing = true
         defer { isAnalysing = false }
-        let settings = (try? await progression.allProgressionSettings()) ?? [:]
+        let settings: [UUID: ProgressionSettings]
+        do {
+            settings = try await progression.allProgressionSettings()
+        } catch {
+            settings = [:]
+            errorMessage = L10n.text("Some exercise settings could not be read, so this analysis may be incomplete.")
+        }
         let exercises = Dictionary(catalog.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let profile = profile
         let calendar = calendar

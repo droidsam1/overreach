@@ -124,6 +124,9 @@ private struct SessionList: View {
                     }
                 }
             }
+            if model.exercises.isEmpty {
+                Text("Add an exercise to see its target from your history.").foregroundStyle(.secondary)
+            }
             Button("Add exercise", systemImage: "plus.circle.fill") { isPickingExercise = true }
         }
         .safeAreaInset(edge: .bottom) {
@@ -151,7 +154,7 @@ private struct TargetSummaryView: View {
             .foregroundStyle(.secondary)
         } label: {
             VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                HStack {
+                AdaptiveStack {
                     Text(summary.targetLine).font(.subheadline.monospacedDigit())
                     Spacer()
                     if let status = summary.status {
@@ -174,7 +177,7 @@ private struct SetRow: View {
     let onDoneChange: (Bool) -> Void
 
     var body: some View {
-        HStack(spacing: Spacing.small) {
+        AdaptiveStack(spacing: Spacing.small) {
             SetNumberLabel(number)
             SetValueFields(weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe)
             Toggle(isOn: Binding(get: { set.isDone }, set: onDoneChange)) {

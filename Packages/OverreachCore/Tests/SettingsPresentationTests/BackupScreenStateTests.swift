@@ -46,6 +46,23 @@ struct BackupScreenStateTests {
         )
     }
 
+    @Test func warnsWhenTheLatestBackupIsOld() async {
+        let backup = document()
+        let sixDaysLater = backup.createdAt.addingTimeInterval(6 * 86_400)
+        let eightDaysLater = backup.createdAt.addingTimeInterval(8 * 86_400)
+        let recent = BackupModel(service: StubBackupService(latest: backup), clock: { sixDaysLater })
+        let old = BackupModel(service: StubBackupService(latest: backup), clock: { eightDaysLater })
+        let missing = BackupModel(service: StubBackupService(latest: nil), clock: { sixDaysLater })
+
+        await recent.load()
+        await old.load()
+        await missing.load()
+
+        #expect(recent.backupWarning == nil)
+        #expect(old.backupWarning != nil)
+        #expect(missing.backupWarning != nil)
+    }
+
     @Test func restoreOfferAndLastBackupAreDescribed() async throws {
         let model = BackupModel(service: StubBackupService(latest: document()))
         await model.load()

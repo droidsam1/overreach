@@ -31,6 +31,12 @@ public struct TodayView: View {
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
+
+                    if model.showsNoDataHint {
+                        Text("Recovery data will appear here once Apple Health or Garmin is connected.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 .padding(Spacing.medium)
             }

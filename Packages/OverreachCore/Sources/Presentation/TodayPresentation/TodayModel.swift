@@ -30,6 +30,7 @@ public final class TodayModel {
 
     public var showsLoadingIndicator: Bool { isLoading && metrics == nil }
     public var showsSourceWarning: Bool { !failedSources.isEmpty }
+    public var showsNoDataHint: Bool { !isLoading && metrics == nil && failedSources.isEmpty }
 
     /// - Parameter sources: metric sources in priority order. When two sources report the same value,
     ///   the first one wins (e.g. `[garmin, appleHealth]`).

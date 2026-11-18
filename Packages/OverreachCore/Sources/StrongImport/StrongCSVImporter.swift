@@ -12,10 +12,7 @@ import Foundation
 /// `W` for warm-up, `F` for failure and `D` for drop sets. Ids are stable, so importing the same file again
 /// yields the same sessions (the app can skip ones it already has).
 public enum StrongCSVImporter {
-    public enum ImportError: Error, Sendable, Equatable {
-        case emptyFile
-        case missingColumns([String])
-    }
+    public typealias ImportError = HistoryImportError
 
     public enum DistanceUnit: String, Sendable, CaseIterable {
         case kilometers, miles

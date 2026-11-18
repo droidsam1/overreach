@@ -59,8 +59,7 @@ public struct SettingsView<Library: View>: View {
             }
             .navigationTitle("Settings")
             .fileImporter(isPresented: $isPickingFile, allowedContentTypes: filePick.contentTypes) { result in
-                guard case let .success(url) = result else { return }
-                handlePicked(url)
+                handlePicked(result)
             }
             .confirmationDialog(
                 "Restore this backup?",
@@ -83,19 +82,34 @@ public struct SettingsView<Library: View>: View {
         isPickingFile = true
     }
 
-    private func handlePicked(_ url: URL) {
+    private func handlePicked(_ result: Result<URL, any Error>) {
+        guard case let .success(url) = result else {
+            reportPickFailure()
+            return
+        }
         switch filePick {
         case .backupFolder:
             Task { await backupModel.chooseFolder(url) }
         case .strongCSV, .backupFile:
             let accessing = url.startAccessingSecurityScopedResource()
             defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-            guard let data = try? Data(contentsOf: url) else { return }
+            guard let data = try? Data(contentsOf: url) else {
+                reportPickFailure()
+                return
+            }
             if filePick == .strongCSV {
                 Task { await importModel.load(fileData: data) }
             } else {
                 backupModel.prepareRestore(fileData: data)
             }
+        }
+    }
+
+    private func reportPickFailure() {
+        switch filePick {
+        case .strongCSV: importModel.fileCouldNotBeOpened()
+        case .backupFile: backupModel.fileCouldNotBeOpened()
+        case .backupFolder: backupModel.folderCouldNotBeOpened()
         }
     }
 
@@ -121,6 +135,11 @@ public struct SettingsView<Library: View>: View {
             Button("Restore from file…", systemImage: "arrow.down.doc") { pick(.backupFile) }
             if let message = backupModel.message {
                 Text(message).font(.footnote).foregroundStyle(.secondary)
+            }
+            if let warning = backupModel.backupWarning {
+                Label(warning, systemImage: "exclamationmark.triangle")
+                    .font(.footnote)
+                    .foregroundStyle(.orange)
             }
         } header: {
             Text("Backup")

@@ -21,6 +21,9 @@ public final class BackupModel {
     private let service: any BackupService
     private let clock: @Sendable () -> Date
 
+    /// Age at which the latest backup counts as missing.
+    static let staleAfter: TimeInterval = 7 * 86_400
+
     public init(service: any BackupService, clock: @escaping @Sendable () -> Date = { Date() }) {
         self.service = service
         self.clock = clock
@@ -46,6 +49,13 @@ public final class BackupModel {
     }
 
     public var lastBackupText: String? { lastBackup.map { Self.dateText($0.createdAt) } }
+
+    /// Automatic backups fail silently, so a folder without a recent copy is pointed out here.
+    public var backupWarning: String? {
+        guard isConfigured else { return nil }
+        if let lastBackup, clock().timeIntervalSince(lastBackup.createdAt) < Self.staleAfter { return nil }
+        return L10n.text("No recent backup found in this folder. Check that it is still available, then back up now.")
+    }
 
     static func describe(_ summary: BackupSummary) -> String {
         L10n.format("{1} sessions from {2}.", summary.sessions, dateText(summary.createdAt))
@@ -112,6 +122,14 @@ public final class BackupModel {
             message = L10n.text("Could not export your data.")
             return nil
         }
+    }
+
+    public func fileCouldNotBeOpened() {
+        message = L10n.text("Could not open that file. Try choosing it again.")
+    }
+
+    public func folderCouldNotBeOpened() {
+        message = L10n.text("Could not open that folder. Try choosing it again.")
     }
 
     /// Reads a backup file and asks for confirmation before restoring.

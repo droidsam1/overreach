@@ -19,7 +19,7 @@ struct RestTimerView: View {
 
     private func content(_ state: RestTimerState) -> some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
-            HStack(alignment: .firstTextBaseline) {
+            AdaptiveStack(verticalAlignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: Spacing.xSmall) {
                     Text(state.title).font(.headline)
                     Text(state.exerciseName).font(.caption).foregroundStyle(.secondary)
@@ -30,7 +30,7 @@ struct RestTimerView: View {
                     .accessibilityLabel("Time remaining \(state.remaining)")
             }
             ProgressView(value: state.progress)
-            HStack {
+            AdaptiveStack {
                 Button("−15 s") { model.removeTime() }
                     .accessibilityLabel("Remove 15 seconds")
                 Button("+15 s") { model.addTime() }
