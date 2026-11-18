@@ -1,4 +1,3 @@
-import Domain
 import Foundation
 import SwiftUI
 
@@ -59,18 +58,6 @@ public struct SetNumberLabel: View {
             .font(.subheadline.monospacedDigit())
             .foregroundStyle(.secondary)
             .frame(width: 20)
-    }
-}
-
-extension TrainingFocus {
-    /// User-facing name of the focus.
-    public var title: String {
-        switch self {
-        case .strength: "Strength"
-        case .hypertrophy: "Hypertrophy"
-        case .mixed: "Mixed"
-        case .endurance: "Endurance"
-        }
     }
 }
 

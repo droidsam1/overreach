@@ -34,28 +34,29 @@ Packages/
     Reports               Markdown report for sharing with ChatGPT/Claude
     Presentation/         Per-feature screen state, intents and texts (ADR-0014). Linux-testable.
       PresentationKit     Display names, search, L10n
-      <X>Presentation     @Observable models of feature X (being migrated feature by feature)
+      <X>Presentation     @Observable models, screen state and intents of feature X
   OverreachKit/           Apple frameworks (SwiftUI, SwiftData, HealthKit, Keychain)
     Persistence           Repositories (in-memory now, SwiftData CloudKit-ready in phase 1)
     HealthKitSource       Apple Health reader/writer
     GarminSource          Unofficial Garmin Connect client (optional, isolated)
     AIKit                 LLMProvider protocol + adapters
-    DesignSystem          Colors, spacing, reusable components and charts
+    DesignSystem          Colors, spacing, reusable components and charts. No domain types.
     Feature*              SwiftUI views of one screen/flow (Today, Workout, History, Trends,
                           Exercises, Plan, Assistant, Settings, Onboarding). UI only (ADR-0014).
 docs/                     Product definition and ADRs
 ```
 
-## Dependency rules (enforced in Package.swift — do not break them)
+## Dependency rules (enforced in Package.swift and SwiftLint — do not break them)
 
 1. `Domain` depends on nothing.
 2. `Analytics`, `StrongImport`, `Reports` depend only on `Domain` (and `Reports` on `Analytics`).
 3. Data modules (`Persistence`, `HealthKitSource`, `GarminSource`, `AIKit`) depend on `Domain`
    (+ `Reports` for `AIKit`) and implement its protocols.
-4. `Feature*` modules depend on `Domain`, `Analytics`, `DesignSystem` (and `AIKit` only for Today and
-   Assistant). **A feature never imports another feature or a concrete data module.**
+4. `FeatureX` depends on `XPresentation`, `PresentationKit`, `DesignSystem` and `Domain` (value types only;
+   `AIKit` only for Today and Assistant). **It never imports `Analytics`, another feature or a concrete data
+   module.** SwiftPM exposes transitive modules, so SwiftLint fails the build on `import Analytics` in UI code.
 5. `<X>Presentation` depends on `Domain`, `Analytics` and `PresentationKit`; never on SwiftUI or another
-   presentation module. A migrated `FeatureX` depends on `XPresentation` + `DesignSystem`, **not Analytics**.
+   presentation module. `DesignSystem` depends on nothing of ours: it takes display values.
 6. `App` is the only place that knows concrete implementations. It builds `AppContainer` and injects
    protocols into features.
 
@@ -71,8 +72,8 @@ existing modules to do it.
   `XView` in `FeatureX` renders state and calls intents. Views keep layout, styling, accessibility, static
   copy and purely visual `@State` (sheet open, focus) — never rule-based `if`s, computations, `.filter`/`.sorted`
   over data, or texts derived from rules. One model per screen/flow; sub-screens get a model from the parent.
-  Presentation tests are the feature's contract: a redesign is safe if they pass. Migrated: Exercises, Workout,
-  History, Plan, Settings, Today. Placeholders (Trends, Assistant, Onboarding) get a presentation module when built.
+  SwiftLint warns on `.filter`/`.sorted` in views. Presentation tests are the feature's contract: a redesign is
+  safe if they pass. Placeholders (Trends, Assistant, Onboarding) get a presentation module when built.
 - Dates: daily data is keyed by `CalendarDay` (year/month/day in the user's calendar), never by raw `Date`.
 - Units: store SI (kg, meters, seconds, ms for HRV). Convert only in the UI.
 - Every metric is optional. Missing data must degrade gracefully, never crash or block.

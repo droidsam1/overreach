@@ -17,7 +17,7 @@ public struct TodayView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.large) {
-                    ReadinessBadge(readiness: model.readiness)
+                    StatusBadge(title: model.readinessTitle, tone: model.readinessLevel.tone)
 
                     LazyVGrid(columns: columns, spacing: Spacing.medium) {
                         MetricTile(title: "HRV", value: model.hrvMs, unit: "ms")
@@ -42,6 +42,18 @@ public struct TodayView: View {
             }
             .task { await model.load() }
             .refreshable { await model.load() }
+        }
+    }
+}
+
+private extension ReadinessLevel {
+    /// How each level looks on this screen.
+    var tone: StatusTone {
+        switch self {
+        case .green: .positive
+        case .amber: .caution
+        case .red: .critical
+        case .unknown: .neutral
         }
     }
 }

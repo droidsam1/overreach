@@ -1,4 +1,3 @@
-import Domain
 import SwiftUI
 
 /// Spacing scale. Use these instead of literal numbers.
@@ -14,23 +13,28 @@ public enum Radius {
     public static let card: CGFloat = 16
 }
 
-public extension ReadinessLevel {
-    /// Semantic colour of the readiness traffic light.
-    var color: Color {
+/// Semantic look of a status, independent of what the status means.
+public enum StatusTone: Sendable {
+    case positive
+    case caution
+    case critical
+    case neutral
+
+    public var color: Color {
         switch self {
-        case .green: .green
-        case .amber: .orange
-        case .red: .red
-        case .unknown: .secondary
+        case .positive: .green
+        case .caution: .orange
+        case .critical: .red
+        case .neutral: .secondary
         }
     }
 
-    var symbolName: String {
+    public var symbolName: String {
         switch self {
-        case .green: "checkmark.circle.fill"
-        case .amber: "exclamationmark.circle.fill"
-        case .red: "xmark.octagon.fill"
-        case .unknown: "questionmark.circle"
+        case .positive: "checkmark.circle.fill"
+        case .caution: "exclamationmark.circle.fill"
+        case .critical: "xmark.octagon.fill"
+        case .neutral: "questionmark.circle"
         }
     }
 }

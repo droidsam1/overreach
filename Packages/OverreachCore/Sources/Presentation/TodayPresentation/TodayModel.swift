@@ -1,6 +1,7 @@
 import Domain
 import Foundation
 import Observation
+import PresentationKit
 
 /// State and actions of the Today screen (ADR-0003, ADR-0014): dependencies come in as `Domain` protocols, the
 /// view only reads state and calls actions.
@@ -16,9 +17,10 @@ public final class TodayModel {
     private let sources: [any MetricsSource]
     private let calendar: Calendar
 
-    /// - Parameter sources: metric sources in priority order. When two sources report the same value,
-    ///   the first one wins (e.g. `[garmin, appleHealth]`).
     // MARK: Screen state
+
+    public var readinessLevel: ReadinessLevel { readiness.level }
+    public var readinessTitle: String { readiness.level.displayName }
 
     public var hrvMs: Double? { metrics?.hrvNightlyAverageMs }
     public var restingHeartRate: Double? { metrics?.restingHeartRate }
@@ -29,6 +31,8 @@ public final class TodayModel {
     public var showsLoadingIndicator: Bool { isLoading && metrics == nil }
     public var showsSourceWarning: Bool { !failedSources.isEmpty }
 
+    /// - Parameter sources: metric sources in priority order. When two sources report the same value,
+    ///   the first one wins (e.g. `[garmin, appleHealth]`).
     public init(sources: [any MetricsSource], calendar: Calendar = .current) {
         self.sources = sources
         self.calendar = calendar
