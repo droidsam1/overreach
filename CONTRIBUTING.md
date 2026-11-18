@@ -30,7 +30,7 @@ Thanks for your interest! Overreach is a small project; these rules keep it main
 - Views only render (ADR-0014): logic, filtering and rule texts go in the feature's presentation module in
   `OverreachCore`, with tests.
 - All metrics are optional; handle missing data gracefully.
-- User-facing strings go through String Catalogs (English and Spanish).
+- User-facing strings go through the String Catalog in English, Spanish and Galician (ADR-0015).
 - Accessibility: support Dynamic Type and VoiceOver in every new view.
 - No secrets, personal data or real health exports in the repository. Use anonymised fixtures.
 

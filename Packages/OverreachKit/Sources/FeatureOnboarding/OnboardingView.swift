@@ -115,8 +115,10 @@ public struct OnboardingView: View {
             } header: {
                 Text("Cycle tracking")
             } footer: {
-                Text("Context for reading recovery, never a fixed rule or a diagnosis. It stays in your own data "
-                    + "and backups.")
+                Text("""
+                    Context for reading recovery, never a fixed rule or a diagnosis. It stays in your own data \
+                    and backups.
+                    """)
             }
         }
     }

@@ -19,7 +19,7 @@ public struct SessionSummary: Identifiable, Hashable, Sendable {
 
     /// "12 sets · 3,450 kg"
     public func statsLine(format: Format = Format()) -> String {
-        "\(workingSets) " + L10n.text("sets") + " · " + format.kilograms(tonnageKg.rounded())
+        L10n.format("{1} sets · {2}", workingSets, format.kilograms(tonnageKg.rounded()))
     }
 }
 
@@ -117,11 +117,11 @@ public final class HistoryModel {
         do {
             let existing = try await routines.allRoutines()
             if existing.contains(where: { $0.name == routine.name && $0.exerciseIDs == routine.exerciseIDs }) {
-                routineNotice = L10n.text("“\(routine.name)” is already in your routines.")
+                routineNotice = L10n.format("“{1}” is already in your routines.", routine.name)
                 return
             }
             try await routines.save(routine)
-            routineNotice = L10n.text("Saved “\(routine.name)” to your routines.")
+            routineNotice = L10n.format("Saved “{1}” to your routines.", routine.name)
             await backup?.backUpIfConfigured(now: clock())
         } catch {
             routineNotice = L10n.text("Could not save the routine.")

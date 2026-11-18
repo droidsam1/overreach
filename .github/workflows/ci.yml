@@ -28,6 +28,8 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_16.4.app || sudo xcode-select -s /Applications/Xcode.app
       - name: Install tools
         run: brew install xcodegen swiftlint
+      - name: Check translations
+        run: python3 scripts/check-localization.py
       - name: Lint
         # Warnings do not fail the build yet; switch to --strict once the codebase settles (phase 1).
         run: swiftlint
@@ -42,6 +44,11 @@ jobs:
         run: |
           xcodebuild build \
             -project App/Overreach.xcodeproj \
+            -derivedDataPath build \
             -scheme Overreach \
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO
+      - name: Check the app contains its languages
+        run: |
+          app=build/Build/Products/Debug-iphonesimulator/Overreach.app
+          test -d "$app/es.lproj" && test -d "$app/gl.lproj"

@@ -131,7 +131,7 @@ public final class ExerciseEditorModel {
             let key = SearchText.normalize(candidate)
             guard !key.isEmpty, !ownKeys.contains(key),
                   let other = list.exercise(answeringTo: key, excluding: exerciseID) else { continue }
-            return L10n.text("“\(candidate)” is already used by \(other.name).")
+            return L10n.format("“{1}” is already used by {2}.", candidate, other.name)
         }
         return nil
     }
@@ -206,10 +206,11 @@ public final class ExerciseEditorModel {
         let sessions = list.sessionCount(of: exerciseID)
         pendingMerge = MergeConfirmation(
             targetID: targetID,
-            confirmLabel: L10n.text("Merge into \(target.name)"),
-            message: L10n.text(
-                "\(sessions) sessions with \(exercise.name) will use \(target.name). \(exercise.name) is removed and "
-                    + "its name is kept as an alias, so importing it again maps to \(target.name)."
+            confirmLabel: L10n.format("Merge into {1}", target.name),
+            message: L10n.format(
+                "{1} sessions with {2} will use {3}. {2} is removed and its name is kept as an alias, so importing "
+                    + "it again maps to {3}.",
+                sessions, exercise.name, target.name
             )
         )
     }

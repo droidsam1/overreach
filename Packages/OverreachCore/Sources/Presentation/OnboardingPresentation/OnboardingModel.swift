@@ -63,7 +63,7 @@ public final class OnboardingModel {
 
     /// "Step 1 of 4"
     public var progressText: String {
-        L10n.text("Step \(step.rawValue + 1) of \(Step.allCases.count)")
+        L10n.format("Step {1} of {2}", step.rawValue + 1, Step.allCases.count)
     }
 
     public var canGoBack: Bool { step != .goal }

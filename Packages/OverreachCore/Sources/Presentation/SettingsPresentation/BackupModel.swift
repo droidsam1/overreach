@@ -38,8 +38,9 @@ public final class BackupModel {
     /// "A backup with 120 sessions from … was found in your backup folder."
     public var restoreOfferMessage: String? {
         restoreOffer.map {
-            L10n.text(
-                "A backup with \($0.sessions) sessions from \(Self.dateText($0.createdAt)) was found in your backup folder."
+            L10n.format(
+                "A backup with {1} sessions from {2} was found in your backup folder.",
+                $0.sessions, Self.dateText($0.createdAt)
             )
         }
     }
@@ -47,7 +48,7 @@ public final class BackupModel {
     public var lastBackupText: String? { lastBackup.map { Self.dateText($0.createdAt) } }
 
     static func describe(_ summary: BackupSummary) -> String {
-        L10n.text("\(summary.sessions) sessions from \(dateText(summary.createdAt)).")
+        L10n.format("{1} sessions from {2}.", summary.sessions, dateText(summary.createdAt))
     }
 
     static func dateText(_ date: Date) -> String {
@@ -174,7 +175,7 @@ public final class BackupModel {
         defer { isWorking = false }
         do {
             let summary = try await service.restore(from: data)
-            message = L10n.text("Restored \(summary.sessions) sessions.")
+            message = L10n.format("Restored {1} sessions.", summary.sessions)
         } catch {
             message = L10n.text("Restore failed. Nothing already on this device was removed.")
         }
