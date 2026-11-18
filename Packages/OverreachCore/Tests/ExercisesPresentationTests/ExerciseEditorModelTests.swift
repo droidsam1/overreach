@@ -57,7 +57,7 @@ struct ExerciseEditorModelTests {
             entries: [ExerciseEntry(exerciseID: imported.id, sets: [WorkoutSet(weightKg: 60, reps: 5)])]
         )
         let store = TestStore(exercises: [bench, row, imported], sessions: [session])
-        let list = ExercisesModel(workouts: store, exercises: store, progression: store)
+        let list = ExercisesModel(workouts: store, exercises: store, progression: store, routines: store)
         await list.load()
         await store.setFailing(failing)
         return (list, store)
@@ -159,7 +159,7 @@ struct ExerciseEditorModelTests {
     @Test func untouchedAliasesAreKeptEvenWithCommas() async throws {
         let odd = Exercise(name: "Curl", primaryMuscles: [.biceps], isCustom: true, aliases: ["Curl, barra"])
         let store = TestStore(exercises: [odd])
-        let list = ExercisesModel(workouts: store, exercises: store, progression: store)
+        let list = ExercisesModel(workouts: store, exercises: store, progression: store, routines: store)
         await list.load()
         let editor = try #require(list.editor(for: odd.id))
 
@@ -254,7 +254,7 @@ struct ExercisesSearchTests {
             Exercise(name: "Squat (Barbell)", primaryMuscles: [.quadriceps]),
             Exercise(name: "Zercher Squat", primaryMuscles: [], isCustom: true),
         ])
-        let model = ExercisesModel(workouts: store, exercises: store, progression: store)
+        let model = ExercisesModel(workouts: store, exercises: store, progression: store, routines: store)
         await model.load()
         #expect(model.needsMappingRows.map(\.name) == ["Zercher Squat"])
 

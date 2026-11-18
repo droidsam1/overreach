@@ -26,6 +26,7 @@ final class AppContainer {
     let checkIns: any CheckInRepository
     let progression: any ProgressionSettingsRepository
     let profiles: any ProfileRepository
+    let routines: any RoutineRepository
     let importer: any TrainingHistoryImporter
     let backup: any BackupService
     /// In priority order: when two sources report the same value, the first wins.
@@ -37,6 +38,7 @@ final class AppContainer {
         checkIns: any CheckInRepository,
         progression: any ProgressionSettingsRepository,
         profiles: any ProfileRepository,
+        routines: any RoutineRepository,
         importer: any TrainingHistoryImporter = StrongHistoryImporter(),
         backupDestination: any BackupDestination = FolderBackupDestination(),
         metricsSources: [any MetricsSource]
@@ -46,10 +48,11 @@ final class AppContainer {
         self.checkIns = checkIns
         self.progression = progression
         self.profiles = profiles
+        self.routines = routines
         self.importer = importer
         self.backup = RepositoryBackupService(
             workouts: workouts, exercises: exercises, checkIns: checkIns, profiles: profiles, progression: progression,
-            destination: backupDestination,
+            routines: routines, destination: backupDestination,
             appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
         )
         self.metricsSources = metricsSources
@@ -63,12 +66,14 @@ final class AppContainer {
             let store = SwiftDataStore.make(container: try PersistenceContainer.make())
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
+                routines: store,
                 metricsSources: sources
             )
         } catch {
             let store = InMemoryStore(exercises: ExerciseCatalog.builtIn)
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
+                routines: store,
                 metricsSources: sources
             )
         }
@@ -84,8 +89,12 @@ final class AppContainer {
         WorkoutModel(workouts: workouts, exercises: exercises, progression: progression, backup: backup)
     }
 
+    func makeRoutinesModel() -> RoutinesModel {
+        RoutinesModel(routines: routines, exercises: exercises, backup: backup)
+    }
+
     func makeHistoryModel() -> HistoryModel {
-        HistoryModel(workouts: workouts, exercises: exercises, backup: backup)
+        HistoryModel(workouts: workouts, exercises: exercises, routines: routines, backup: backup)
     }
 
     func makePlanModel() -> PlanModel {
@@ -93,7 +102,7 @@ final class AppContainer {
     }
 
     func makeExercisesModel() -> ExercisesModel {
-        ExercisesModel(workouts: workouts, exercises: exercises, progression: progression)
+        ExercisesModel(workouts: workouts, exercises: exercises, progression: progression, routines: routines)
     }
 
     func makeBackupModel() -> BackupModel {

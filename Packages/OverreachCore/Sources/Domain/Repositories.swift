@@ -28,6 +28,13 @@ public protocol ExerciseRepository: Sendable {
     func deleteExercise(id: UUID) async throws
 }
 
+public protocol RoutineRepository: Sendable {
+    /// Every routine, sorted by name.
+    func allRoutines() async throws -> [Routine]
+    func save(_ routine: Routine) async throws
+    func deleteRoutine(id: UUID) async throws
+}
+
 public protocol CheckInRepository: Sendable {
     func checkIn(for day: CalendarDay) async throws -> CheckIn?
     func checkIns(in range: ClosedRange<CalendarDay>) async throws -> [CheckIn]

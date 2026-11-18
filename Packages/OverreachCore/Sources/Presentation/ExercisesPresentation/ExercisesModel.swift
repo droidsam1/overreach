@@ -30,15 +30,18 @@ public final class ExercisesModel {
     private let workouts: any WorkoutRepository
     private let exerciseRepository: any ExerciseRepository
     private let progression: any ProgressionSettingsRepository
+    private let routines: any RoutineRepository
 
     public init(
         workouts: any WorkoutRepository,
         exercises: any ExerciseRepository,
-        progression: any ProgressionSettingsRepository
+        progression: any ProgressionSettingsRepository,
+        routines: any RoutineRepository
     ) {
         self.workouts = workouts
         self.exerciseRepository = exercises
         self.progression = progression
+        self.routines = routines
     }
 
     // MARK: Screen state
@@ -134,8 +137,9 @@ public final class ExercisesModel {
     }
 
     /// Moves the history of `sourceID` to `targetID` and removes the source. The source's names become aliases
-    /// of the target (so re-imports resolve to it) and its progression settings move over if the target has
-    /// none. Order keeps every session pointing to an existing exercise even if a step fails.
+    /// of the target (so re-imports resolve to it), routines use the target instead and its progression settings
+    /// move over if the target has none. Order keeps everything pointing to an existing exercise even if a step
+    /// fails.
     @discardableResult
     public func merge(_ sourceID: UUID, into targetID: UUID) async -> Bool {
         guard sourceID != targetID, let source = exercise(id: sourceID), let target = exercise(id: targetID) else {
@@ -146,6 +150,11 @@ public final class ExercisesModel {
 
             let sessions = try await workouts.sessions(from: .distantPast, to: .distantFuture)
             try await workouts.save(ExerciseMerge.repoint(sessions, from: sourceID, to: targetID))
+
+            let allRoutines = try await routines.allRoutines()
+            for routine in ExerciseMerge.repoint(allRoutines, from: sourceID, to: targetID) {
+                try await routines.save(routine)
+            }
 
             if let settings = try await progression.progressionSettings(for: sourceID),
                try await progression.progressionSettings(for: targetID) == nil {

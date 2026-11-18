@@ -16,6 +16,7 @@ import WorkoutPresentation
 struct RootView: View {
     @State private var todayModel: TodayModel
     @State private var workoutModel: WorkoutModel
+    @State private var routinesModel: RoutinesModel
     @State private var historyModel: HistoryModel
     @State private var planModel: PlanModel
     @State private var importModel: ImportModel
@@ -26,6 +27,7 @@ struct RootView: View {
     init(container: AppContainer) {
         _todayModel = State(initialValue: container.makeTodayModel())
         _workoutModel = State(initialValue: container.makeWorkoutModel())
+        _routinesModel = State(initialValue: container.makeRoutinesModel())
         _historyModel = State(initialValue: container.makeHistoryModel())
         _planModel = State(initialValue: container.makePlanModel())
         _importModel = State(initialValue: container.makeImportModel())
@@ -39,7 +41,7 @@ struct RootView: View {
                 TodayView(model: todayModel)
             }
             Tab("Train", systemImage: "dumbbell") {
-                WorkoutView(model: workoutModel)
+                WorkoutView(model: workoutModel, routines: routinesModel)
             }
             Tab("History", systemImage: "calendar") {
                 HistoryView(model: historyModel)

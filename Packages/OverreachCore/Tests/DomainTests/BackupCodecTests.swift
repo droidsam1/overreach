@@ -22,7 +22,8 @@ struct BackupCodecTests {
             profile: AthleteProfile(sex: .male, goal: TrainingGoal(kind: .strength, priorityLifts: [custom.id])),
             progressionSettings: [ProgressionSettingsEntry(
                 exerciseID: custom.id, settings: ProgressionSettings(incrementKg: 2.5, isMainLift: true, focus: .strength)
-            )]
+            )],
+            routines: [Routine(name: "Legs", focus: .strength, exerciseIDs: [custom.id])]
         )
     }
 
@@ -38,6 +39,7 @@ struct BackupCodecTests {
         let decoded = try BackupCodec.decode(minimal)
         #expect(decoded.sessions.isEmpty)
         #expect(decoded.profile == AthleteProfile())
+        #expect(decoded.routines.isEmpty)
     }
 
     @Test func rejectsNewerFormatsAndOtherFiles() {

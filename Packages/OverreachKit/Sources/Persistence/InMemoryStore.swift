@@ -5,12 +5,13 @@ import Foundation
 ///
 /// The app uses `SwiftDataStore` (ADR-0004); this one keeps previews and tests fast and dependency-free.
 public actor InMemoryStore: WorkoutRepository, ExerciseRepository, CheckInRepository, ProfileRepository,
-    ProgressionSettingsRepository {
+    ProgressionSettingsRepository, RoutineRepository {
     private var sessionsByID: [UUID: StrengthSession]
     private var exercisesByID: [UUID: Exercise]
     private var checkInsByDay: [CalendarDay: CheckIn]
     private var storedProfile = AthleteProfile()
     private var progressionByExercise: [UUID: ProgressionSettings] = [:]
+    private var routinesByID: [UUID: Routine] = [:]
 
     public init(exercises: [Exercise] = [], sessions: [StrengthSession] = [], checkIns: [CheckIn] = []) {
         exercisesByID = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
@@ -78,6 +79,20 @@ public actor InMemoryStore: WorkoutRepository, ExerciseRepository, CheckInReposi
 
     public func save(_ profile: AthleteProfile) {
         storedProfile = profile
+    }
+
+    // MARK: RoutineRepository
+
+    public func allRoutines() -> [Routine] {
+        routinesByID.values.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    public func save(_ routine: Routine) {
+        routinesByID[routine.id] = routine
+    }
+
+    public func deleteRoutine(id: UUID) {
+        routinesByID[id] = nil
     }
 
     // MARK: ProgressionSettingsRepository

@@ -27,7 +27,7 @@ struct ExercisesModelTests {
             exercises: [bench, imported, zercher],
             sessions: [session(1, [imported.id]), session(2, [imported.id, bench.id]), session(3, [zercher.id])]
         )
-        return (ExercisesModel(workouts: store, exercises: store, progression: store), store)
+        return (ExercisesModel(workouts: store, exercises: store, progression: store, routines: store), store)
     }
 
     @Test func listsUnmappedExercisesMostUsedFirst() async {
@@ -87,6 +87,17 @@ struct ExercisesModelTests {
         #expect(try await store.progressionSettings(for: bench.id) == settings)
         #expect(model.needsMappingCount == 1)
         #expect(model.sessionCount(of: bench.id) == 2)
+    }
+
+    @Test func mergeMovesRoutinesToTheTarget() async throws {
+        let (model, store) = makeModel()
+        let routine = Routine(name: "Push", exerciseIDs: [imported.id, zercher.id])
+        try await store.save(routine)
+        await model.load()
+
+        #expect(await model.merge(imported.id, into: bench.id))
+
+        #expect(try await store.allRoutines().first?.exerciseIDs == [bench.id, zercher.id])
     }
 
     @Test func mergeKeepsTheTargetsOwnSettings() async throws {

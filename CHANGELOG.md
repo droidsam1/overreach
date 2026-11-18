@@ -13,6 +13,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - `scripts/test-core.sh` / `.ps1` run the core and presentation tests in Docker (same image as CI).
 
 ### Added
+- Routines (#15): create, edit, reorder and delete session templates with a name, focus and exercises from the
+  Train tab, start a session from one with targets prefilled by the progression engine, or save a past session
+  as a routine from History. Routines are included in backups and follow exercise merges.
 - Custom exercises (#17): create them from the Exercises screen with name, other names, equipment and muscles.
   Names already used by another exercise are rejected; custom and imported exercises can be renamed and keep
   their old name for future imports. They appear in the logger and session-editing pickers.

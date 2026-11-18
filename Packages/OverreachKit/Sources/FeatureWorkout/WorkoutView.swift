@@ -7,14 +7,17 @@ import WorkoutPresentation
 // Views only: layout, styling and navigation. Targets, texts and decisions come from `WorkoutPresentation`
 // (ADR-0014), so this file can be redesigned freely.
 
-/// The live session logger (phase 1). Routines come in a later PR.
+/// The Train tab: start a session, empty or from a routine, and log it.
 public struct WorkoutView: View {
     @State private var model: WorkoutModel
+    @State private var routines: RoutinesModel
+    @State private var routineEditor: RoutineEditorModel?
     @State private var isPickingExercise = false
     @State private var isConfirmingDiscard = false
 
-    public init(model: WorkoutModel) {
+    public init(model: WorkoutModel, routines: RoutinesModel) {
         _model = State(initialValue: model)
+        _routines = State(initialValue: routines)
     }
 
     public var body: some View {
@@ -23,14 +26,12 @@ public struct WorkoutView: View {
                 if model.isSessionActive {
                     SessionList(model: model, isPickingExercise: $isPickingExercise)
                 } else {
-                    ContentUnavailableView {
-                        Label("No session in progress", systemImage: "dumbbell")
-                    } description: {
-                        Text("Start a session and add exercises. Targets come from your history.")
-                    } actions: {
-                        Button("Start session") { model.start() }
-                            .buttonStyle(.borderedProminent)
-                    }
+                    StartSessionView(
+                        routines: routines,
+                        onStartEmpty: { model.start() },
+                        onStart: { routine in Task { await model.start(routine) } },
+                        onEdit: { routineEditor = routines.editor(for: $0) }
+                    )
                 }
             }
             .navigationTitle(model.isSessionActive ? model.sessionName : String(localized: "Train"))
@@ -42,10 +43,16 @@ public struct WorkoutView: View {
                 // Exercises may have been created since this screen first appeared.
                 .task { await model.load() }
             }
+            .sheet(item: $routineEditor) { editor in
+                RoutineEditorView(model: editor)
+            }
             .confirmationDialog("Discard this session?", isPresented: $isConfirmingDiscard) {
                 Button("Discard", role: .destructive) { model.discard() }
             }
-            .task { await model.load() }
+            .task {
+                await model.load()
+                await routines.load()
+            }
         }
     }
 
@@ -57,6 +64,10 @@ public struct WorkoutView: View {
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Finish") { Task { await model.finish() } }
+            }
+        } else {
+            ToolbarItem(placement: .primaryAction) {
+                Button("New routine", systemImage: "plus") { routineEditor = routines.newEditor() }
             }
         }
     }

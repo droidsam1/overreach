@@ -72,6 +72,22 @@ struct SwiftDataStoreTests {
         #expect(try await store.checkIn(for: days[1])?.isSick == true)
     }
 
+    @Test func savesUpdatesAndDeletesRoutines() async throws {
+        let store = try makeStore()
+        var push = Routine(name: "Push", exerciseIDs: [UUID(), UUID()])
+        let arms = Routine(name: "Arms", focus: .hypertrophy, exerciseIDs: [UUID()])
+        try await store.save(push)
+        try await store.save(arms)
+        #expect(try await store.allRoutines() == [arms, push])
+
+        push.name = "Push A"
+        try await store.save(push)
+        #expect(try await store.allRoutines() == [arms, push])
+
+        try await store.deleteRoutine(id: arms.id)
+        #expect(try await store.allRoutines() == [push])
+    }
+
     @Test func profileAndProgressionSettingsRoundTrip() async throws {
         let store = try makeStore()
         #expect(try await store.profile() == AthleteProfile())

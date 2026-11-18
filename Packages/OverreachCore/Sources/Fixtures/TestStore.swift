@@ -3,16 +3,19 @@ import Foundation
 
 /// In-memory repositories for presentation tests in `OverreachCore` (the app's stores live in OverreachKit).
 /// `failing` makes every write throw, to test error handling.
-public actor TestStore: WorkoutRepository, ExerciseRepository, ProgressionSettingsRepository, ProfileRepository {
+public actor TestStore: WorkoutRepository, ExerciseRepository, ProgressionSettingsRepository, ProfileRepository,
+    RoutineRepository {
     private var sessionsByID: [UUID: StrengthSession]
     private var exercisesByID: [UUID: Exercise]
     private var settingsByExercise: [UUID: ProgressionSettings] = [:]
+    private var routinesByID: [UUID: Routine]
     private var storedProfile = AthleteProfile()
     private var failing = false
 
     public struct WriteFailed: Error {}
 
-    public init(exercises: [Exercise] = [], sessions: [StrengthSession] = []) {
+    public init(exercises: [Exercise] = [], sessions: [StrengthSession] = [], routines: [Routine] = []) {
+        routinesByID = Dictionary(routines.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
         exercisesByID = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
         sessionsByID = Dictionary(sessions.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
     }
@@ -58,6 +61,22 @@ public actor TestStore: WorkoutRepository, ExerciseRepository, ProgressionSettin
     public func deleteExercise(id: UUID) throws {
         try write()
         exercisesByID[id] = nil
+    }
+
+    // MARK: RoutineRepository
+
+    public func allRoutines() -> [Routine] {
+        routinesByID.values.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    public func save(_ routine: Routine) throws {
+        try write()
+        routinesByID[routine.id] = routine
+    }
+
+    public func deleteRoutine(id: UUID) throws {
+        try write()
+        routinesByID[id] = nil
     }
 
     // MARK: ProgressionSettingsRepository
