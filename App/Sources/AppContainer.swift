@@ -102,7 +102,9 @@ final class AppContainer {
     }
 
     func makeExercisesModel() -> ExercisesModel {
-        ExercisesModel(workouts: workouts, exercises: exercises, progression: progression, routines: routines)
+        ExercisesModel(
+            workouts: workouts, exercises: exercises, progression: progression, routines: routines, backup: backup
+        )
     }
 
     func makeBackupModel() -> BackupModel {

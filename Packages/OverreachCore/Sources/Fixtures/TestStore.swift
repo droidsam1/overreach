@@ -88,6 +88,11 @@ public actor TestStore: WorkoutRepository, ExerciseRepository, ProgressionSettin
         settingsByExercise[exerciseID] = settings
     }
 
+    public func deleteProgressionSettings(for exerciseID: UUID) throws {
+        try write()
+        settingsByExercise[exerciseID] = nil
+    }
+
     public func allProgressionSettings() -> [UUID: ProgressionSettings] { settingsByExercise }
 
     // MARK: ProfileRepository

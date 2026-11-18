@@ -31,17 +31,23 @@ public final class ExercisesModel {
     private let exerciseRepository: any ExerciseRepository
     private let progression: any ProgressionSettingsRepository
     private let routines: any RoutineRepository
+    private let backup: (any BackupService)?
+    private let clock: @Sendable () -> Date
 
     public init(
         workouts: any WorkoutRepository,
         exercises: any ExerciseRepository,
         progression: any ProgressionSettingsRepository,
-        routines: any RoutineRepository
+        routines: any RoutineRepository,
+        backup: (any BackupService)? = nil,
+        clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
         self.exerciseRepository = exercises
         self.progression = progression
         self.routines = routines
+        self.backup = backup
+        self.clock = clock
     }
 
     // MARK: Screen state
@@ -74,6 +80,15 @@ public final class ExercisesModel {
     /// The form to create a custom exercise.
     public func newExerciseEditor() -> ExerciseEditorModel {
         ExerciseEditorModel(creatingIn: self)
+    }
+
+    /// The progression settings of one exercise, or `nil` if it no longer exists.
+    public func settingsEditor(for exerciseID: UUID, format: Format = Format()) -> ExerciseSettingsModel? {
+        exercise(id: exerciseID).map {
+            ExerciseSettingsModel(
+                exercise: $0, repository: progression, backup: backup, clock: clock, format: format
+            )
+        }
     }
 
     // MARK: Intents

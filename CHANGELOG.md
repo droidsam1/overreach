@@ -13,6 +13,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - `scripts/test-core.sh` / `.ps1` run the core and presentation tests in Docker (same image as CI).
 
 ### Added
+- Per-exercise progression settings (#14): from an exercise, choose the scheme and its parameters, load
+  increment (including microplates), focus and main lift, with defaults from the focus and equipment. Changes
+  update the targets of an open session; sets already logged are kept.
 - Routines (#15): create, edit, reorder and delete session templates with a name, focus and exercises from the
   Train tab, start a session from one with targets prefilled by the progression engine, or save a past session
   as a routine from History. Routines are included in backups and follow exercise merges.

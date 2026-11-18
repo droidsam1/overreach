@@ -69,6 +69,8 @@ public protocol ActivitySource: Sendable {
 public protocol ProgressionSettingsRepository: Sendable {
     func progressionSettings(for exerciseID: UUID) async throws -> ProgressionSettings?
     func save(_ settings: ProgressionSettings, for exerciseID: UUID) async throws
+    /// Returns the exercise to its defaults.
+    func deleteProgressionSettings(for exerciseID: UUID) async throws
     func allProgressionSettings() async throws -> [UUID: ProgressionSettings]
 }
 

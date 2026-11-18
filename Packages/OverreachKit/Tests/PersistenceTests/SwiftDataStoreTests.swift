@@ -101,5 +101,7 @@ struct SwiftDataStoreTests {
         let settings = ProgressionSettings(scheme: .linearLoad(sets: 5, reps: 5, targetRPE: 8), incrementKg: 1.25)
         try await store.save(settings, for: bench)
         #expect(try await store.progressionSettings(for: bench) == settings)
+        try await store.deleteProgressionSettings(for: bench)
+        #expect(try await store.progressionSettings(for: bench) == nil)
     }
 }

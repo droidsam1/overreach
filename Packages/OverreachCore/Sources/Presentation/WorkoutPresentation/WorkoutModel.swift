@@ -33,6 +33,8 @@ public struct DraftExercise: Identifiable, Hashable, Sendable {
     public var isFocusInferred: Bool
     /// Suggested rest between working sets for the focus, in seconds.
     public var restSeconds: ClosedRange<Int>
+    /// Stored settings behind the target (`nil` = defaults), to notice when they change.
+    var appliedSettings: ProgressionSettings?
 
     /// 1-based position of a set, for its row label.
     public func number(of setID: DraftSet.ID) -> Int {
@@ -205,6 +207,26 @@ public final class WorkoutModel {
         }
     }
 
+    /// Brings the session up to date after progression settings changed elsewhere. Only affected exercises are
+    /// touched, so typed values survive; exercises with completed sets keep their sets and update the target.
+    public func applySettingsChanges() async {
+        for current in exercises {
+            let stored: ProgressionSettings?
+            do {
+                stored = try await progression.progressionSettings(for: current.exercise.id)
+            } catch {
+                continue
+            }
+            guard stored != current.appliedSettings else { continue }
+            var refreshed = await prepare(current.exercise, id: current.id)
+            guard let position = exercises.firstIndex(where: { $0.id == current.id }) else { continue }
+            if exercises[position].sets.contains(where: \.isDone) {
+                refreshed.sets = exercises[position].sets
+            }
+            exercises[position] = refreshed
+        }
+    }
+
     /// Target, status, focus and rest for `exercise`. A declared exercise focus wins over the session focus;
     /// without stored settings, the focus picks the default scheme (`FocusPrescription`).
     private func prepare(_ exercise: Exercise, id: UUID) async -> DraftExercise {
@@ -227,7 +249,8 @@ public final class WorkoutModel {
         return DraftExercise(
             id: id, exercise: exercise, target: target, status: status, sets: sets, focus: focus,
             isFocusInferred: declaredFocus == nil && focus != nil,
-            restSeconds: FocusPrescription.for(focus ?? .hypertrophy).restSeconds
+            restSeconds: FocusPrescription.for(focus ?? .hypertrophy).restSeconds,
+            appliedSettings: stored
         )
     }
 

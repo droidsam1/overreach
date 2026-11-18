@@ -295,4 +295,14 @@ public actor SwiftDataStore: WorkoutRepository, ExerciseRepository, CheckInRepos
         }
         try modelContext.save()
     }
+
+    public func deleteProgressionSettings(for exerciseID: UUID) throws {
+        let existing = try modelContext.fetch(
+            FetchDescriptor<ProgressionSettingsRecord>(predicate: #Predicate { $0.exerciseID == exerciseID })
+        )
+        for record in existing {
+            modelContext.delete(record)
+        }
+        try modelContext.save()
+    }
 }
