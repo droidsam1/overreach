@@ -90,6 +90,109 @@ struct ExerciseEditorModelTests {
         #expect(stored.equipment == .barbell)
     }
 
+    @Test func createsACustomExercise() async throws {
+        let (list, store) = await makeList()
+        let editor = list.newExerciseEditor()
+        #expect(editor.exists)
+        #expect(editor.title == "New exercise")
+        #expect(editor.canEditNames)
+        #expect(!editor.canMerge)
+        #expect(!editor.canSave)
+
+        editor.name = "  Zercher Squat "
+        #expect(!editor.canSave)  // still needs a primary muscle
+        editor.aliasesText = "sentadilla zercher, ZERCHER SQUAT, , sentadilla zércher"
+        editor.setPrimary(.quadriceps, true)
+        editor.setSecondary(.core, true)
+        editor.draft.equipment = .barbell
+        #expect(editor.canSave)
+        #expect(await editor.save())
+
+        let stored = try #require(await store.allExercises().first { $0.name == "Zercher Squat" })
+        #expect(stored.isCustom)
+        #expect(stored.aliases == ["sentadilla zercher"])
+        #expect(stored.primaryMuscles == [.quadriceps])
+        #expect(stored.secondaryMuscles == [.core])
+        #expect(stored.equipment == .barbell)
+        #expect(list.allRows.map(\.name).contains("Zercher Squat"))
+    }
+
+    @Test func aNewExerciseSuggestsSimilarOnesWhileTyping() async {
+        let (list, _) = await makeList()
+        let editor = list.newExerciseEditor()
+        #expect(editor.suggestions.isEmpty)
+        editor.name = "Bench Press (Dumbbell)"
+        #expect(editor.suggestions.map(\.id) == [bench.id])
+    }
+
+    @Test func namesUsedByAnotherExerciseAreRejected() async {
+        let (list, store) = await makeList()
+        let editor = list.newExerciseEditor()
+        editor.setPrimary(.chest, true)
+
+        editor.name = "PRESS  BANCA"  // alias of the bench press
+        #expect(editor.nameMessage == "“PRESS  BANCA” is already used by Bench Press (Barbell).")
+        #expect(!editor.canSave)
+        #expect(await editor.save() == false)
+        #expect(try await store.allExercises().count == 3)
+
+        editor.name = "Floor Press"
+        #expect(editor.canSave)
+        editor.aliasesText = "seated row (cable)"
+        #expect(editor.nameMessage == "“seated row (cable)” is already used by Seated Row (Cable).")
+        #expect(!editor.canSave)
+    }
+
+    @Test func renamingKeepsTheOldNameForImports() async throws {
+        let (list, store) = await makeList()
+        let editor = try #require(list.editor(for: imported.id))
+        editor.name = "Paused Bench"
+        editor.setPrimary(.chest, true)
+
+        #expect(await editor.save())
+
+        let stored = try #require(await store.allExercises().first { $0.id == imported.id })
+        #expect(stored.name == "Paused Bench")
+        #expect(stored.aliases == ["Press Banca Pausa"])
+    }
+
+    @Test func untouchedAliasesAreKeptEvenWithCommas() async throws {
+        let odd = Exercise(name: "Curl", primaryMuscles: [.biceps], isCustom: true, aliases: ["Curl, barra"])
+        let store = TestStore(exercises: [odd])
+        let list = ExercisesModel(workouts: store, exercises: store, progression: store)
+        await list.load()
+        let editor = try #require(list.editor(for: odd.id))
+
+        #expect(await editor.save())
+
+        #expect(try await store.allExercises().first?.aliases == ["Curl, barra"])
+    }
+
+    @Test func builtInExercisesKeepTheirNames() async throws {
+        let (list, store) = await makeList()
+        let editor = try #require(list.editor(for: bench.id))
+        #expect(!editor.canEditNames)
+        editor.name = "Something else"
+        editor.setPrimary(.triceps, true)
+
+        #expect(await editor.save())
+
+        let stored = try #require(await store.allExercises().first { $0.id == bench.id })
+        #expect(stored.name == bench.name)
+        #expect(stored.primaryMuscles == [.chest, .triceps])
+    }
+
+    @Test func aFailedCreationKeepsTheFormOpenWithAMessage() async {
+        let (list, store) = await makeList(failing: true)
+        let editor = list.newExerciseEditor()
+        editor.name = "Zercher Squat"
+        editor.setPrimary(.quadriceps, true)
+
+        #expect(await editor.save() == false)
+        #expect(editor.errorMessage == "Could not save the exercise.")
+        #expect(try await store.allExercises().count == 3)
+    }
+
     @Test func builtInExercisesCannotBeMergedAway() async throws {
         let (list, _) = await makeList()
         let editor = try #require(list.editor(for: bench.id))
@@ -137,7 +240,7 @@ struct ExerciseEditorModelTests {
         editor.setPrimary(.chest, true)
 
         #expect(await editor.save() == false)
-        #expect(editor.errorMessage == "Could not save the muscles.")
+        #expect(editor.errorMessage == "Could not save the exercise.")
         #expect(list.needsMappingCount == 1)
     }
 }
