@@ -6,6 +6,8 @@ import PresentationKit
 /// Where the user goes after the setup.
 public enum OnboardingDestination: Hashable, Sendable {
     case train, importHistory
+    /// Restore a backup: Settings opens the folder picker.
+    case restoreBackup
 }
 
 /// Optional first-run setup (issue #18). Every step can be skipped, and it can be reopened from Settings.

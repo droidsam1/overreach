@@ -3214,23 +3214,6 @@
         }
       }
     },
-    "Importing continues in Settings, where you choose your Strong CSV file.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La importación continúa en Ajustes, donde eliges tu archivo CSV de Strong."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A importación continúa en Axustes, onde escolles o teu ficheiro CSV de Strong."
-          }
-        }
-      }
-    },
     "Importing…": {
       "extractionState": "manual",
       "localizations": {
@@ -5101,6 +5084,23 @@
         }
       }
     },
+    "Restore from a backup": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar desde una copia"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar desde unha copia"
+          }
+        }
+      }
+    },
     "Restore from file…": {
       "extractionState": "manual",
       "localizations": {
@@ -5165,6 +5165,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sesións restauradas: {1}."
+          }
+        }
+      }
+    },
+    "Restoring and importing continue in Settings: choose the iCloud Drive folder with your Overreach backup, or your Strong CSV file.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar e importar continúan en Ajustes: elige la carpeta de iCloud Drive con tu copia de Overreach o tu archivo CSV de Strong."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar e importar continúan en Axustes: escolle o cartafol de iCloud Drive coa túa copia de Overreach ou o teu ficheiro CSV de Strong."
           }
         }
       }
@@ -7341,6 +7358,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Podes importalo tal cal ou enviar a corrección e traer a nova resposta."
+          }
+        }
+      }
+    },
+    "Your data is only on this iPhone. Choose an iCloud Drive folder: the app then backs up on its own, and you can restore it if you delete the app.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus datos solo están en este iPhone. Elige una carpeta de iCloud Drive: la app hará copias sola y podrás recuperarlos si borras la app."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os teus datos só están neste iPhone. Escolle un cartafol de iCloud Drive: a app fará copias soa e poderás recuperalos se borras a app."
           }
         }
       }

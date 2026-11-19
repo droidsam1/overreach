@@ -132,10 +132,27 @@ public enum BackupCodec {
             throw BackupError.newerFormat(header.formatVersion)
         }
         do {
-            return try decoder.decode(BackupDocument.self, from: data)
+            return try decoder.decode(BackupDocument.self, from: try migrate(data, from: header.formatVersion))
         } catch {
             throw BackupError.notABackup
         }
+    }
+
+    /// Brings an older backup up to the current format, one version at a time (ADR-0018). Format 1 is current, so
+    /// there is nothing to do yet. When the format changes in a way tolerant decoding cannot absorb (a rename, a
+    /// new meaning, a different unit), raise `BackupDocument.currentFormatVersion` and add the step from the
+    /// previous version here, as a JSON-to-JSON transform, with a frozen fixture of the old version in the tests.
+    static func migrate(_ data: Data, from version: Int) throws -> Data {
+        guard version >= 1 else { throw BackupError.notABackup }
+        var current = data
+        var step = version
+        while step < BackupDocument.currentFormatVersion {
+            switch step {
+            default: throw BackupError.notABackup  // every older version needs a step
+            }
+            step += 1
+        }
+        return current
     }
 
     /// Exercises worth backing up: custom ones and built-in ones the user changed.

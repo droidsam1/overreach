@@ -143,12 +143,18 @@ public struct OnboardingView: View {
 
     private var startStep: some View {
         Section {
+            Button("Restore from a backup", systemImage: "arrow.counterclockwise.icloud") { finish(.restoreBackup) }
             Button("Import from Strong", systemImage: "square.and.arrow.down") { finish(.importHistory) }
             Button("Start with the exercise catalog", systemImage: "dumbbell") { finish(.train) }
         } header: {
             Text("How do you want to start?")
         } footer: {
-            Text("Importing continues in Settings, where you choose your Strong CSV file.")
+            Text(
+                """
+                Restoring and importing continue in Settings: choose the iCloud Drive folder with your Overreach \
+                backup, or your Strong CSV file.
+                """
+            )
         }
     }
 
