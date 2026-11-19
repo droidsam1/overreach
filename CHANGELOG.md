@@ -7,6 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Session summary after finishing. It shows duration, working sets, volume and effective sets per muscle, and how
+  many exercises met their target. Per exercise: above, on or below target with the numbers, effort against plan,
+  personal records, a new stall and next time's target. It compares volume with the last session of the same name
+  and can be shared with an AI app.
+
+### Added
 - Log effort as RPE or as reps in reserve (RIR), chosen from "How to log sets". Sets still store RPE, so history,
   targets and the AI context do not change. The guide explains how to rate effort and the common bias of guessing
   about 1 rep too few (`rir-estimation`).

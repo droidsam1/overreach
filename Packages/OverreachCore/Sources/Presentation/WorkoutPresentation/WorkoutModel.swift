@@ -211,6 +211,8 @@ public final class WorkoutModel {
     /// Exercises of the session in progress. Views bind to it directly (`$model.exercises`).
     public var exercises: [DraftExercise] = []
     public private(set) var errorMessage: String?
+    /// The summary of the session just finished; set it to `nil` to dismiss it.
+    public var summary: SessionSummary?
     /// The rest between sets.
     public let rest: RestTimerModel
 
@@ -560,9 +562,12 @@ public final class WorkoutModel {
             name: sessionName, startedAt: startedAt, endedAt: now, entries: entries,
             notes: Self.trimmedOrNil(sessionNotes), focus: sessionFocus
         )
+        let targets = Dictionary(exercises.map { ($0.exercise.id, $0.target) }, uniquingKeysWith: { first, _ in first })
         do {
             try await workouts.save(finished)
+            let summary = await makeSummary(of: finished, targets: targets, now: now)
             close()
+            self.summary = summary
             await backup?.backUpIfConfigured(now: now)
             await health?.sync(finished)
             return true
@@ -570,6 +575,17 @@ public final class WorkoutModel {
             errorMessage = L10n.text("Could not save the session. It is still open.")
             return false
         }
+    }
+
+    private func makeSummary(
+        of session: StrengthSession, targets: [UUID: ExerciseTarget], now: Date
+    ) async -> SessionSummary {
+        let history = (try? await workouts.sessions(from: now.addingTimeInterval(-Self.historyWindow), to: now)) ?? []
+        let settings = (try? await progression.allProgressionSettings()) ?? [:]
+        let review = SessionReviewer.review(
+            session, targets: targets, history: history, exercises: catalog, settings: settings
+        )
+        return SessionSummary(review: review, effortScale: effortScale, format: Format())
     }
 
     public func discard() {
