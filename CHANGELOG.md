@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- Easier weight and reps fields while logging. The whole field, unit included, is the tap target. Tapping selects
+  the value so typing replaces it. A "Done" button above the keyboard and scrolling hide the keyboard. Values save
+  as you type, so marking a set right after typing keeps them.
+
 ### Added
 - The reply format for AI answers includes a JSON Schema of `overreach.plan` v1, also published in
   `docs/schemas/`. Corrections for the AI now locate broken JSON (line, column, the line itself). Fields the app

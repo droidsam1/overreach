@@ -20,20 +20,13 @@ public struct SetValueFields: View {
     }
 
     public var body: some View {
-        HStack {
-            TextField("kg", value: $weightKg, format: .number)
-                .numericKeyboard(decimal: true)
-                .multilineTextAlignment(.trailing)
-                .accessibilityLabel("Weight in kilograms")
-            Text("kg").foregroundStyle(.secondary).accessibilityHidden(true)
-        }
-        HStack {
-            TextField("reps", value: $reps, format: .number)
-                .numericKeyboard(decimal: false)
-                .multilineTextAlignment(.trailing)
-                .accessibilityLabel("Repetitions")
-            Text("reps").foregroundStyle(.secondary).accessibilityHidden(true)
-        }
+        NumberField(placeholder: "kg", unit: "kg", accessibilityLabel: "Weight in kilograms", allowsDecimals: true,
+                    value: $weightKg)
+        NumberField(placeholder: "reps", unit: "reps", accessibilityLabel: "Repetitions", allowsDecimals: false,
+                    value: Binding(
+                        get: { reps.map(Double.init) },
+                        set: { reps = $0.map { Int($0) } }
+                    ))
         Menu {
             Picker("RPE", selection: $rpe) {
                 Text("No RPE").tag(Double?.none)

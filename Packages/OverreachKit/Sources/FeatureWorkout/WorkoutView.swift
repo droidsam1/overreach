@@ -163,6 +163,7 @@ private struct SessionList: View {
             }
         }
         .sheet(isPresented: $isShowingGuide) { SetLoggingGuide() }
+        .keyboardDoneButton()
         .safeAreaInset(edge: .bottom) {
             if model.rest.isActive {
                 RestTimerView(model: model.rest)
