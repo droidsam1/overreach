@@ -31,7 +31,7 @@ struct WorkoutModelTests {
         model.start()
         await model.add(bench)
 
-        let sets = model.exercises.first?.sets ?? []
+        let sets = model.exercises.first?.workingSets ?? []
         #expect(sets.map(\.weightKg) == [62.5, 62.5, 62.5])  // top of 8–12 reached → +2.5 kg
         #expect(sets.map(\.reps) == [8, 8, 8])
         #expect(sets.allSatisfy { !$0.isDone })

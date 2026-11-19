@@ -97,6 +97,43 @@ Reviewed 2026-11-16.
 Acute:chronic workload ratio > 1.5 as a weak signal only; its injury-prediction validity is disputed.
 Reviewed 2026-11-16.
 
+## Warm-up
+
+### `warm-up-general` — moderate
+In a meta-analysis of 32 studies, a warm-up improved performance in 79 % of the outcomes studied. Before a
+leg-press 1RM, 20 minutes of easy cycling added to the specific warm-up raised the 1RM by about 8 % (crossover,
+n = 13). In another crossover study, warm-up conditions did not change reps to failure at 80 % 1RM.
+→ The logger offers an optional tip (5–10 minutes of easy cardio) until the first set. It is never added to the
+session.
+Refs: Fradkin et al. 2010, J Strength Cond Res 24(1):140–148 (systematic review and meta-analysis); Abad et al.
+2011, J Strength Cond Res 25(8):2242–2245; Ribeiro et al. 2014, Rev Bras Cineantropom Desempenho Hum.
+Reviewed 2026-11-19.
+
+### `warm-up-specific` — moderate
+Specific warm-up sets give mixed results across 11 studies. A general warm-up followed by a low-volume specific
+warm-up is suggested.
+- **Squat:** one set at about 80 % of the training load gave higher bar velocity than one at 40 % (trained men,
+  crossover).
+- **Bench press:** a progressive 40 % → 80 % warm-up gave more total work. Light-only warm-ups were the weakest.
+- **Training volume:** 5 reps at 80 % of the 10RM gave more total volume than 10–15 reps at 40–60 %.
+
+→ Warm-ups end close to the working load (about 80 %, 90 % for heavy work) with few reps. Muscles already
+worked earlier in the session get a single set. Warm-up sets are saved as warm-ups and never count for progress or
+volume.
+Refs: Ribeiro et al. 2021, Motricidade 17(1) (systematic review); Ribeiro et al. 2020, Int J Environ Res Public
+Health 17(18):6882; Viveiros et al. 2024, J Bodyw Mov Ther 40:1487–1491. A 2026 scoping review on the topic (Neves
+et al., J Sci Sport Exerc) was retracted and is not used. Reviewed 2026-11-19.
+
+### `warm-up-ramp` — heuristic
+The number of steps and their percentages and reps come from 1RM-testing practice and coaching defaults:
+- heavy work (about 80 % 1RM or more): 40 % × 5, 60 % × 3, 80 % × 2, 90 % × 1;
+- moderate work: 50 % × 6, 80 % × 4;
+- light work: 60 % × 6.
+
+Warm-up reps never exceed the working reps. Loads are rounded to the exercise's increment, never below the empty
+20 kg bar for barbell lifts. Warm-ups are added automatically for main lifts and for the first exercise that
+works a muscle in the session; the other exercises get them on demand.
+
 ## Training focus and blocks
 
 ### `loading-by-goal` — strong

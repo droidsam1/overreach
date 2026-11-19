@@ -98,6 +98,11 @@ private struct SessionList: View {
     var body: some View {
         List {
             Button("How to log sets", systemImage: "questionmark.circle") { isShowingGuide = true }
+            if let tip = model.generalWarmUpTip {
+                Label(tip, systemImage: "figure.walk")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
             Picker("Session focus", selection: Binding(
                 get: { model.sessionFocus },
                 set: { focus in Task { await model.setSessionFocus(focus) } }
@@ -142,6 +147,8 @@ private struct SessionList: View {
                                 }
                             }
                             .pickerStyle(.menu)
+                            Button("Add warm-up sets", systemImage: "flame") { model.addWarmUp(to: exercise.id) }
+                                .disabled(!exercise.canAddWarmUp)
                             Button("Remove exercise", systemImage: "trash", role: .destructive) {
                                 model.removeExercise(exercise.id)
                             }
@@ -213,7 +220,7 @@ private struct SetRow: View {
 
     var body: some View {
         AdaptiveStack(spacing: Spacing.small) {
-            SetNumberLabel(number)
+            SetNumberLabel(number, isWarmUp: set.isWarmUp)
             SetValueFields(weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe)
             Toggle(isOn: Binding(get: { set.isDone }, set: onDoneChange)) {
                 Image(systemName: set.isDone ? "checkmark.circle.fill" : "circle")
