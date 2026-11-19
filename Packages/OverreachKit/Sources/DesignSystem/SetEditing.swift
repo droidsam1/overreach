@@ -34,15 +34,26 @@ public struct SetValueFields: View {
                 .accessibilityLabel("Repetitions")
             Text("reps").foregroundStyle(.secondary).accessibilityHidden(true)
         }
-        Picker("RPE", selection: $rpe) {
-            Text("RPE –").tag(Double?.none)
-            // Keep a value outside the usual range (e.g. imported RPE 5) selectable.
-            ForEach(rpeOptions, id: \.self) { value in
-                Text("RPE \(value.formatted())").tag(Double?.some(value))
+        Menu {
+            Picker("RPE", selection: $rpe) {
+                Text("No RPE").tag(Double?.none)
+                // Keep a value outside the usual range (e.g. imported RPE 5) selectable.
+                ForEach(rpeOptions, id: \.self) { value in
+                    RPEText(value: value).tag(Double?.some(value))
+                }
             }
+        } label: {
+            Group {
+                if let rpe {
+                    Text("RPE \(rpe.formatted())")
+                } else {
+                    Text("RPE –")
+                }
+            }
+            .lineLimit(1)
+            .fixedSize()
         }
-        .pickerStyle(.menu)
-        .labelsHidden()
+        .accessibilityLabel("Effort (RPE)")
     }
 
     private var rpeOptions: [Double] {
@@ -131,6 +142,110 @@ public struct ExercisePicker: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+/// "RPE 8 · 2 reps left": an RPE value with the reps in reserve it stands for (RIR-based RPE scale).
+struct RPEText: View {
+    let value: Double
+
+    var body: some View {
+        if let meaning = RPEScale.meaning(of: value) {
+            Text("RPE \(value.formatted())") + Text(verbatim: " · ") + Text(meaning)
+        } else {
+            Text("RPE \(value.formatted())")
+        }
+    }
+}
+
+/// What each RPE value means, counted as reps left before failure.
+enum RPEScale {
+    static let values: [Double] = SetValueFields.rpeValues.reversed()
+
+    static func meaning(of value: Double) -> LocalizedStringKey? {
+        switch value {
+        case 10: "0 reps left"
+        case 9.5: "maybe 1 rep left"
+        case 9: "1 rep left"
+        case 8.5: "1–2 reps left"
+        case 8: "2 reps left"
+        case 7.5: "2–3 reps left"
+        case 7: "3 reps left"
+        case 6.5: "3–4 reps left"
+        case 6: "4+ reps left"
+        default: nil
+        }
+    }
+}
+
+/// How to log a set: what to change after lifting, the RPE scale and what notes are for. Static help.
+public struct SetLoggingGuide: View {
+    @Environment(\.dismiss) private var dismiss
+
+    public init() {}
+
+    public var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Label(
+                        """
+                        Each set starts with today's target. After lifting, correct the weight or reps if you did \
+                        something different.
+                        """,
+                        systemImage: "pencil"
+                    )
+                    Label(
+                        "Choose the RPE: how hard the set was, counted as the reps you had left.",
+                        systemImage: "gauge.with.dots.needle.50percent"
+                    )
+                    Label(
+                        """
+                        Tap the circle when the set is done. Only sets marked as done are saved, and the rest timer \
+                        starts.
+                        """,
+                        systemImage: "checkmark.circle"
+                    )
+                }
+                Section {
+                    ForEach(RPEScale.values, id: \.self) { value in
+                        HStack {
+                            Text("RPE \(value.formatted())").monospacedDigit()
+                            Spacer()
+                            if let meaning = RPEScale.meaning(of: value) {
+                                Text(meaning).foregroundStyle(.secondary)
+                            }
+                        }
+                        .accessibilityElement(children: .combine)
+                    }
+                } header: {
+                    Text("RPE scale")
+                } footer: {
+                    Text(
+                        """
+                        Not sure? Leave it empty and the app only uses weight and reps. If sets at the top of the \
+                        range feel harder than the target RPE, the weight waits until they feel easier.
+                        """
+                    )
+                }
+                Section {
+                    Text(
+                        """
+                        Use notes for what the numbers miss: pain, technique, sleep or machine settings. They are \
+                        saved with the session and included in backups.
+                        """
+                    )
+                } header: {
+                    Text("Notes")
+                }
+            }
+            .navigationTitle("How to log sets")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
                 }
             }
         }

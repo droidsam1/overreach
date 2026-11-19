@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- The reasons under each target now say what to do today with its numbers (for example "Today: drop to 72.5 kg and
+  aim for 8 reps…"), and the RPE menu says how many reps in reserve each value means.
+- Long session names wrap in the logger instead of being cut.
+
+### Added
+- Notes per exercise and for the whole session while logging, saved with the session and in backups.
+- "How to log sets" in the logger: what to change after a set, the RPE scale and what notes are for.
+
 ## [0.1.0] - 2026-11-18
 
 First testable release, sideloaded without TestFlight. See the [tester guide](docs/beta-guide.es.md).

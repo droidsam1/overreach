@@ -103,6 +103,142 @@
         }
       }
     },
+    "0 reps left": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0 en reserva"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0 en reserva"
+          }
+        }
+      }
+    },
+    "1 rep left": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 en reserva"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 en reserva"
+          }
+        }
+      }
+    },
+    "1–2 reps left": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1–2 en reserva"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1–2 en reserva"
+          }
+        }
+      }
+    },
+    "2 reps left": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 en reserva"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 en reserva"
+          }
+        }
+      }
+    },
+    "2–3 reps left": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2–3 en reserva"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2–3 en reserva"
+          }
+        }
+      }
+    },
+    "3 reps left": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3 en reserva"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3 en reserva"
+          }
+        }
+      }
+    },
+    "3–4 reps left": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3–4 en reserva"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3–4 en reserva"
+          }
+        }
+      }
+    },
+    "4+ reps left": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "4 o más en reserva"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "4 ou máis en reserva"
+          }
+        }
+      }
+    },
     "A backup with {1} sessions from {2} was found in your backup folder.": {
       "extractionState": "manual",
       "localizations": {
@@ -201,23 +337,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Engadir 15 segundos"
-          }
-        }
-      }
-    },
-    "Add a rep where you can before adding load.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Añade una repetición donde puedas antes de subir la carga."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Engade unha repetición onde poidas antes de subir a carga."
           }
         }
       }
@@ -388,40 +507,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Todos os exercicios"
-          }
-        }
-      }
-    },
-    "All reps completed: add load.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Todas las repeticiones completadas: sube la carga."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Todas as repeticións completadas: sube a carga."
-          }
-        }
-      }
-    },
-    "All sets reached {1} reps: add load and restart at the bottom of the range.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Todas las series llegaron a {1} repeticiones: sube la carga y vuelve al mínimo del rango."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Todas as series chegaron a {1} repeticións: sube a carga e volve ao mínimo do rango."
           }
         }
       }
@@ -647,23 +732,6 @@
         }
       }
     },
-    "Below the rep range twice at this load: step back one increment.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dos veces por debajo del rango con esta carga: baja un incremento."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dúas veces por debaixo do rango con esta carga: baixa un incremento."
-          }
-        }
-      }
-    },
     "Biceps": {
       "extractionState": "manual",
       "localizations": {
@@ -881,6 +949,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Escoller cartafol de iCloud Drive…"
+          }
+        }
+      }
+    },
+    "Choose the RPE: how hard the set was, counted as the reps you had left.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige el RPE: lo dura que fue la serie, contado como las repeticiones que te quedaban."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolle o RPE: o dura que foi a serie, contado como as repeticións que che quedaban."
           }
         }
       }
@@ -1684,6 +1769,23 @@
         }
       }
     },
+    "Done": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feito"
+          }
+        }
+      }
+    },
     "Double progression": {
       "extractionState": "manual",
       "localizations": {
@@ -1748,6 +1850,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Duración"
+          }
+        }
+      }
+    },
+    "Each set starts with today's target. After lifting, correct the weight or reps if you did something different.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada serie empieza con el objetivo de hoy. Al terminarla, corrige el peso o las repeticiones si hiciste otra cosa."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada serie comeza co obxectivo de hoxe. Ao rematala, corrixe o peso ou as repeticións se fixeches outra cousa."
           }
         }
       }
@@ -1833,6 +1952,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Editar sesión"
+          }
+        }
+      }
+    },
+    "Effort (RPE)": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esfuerzo (RPE)"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esforzo (RPE)"
           }
         }
       }
@@ -2071,6 +2207,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aquí aparecen as sesións rematadas."
+          }
+        }
+      }
+    },
+    "First time: choose a weight for {1} reps that leaves about {2} more in reserve (RPE {3}).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primera vez: elige un peso para {1} repeticiones que te deje unas {2} más en reserva (RPE {3})."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primeira vez: escolle un peso para {1} repeticións que che deixe unhas {2} máis en reserva (RPE {3})."
           }
         }
       }
@@ -2330,6 +2483,23 @@
         }
       }
     },
+    "How did it go? Sleep, energy, anything worth remembering.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Qué tal fue? Sueño, energía, cualquier cosa que quieras recordar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Que tal foi? Sono, enerxía, calquera cousa que queiras lembrar."
+          }
+        }
+      }
+    },
     "How do you want to start?": {
       "extractionState": "manual",
       "localizations": {
@@ -2343,6 +2513,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Como queres comezar?"
+          }
+        }
+      }
+    },
+    "How to log sets": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cómo anotar las series"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Como anotar as series"
           }
         }
       }
@@ -2619,6 +2806,40 @@
         }
       }
     },
+    "Last time every set reached {1} reps.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La última vez todas las series llegaron a {1} repeticiones."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A última vez todas as series chegaron a {1} repeticións."
+          }
+        }
+      }
+    },
+    "Last time you completed every rep.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La última vez completaste todas las repeticiones."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A última vez completaches todas as repeticións."
+          }
+        }
+      }
+    },
     "Library": {
       "extractionState": "manual",
       "localizations": {
@@ -2649,23 +2870,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carga lineal"
-          }
-        }
-      }
-    },
-    "Load from your estimated 1RM ({1} kg) at {2}.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Carga a partir de tu 1RM estimado ({1} kg) al {2}."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Carga a partir do teu 1RM estimado ({1} kg) ao {2}."
           }
         }
       }
@@ -2874,40 +3078,6 @@
         }
       }
     },
-    "Missed {1} time(s) at this load: repeat it.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fallos con esta carga: {1}. Repítela."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fallos con esta carga: {1}. Repítea."
-          }
-        }
-      }
-    },
-    "Missed {1} times in a row: reset about {2} lower and build back up.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fallos seguidos: {1}. Baja alrededor de un {2} y vuelve a progresar."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fallos seguidos: {1}. Baixa arredor dun {2} e volve progresar."
-          }
-        }
-      }
-    },
     "Mixed": {
       "extractionState": "manual",
       "localizations": {
@@ -3112,23 +3282,6 @@
         }
       }
     },
-    "Next block of the cycle: {1} reps.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Siguiente bloque del ciclo: {1} repeticiones."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Seguinte bloque do ciclo: {1} repeticións."
-          }
-        }
-      }
-    },
     "Next set: {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -3142,6 +3295,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seguinte serie: {1}"
+          }
+        }
+      }
+    },
+    "No RPE": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin RPE"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen RPE"
           }
         }
       }
@@ -3176,23 +3346,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen exercicios"
-          }
-        }
-      }
-    },
-    "No history yet: pick a weight you could lift for a couple more reps.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aún no hay historial: elige un peso con el que te sobren un par de repeticiones."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aínda non hai historial: escolle un peso co que che sobren un par de repeticións."
           }
         }
       }
@@ -3312,6 +3465,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non o sei"
+          }
+        }
+      }
+    },
+    "Not sure? Leave it empty and the app only uses weight and reps. If sets at the top of the range feel harder than the target RPE, the weight waits until they feel easier.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿No lo sabes? Déjalo vacío y la app solo usará el peso y las repeticiones. Si las series en lo alto del rango te cuestan más que el RPE objetivo, el peso no sube hasta que te resulten más fáciles."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non o sabes? Déixao baleiro e a app só usará o peso e as repeticións. Se as series no alto do rango che custan máis que o RPE obxectivo, o peso non sobe ata que che resulten máis doadas."
           }
         }
       }
@@ -3618,6 +3788,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "RPE %@"
+          }
+        }
+      }
+    },
+    "RPE scale": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escala RPE"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escala RPE"
           }
         }
       }
@@ -4217,6 +4404,23 @@
         }
       }
     },
+    "Session notes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notas de la sesión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notas da sesión"
+          }
+        }
+      }
+    },
     "Sessions": {
       "extractionState": "manual",
       "localizations": {
@@ -4727,6 +4931,23 @@
         }
       }
     },
+    "Tap the circle when the set is done. Only sets marked as done are saved, and the rest timer starts.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca el círculo al terminar la serie. Solo se guardan las series marcadas, y empieza el descanso."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca o círculo ao rematar a serie. Só se gardan as series marcadas, e comeza o descanso."
+          }
+        }
+      }
+    },
     "Target RPE": {
       "extractionState": "manual",
       "localizations": {
@@ -5016,6 +5237,23 @@
         }
       }
     },
+    "To keep progressing, add external load or switch to a harder variation.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para seguir progresando, añade lastre o pasa a una variante más difícil."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para seguir progresando, engade lastre ou pasa a unha variante máis difícil."
+          }
+        }
+      }
+    },
     "Today": {
       "extractionState": "manual",
       "localizations": {
@@ -5033,19 +5271,155 @@
         }
       }
     },
-    "Top of the range without a load step: add external load or a harder variation.": {
+    "Today is the {1}-rep block of your cycle.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Máximo del rango sin incremento disponible: añade carga externa o usa una variante más difícil."
+            "value": "Hoy toca el bloque de {1} repeticiones de tu ciclo."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Máximo do rango sen incremento dispoñible: engade carga externa ou usa unha variante máis difícil."
+            "value": "Hoxe toca o bloque de {1} repeticións do teu ciclo."
+          }
+        }
+      }
+    },
+    "Today: drop to {1} and aim for {2} reps. The last two times, some sets fell short of {3} with the previous weight.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy: baja a {1} y busca {2} repeticiones. Las dos últimas veces, alguna serie no llegó a {3} con el peso anterior."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe: baixa a {1} e procura {2} repeticións. As dúas últimas veces, algunha serie non chegou a {3} co peso anterior."
+          }
+        }
+      }
+    },
+    "Today: drop to {1}, about {2} less, after {3} sessions in a row with missing reps. Build back up from there.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy: baja a {1}, un {2} menos, tras {3} sesiones seguidas sin completar las repeticiones. Vuelve a subir desde ahí."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe: baixa a {1}, un {2} menos, tras {3} sesións seguidas sen completar as repeticións. Volve subir desde aí."
+          }
+        }
+      }
+    },
+    "Today: go up to {1} and start again at {2} reps. Last time every set reached {3}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy: sube a {1} y vuelve a empezar en {2} repeticiones. La última vez todas las series llegaron a {3}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe: sube a {1} e volve comezar en {2} repeticións. A última vez todas as series chegaron a {3}."
+          }
+        }
+      }
+    },
+    "Today: go up to {1}. Last time you completed every rep.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy: sube a {1}. La última vez completaste todas las repeticiones."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe: sube a {1}. A última vez completaches todas as repeticións."
+          }
+        }
+      }
+    },
+    "Today: repeat {1} and try to complete every rep. Last time some were missing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy: repite {1} e intenta completar todas las repeticiones. La última vez faltaron algunas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe: repite {1} e tenta completar todas as repeticións. A última vez faltaron algunhas."
+          }
+        }
+      }
+    },
+    "Today: try {1} reps with {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy: intenta {1} repeticiones con {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe: intenta {1} repeticións con {2}."
+          }
+        }
+      }
+    },
+    "Today: try {1} reps with {2}. When every set reaches {3} reps, the weight goes up.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy: intenta {1} repeticiones con {2}. Cuando todas las series lleguen a {3}, subirá el peso."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe: intenta {1} repeticións con {2}. Cando todas as series cheguen a {3}, subirá o peso."
+          }
+        }
+      }
+    },
+    "Today: {1}, which is {2} of your estimated max ({3}) for {4} reps at RPE {5}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy: {1}, el {2} de tu máximo estimado ({3}), para {4} repeticiones a RPE {5}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe: {1}, o {2} do teu máximo estimado ({3}), para {4} repeticións a RPE {5}."
           }
         }
       }
@@ -5165,6 +5539,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Usar valores por defecto"
+          }
+        }
+      }
+    },
+    "Use notes for what the numbers miss: pain, technique, sleep or machine settings. They are saved with the session and included in backups.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa las notas para lo que no dicen los números: molestias, técnica, sueño o ajustes de la máquina. Se guardan con la sesión y se incluyen en las copias."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa as notas para o que non din os números: molestias, técnica, sono ou axustes da máquina. Gárdanse coa sesión e inclúense nas copias."
           }
         }
       }
@@ -5539,6 +5930,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "evidencia limitada"
+          }
+        }
+      }
+    },
+    "maybe 1 rep left": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "quizá 1 en reserva"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "quizais 1 en reserva"
           }
         }
       }

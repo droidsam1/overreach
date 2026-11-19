@@ -35,6 +35,10 @@ public struct DraftExercise: Identifiable, Hashable, Sendable {
     public var restSeconds: ClosedRange<Int>
     /// Stored settings behind the target (`nil` = defaults), to notice when they change.
     var appliedSettings: ProgressionSettings?
+    /// Scheme behind the target, for the numbers in its explanation.
+    var scheme: ProgressionScheme
+    /// The athlete's notes on this exercise (pain, technique, machine settings). Saved trimmed; empty = none.
+    public var notes = ""
 
     /// 1-based position of a set, for its row label.
     public func number(of setID: DraftSet.ID) -> Int {
@@ -51,7 +55,8 @@ public struct TargetSummary: Hashable, Sendable {
     /// "Progressing", "Stalled", …; `nil` without enough history.
     public let status: String?
     public let isStalled: Bool
-    /// Each reason with its evidence level, e.g. "All reps completed: add load. (strong evidence)".
+    /// What to do today and why, with its evidence level, e.g.
+    /// "Today: go up to 62.5 kg. Last time you completed every rep. (strong evidence)".
     public let reasons: [String]
     /// Ordered suggestions when stalled, numbered: "1. Use smaller jumps (1.25 kg). (moderate evidence)".
     public let stallSuggestions: [String]
@@ -94,7 +99,10 @@ extension DraftExercise {
             focusLine: focusLine,
             status: status.text,
             isStalled: status.isStalled,
-            reasons: target.reasons.map { "\($0.text) (\($0.evidence.level.displayName))" },
+            reasons: target.reasons.map { reason in
+                let context = ReasonContext(target: target, scheme: scheme, format: format)
+                return "\(reason.instruction(context)) (\(reason.evidence.level.displayName))"
+            },
             stallSuggestions: suggestions
         )
     }
@@ -108,6 +116,8 @@ public final class WorkoutModel {
     /// Start time of the session in progress; `nil` when no session is open.
     public private(set) var startedAt: Date?
     public var sessionName = "Workout"
+    /// Notes on the whole session (sleep, how it felt). Saved trimmed; empty = none.
+    public var sessionNotes = ""
     /// Declared focus of the session; `nil` = automatic (per exercise). Change it with `setSessionFocus(_:)`.
     public private(set) var sessionFocus: TrainingFocus?
     /// Exercises of the session in progress. Views bind to it directly (`$model.exercises`).
@@ -163,6 +173,7 @@ public final class WorkoutModel {
     public func start(name: String = L10n.text("Workout")) {
         guard startedAt == nil else { return }
         sessionName = name
+        sessionNotes = ""
         sessionFocus = nil
         exercises = []
         errorMessage = nil
@@ -209,8 +220,9 @@ public final class WorkoutModel {
     public func refreshTargets() async {
         let pending = exercises.filter { !$0.sets.contains(where: \.isDone) }
         for current in pending {
-            let refreshed = await prepare(current.exercise, id: current.id)
+            var refreshed = await prepare(current.exercise, id: current.id)
             if let position = exercises.firstIndex(where: { $0.id == current.id }) {
+                refreshed.notes = exercises[position].notes
                 exercises[position] = refreshed
             }
         }
@@ -229,6 +241,7 @@ public final class WorkoutModel {
             guard stored != current.appliedSettings else { continue }
             var refreshed = await prepare(current.exercise, id: current.id)
             guard let position = exercises.firstIndex(where: { $0.id == current.id }) else { continue }
+            refreshed.notes = exercises[position].notes
             if exercises[position].sets.contains(where: \.isDone) {
                 refreshed.sets = exercises[position].sets
             }
@@ -265,7 +278,8 @@ public final class WorkoutModel {
             id: id, exercise: exercise, target: target, status: status, sets: sets, focus: focus,
             isFocusInferred: declaredFocus == nil && focus != nil,
             restSeconds: FocusPrescription.for(focus ?? .hypertrophy).restSeconds,
-            appliedSettings: stored
+            appliedSettings: stored,
+            scheme: settings.scheme
         )
     }
 
@@ -300,7 +314,8 @@ public final class WorkoutModel {
         }
     }
 
-    /// Saves the completed sets and closes the session. Returns `false` if saving failed (the draft is kept).
+    /// Saves the completed sets with the notes and closes the session. Returns `false` if saving failed (the draft
+    /// is kept). Notes of exercises without completed sets are dropped with them.
     @discardableResult
     public func finish() async -> Bool {
         guard let startedAt else { return false }
@@ -309,14 +324,17 @@ public final class WorkoutModel {
             let done = exercise.sets.filter(\.isDone).map { set in
                 WorkoutSet(weightKg: set.weightKg, reps: set.reps, rpe: set.rpe, completedAt: now)
             }
-            return done.isEmpty ? nil : ExerciseEntry(exerciseID: exercise.exercise.id, sets: done)
+            return done.isEmpty ? nil : ExerciseEntry(
+                exerciseID: exercise.exercise.id, sets: done, notes: Self.trimmedOrNil(exercise.notes)
+            )
         }
         guard !entries.isEmpty else {
             close()
             return true
         }
         let finished = StrengthSession(
-            name: sessionName, startedAt: startedAt, endedAt: now, entries: entries, focus: sessionFocus
+            name: sessionName, startedAt: startedAt, endedAt: now, entries: entries,
+            notes: Self.trimmedOrNil(sessionNotes), focus: sessionFocus
         )
         do {
             try await workouts.save(finished)
@@ -350,6 +368,11 @@ public final class WorkoutModel {
             warnAboutTargets()
             return []
         }
+    }
+
+    private static func trimmedOrNil(_ text: String) -> String? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 
     private func warnAboutTargets() {
