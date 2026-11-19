@@ -35,6 +35,7 @@ public struct WorkoutView: View {
                 }
             }
             .navigationTitle(model.isSessionActive ? model.sessionName : String(localized: "Train"))
+            .inlineTitle(model.isSessionActive)
             .toolbar { toolbar }
             .sheet(isPresented: $isPickingExercise) {
                 ExercisePicker(items: model.exerciseChoices.map(PickerItem.init)) { id in
@@ -61,6 +62,14 @@ public struct WorkoutView: View {
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         if model.isSessionActive {
+            // Long routine names wrap instead of being cut between the Discard and Finish buttons.
+            ToolbarItem(placement: .principal) {
+                Text(model.sessionName)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.8)
+            }
             ToolbarItem(placement: .cancellationAction) {
                 Button("Discard", role: .destructive) { isConfirmingDiscard = true }
             }
@@ -79,9 +88,11 @@ public struct WorkoutView: View {
 private struct SessionList: View {
     @Bindable var model: WorkoutModel
     @Binding var isPickingExercise: Bool
+    @State private var isShowingGuide = false
 
     var body: some View {
         List {
+            Button("How to log sets", systemImage: "questionmark.circle") { isShowingGuide = true }
             Picker("Session focus", selection: Binding(
                 get: { model.sessionFocus },
                 set: { focus in Task { await model.setSessionFocus(focus) } }
@@ -109,11 +120,23 @@ private struct SessionList: View {
                             }
                     }
                     Button("Add set", systemImage: "plus") { model.addSet(to: exercise.id) }
+                    TextField("Notes", text: $exercise.notes, axis: .vertical)
+                        .lineLimit(1...4)
                 } header: {
                     HStack {
                         Text(exercise.name)
                         Spacer()
                         Menu {
+                            Picker("Exercise focus", selection: Binding(
+                                get: { exercise.declaredFocus },
+                                set: { focus in Task { await model.setFocus(focus, of: exercise.id) } }
+                            )) {
+                                Text("Same as the session").tag(TrainingFocus?.none)
+                                ForEach(model.focusOptions) { option in
+                                    Text(option.name).tag(TrainingFocus?.some(option.value))
+                                }
+                            }
+                            .pickerStyle(.menu)
                             Button("Remove exercise", systemImage: "trash", role: .destructive) {
                                 model.removeExercise(exercise.id)
                             }
@@ -128,7 +151,13 @@ private struct SessionList: View {
                 Text("Add an exercise to see its target from your history.").foregroundStyle(.secondary)
             }
             Button("Add exercise", systemImage: "plus.circle.fill") { isPickingExercise = true }
+            Section("Session notes") {
+                TextField("How did it go? Sleep, energy, anything worth remembering.", text: $model.sessionNotes,
+                          axis: .vertical)
+                    .lineLimit(2...6)
+            }
         }
+        .sheet(isPresented: $isShowingGuide) { SetLoggingGuide() }
         .safeAreaInset(edge: .bottom) {
             if model.rest.isActive {
                 RestTimerView(model: model.rest)
@@ -187,6 +216,18 @@ private struct SetRow: View {
             .accessibilityLabel("Set \(number) done")
         }
         .opacity(set.isDone ? 0.6 : 1)
+    }
+}
+
+extension View {
+    /// Inline title on iOS while `isInline`, so the session name sits between the toolbar buttons.
+    @ViewBuilder
+    fileprivate func inlineTitle(_ isInline: Bool) -> some View {
+        #if os(iOS)
+        navigationBarTitleDisplayMode(isInline ? .inline : .automatic)
+        #else
+        self
+        #endif
     }
 }
 
