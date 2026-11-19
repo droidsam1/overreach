@@ -375,6 +375,23 @@
         }
       }
     },
+    "Above target: {1} vs {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por encima del objetivo: {1} frente a {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por riba do obxectivo: {1} fronte a {2}"
+          }
+        }
+      }
+    },
     "Add 15 seconds": {
       "extractionState": "manual",
       "localizations": {
@@ -847,6 +864,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Barra"
+          }
+        }
+      }
+    },
+    "Below target: {1} vs {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por debajo del objetivo: {1} frente a {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por debaixo do obxectivo: {1} fronte a {2}"
           }
         }
       }
@@ -2109,6 +2143,23 @@
         }
       }
     },
+    "Discuss it with an AI app": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comentarlo con una app de IA"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comentalo cunha app de IA"
+          }
+        }
+      }
+    },
     "Dismiss": {
       "extractionState": "manual",
       "localizations": {
@@ -2156,6 +2207,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Feito"
+          }
+        }
+      }
+    },
+    "Done: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hecho: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feito: {1}"
           }
         }
       }
@@ -2279,6 +2347,23 @@
         }
       }
     },
+    "Easier than planned: {1} vs {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más fácil de lo previsto: {1} frente a {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis doado do previsto: {1} fronte a {2}."
+          }
+        }
+      }
+    },
     "Edit": {
       "extractionState": "manual",
       "localizations": {
@@ -2326,6 +2411,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Editar sesión"
+          }
+        }
+      }
+    },
+    "Effective sets: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series efectivas: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series efectivas: {1}"
           }
         }
       }
@@ -2853,6 +2955,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Isquiotibiais"
+          }
+        }
+      }
+    },
+    "Harder than planned: {1} vs {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más duro de lo previsto: {1} frente a {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis duro do previsto: {1} fronte a {2}."
           }
         }
       }
@@ -3792,6 +3911,23 @@
         }
       }
     },
+    "Most reps ever with {1}: {2} (before {3}).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Récord de repeticiones con {1}: {2} (antes {3})."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Récord de repeticións con {1}: {2} (antes {3})."
+          }
+        }
+      }
+    },
     "Move down": {
       "extractionState": "manual",
       "localizations": {
@@ -3928,6 +4064,23 @@
         }
       }
     },
+    "New best estimated 1RM: {1} (before {2}).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuevo mejor 1RM estimado: {1} (antes {2})."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novo mellor 1RM estimado: {1} (antes {2})."
+          }
+        }
+      }
+    },
     "New block": {
       "extractionState": "manual",
       "localizations": {
@@ -4030,6 +4183,23 @@
         }
       }
     },
+    "Next time: {1} @ {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La próxima vez: {1} @ {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A próxima vez: {1} @ {2}."
+          }
+        }
+      }
+    },
     "No RPE": {
       "extractionState": "manual",
       "localizations": {
@@ -4077,6 +4247,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen exercicios"
+          }
+        }
+      }
+    },
+    "No longer stalled.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya no está estancado."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xa non está estancado."
           }
         }
       }
@@ -4268,6 +4455,23 @@
         }
       }
     },
+    "Now stalled: next time, open its target to see why and what to try.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahora está estancado: la próxima vez, abre su objetivo para ver por qué y qué probar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agora está estancado: a próxima vez, abre o seu obxectivo para ver por que e que probar."
+          }
+        }
+      }
+    },
     "OK": {
       "extractionState": "manual",
       "localizations": {
@@ -4281,6 +4485,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aceptar"
+          }
+        }
+      }
+    },
+    "On target or better in {1} of {2} exercises.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetivo cumplido o superado en {1} de {2} ejercicios."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obxectivo cumprido ou superado en {1} de {2} exercicios."
+          }
+        }
+      }
+    },
+    "On target: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetivo cumplido: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obxectivo cumprido: {1}"
           }
         }
       }
@@ -5730,6 +5968,23 @@
         }
       }
     },
+    "Shares this summary as text. For a deeper analysis, share your full context from Plan → Ask AI.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparte este resumen como texto. Para un análisis más completo, comparte tu contexto desde Plan → Preguntar a la IA."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparte este resumo como texto. Para unha análise máis completa, comparte o teu contexto desde Plan → Preguntar á IA."
+          }
+        }
+      }
+    },
     "Shoulders": {
       "extractionState": "manual",
       "localizations": {
@@ -7022,6 +7277,23 @@
         }
       }
     },
+    "Volume {1} compared with the last “{2}” ({3}).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volumen {1} respecto a la última «{2}» ({3})."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume {1} respecto á última «{2}» ({3})."
+          }
+        }
+      }
+    },
     "W": {
       "extractionState": "manual",
       "localizations": {
@@ -7732,6 +8004,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Levantamentos estancados neste bloque: {1}."
+          }
+        }
+      }
+    },
+    "{1} min · {2} working sets · {3}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} min · {2} series de trabajo · {3}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} min · {2} series de traballo · {3}"
           }
         }
       }
