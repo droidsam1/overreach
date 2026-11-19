@@ -44,8 +44,8 @@ public struct WorkoutView: View {
                 // Exercises may have been created since this screen first appeared.
                 .task { await model.load() }
             }
-            .sheet(item: $model.summary) { summary in
-                SessionSummaryView(summary: summary)
+            .sheet(item: $model.summary) { report in
+                SessionReportSheet(content: SessionReportContent(report))
             }
             .sheet(item: $routineEditor) { editor in
                 RoutineEditorView(model: editor)

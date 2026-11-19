@@ -1,11 +1,10 @@
 import Analytics
 import Domain
 import Foundation
-import PresentationKit
 
-/// What the app says about a session right after finishing it: totals, plan adherence, records and what comes
+/// What the app says about a finished session (right after finishing it, or later from History): totals, plan adherence, records and what comes
 /// next. Facts from `SessionReviewer`; no advice beyond the engine's next targets.
-public struct SessionSummary: Identifiable, Hashable, Sendable {
+public struct SessionReport: Identifiable, Hashable, Sendable {
     public enum Outcome: Hashable, Sendable {
         case above, onTarget, below, unfinished, noTarget
     }
@@ -35,8 +34,8 @@ public struct SessionSummary: Identifiable, Hashable, Sendable {
     public let shareText: String
 }
 
-extension SessionSummary {
-    init(review: SessionReview, effortScale: EffortScale, format: Format) {
+extension SessionReport {
+    public init(review: SessionReview, effortScale: EffortScale, format: Format) {
         let session = review.session
         let minutes = Int(((session.durationSeconds ?? 0) / 60).rounded())
         let headline = L10n.format(
