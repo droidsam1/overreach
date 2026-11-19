@@ -26,9 +26,12 @@ public final class TodayModel {
     private var failureReasons: [DataSourceKind: String] = [:]
     /// Set when asking a source for access failed, e.g. Apple Health without the HealthKit entitlement.
     public private(set) var accessError: String?
+    /// Today's check-in, once filled in.
+    public private(set) var checkIn: CheckIn?
 
     private let sources: [any MetricsSource]
     private let checkIns: (any CheckInRepository)?
+    private let backup: (any BackupService)?
     private let readinessSettings: ReadinessRules.Settings
     private let calendar: Calendar
     private let format: Format
@@ -55,6 +58,31 @@ public final class TodayModel {
                 text: text(for: reason), evidence: ReadinessRules.evidence(for: reason).level.displayName
             )
         }
+    }
+
+    /// The check-in button only shows when check-ins can be stored.
+    public var showsCheckIn: Bool { checkIns != nil }
+    public var checkInButtonTitle: String {
+        checkIn == nil ? L10n.text("How do you feel today?") : L10n.text("Edit today's check-in")
+    }
+
+    /// "Energy 4/5 · Soreness 1/3", or "Sick" — what today's check-in said.
+    public var checkInSummary: String? {
+        guard let checkIn else { return nil }
+        if checkIn.isSick { return L10n.text("Sick") }
+        var parts: [String] = []
+        if let energy = checkIn.energy { parts.append(L10n.format("Energy {1}/5", String(energy))) }
+        if let soreness = checkIn.soreness { parts.append(L10n.format("Soreness {1}/3", String(soreness))) }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
+    /// The check-in sheet for today. After it saves, call `load()` to update the light.
+    public func makeCheckInModel(now: Date = .now) -> CheckInModel? {
+        guard let checkIns else { return nil }
+        let today = CalendarDay(now, calendar: calendar)
+        return CheckInModel(
+            day: today, existing: checkIn?.day == today ? checkIn : nil, checkIns: checkIns, backup: backup
+        )
     }
 
     public var hrvMs: Double? { metrics?.hrvNightlyAverageMs }
@@ -109,12 +137,13 @@ public final class TodayModel {
     ///   the first one wins (e.g. `[garmin, appleHealth]`).
     /// - Parameter checkIns: today's check-in adds how the user feels (and "sick") to the readiness light.
     public init(
-        sources: [any MetricsSource], checkIns: (any CheckInRepository)? = nil,
+        sources: [any MetricsSource], checkIns: (any CheckInRepository)? = nil, backup: (any BackupService)? = nil,
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
         self.sources = sources
         self.checkIns = checkIns
+        self.backup = backup
         self.readinessSettings = readinessSettings
         self.calendar = calendar
         self.format = format
@@ -150,6 +179,7 @@ public final class TodayModel {
         failedSources = failures
         failureReasons = reasons
         let checkIn = try? await checkIns?.checkIn(for: today)
+        self.checkIn = checkIn
         readiness = ReadinessRules.readiness(
             today: today, history: history, checkIn: checkIn, settings: readinessSettings, calendar: calendar
         )

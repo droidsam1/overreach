@@ -20,6 +20,10 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "face.smiling", title: L10n.text("Daily check-in"),
+                    detail: L10n.text("Ten seconds on Today: energy, soreness or sick. The readiness light takes it into account.")
+                ),
+                ReleaseHighlight(
                     symbol: "circle.hexagongrid.fill", title: L10n.text("Readiness light"),
                     detail: L10n.text(
                         "Today says whether to train hard, easy or rest, from your HRV, resting HR, sleep and check-in, with the reasons."

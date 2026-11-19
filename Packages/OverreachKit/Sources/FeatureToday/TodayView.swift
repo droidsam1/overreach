@@ -6,6 +6,7 @@ import TodayPresentation
 /// "How should I train today?" — readiness, key recovery metrics and (phase 3) today's proposed session.
 public struct TodayView: View {
     @State private var model: TodayModel
+    @State private var checkInSheet: CheckInModel?
 
     public init(model: TodayModel) {
         _model = State(initialValue: model)
@@ -24,6 +25,15 @@ public struct TodayView: View {
                             VStack(alignment: .leading, spacing: Spacing.xSmall) {
                                 Text(line.text).font(.subheadline)
                                 Text(line.evidence).font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                        if model.showsCheckIn {
+                            Button(model.checkInButtonTitle, systemImage: "face.smiling") {
+                                checkInSheet = model.makeCheckInModel()
+                            }
+                            .buttonStyle(.bordered)
+                            if let summary = model.checkInSummary {
+                                Text(summary).font(.caption).foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -89,6 +99,9 @@ public struct TodayView: View {
                 if model.showsLoadingIndicator {
                     ProgressView()
                 }
+            }
+            .sheet(item: $checkInSheet) { sheet in
+                CheckInView(model: sheet) { Task { await model.load() } }
             }
             .task { await model.load() }
             .refreshable { await model.load() }

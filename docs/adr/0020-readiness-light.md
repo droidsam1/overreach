@@ -27,5 +27,6 @@ explain itself (ADR-0012).
 - The light works with partial data and gets better as history accumulates; with no data it says what it needs.
 - HRV-guided training has moderate evidence for endurance and none so far for strength, so the light moderates
   intensity; it does not change the strength plan by itself.
-- Not yet: phase-aware baselines (ADR-0009), a personal sleep baseline, Garmin HRV, a check-in screen, and
+- The check-in sheet on Today (energy, soreness, sick, note) feeds the subjective signals.
+- Not yet: phase-aware baselines (ADR-0009), a personal sleep baseline, Garmin HRV, and
   settings to change the thresholds. Each slots into `ReadinessRules.Settings` or its inputs.
