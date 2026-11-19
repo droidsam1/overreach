@@ -17,6 +17,10 @@ public enum ReadinessReason: Hashable, Codable, Sendable {
     case hrvBelowBaseline(nights: Int)
     case restingHeartRateElevated(bpmAboveBaseline: Double)
     case shortSleep(hours: Double)
+    /// Check-in energy, 1 (exhausted) … 5 (great).
+    case lowEnergy(score: Int)
+    /// Check-in muscle soreness, 0 (none) … 3 (very sore).
+    case highSoreness(score: Int)
     case missingData
 }
 

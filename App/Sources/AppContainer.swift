@@ -115,7 +115,7 @@ final class AppContainer {
     }
 
     func makeTodayModel() -> TodayModel {
-        TodayModel(sources: metricsSources)
+        TodayModel(sources: metricsSources, checkIns: checkIns)
     }
 
     func makeWorkoutModel() -> WorkoutModel {

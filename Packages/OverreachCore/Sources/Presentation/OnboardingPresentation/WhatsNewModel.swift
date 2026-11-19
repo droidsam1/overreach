@@ -20,6 +20,12 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "circle.hexagongrid.fill", title: L10n.text("Readiness light"),
+                    detail: L10n.text(
+                        "Today says whether to train hard, easy or rest, from your HRV, resting HR, sleep and check-in, with the reasons."
+                    )
+                ),
+                ReleaseHighlight(
                     symbol: "calendar.badge.clock", title: L10n.text("Train your plan"),
                     detail: L10n.text("Import a multi-week plan from your AI. Train shows the next session.")
                 ),
