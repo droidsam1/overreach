@@ -52,7 +52,7 @@ public struct SessionDetail: Sendable {
     public let entries: [Entry]
 }
 
-/// Past strength sessions, newest first (phase 1). Runs join in phase 2.
+/// Past strength sessions, newest first, plus the month calendar with runs and steps from Apple Health.
 @MainActor
 @Observable
 public final class HistoryModel {
@@ -85,6 +85,10 @@ public final class HistoryModel {
         health: (any HealthWorkoutWriter)? = nil,
         profiles: (any ProfileRepository)? = nil,
         progression: (any ProgressionSettingsRepository)? = nil,
+        activity: (any ActivitySource)? = nil,
+        runs: (any MetricsSource)? = nil,
+        calendar: Calendar = .current,
+        format: Format = Format(),
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
@@ -95,7 +99,13 @@ public final class HistoryModel {
         self.profiles = profiles
         self.progression = progression
         self.clock = clock
+        self.calendar = HistoryCalendarModel(
+            workouts: workouts, activity: activity, runs: runs, calendar: calendar, format: format, clock: clock
+        )
     }
+
+    /// The month calendar: strength days, runs and steps (a sub-screen of History).
+    public let calendar: HistoryCalendarModel
 
     public func load() async {
         isLoading = true
@@ -103,6 +113,7 @@ public final class HistoryModel {
         do {
             catalog = try await exercises.allExercises()
             exerciseNames = Dictionary(catalog.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+            calendar.exerciseNames = exerciseNames
             let now = clock()
             let sessions = try await workouts.sessions(from: now.addingTimeInterval(-Self.window), to: now)
             summaries = sessions.reversed().map(summary)
@@ -119,6 +130,7 @@ public final class HistoryModel {
         do {
             try await workouts.deleteSession(id: sessionID)
             summaries.removeAll { $0.id == sessionID }
+            calendar.didDelete(sessionID)
             await backup?.backUpIfConfigured(now: clock())
             await health?.removeWorkout(forSessionID: sessionID)
         } catch {
@@ -214,8 +226,9 @@ public final class HistoryModel {
         report = SessionReport(review: review, effortScale: effortScale, format: format)
     }
 
+    /// A session of the list or of the month shown in the calendar (which can go further back than the list).
     public func session(id: UUID) -> StrengthSession? {
-        summaries.first { $0.id == id }?.session
+        summaries.first { $0.id == id }?.session ?? calendar.sessions.first { $0.id == id }
     }
 
     /// An editor for a listed session, or `nil` if it is gone. Call `didSave(_:)` with what it returns.
@@ -231,9 +244,11 @@ public final class HistoryModel {
         )
     }
 
-    /// Replaces an edited session in the list, keeping it sorted newest first.
+    /// Replaces an edited session in the list, keeping it sorted newest first, and in the calendar.
     public func didSave(_ session: StrengthSession) {
+        calendar.didSave(session)
         summaries.removeAll { $0.id == session.id }
+        guard session.startedAt >= clock().addingTimeInterval(-Self.window) else { return }
         let position = summaries.firstIndex { $0.session.startedAt < session.startedAt } ?? summaries.endIndex
         summaries.insert(summary(session), at: position)
     }
@@ -243,12 +258,6 @@ public final class HistoryModel {
     }
 
     private func summary(_ session: StrengthSession) -> SessionSummary {
-        let sets = session.entries.flatMap(\.sets)
-        return SessionSummary(
-            session: session,
-            exerciseNames: session.entries.map { name(of: $0.exerciseID) },
-            workingSets: sets.filter(\.isWorking).count,
-            tonnageKg: StrengthMetrics.tonnage(of: sets)
-        )
+        SessionSummary(session: session, names: exerciseNames)
     }
 }

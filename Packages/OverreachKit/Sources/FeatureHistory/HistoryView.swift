@@ -5,9 +5,15 @@ import SwiftUI
 // Views only: layout, styling and navigation. Texts, e1RM and decisions come from `HistoryPresentation`
 // (ADR-0014), so this file can be redesigned freely.
 
-/// Past strength sessions with their detail (phase 1). Runs join in phase 2.
+/// How History is shown. Purely visual, so the view keeps it.
+private enum HistoryLayout: String {
+    case list, calendar
+}
+
+/// Past strength sessions with their detail, as a list or as a month calendar with runs and steps.
 public struct HistoryView: View {
     @State private var model: HistoryModel
+    @AppStorage("history.layout") private var layout = HistoryLayout.list
 
     public init(model: HistoryModel) {
         _model = State(initialValue: model)
@@ -15,39 +21,58 @@ public struct HistoryView: View {
 
     public var body: some View {
         NavigationStack {
-            List {
-                if let message = model.errorMessage {
-                    Label(message, systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(.red)
-                }
-                ForEach(model.summaries) { summary in
-                    NavigationLink {
-                        SessionDetailView(model: model, sessionID: summary.id)
-                    } label: {
-                        SessionRow(summary: summary)
-                    }
-                }
-                .onDelete { offsets in
-                    Task { await model.delete(at: offsets) }
+            Group {
+                switch layout {
+                case .list: sessionList
+                case .calendar: HistoryCalendarView(history: model)
                 }
             }
-            .overlay {
-                if model.showsEmptyState {
-                    ContentUnavailableView(
-                        "No sessions yet",
-                        systemImage: "calendar",
-                        description: Text("Finished sessions appear here.")
-                    )
+            .safeAreaInset(edge: .top, spacing: 0) {
+                Picker("Show as", selection: $layout) {
+                    Text("List").tag(HistoryLayout.list)
+                    Text("Calendar").tag(HistoryLayout.calendar)
                 }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, Spacing.medium)
+                .padding(.vertical, Spacing.small)
+                .background(.bar)
             }
             .navigationTitle("History")
             .task { await model.load() }
-            .refreshable { await model.load() }
         }
+    }
+
+    private var sessionList: some View {
+        List {
+            if let message = model.errorMessage {
+                Label(message, systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(.red)
+            }
+            ForEach(model.summaries) { summary in
+                NavigationLink {
+                    SessionDetailView(model: model, sessionID: summary.id)
+                } label: {
+                    SessionRow(summary: summary)
+                }
+            }
+            .onDelete { offsets in
+                Task { await model.delete(at: offsets) }
+            }
+        }
+        .overlay {
+            if model.showsEmptyState {
+                ContentUnavailableView(
+                    "No sessions yet",
+                    systemImage: "calendar",
+                    description: Text("Finished sessions appear here.")
+                )
+            }
+        }
+        .refreshable { await model.load() }
     }
 }
 
-private struct SessionRow: View {
+struct SessionRow: View {
     let summary: SessionSummary
 
     var body: some View {
@@ -70,10 +95,15 @@ private struct SessionRow: View {
 }
 
 /// One session's sets, with an Edit button. Reads the session from the model so it reflects saved edits.
-private struct SessionDetailView: View {
+struct SessionDetailView: View {
     @Bindable var model: HistoryModel
     let sessionID: UUID
     @State private var editor: SessionEditorModel?
+
+    init(model: HistoryModel, sessionID: UUID) {
+        self.model = model
+        self.sessionID = sessionID
+    }
 
     var body: some View {
         if let detail = model.detail(for: sessionID) {
