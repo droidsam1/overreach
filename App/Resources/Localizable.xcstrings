@@ -1344,6 +1344,23 @@
         }
       }
     },
+    "Could not save the exercise focus. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido guardar el enfoque del ejercicio. Inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido gardar o enfoque do exercicio. Téntao de novo."
+          }
+        }
+      }
+    },
     "Could not save the exercise.": {
       "extractionState": "manual",
       "localizations": {
@@ -2054,6 +2071,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Equipamento"
+          }
+        }
+      }
+    },
+    "Exercise focus": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enfoque del ejercicio"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enfoque do exercicio"
           }
         }
       }
@@ -4247,6 +4281,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rutinas"
+          }
+        }
+      }
+    },
+    "Same as the session": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Igual que la sesión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Igual que a sesión"
           }
         }
       }

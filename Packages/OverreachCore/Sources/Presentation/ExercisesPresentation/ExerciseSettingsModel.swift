@@ -177,7 +177,7 @@ public final class ExerciseSettingsModel {
     private var defaults: ProgressionSettings { ProgressionSettings(for: exercise) }
 
     private static func suggestedScheme(for focus: TrainingFocus?) -> ProgressionScheme {
-        focus.map { FocusPrescription.for($0).defaultScheme } ?? .default
+        FocusPrescription.suggestedScheme(for: focus)
     }
 
     private var settings: ProgressionSettings? {

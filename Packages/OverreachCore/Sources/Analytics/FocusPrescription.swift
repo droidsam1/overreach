@@ -69,3 +69,23 @@ public struct FocusPrescription: Hashable, Sendable {
         }
     }
 }
+
+extension FocusPrescription {
+    /// The scheme suggested for `focus`; without a focus, the general default.
+    public static func suggestedScheme(for focus: TrainingFocus?) -> ProgressionScheme {
+        focus.map { Self.for($0).defaultScheme } ?? .default
+    }
+}
+
+extension ProgressionSettings {
+    /// The same settings with `focus` declared. A scheme that was the one suggested for the previous focus follows
+    /// the new focus; a scheme the user chose stays.
+    public func declaring(_ focus: TrainingFocus?) -> ProgressionSettings {
+        var updated = self
+        if scheme == FocusPrescription.suggestedScheme(for: self.focus) {
+            updated.scheme = FocusPrescription.suggestedScheme(for: focus)
+        }
+        updated.focus = focus
+        return updated
+    }
+}

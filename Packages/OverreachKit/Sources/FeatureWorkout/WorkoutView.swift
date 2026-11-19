@@ -127,6 +127,16 @@ private struct SessionList: View {
                         Text(exercise.name)
                         Spacer()
                         Menu {
+                            Picker("Exercise focus", selection: Binding(
+                                get: { exercise.declaredFocus },
+                                set: { focus in Task { await model.setFocus(focus, of: exercise.id) } }
+                            )) {
+                                Text("Same as the session").tag(TrainingFocus?.none)
+                                ForEach(model.focusOptions) { option in
+                                    Text(option.name).tag(TrainingFocus?.some(option.value))
+                                }
+                            }
+                            .pickerStyle(.menu)
                             Button("Remove exercise", systemImage: "trash", role: .destructive) {
                                 model.removeExercise(exercise.id)
                             }

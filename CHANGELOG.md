@@ -13,6 +13,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 - Notes per exercise and for the whole session while logging, saved with the session and in backups.
+- Each exercise in the logger can have its own focus (e.g. bench for strength in a hypertrophy session), from its
+  menu. It recomputes the target, keeps sets already done and is remembered for the exercise.
 - "How to log sets" in the logger: what to change after a set, the RPE scale and what notes are for.
 
 ## [0.1.0] - 2026-11-18

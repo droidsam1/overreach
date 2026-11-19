@@ -11,7 +11,7 @@ public struct SetValueFields: View {
     @Binding private var rpe: Double?
 
     /// RPE values offered in the picker.
-    public static let rpeValues: [Double] = Array(stride(from: 6.0, through: 10.0, by: 0.5))
+    public static let rpeValues: [Double] = RPEScale.values.reversed()
 
     public init(weightKg: Binding<Double?>, reps: Binding<Int?>, rpe: Binding<Double?>) {
         _weightKg = weightKg
@@ -163,7 +163,8 @@ struct RPEText: View {
 
 /// What each RPE value means, counted as reps left before failure.
 enum RPEScale {
-    static let values: [Double] = SetValueFields.rpeValues.reversed()
+    /// From hardest to easiest.
+    static let values: [Double] = Array(stride(from: 10.0, through: 6.0, by: -0.5))
 
     static func meaning(of value: Double) -> LocalizedStringKey? {
         switch value {

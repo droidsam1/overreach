@@ -65,6 +65,9 @@ public struct TargetSummary: Hashable, Sendable {
 extension DraftExercise {
     public var name: String { exercise.name }
 
+    /// Focus declared for this exercise (remembered in its progression settings); `nil` = follow the session.
+    public var declaredFocus: TrainingFocus? { appliedSettings?.focus }
+
     public var summary: TargetSummary { summary(format: Format()) }
 
     public func summary(format: Format) -> TargetSummary {
@@ -226,6 +229,28 @@ public final class WorkoutModel {
                 exercises[position] = refreshed
             }
         }
+    }
+
+    /// Declares the focus of one exercise (`nil` = follow the session) and remembers it for the exercise, like its
+    /// progression settings do. Its target is recomputed; sets already done are kept.
+    public func setFocus(_ focus: TrainingFocus?, of exerciseID: DraftExercise.ID) async {
+        guard let exercise = exercises.first(where: { $0.id == exerciseID })?.exercise else { return }
+        let defaults = ProgressionSettings(for: exercise)
+        do {
+            let stored = try await progression.progressionSettings(for: exercise.id)
+            guard stored?.focus != focus else { return }
+            let updated = (stored ?? defaults).declaring(focus)
+            // Settings equal to the defaults are not stored, so the exercise keeps following the session.
+            if updated == defaults {
+                try await progression.deleteProgressionSettings(for: exercise.id)
+            } else {
+                try await progression.save(updated, for: exercise.id)
+            }
+        } catch {
+            errorMessage = L10n.text("Could not save the exercise focus. Try again.")
+            return
+        }
+        await applySettingsChanges()
     }
 
     /// Brings the session up to date after progression settings changed elsewhere. Only affected exercises are

@@ -182,3 +182,20 @@ struct BlockAdvisorTests {
         #expect(plan.dropLast().last?.focus == .strength)
     }
 }
+
+@Suite("Declaring an exercise focus")
+struct DeclaringFocusTests {
+    @Test func aSuggestedSchemeFollowsTheFocus() {
+        let settings = ProgressionSettings(incrementKg: 2.5).declaring(.strength)
+        #expect(settings.focus == .strength)
+        #expect(settings.scheme == FocusPrescription.for(.strength).defaultScheme)
+        #expect(settings.declaring(.hypertrophy).scheme == FocusPrescription.for(.hypertrophy).defaultScheme)
+    }
+
+    @Test func aChosenSchemeStays() {
+        let chosen = ProgressionScheme.linearLoad(sets: 5, reps: 5, targetRPE: 8)
+        let settings = ProgressionSettings(scheme: chosen, incrementKg: 2.5).declaring(.hypertrophy)
+        #expect(settings.scheme == chosen)
+        #expect(settings.focus == .hypertrophy)
+    }
+}
