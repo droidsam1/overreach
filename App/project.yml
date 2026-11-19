@@ -91,6 +91,10 @@ targets:
         product: FeatureExercises
       - package: OverreachKit
         product: FeatureOnboarding
+      - package: OverreachKit
+        product: FeatureAssistant
+      - package: OverreachCore
+        product: AssistantPresentation
       - package: OverreachCore
         product: ExercisesPresentation
       - package: OverreachCore

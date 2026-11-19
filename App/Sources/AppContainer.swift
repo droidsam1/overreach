@@ -1,3 +1,4 @@
+import AssistantPresentation
 import Domain
 import ExercisesPresentation
 import FeatureHistory
@@ -63,8 +64,7 @@ final class AppContainer {
         self.onboardingStatus = onboardingStatus
         self.backup = RepositoryBackupService(
             workouts: workouts, exercises: exercises, checkIns: checkIns, profiles: profiles, progression: progression,
-            routines: routines, destination: backupDestination,
-            appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+            routines: routines, destination: backupDestination, appVersion: Self.appVersion
         )
         self.metricsSources = metricsSources
     }
@@ -90,7 +90,18 @@ final class AppContainer {
         }
     }
 
+    private static var appVersion: String? {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+    }
+
     // MARK: Feature factories
+
+    func makeAskAIModel() -> AskAIModel {
+        AskAIModel(
+            workouts: workouts, exercises: exercises, progression: progression, profiles: profiles,
+            routines: routines, checkIns: checkIns, sources: metricsSources, appVersion: Self.appVersion
+        )
+    }
 
     func makeTodayModel() -> TodayModel {
         TodayModel(sources: metricsSources)

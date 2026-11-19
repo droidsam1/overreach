@@ -32,6 +32,7 @@ Packages/
     Analytics             Load, progression, fatigue, ACWR, readiness rules (pure functions)
     StrongImport          Strong CSV parsing + exercise → muscle-group mapping
     Reports               Markdown report for sharing with ChatGPT/Claude
+    AIExchange            Versioned messages exchanged with AI chat apps (ADR-0017, docs/ai-exchange.md)
     Presentation/         Per-feature screen state, intents and texts (ADR-0014). Linux-testable.
       PresentationKit     Display names, search, L10n
       <X>Presentation     @Observable models, screen state and intents of feature X
@@ -56,8 +57,9 @@ docs/                     Product definition and ADRs
 4. `FeatureX` depends on `XPresentation`, `PresentationKit`, `DesignSystem` and `Domain` (value types only;
    `AIKit` only for Today and Assistant). **It never imports `Analytics`, another feature or a concrete data
    module.** SwiftPM exposes transitive modules, so SwiftLint fails the build on `import Analytics` in UI code.
-5. `<X>Presentation` depends on `Domain`, `Analytics` and `PresentationKit`; never on SwiftUI or another
-   presentation module. `DesignSystem` depends on nothing of ours: it takes display values.
+5. `<X>Presentation` depends on `Domain`, `Analytics` and `PresentationKit` (`AssistantPresentation` also on
+   `AIExchange`); never on SwiftUI or another presentation module. `DesignSystem` depends on nothing of ours:
+   it takes display values.
 6. `App` is the only place that knows concrete implementations. It builds `AppContainer` and injects
    protocols into features.
 

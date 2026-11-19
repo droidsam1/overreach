@@ -7,11 +7,14 @@ import SwiftUI
 // (ADR-0014), so this file can be redesigned freely.
 
 /// Goal, current block, what to do next, balance findings and the plan for the coming months (ADR-0013).
-public struct PlanView: View {
+public struct PlanView<Assistant: View>: View {
     @State private var model: PlanModel
+    private let assistant: Assistant
 
-    public init(model: PlanModel) {
+    /// - Parameter assistant: links to other features (e.g. "Ask AI"), shown first. Wired by the app.
+    public init(model: PlanModel, @ViewBuilder assistant: () -> Assistant) {
         _model = State(initialValue: model)
+        self.assistant = assistant()
     }
 
     public var body: some View {
@@ -20,6 +23,7 @@ public struct PlanView: View {
                 if let message = model.errorMessage {
                     Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
                 }
+                Section { assistant }
                 if model.isAnalysing {
                     HStack {
                         ProgressView()
@@ -163,5 +167,11 @@ private struct PriorityLiftsView: View {
         }
         .searchable(text: $model.priorityLiftSearch)
         .navigationTitle("Priority lifts")
+    }
+}
+
+extension PlanView where Assistant == EmptyView {
+    public init(model: PlanModel) {
+        self.init(model: model) { EmptyView() }
     }
 }
