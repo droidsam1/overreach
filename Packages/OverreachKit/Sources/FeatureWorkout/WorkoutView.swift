@@ -50,6 +50,15 @@ public struct WorkoutView: View {
             .confirmationDialog("Discard this session?", isPresented: $isConfirmingDiscard) {
                 Button("Discard", role: .destructive) { model.discard() }
             }
+            .confirmationDialog(
+                "Some exercises are unfinished", isPresented: $model.isConfirmingUnfinished, titleVisibility: .visible
+            ) {
+                Button("Save without counting them") { Task { await model.finish(countingUnfinished: false) } }
+                Button("Count them anyway") { Task { await model.finish(countingUnfinished: true) } }
+                Button("Keep training", role: .cancel) {}
+            } message: {
+                Text(model.unfinishedExplanation)
+            }
             .task {
                 await model.load()
                 await routines.load()
@@ -79,7 +88,7 @@ public struct WorkoutView: View {
                 Button("Discard", role: .destructive) { isConfirmingDiscard = true }
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Finish") { Task { await model.finish() } }
+                Button("Finish") { Task { await model.requestFinish() } }
             }
         } else {
             ToolbarItem(placement: .primaryAction) {
@@ -120,7 +129,10 @@ private struct SessionList: View {
                 Section {
                     TargetSummaryView(summary: exercise.summary)
                     ForEach($exercise.sets) { $set in
-                        SetRow(number: exercise.number(of: set.id), set: $set) { isDone in
+                        SetRow(
+                            number: exercise.number(of: set.id), set: $set,
+                            showsRepsInReserve: model.showsRepsInReserve
+                        ) { isDone in
                             model.setDone(isDone, set: set.id, in: exercise.id)
                         }
                             .swipeActions {
@@ -169,7 +181,12 @@ private struct SessionList: View {
                     .lineLimit(2...6)
             }
         }
-        .sheet(isPresented: $isShowingGuide) { SetLoggingGuide() }
+        .sheet(isPresented: $isShowingGuide) {
+            SetLoggingGuide(showsRepsInReserve: Binding(
+                get: { model.showsRepsInReserve },
+                set: { showsRIR in Task { await model.setEffortScale(showsRIR ? .repsInReserve : .rpe) } }
+            ))
+        }
         .keyboardDoneButton()
         .safeAreaInset(edge: .bottom) {
             if model.rest.isActive {
@@ -186,6 +203,9 @@ private struct TargetSummaryView: View {
     var body: some View {
         DisclosureGroup {
             VStack(alignment: .leading, spacing: Spacing.small) {
+                if !summary.isStalled, let explanation = summary.statusExplanation {
+                    Text(explanation)
+                }
                 ForEach(Array(summary.reasons.enumerated()), id: \.offset) { Text($0.element) }
                 if !summary.stallSuggestions.isEmpty {
                     Text("Stalled — try, in order:").bold()
@@ -208,6 +228,12 @@ private struct TargetSummaryView: View {
                 Text(summary.focusLine)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                // A stall is shown with its reason without opening the details.
+                if summary.isStalled, let explanation = summary.statusExplanation {
+                    Text(explanation)
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
             }
         }
     }
@@ -216,12 +242,15 @@ private struct TargetSummaryView: View {
 private struct SetRow: View {
     let number: Int
     @Binding var set: DraftSet
+    let showsRepsInReserve: Bool
     let onDoneChange: (Bool) -> Void
 
     var body: some View {
         AdaptiveStack(spacing: Spacing.small) {
             SetNumberLabel(number, isWarmUp: set.isWarmUp)
-            SetValueFields(weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe)
+            SetValueFields(
+                weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe, showsRepsInReserve: showsRepsInReserve
+            )
             Toggle(isOn: Binding(get: { set.isDone }, set: onDoneChange)) {
                 Image(systemName: set.isDone ? "checkmark.circle.fill" : "circle")
             }

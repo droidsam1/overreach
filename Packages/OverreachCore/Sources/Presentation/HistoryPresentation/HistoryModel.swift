@@ -39,6 +39,8 @@ public struct SessionDetail: Sendable {
         public let name: String
         public let sets: [SetLine]
         public let notes: String?
+        /// `false` for an exercise left unfinished: shown, but ignored by the progression engine.
+        public let countsForProgression: Bool
     }
 
     public let id: UUID
@@ -67,7 +69,9 @@ public final class HistoryModel {
     private let routines: any RoutineRepository
     private let backup: (any BackupService)?
     private let health: (any HealthWorkoutWriter)?
+    private let profiles: (any ProfileRepository)?
     private let clock: @Sendable () -> Date
+    private var effortScale = EffortScale.rpe
 
     /// How far back the list goes.
     static let window: TimeInterval = 365 * 86_400
@@ -78,6 +82,7 @@ public final class HistoryModel {
         routines: any RoutineRepository,
         backup: (any BackupService)? = nil,
         health: (any HealthWorkoutWriter)? = nil,
+        profiles: (any ProfileRepository)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
@@ -85,6 +90,7 @@ public final class HistoryModel {
         self.routines = routines
         self.backup = backup
         self.health = health
+        self.profiles = profiles
         self.clock = clock
     }
 
@@ -98,6 +104,9 @@ public final class HistoryModel {
             let sessions = try await workouts.sessions(from: now.addingTimeInterval(-Self.window), to: now)
             summaries = sessions.reversed().map(summary)
             errorMessage = nil
+            if let profile = try? await profiles?.profile() {
+                effortScale = profile.effortScale
+            }
         } catch {
             errorMessage = L10n.text("Could not load your history.")
         }
@@ -167,7 +176,8 @@ public final class HistoryModel {
                             }
                         )
                     },
-                    notes: entry.notes
+                    notes: entry.notes,
+                    countsForProgression: entry.countsForProgression
                 )
             }
         )
@@ -200,7 +210,8 @@ public final class HistoryModel {
     /// An editor for `session`. Call `didSave(_:)` with what it returns to refresh the list.
     public func makeEditor(for session: StrengthSession) -> SessionEditorModel {
         SessionEditorModel(
-            session: session, catalog: catalog, workouts: workouts, backup: backup, health: health, clock: clock
+            session: session, catalog: catalog, workouts: workouts, backup: backup, health: health,
+            showsRepsInReserve: effortScale == .repsInReserve, clock: clock
         )
     }
 

@@ -136,7 +136,10 @@ private struct EntrySection: View {
             ForEach($entry.sets) { $set in
                 AdaptiveStack(spacing: Spacing.small) {
                     SetNumberLabel(model.number(of: set.id, in: entry.id))
-                    SetValueFields(weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe)
+                    SetValueFields(
+                        weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe,
+                        showsRepsInReserve: model.showsRepsInReserve
+                    )
                     Menu {
                         Picker("Set type", selection: $set.kind) {
                             ForEach(model.setKindOptions) { option in
@@ -160,6 +163,7 @@ private struct EntrySection: View {
                 Text(model.name(of: entry.exerciseID))
                 Spacer()
                 Menu {
+                    Toggle("Counts for progression", isOn: $entry.countsForProgression)
                     Button("Replace exercise", systemImage: "arrow.left.arrow.right", action: onReplace)
                     Button("Move up", systemImage: "arrow.up") { model.moveExercise(entry.id, by: -1) }
                         .disabled(!model.canMoveUp(entry.id))

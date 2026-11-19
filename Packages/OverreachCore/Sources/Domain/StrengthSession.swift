@@ -46,12 +46,37 @@ public struct ExerciseEntry: Identifiable, Hashable, Codable, Sendable {
     public var exerciseID: UUID
     public var sets: [WorkoutSet]
     public var notes: String?
+    /// `false` for an exercise left unfinished (e.g. the session ended early): its sets still count as work done,
+    /// but the progression engine ignores them for targets and stalls.
+    public var countsForProgression: Bool
 
-    public init(id: UUID = UUID(), exerciseID: UUID, sets: [WorkoutSet] = [], notes: String? = nil) {
+    public init(
+        id: UUID = UUID(), exerciseID: UUID, sets: [WorkoutSet] = [], notes: String? = nil,
+        countsForProgression: Bool = true
+    ) {
         self.id = id
         self.exerciseID = exerciseID
         self.sets = sets
         self.notes = notes
+        self.countsForProgression = countsForProgression
+    }
+}
+
+extension ExerciseEntry {
+    private enum CodingKeys: String, CodingKey {
+        case id, exerciseID, sets, notes, countsForProgression
+    }
+
+    /// Tolerant decoding: entries stored before `countsForProgression` existed count.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            id: try container.decode(UUID.self, forKey: .id),
+            exerciseID: try container.decode(UUID.self, forKey: .exerciseID),
+            sets: try container.decode([WorkoutSet].self, forKey: .sets),
+            notes: try container.decodeIfPresent(String.self, forKey: .notes),
+            countsForProgression: try container.decodeIfPresent(Bool.self, forKey: .countsForProgression) ?? true
+        )
     }
 }
 

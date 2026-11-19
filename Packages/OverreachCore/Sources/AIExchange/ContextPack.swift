@@ -135,6 +135,9 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var exercise: String
         public var notes: String?
         public var sets: [SetInfo]
+        /// `false` when the exercise was left unfinished and the app ignores it for progression. Optional, added
+        /// after v1 shipped; absent means it counts.
+        public var countsForProgression: Bool?
     }
 
     /// `kind` is absent for working sets, otherwise `warmup`, `dropSet` or `failure`.

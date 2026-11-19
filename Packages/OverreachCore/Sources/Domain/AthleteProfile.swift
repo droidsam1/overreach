@@ -60,6 +60,8 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
     public var goal: TrainingGoal?
     /// Blocks the user declared (newest last). Inferred blocks are computed, not stored.
     public var declaredBlocks: [TrainingBlock]
+    /// How the user logs effort. Only the display changes: sets always store RPE.
+    public var effortScale: EffortScale
 
     public init(
         sex: BiologicalSex? = nil,
@@ -70,7 +72,8 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         cycleTracking: CycleTrackingMode = .off,
         walkingRoutine: WalkingRoutine = WalkingRoutine(),
         goal: TrainingGoal? = nil,
-        declaredBlocks: [TrainingBlock] = []
+        declaredBlocks: [TrainingBlock] = [],
+        effortScale: EffortScale = .rpe
     ) {
         self.sex = sex
         self.birthYear = birthYear
@@ -81,6 +84,7 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         self.walkingRoutine = walkingRoutine
         self.goal = goal
         self.declaredBlocks = declaredBlocks
+        self.effortScale = effortScale
     }
 
     /// Whether cycle-aware logic applies: only when the user chose a natural cycle explicitly.
@@ -90,7 +94,7 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
 extension AthleteProfile {
     private enum CodingKeys: String, CodingKey {
         case sex, birthYear, bodyMassKg, maxHeartRate, restingHeartRate, cycleTracking, walkingRoutine, goal
-        case declaredBlocks
+        case declaredBlocks, effortScale
     }
 
     /// Tolerant decoding: fields added in later versions fall back to their defaults, so older stores and
@@ -107,7 +111,16 @@ extension AthleteProfile {
             walkingRoutine: try container.decodeIfPresent(WalkingRoutine.self, forKey: .walkingRoutine)
                 ?? WalkingRoutine(),
             goal: try container.decodeIfPresent(TrainingGoal.self, forKey: .goal),
-            declaredBlocks: try container.decodeIfPresent([TrainingBlock].self, forKey: .declaredBlocks) ?? []
+            declaredBlocks: try container.decodeIfPresent([TrainingBlock].self, forKey: .declaredBlocks) ?? [],
+            effortScale: try container.decodeIfPresent(EffortScale.self, forKey: .effortScale) ?? .rpe
         )
     }
+}
+
+/// How effort is logged and shown. Both are the same scale (RPE = 10 − reps in reserve, `rir-based-rpe`).
+public enum EffortScale: String, Codable, Sendable, CaseIterable {
+    /// Rate of perceived exertion, 6–10.
+    case rpe
+    /// Reps in reserve: how many more reps were possible.
+    case repsInReserve
 }
