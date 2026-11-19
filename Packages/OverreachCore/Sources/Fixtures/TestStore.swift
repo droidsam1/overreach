@@ -11,6 +11,7 @@ public actor TestStore: WorkoutRepository, ExerciseRepository, ProgressionSettin
     private var routinesByID: [UUID: Routine]
     private var storedProfile = AthleteProfile()
     private var onboardingCompleted = false
+    private var releaseNotesSeen: String?
     private var failing = false
 
     public struct WriteFailed: Error {}
@@ -101,6 +102,10 @@ public actor TestStore: WorkoutRepository, ExerciseRepository, ProgressionSettin
     public func isOnboardingCompleted() -> Bool { onboardingCompleted }
 
     public func markOnboardingCompleted() { onboardingCompleted = true }
+
+    public func lastSeenReleaseNotesVersion() -> String? { releaseNotesSeen }
+
+    public func markReleaseNotesSeen(version: String) { releaseNotesSeen = version }
 
     // MARK: ProfileRepository
 

@@ -23,4 +23,14 @@ public struct DefaultsOnboardingStatus: OnboardingStatusStore {
     public func markOnboardingCompleted() {
         defaults.set(true, forKey: Self.key)
     }
+
+    private static let releaseNotesKey = "releaseNotes.lastSeen"
+
+    public func lastSeenReleaseNotesVersion() -> String? {
+        defaults.string(forKey: Self.releaseNotesKey)
+    }
+
+    public func markReleaseNotesSeen(version: String) {
+        defaults.set(version, forKey: Self.releaseNotesKey)
+    }
 }
