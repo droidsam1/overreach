@@ -53,6 +53,8 @@ public struct DraftExercise: Identifiable, Hashable, Sendable {
     var stallFacts: StallFacts?
     /// How effort is shown in the target and its reasons.
     var effortScale = EffortScale.rpe
+    /// Sets and reps come from the routine (a plan's prescription), not from the exercise's own settings.
+    public var isPrescribedByRoutine = false
 
     /// 1-based position of a set among the sets of its kind (warm-ups and working sets are numbered apart).
     public func number(of setID: DraftSet.ID) -> Int {
@@ -98,11 +100,14 @@ extension DraftExercise {
             "rest {1}–{2}", format.minutesAndSeconds(restSeconds.lowerBound),
             format.minutesAndSeconds(restSeconds.upperBound)
         )
-        let focusLine: String
+        var focusLine: String
         if let focus {
             focusLine = focus.displayName + (isFocusInferred ? " " + L10n.text("(detected)") : "") + " · " + rest
         } else {
             focusLine = rest.prefix(1).uppercased() + rest.dropFirst()
+        }
+        if isPrescribedByRoutine {
+            focusLine += " · " + L10n.text("sets and reps from the routine")
         }
 
         let targetLine: String
@@ -208,6 +213,9 @@ public final class WorkoutModel {
     public var sessionNotes = ""
     /// Declared focus of the session; `nil` = automatic (per exercise). Change it with `setSessionFocus(_:)`.
     public private(set) var sessionFocus: TrainingFocus?
+    /// The routine the session was started from: its prescriptions set sets and reps, and the saved session
+    /// remembers it so the plan knows which session comes next.
+    public private(set) var sessionRoutine: Routine?
     /// Exercises of the session in progress. Views bind to it directly (`$model.exercises`).
     public var exercises: [DraftExercise] = []
     public private(set) var errorMessage: String?
@@ -319,6 +327,7 @@ public final class WorkoutModel {
         sessionName = name
         sessionNotes = ""
         sessionFocus = nil
+        sessionRoutine = nil
         exercises = []
         errorMessage = nil
         startedAt = clock()
@@ -330,6 +339,7 @@ public final class WorkoutModel {
         guard !isSessionActive else { return }
         start(name: routine.name)
         sessionFocus = routine.focus
+        sessionRoutine = routine
         let session = startedAt
         await load()
         for exerciseID in routine.exerciseIDs {
@@ -432,6 +442,11 @@ public final class WorkoutModel {
         if stored == nil, let declaredFocus {
             settings.scheme = FocusPrescription.for(declaredFocus).defaultScheme
         }
+        // A routine's prescription wins in that routine; the engine still sets the load from history.
+        let prescribed = sessionRoutine?.prescription(for: exercise.id)
+        if let prescribed {
+            settings.scheme = prescribed
+        }
         let inferredFocus = FocusClassifier.dominant(history.indices.suffix(3).compactMap { index in
             FocusClassifier.focus(of: history[index], previous: Array(history[..<index]))
         })
@@ -460,7 +475,8 @@ public final class WorkoutModel {
             warmUpPlan: plan,
             isPrimed: primed,
             stallFacts: StallDetection.facts(history: history, settings: settings),
-            effortScale: effortScale
+            effortScale: effortScale,
+            isPrescribedByRoutine: prescribed != nil
         )
     }
 
@@ -560,7 +576,7 @@ public final class WorkoutModel {
         }
         let finished = StrengthSession(
             name: sessionName, startedAt: startedAt, endedAt: now, entries: entries,
-            notes: Self.trimmedOrNil(sessionNotes), focus: sessionFocus
+            notes: Self.trimmedOrNil(sessionNotes), focus: sessionFocus, routineID: sessionRoutine?.id
         )
         let targets = Dictionary(exercises.map { ($0.exercise.id, $0.target) }, uniquingKeysWith: { first, _ in first })
         do {

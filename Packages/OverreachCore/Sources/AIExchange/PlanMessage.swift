@@ -11,12 +11,16 @@ public struct PlanMessage: Codable, Hashable, Sendable {
     public var version: Int
     public var routines: [RoutineProposal]?
     public var exerciseSettings: [SettingsProposal]?
+    /// Training blocks in order, each with the routines it rotates through (issue #34).
+    public var blocks: [BlockProposal]?
+    /// First day of the first block, `YYYY-MM-DD`. Absent: the day of the import.
+    public var startDate: String?
     /// Paths of fields the format does not have (e.g. `routines[0].reps`). Set by `PlanMessageReader`; they are
     /// ignored, and the user and the AI are told.
     public var ignoredFields: [String] = []
 
     private enum CodingKeys: String, CodingKey {
-        case format, version, routines, exerciseSettings
+        case format, version, routines, exerciseSettings, blocks, startDate
     }
 
     /// A session template. `id` identifies it across replies, so importing a revised routine updates it.
@@ -26,6 +30,23 @@ public struct PlanMessage: Codable, Hashable, Sendable {
         public var focus: String?
         /// Exercise names from the catalog, in order.
         public var exercises: [String]?
+        /// Sets and reps for exercises of this routine only, e.g. heavier work in a strength block.
+        public var prescriptions: [PrescriptionProposal]?
+    }
+
+    /// A scheme for one exercise of one routine. It wins over the exercise's own settings in that routine.
+    public struct PrescriptionProposal: Codable, Hashable, Sendable {
+        public var exercise: String?
+        public var scheme: SchemeProposal?
+    }
+
+    /// A period with one focus that rotates through some routines.
+    public struct BlockProposal: Codable, Hashable, Sendable {
+        public var name: String?
+        public var focus: String?
+        public var weeks: Int?
+        /// Routine ids (or names) of this plan or already in the app, in rotation order.
+        public var routines: [String]?
     }
 
     /// How one exercise progresses. Absent fields keep their current value.
@@ -49,15 +70,19 @@ public struct PlanMessage: Codable, Hashable, Sendable {
 
     /// Fields of each object, as in the schema. A test keeps them in line with `jsonSchema`.
     static let fields: [String: Set<String>] = [
-        "plan": ["format", "version", "routines", "exerciseSettings"],
-        "routine": ["id", "name", "focus", "exercises"],
+        "plan": ["format", "version", "routines", "exerciseSettings", "blocks", "startDate"],
+        "routine": ["id", "name", "focus", "exercises", "prescriptions"],
+        "prescription": ["exercise", "scheme"],
+        "block": ["name", "focus", "weeks", "routines"],
         "exerciseSettings": ["exercise", "focus", "scheme", "incrementKg", "isMainLift"],
         "scheme": ["type", "sets", "minReps", "maxReps", "reps", "repBlocks", "targetRPE"],
     ]
 
     static let referenceURL = "https://github.com/droidsam1/overreach/blob/main/docs/ai-exchange.md"
     static let schemaURL = "https://github.com/droidsam1/overreach/blob/main/docs/schemas/overreach.plan.v1.schema.json"
+}
 
+extension PlanMessage {
     /// JSON Schema (draft 2020-12) of `overreach.plan` v1. The same text is published in
     /// `docs/schemas/overreach.plan.v1.schema.json`; a test keeps both identical and in line with the validation.
     public static let jsonSchema = """
@@ -90,6 +115,18 @@ public struct PlanMessage: Codable, Hashable, Sendable {
               "items": {
                 "$ref": "#/$defs/exerciseSettings"
               }
+            },
+            "blocks": {
+              "type": "array",
+              "description": "Training blocks in order. Each starts when the previous one ends.",
+              "items": {
+                "$ref": "#/$defs/block"
+              }
+            },
+            "startDate": {
+              "type": "string",
+              "format": "date",
+              "description": "First day of the first block (YYYY-MM-DD). Absent: the day of the import."
             }
           },
           "$defs": {
@@ -129,6 +166,61 @@ public struct PlanMessage: Codable, Hashable, Sendable {
                 "exercises": {
                   "type": "array",
                   "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "prescriptions": {
+                  "type": "array",
+                  "description": "Sets and reps for exercises of this routine only, instead of exerciseSettings.",
+                  "items": {
+                    "$ref": "#/$defs/prescription"
+                  }
+                }
+              }
+            },
+            "prescription": {
+              "type": "object",
+              "required": [
+                "exercise",
+                "scheme"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "exercise": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "One of the routine's exercises."
+                },
+                "scheme": {
+                  "$ref": "#/$defs/scheme"
+                }
+              }
+            },
+            "block": {
+              "type": "object",
+              "required": [
+                "focus",
+                "weeks"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "focus": {
+                  "$ref": "#/$defs/focus"
+                },
+                "weeks": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 52
+                },
+                "routines": {
+                  "type": "array",
+                  "description": "Routine ids (or names) trained in this block, in rotation order.",
                   "items": {
                     "type": "string",
                     "minLength": 1
@@ -283,7 +375,13 @@ public struct PlanMessage: Codable, Hashable, Sendable {
               "id": "upper-a",
               "name": "Upper A",
               "focus": "strength",
-              "exercises": ["Bench Press (Barbell)", "Bent Over Row (Barbell)"]
+              "exercises": ["Bench Press (Barbell)", "Bent Over Row (Barbell)"],
+              "prescriptions": [
+                {
+                  "exercise": "Bench Press (Barbell)",
+                  "scheme": { "type": "rpeBased", "sets": 5, "reps": 3, "targetRPE": 8 }
+                }
+              ]
             }
           ],
           "exerciseSettings": [
@@ -294,6 +392,10 @@ public struct PlanMessage: Codable, Hashable, Sendable {
               "incrementKg": 2.5,
               "isMainLift": true
             }
+          ],
+          "startDate": "2027-01-04",
+          "blocks": [
+            { "name": "Strength", "focus": "strength", "weeks": 6, "routines": ["upper-a"] }
           ]
         }
         ```
@@ -301,7 +403,9 @@ public struct PlanMessage: Codable, Hashable, Sendable {
         Rules:
         - Use exercise names exactly as in the "catalog" of my Overreach context.
         - "id" identifies a routine. Keep it when you revise that routine, so importing again updates it.
-        - Sets and reps per exercise go in "exerciseSettings", not in the routine.
+        - Sets and reps per exercise go in "exerciseSettings". Use a routine's "prescriptions" only when that \
+        routine needs different sets and reps (e.g. a strength block).
+        - For a multi-week plan, list "blocks" in order; each one rotates through its routines.
         - Prescribe effort (targetRPE), not fixed loads: the app sets each load from my recent sessions.
         - Leave out anything that should not change.
         - If I send you a correction from Overreach, fix every point and send the whole JSON again.

@@ -85,6 +85,7 @@ public enum PlanMessageReader {
 
     private static let children: [String: (kind: String, isList: Bool)] = [
         "routines": ("routine", true), "exerciseSettings": ("exerciseSettings", true), "scheme": ("scheme", false),
+        "prescriptions": ("prescription", true), "blocks": ("block", true),
     ]
 
     private static func unknown(in json: JSONValue, kind: String, path: String, found: inout [String]) {

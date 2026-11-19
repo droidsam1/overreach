@@ -218,6 +218,17 @@ struct PlanImportPreviewView: View {
                             }
                         }
                     }
+                    if !preview.blocks.isEmpty {
+                        Section {
+                            ForEach(preview.blocks) { row in
+                                ChangeRow(title: row.name, detail: row.detail, isUpdate: false)
+                            }
+                        } header: {
+                            Text("Training blocks")
+                        } footer: {
+                            Text("Train shows each block's next session. Later planned blocks are replaced.")
+                        }
+                    }
                 }
             }
             .navigationTitle("AI plan")

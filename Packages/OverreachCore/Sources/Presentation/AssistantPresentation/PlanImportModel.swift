@@ -25,9 +25,19 @@ public final class PlanImportModel {
         public let isUpdate: Bool
     }
 
+    public struct BlockRow: Identifiable, Hashable, Sendable {
+        public let id: Int
+        /// "Strength"
+        public let name: String
+        /// "6 weeks from 4 Jan 2027 · Upper A, Lower A".
+        public let detail: String
+    }
+
     public struct Preview: Hashable, Sendable {
         public let routines: [RoutineRow]
         public let settings: [SettingsRow]
+        /// The plan's blocks, in order. They replace declared blocks from the plan's start on.
+        public let blocks: [BlockRow]
         /// Why it cannot be imported, in the user's language.
         public let issues: [String]
         /// Parts of the answer the app leaves out ("Ignored: routines[0].reps"). They do not block the import.
@@ -54,23 +64,30 @@ public final class PlanImportModel {
     private let exercises: any ExerciseRepository
     private let routines: any RoutineRepository
     private let progression: any ProgressionSettingsRepository
+    private let profiles: (any ProfileRepository)?
     private let backup: (any BackupService)?
     private let clock: @Sendable () -> Date
+    private let calendar: Calendar
     private let format: Format
 
+    /// - Parameter profiles: where a plan's blocks are saved. Without it, plans with blocks cannot be imported.
     public init(
         exercises: any ExerciseRepository,
         routines: any RoutineRepository,
         progression: any ProgressionSettingsRepository,
+        profiles: (any ProfileRepository)? = nil,
         backup: (any BackupService)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() },
+        calendar: Calendar = .current,
         format: Format = Format()
     ) {
         self.exercises = exercises
         self.routines = routines
         self.progression = progression
+        self.profiles = profiles
         self.backup = backup
         self.clock = clock
+        self.calendar = calendar
         self.format = format
     }
 
@@ -78,7 +95,7 @@ public final class PlanImportModel {
     public func read(text: String) async {
         resultMessage = nil
         errorMessage = nil
-        let planned: PlanImport
+        var planned: PlanImport
         switch PlanMessageReader.read(text) {
         case let .failure(failure):
             planned = PlanImporter.failed(failure)
@@ -88,12 +105,20 @@ public final class PlanImportModel {
                     message,
                     exercises: try await exercises.allExercises(),
                     routines: try await routines.allRoutines(),
-                    settings: try await progression.allProgressionSettings()
+                    settings: try await progression.allProgressionSettings(),
+                    today: CalendarDay(clock(), calendar: calendar),
+                    calendar: calendar
                 )
+                routineNames = Dictionary(
+                    (try await routines.allRoutines()).map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first }
+                ).merging(planned.routines.map { ($0.routine.id, $0.routine.name) }) { _, new in new }
             } catch {
                 errorMessage = L10n.text("Could not read your exercises and routines. Try again.")
                 return
             }
+        }
+        if !planned.blocks.isEmpty, profiles == nil {
+            planned.issues.append(.invalidValue(field: "blocks", value: "present", expected: "no blocks"))
         }
         pending = planned
         preview = makePreview(planned)
@@ -127,14 +152,24 @@ public final class PlanImportModel {
             for change in pending.settings {
                 try await progression.save(change.settings, for: change.exercise.id)
             }
+            if !pending.blocks.isEmpty, let profiles {
+                var profile = try await profiles.profile()
+                profile.declaredBlocks = pending.applying(to: profile.declaredBlocks)
+                try await profiles.save(profile)
+            }
         } catch {
             errorMessage = L10n.text("Could not save everything. Import the answer again to finish.")
             return false
         }
         await backup?.backUpIfConfigured(now: clock())
-        resultMessage = L10n.format(
-            "Imported {1} routines and {2} exercise settings.", pending.routines.count, pending.settings.count
-        )
+        resultMessage = pending.blocks.isEmpty
+            ? L10n.format(
+                "Imported {1} routines and {2} exercise settings.", pending.routines.count, pending.settings.count
+            )
+            : L10n.format(
+                "Imported {1} routines, {2} exercise settings and a plan of {3} blocks.",
+                pending.routines.count, pending.settings.count, pending.blocks.count
+            )
         cancel()
         return true
     }
@@ -161,12 +196,32 @@ public final class PlanImportModel {
                 SettingsRow(id: change.exercise.id, exercise: change.exercise.name,
                             detail: detail(of: change.settings), isUpdate: change.isUpdate)
             },
+            blocks: planned.blocks.enumerated().map { index, block in
+                BlockRow(id: index, name: block.name ?? block.focus.displayName, detail: detail(of: block))
+            },
             issues: planned.issues.map(text),
             warnings: planned.warnings.map(text),
             correction: planned.issues.isEmpty && planned.warnings.isEmpty
                 ? nil : PlanImporter.correctionPrompt(for: planned.issues, warnings: planned.warnings),
             canImport: planned.canImport
         )
+    }
+
+    /// Names of the routines a block can rotate through: the app's and the plan's.
+    private var routineNames: [UUID: String] = [:]
+
+    private func detail(of block: TrainingBlock) -> String {
+        let style = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
+        let start = block.start.startDate(in: calendar).formatted(style.day().month(.abbreviated).year())
+        var parts = [L10n.format("{1} weeks from {2}", block.plannedWeeks ?? 0, start)]
+        if block.name != nil {
+            parts.insert(block.focus.displayName, at: 0)
+        }
+        let names = block.routineIDs.compactMap { routineNames[$0] }
+        if !names.isEmpty {
+            parts.append(names.joined(separator: ", "))
+        }
+        return parts.joined(separator: " · ")
     }
 
     private func detail(of settings: ProgressionSettings) -> String {
@@ -229,6 +284,10 @@ public final class PlanImportModel {
             L10n.text("Some exercise settings do not say which exercise.")
         case let .invalidValue(field, value, _):
             L10n.format("Invalid value in {1}: {2}.", field, value)
+        case let .unknownRoutine(name):
+            L10n.format("A block uses the routine “{1}”, which is not in the plan or in your routines.", name)
+        case let .prescriptionOutsideRoutine(routine, exercise):
+            L10n.format("Routine “{1}” gives sets and reps for “{2}”, which it does not include.", routine, exercise)
         }
     }
 }

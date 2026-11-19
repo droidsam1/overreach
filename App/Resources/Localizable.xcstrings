@@ -290,6 +290,23 @@
         }
       }
     },
+    "A block uses the routine “{1}”, which is not in the plan or in your routines.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un bloque usa la rutina «{1}», que no está en el plan ni en tus rutinas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un bloque usa a rutina «{1}», que non está no plan nin nas túas rutinas."
+          }
+        }
+      }
+    },
     "A draft from your goal. Block lengths are coaching heuristics; adjust as you go.": {
       "extractionState": "manual",
       "localizations": {
@@ -3605,6 +3622,23 @@
         }
       }
     },
+    "Import a multi-week plan from your AI. Train shows the next session.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importa de tu IA un plan de varias semanas. Entrenar muestra la siguiente sesión."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importa da túa IA un plan de varias semanas. Adestrar amosa a seguinte sesión."
+          }
+        }
+      }
+    },
     "Import from Strong": {
       "extractionState": "manual",
       "localizations": {
@@ -3686,6 +3720,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Importadas {1} rutinas e {2} configuracións de exercicio."
+          }
+        }
+      }
+    },
+    "Imported {1} routines, {2} exercise settings and a plan of {3} blocks.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importadas {1} rutinas, {2} ajustes de ejercicio y un plan de {3} bloques."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importadas {1} rutinas, {2} axustes de exercicio e un plan de {3} bloques."
           }
         }
       }
@@ -6172,6 +6223,23 @@
         }
       }
     },
+    "Routine “{1}” gives sets and reps for “{2}”, which it does not include.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La rutina «{1}» indica series y repeticiones para «{2}», que no incluye."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A rutina «{1}» indica series e repeticións para «{2}», que non inclúe."
+          }
+        }
+      }
+    },
     "Routine “{1}” has no exercises.": {
       "extractionState": "manual",
       "localizations": {
@@ -7192,6 +7260,23 @@
         }
       }
     },
+    "Starts this session": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empieza esta sesión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comeza esta sesión"
+          }
+        }
+      }
+    },
     "Step {1} of {2}": {
       "extractionState": "manual",
       "localizations": {
@@ -8093,6 +8178,57 @@
         }
       }
     },
+    "Train shows each block's next session. Later planned blocks are replaced.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenar muestra la siguiente sesión de cada bloque. Se reemplazan los bloques planeados después."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestrar amosa a seguinte sesión de cada bloque. Substitúense os bloques planeados despois."
+          }
+        }
+      }
+    },
+    "Train your plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrena tu plan"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestra o teu plan"
+          }
+        }
+      }
+    },
+    "Training blocks": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloques de entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloques de adestramento"
+          }
+        }
+      }
+    },
     "Training profile": {
       "extractionState": "manual",
       "localizations": {
@@ -8259,6 +8395,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Exercicio descoñecido: «{1}». O máis parecido: {2}."
+          }
+        }
+      }
+    },
+    "Up next in your plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lo siguiente de tu plan"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O seguinte do teu plan"
           }
         }
       }
@@ -9147,6 +9300,23 @@
         }
       }
     },
+    "sets and reps from the routine": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "series y repeticiones de la rutina"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "series e repeticións da rutina"
+          }
+        }
+      }
+    },
     "strong evidence": {
       "extractionState": "manual",
       "localizations": {
@@ -9334,6 +9504,23 @@
         }
       }
     },
+    "{1} weeks from {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} semanas desde el {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} semanas desde o {2}"
+          }
+        }
+      }
+    },
     "{1} weeks to your target date: time to peak (heavy, less volume, taper the last week).": {
       "extractionState": "manual",
       "localizations": {
@@ -9364,6 +9551,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} sesións seguidas de {2}. É intencionado? Declara un bloque ou varía o enfoque."
+          }
+        }
+      }
+    },
+    "{1} · week {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · semana {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · semana {2}"
+          }
+        }
+      }
+    },
+    "{1} · week {2} of {3}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · semana {2} de {3}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · semana {2} de {3}"
           }
         }
       }

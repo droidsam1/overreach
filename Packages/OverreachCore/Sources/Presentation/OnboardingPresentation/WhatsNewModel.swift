@@ -20,6 +20,10 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "calendar.badge.clock", title: L10n.text("Train your plan"),
+                    detail: L10n.text("Import a multi-week plan from your AI. Train shows the next session.")
+                ),
+                ReleaseHighlight(
                     symbol: "calendar", title: L10n.text("History calendar"),
                     detail: L10n.text("Strength days, runs and steps month by month, with each day's details.")
                 ),

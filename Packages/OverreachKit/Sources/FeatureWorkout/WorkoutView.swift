@@ -66,6 +66,10 @@ public struct WorkoutView: View {
                 await model.load()
                 await routines.load()
             }
+            // A finished session moves the plan on to its next session.
+            .onChange(of: model.isSessionActive) { _, isActive in
+                if !isActive { Task { await routines.load() } }
+            }
             // Progression settings and routines may have changed in another tab (e.g. imported from an AI).
             .onAppear {
                 Task {

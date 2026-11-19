@@ -12,6 +12,10 @@ public enum PlanIssue: Hashable, Sendable {
     case unknownExercise(name: String, closest: String?)
     case missingExercise(index: Int)
     case invalidValue(field: String, value: String, expected: String)
+    /// A block names a routine that is neither in the plan nor in the app.
+    case unknownRoutine(name: String)
+    /// A routine prescribes an exercise it does not have.
+    case prescriptionOutsideRoutine(routine: String, exercise: String)
 }
 
 /// Something in an AI reply that the app leaves out without stopping the import.
@@ -38,20 +42,29 @@ public struct PlanImport: Hashable, Sendable {
 
     public var routines: [RoutineChange] = []
     public var settings: [SettingsChange] = []
+    /// Declared blocks of the plan, one after another, with their routines.
+    public var blocks: [TrainingBlock] = []
     public var issues: [PlanIssue] = []
     public var warnings: [PlanWarning] = []
 
     /// Imports are all or nothing: any issue blocks them, so a half-applied plan never happens.
-    public var canImport: Bool { issues.isEmpty && !(routines.isEmpty && settings.isEmpty) }
+    public var canImport: Bool { issues.isEmpty && !(routines.isEmpty && settings.isEmpty && blocks.isEmpty) }
 
     public init(
-        routines: [RoutineChange] = [], settings: [SettingsChange] = [], issues: [PlanIssue] = [],
-        warnings: [PlanWarning] = []
+        routines: [RoutineChange] = [], settings: [SettingsChange] = [], blocks: [TrainingBlock] = [],
+        issues: [PlanIssue] = [], warnings: [PlanWarning] = []
     ) {
         self.routines = routines
         self.settings = settings
+        self.blocks = blocks
         self.issues = issues
         self.warnings = warnings
+    }
+
+    /// Declared blocks after the import: blocks that start before the plan are kept, later ones are replaced.
+    public func applying(to declared: [TrainingBlock]) -> [TrainingBlock] {
+        guard let start = blocks.first?.start else { return declared }
+        return declared.filter { !$0.isDeclared || $0.start < start } + blocks
     }
 }
 
@@ -62,22 +75,37 @@ public enum PlanImporter {
     static let repRange = 1...50
     static let rpeRange = 5.0...10.0
     static let incrementRange = 0.0...20.0
+    static let weekRange = 1...52
 
     public static func failed(_ failure: PlanMessageReader.Failure) -> PlanImport {
         PlanImport(issues: [.unreadable(failure)])
     }
 
+    /// - Parameter today: the first day of the plan when it gives no `startDate`.
     public static func plan(
-        _ message: PlanMessage, exercises: [Exercise], routines: [Routine], settings: [UUID: ProgressionSettings]
+        _ message: PlanMessage, exercises: [Exercise], routines: [Routine], settings: [UUID: ProgressionSettings],
+        today: CalendarDay = CalendarDay(Date()), calendar: Calendar = .current
     ) -> PlanImport {
         let lookup = ExerciseLookup(exercises)
         var result = PlanImport(warnings: message.ignoredFields.map(PlanWarning.ignoredField))
         var keys = Set<String>()
+        var routineIndex = RoutineIndex(existing: routines)
         for (index, proposal) in (message.routines ?? []).enumerated() {
+            for (item, prescription) in (proposal.prescriptions ?? []).enumerated() {
+                let field = "routines[\(index)].prescriptions[\(item)].scheme"
+                result.warnings += inapplicableFields(of: prescription.scheme, field: field)
+            }
             if let change = routine(proposal, index: index, lookup: lookup, existing: routines, keys: &keys,
                                     issues: &result.issues) {
                 result.routines.append(change)
+                routineIndex.add(proposal, id: change.routine.id)
             }
+        }
+        if !(message.blocks ?? []).isEmpty {
+            let start = firstDay(message.startDate, today: today, issues: &result.issues)
+            result.blocks = blocks(
+                message.blocks ?? [], from: start, routines: routineIndex, calendar: calendar, issues: &result.issues
+            )
         }
         for (index, proposal) in (message.exerciseSettings ?? []).enumerated() {
             result.warnings += inapplicableFields(of: proposal.scheme, field: "exerciseSettings[\(index)].scheme")
@@ -87,7 +115,8 @@ public enum PlanImporter {
                 result.settings.append(change)
             }
         }
-        if (message.routines ?? []).isEmpty && (message.exerciseSettings ?? []).isEmpty {
+        if (message.routines ?? []).isEmpty && (message.exerciseSettings ?? []).isEmpty
+            && (message.blocks ?? []).isEmpty {
             result.issues.append(.empty)
         }
         return result
@@ -119,10 +148,19 @@ public enum PlanImporter {
         let resolved = names.compactMap { lookup.resolve($0, issues: &issues) }
         guard resolved.count == names.count else { return nil }
 
+        guard let prescriptions = prescriptions(
+            proposal.prescriptions ?? [], in: (name, resolved), field: "routines[\(index)]", lookup: lookup,
+            issues: &issues
+        ) else { return nil }
+
         let stableID = UUID.stable("ai-routine|\(key)")
         let match = existing.first { $0.id == stableID }
+            ?? existing.first { $0.id.uuidString == explicitID.uppercased() }  // an id from the context pack
             ?? existing.first { ExerciseLookup.normalize($0.name) == ExerciseLookup.normalize(name) }
-        let routine = Routine(id: match?.id ?? stableID, name: name, focus: focus, exerciseIDs: resolved.map(\.id))
+        let routine = Routine(
+            id: match?.id ?? stableID, name: name, focus: focus, exerciseIDs: resolved.map(\.id),
+            prescriptions: prescriptions
+        )
         let orderedNames = routine.exerciseIDs.compactMap { id in resolved.first { $0.id == id }?.name }
         return .init(routine: routine, isUpdate: match != nil, exerciseNames: orderedNames)
     }
@@ -287,7 +325,125 @@ public enum PlanImporter {
             "exerciseSettings[\(index)] does not say which exercise."
         case let .invalidValue(field, value, expected):
             "\(field) is \(value); expected \(expected)."
+        case let .unknownRoutine(name):
+            "Block routine \"\(name)\" is not the id or name of a routine in this plan or in my routines."
+        case let .prescriptionOutsideRoutine(routine, exercise):
+            "Routine \"\(routine)\" has a prescription for \"\(exercise)\", which is not one of its exercises."
         }
+    }
+}
+
+// MARK: - Per-routine prescriptions and blocks (issue #34, ADR-0019)
+
+extension PlanImporter {
+    /// The routine's own schemes, or `nil` if any of them is wrong.
+    fileprivate static func prescriptions(
+        _ proposals: [PlanMessage.PrescriptionProposal], in routine: (name: String, exercises: [Exercise]),
+        field: String, lookup: ExerciseLookup, issues: inout [PlanIssue]
+    ) -> [RoutinePrescription]? {
+        let before = issues.count
+        var result: [RoutinePrescription] = []
+        for (item, proposal) in proposals.enumerated() {
+            let path = "\(field).prescriptions[\(item)]"
+            guard let name = proposal.exercise else {
+                issues.append(.invalidValue(field: "\(path).exercise", value: "missing", expected: "an exercise"))
+                continue
+            }
+            guard let exercise = lookup.resolve(name, issues: &issues) else { continue }
+            guard routine.exercises.contains(where: { $0.id == exercise.id }) else {
+                issues.append(.prescriptionOutsideRoutine(routine: routine.name, exercise: exercise.name))
+                continue
+            }
+            guard let proposed = proposal.scheme else {
+                issues.append(.invalidValue(field: "\(path).scheme", value: "missing", expected: "a scheme"))
+                continue
+            }
+            if let parsed = scheme(proposed, field: "\(path).scheme", issues: &issues) {
+                result.append(RoutinePrescription(exerciseID: exercise.id, scheme: parsed))
+            }
+        }
+        return issues.count == before ? result : nil
+    }
+
+    /// The plan's `startDate`, or `today` when it has none.
+    fileprivate static func firstDay(_ text: String?, today: CalendarDay, issues: inout [PlanIssue]) -> CalendarDay {
+        guard let text else { return today }
+        guard let day = day(text) else {
+            issues.append(.invalidValue(field: "startDate", value: text, expected: "a date like 2027-01-04"))
+            return today
+        }
+        return day
+    }
+
+    /// Blocks one after another from `start`.
+    fileprivate static func blocks(
+        _ proposals: [PlanMessage.BlockProposal], from start: CalendarDay, routines: RoutineIndex,
+        calendar: Calendar, issues: inout [PlanIssue]
+    ) -> [TrainingBlock] {
+        var start = start
+        var result: [TrainingBlock] = []
+        for (index, proposal) in proposals.enumerated() {
+            let field = "blocks[\(index)]"
+            let before = issues.count
+            let focus = self.focus(proposal.focus, field: "\(field).focus", issues: &issues)
+            if proposal.focus == nil {
+                issues.append(.invalidValue(field: "\(field).focus", value: "missing", expected: focusValues))
+            }
+            let weeks = proposal.weeks ?? 0
+            if !weekRange.contains(weeks) {
+                let value = proposal.weeks.map(String.init) ?? "missing"
+                issues.append(.invalidValue(field: "\(field).weeks", value: value, expected: "1 to 52"))
+            }
+            let routineIDs = (proposal.routines ?? []).compactMap { routines.id(for: $0, issues: &issues) }
+            guard issues.count == before, let focus else { continue }
+            let name = proposal.name?.trimmingCharacters(in: .whitespacesAndNewlines)
+            result.append(TrainingBlock(
+                focus: focus, start: start, plannedWeeks: weeks, isDeclared: true,
+                name: name?.isEmpty == false ? name : nil, routineIDs: routineIDs
+            ))
+            start = start.adding(days: weeks * 7, calendar: calendar)
+        }
+        return result
+    }
+
+    /// `2027-01-04` as a calendar day.
+    static func day(_ text: String) -> CalendarDay? {
+        let parts = text.trimmingCharacters(in: .whitespaces).split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3, (1...12).contains(parts[1]), (1...31).contains(parts[2]) else { return nil }
+        return CalendarDay(year: parts[0], month: parts[1], day: parts[2])
+    }
+}
+
+/// Routines a block can name: those of the plan (by id or name), then those already in the app (imported with that
+/// id, its id from the context pack, or its name).
+struct RoutineIndex {
+    let existing: [Routine]
+    private var byKey: [String: UUID] = [:]
+
+    init(existing: [Routine]) {
+        self.existing = existing
+    }
+
+    mutating func add(_ proposal: PlanMessage.RoutineProposal, id: UUID) {
+        let keys = [proposal.id, proposal.name]
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        for key in keys { byKey[ExerciseLookup.normalize(key)] = id }
+    }
+
+    func id(for reference: String, issues: inout [PlanIssue]) -> UUID? {
+        let key = ExerciseLookup.normalize(reference)
+        if let id = byKey[key] { return id }
+        let trimmed = reference.trimmingCharacters(in: .whitespacesAndNewlines)
+        let imported = UUID.stable("ai-routine|\(trimmed)")
+        let contextID = UUID(uuidString: trimmed)
+        if let routine = existing.first(where: {
+            $0.id == imported || $0.id == contextID || ExerciseLookup.normalize($0.name) == key
+        }) {
+            return routine.id
+        }
+        issues.append(.unknownRoutine(name: reference))
+        return nil
     }
 }
 
