@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- An animated first-run tour (welcome, logging, coaching, AI, safety) before the setup. Every page can be skipped,
+  it can be swiped, and it respects Reduce Motion.
+- "What's new" after an update, with the highlights of every version since the last one seen. New installs do not
+  see it, because the tour covers it.
 - Backups you can rely on (ADR-0018): Settings warns, with a badge, when your data is only on the iPhone. The
   first-run setup offers "Restore from a backup". After a reinstall, choosing the backup folder offers to restore
   it. A frozen v1 backup in the tests guarantees future versions keep loading today's data, and there is a

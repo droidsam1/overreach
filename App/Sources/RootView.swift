@@ -32,6 +32,7 @@ struct RootView: View {
     @State private var backupModel: BackupModel
     @State private var exercisesModel: ExercisesModel
     @State private var onboardingModel: OnboardingModel
+    @State private var whatsNewModel: WhatsNewModel
     @State private var askAIModel: AskAIModel
     @State private var planImportModel: PlanImportModel
     @State private var selectedTab = AppTab.today
@@ -48,6 +49,7 @@ struct RootView: View {
         _backupModel = State(initialValue: container.makeBackupModel())
         _exercisesModel = State(initialValue: container.makeExercisesModel())
         _onboardingModel = State(initialValue: container.makeOnboardingModel())
+        _whatsNewModel = State(initialValue: container.makeWhatsNewModel())
         _askAIModel = State(initialValue: container.makeAskAIModel())
         _planImportModel = State(initialValue: container.makePlanImportModel())
     }
@@ -98,6 +100,17 @@ struct RootView: View {
             if !backupModel.isOfferingRestore {
                 await onboardingModel.presentIfNeeded()
             }
+            // The first-run tour covers this version; anyone else sees what changed since their last version.
+            if onboardingModel.isPresented {
+                await whatsNewModel.markCurrentAsSeen()
+            } else if !backupModel.isOfferingRestore {
+                await whatsNewModel.checkAtLaunch()
+            }
+        }
+        .sheet(isPresented: $whatsNewModel.isPresented, onDismiss: {
+            Task { await whatsNewModel.markCurrentAsSeen() }
+        }) {
+            WhatsNewView(model: whatsNewModel)
         }
         .fullScreenCover(isPresented: $onboardingModel.isPresented) {
             OnboardingView(model: onboardingModel) { destination in

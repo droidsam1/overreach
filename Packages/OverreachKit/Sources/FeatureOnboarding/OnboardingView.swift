@@ -5,7 +5,7 @@ import SwiftUI
 
 // Views only: layout, styling and static copy. Steps and rules come from `OnboardingPresentation` (ADR-0014).
 
-/// Optional first-run setup: goal, about you, walking routine and how to start.
+/// Optional first-run setup: an animated tour of the app, then goal, about you, walking routine and how to start.
 public struct OnboardingView: View {
     @Bindable private var model: OnboardingModel
     private let onFinish: (OnboardingDestination) -> Void
@@ -16,6 +16,29 @@ public struct OnboardingView: View {
     }
 
     public var body: some View {
+        ZStack {
+            AnimatedBackdrop()
+            if let page = model.tourPage {
+                TourPageView(
+                    content: TourContent.for(page), index: model.tourIndex, count: model.tourCount,
+                    isLast: model.isLastTourPage, canGoBack: model.canGoBackInTour,
+                    onNext: { model.nextTourPage() }, onBack: { model.previousTourPage() },
+                    onSkipTour: { model.skipTour() }, onSkipSetup: { Task { await model.skipSetup() } }
+                )
+                .id(page)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .move(edge: .leading).combined(with: .opacity)
+                ))
+            } else {
+                setup
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(duration: 0.5, bounce: 0.2), value: model.tourPage)
+    }
+
+    private var setup: some View {
         NavigationStack {
             Form {
                 if let message = model.errorMessage {
@@ -28,6 +51,8 @@ public struct OnboardingView: View {
                 case .start: startStep
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(AnimatedBackdrop())
             .navigationTitle(title)
             .toolbar { toolbar }
             .safeAreaInset(edge: .bottom) { footer }
