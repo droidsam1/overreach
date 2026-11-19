@@ -20,10 +20,40 @@ public struct TodayView: View {
                     StatusBadge(title: model.readinessTitle, tone: model.readinessLevel.tone)
 
                     LazyVGrid(columns: columns, spacing: Spacing.medium) {
-                        MetricTile(title: "HRV", value: model.hrvMs, unit: "ms")
-                        MetricTile(title: "Resting HR", value: model.restingHeartRate, unit: "bpm")
-                        MetricTile(title: "Sleep", value: model.sleepHours, unit: "h", fractionDigits: 1)
-                        MetricTile(title: "Body Battery", value: model.bodyBattery, unit: "")
+                        MetricTile(title: "Sleep", value: model.sleepHours, unit: "h", fractionDigits: 1,
+                                   caption: model.sleepCaption ?? model.sleepAverageCaption)
+                        MetricTile(title: "HRV", value: model.hrvMs, unit: "ms", caption: model.hrvCaption)
+                        MetricTile(title: "Resting HR", value: model.restingHeartRate, unit: "bpm",
+                                   caption: model.restingHeartRateCaption)
+                        MetricTile(title: "Steps", value: model.steps, unit: "", caption: model.stepsCaption)
+                        if model.showsBodyBattery {
+                            MetricTile(title: "Body Battery", value: model.bodyBattery, unit: "")
+                        }
+                        if model.showsVO2Max {
+                            MetricTile(title: "VO2max", value: model.vo2Max, unit: "", fractionDigits: 1)
+                        }
+                    }
+
+                    if let sources = model.sourcesText {
+                        Text(sources).font(.caption).foregroundStyle(.secondary)
+                    }
+
+                    if model.showsConnectHealth {
+                        VStack(alignment: .leading, spacing: Spacing.small) {
+                            Button("Connect Apple Health", systemImage: "heart.text.square") {
+                                Task { await model.connectHealth() }
+                            }
+                            .buttonStyle(.borderedProminent)
+                            Text(
+                                """
+                                Sleep, HRV, resting heart rate and steps come from Apple Health: from an Apple Watch, \
+                                from Garmin Connect (turn on Apple Health in its settings) or from the iPhone itself. \
+                                If you already allowed it, check Health → Sharing → Apps → Overreach.
+                                """
+                            )
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                        }
                     }
 
                     if model.showsSourceWarning {
@@ -32,11 +62,6 @@ public struct TodayView: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    if model.showsNoDataHint {
-                        Text("Recovery data will appear here once Apple Health or Garmin is connected.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
                 }
                 .padding(Spacing.medium)
             }

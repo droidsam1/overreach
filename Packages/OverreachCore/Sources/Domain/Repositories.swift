@@ -46,8 +46,14 @@ public protocol MetricsSource: Sendable {
     var kind: DataSourceKind { get }
     /// Whether the source can be used right now (permissions granted, signed in, …).
     func isAvailable() async -> Bool
+    /// Asks the user for access (e.g. the Apple Health permission sheet). Does nothing when not needed.
+    func requestAccess() async
     func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics]
     func runs(from start: Date, to end: Date) async throws -> [RunActivity]
+}
+
+extension MetricsSource {
+    public func requestAccess() async {}
 }
 
 public protocol ProfileRepository: Sendable {

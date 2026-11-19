@@ -136,3 +136,15 @@ extension EffortScale {
         }
     }
 }
+
+extension DataSourceKind {
+    public var displayName: String {
+        switch self {
+        case .app: L10n.text("Overreach")
+        case .appleHealth: L10n.text("Apple Health")
+        case .garmin: L10n.text("Garmin")
+        case .strongImport: L10n.text("Strong")
+        case .manual: L10n.text("Manual")
+        }
+    }
+}

@@ -7,6 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today reads Apple Health. It shows last night's sleep with deep and REM, HRV, resting heart rate, steps and
+  VO2max, each with its 7-day average and where it came from, plus a "Connect Apple Health" button. Runs from
+  Health are read too (shown in a later change). Sleep from several sources is merged without counting it twice
+  (`HealthAggregation`).
+
+### Added
 - History → a session → "View summary" reopens its report, compared with the target the engine gave it then.
 - Backups you can rely on (ADR-0018): Settings warns, with a badge, when your data is only on the iPhone. The
   first-run setup offers "Restore from a backup". After a reinstall, choosing the backup folder offers to restore

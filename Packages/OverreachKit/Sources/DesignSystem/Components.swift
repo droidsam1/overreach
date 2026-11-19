@@ -6,12 +6,18 @@ public struct MetricTile: View {
     private let value: Double?
     private let unit: LocalizedStringKey
     private let fractionDigits: Int
+    private let caption: String?
 
-    public init(title: LocalizedStringKey, value: Double?, unit: LocalizedStringKey, fractionDigits: Int = 0) {
+    /// - Parameter caption: a short context line under the value, e.g. "7-day avg 42 ms".
+    public init(
+        title: LocalizedStringKey, value: Double?, unit: LocalizedStringKey, fractionDigits: Int = 0,
+        caption: String? = nil
+    ) {
         self.title = title
         self.value = value
         self.unit = unit
         self.fractionDigits = fractionDigits
+        self.caption = caption
     }
 
     private var formattedValue: String {
@@ -32,6 +38,12 @@ public struct MetricTile: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
+            }
+            if let caption {
+                Text(caption)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
