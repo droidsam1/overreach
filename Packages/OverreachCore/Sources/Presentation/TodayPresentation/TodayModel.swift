@@ -15,6 +15,10 @@ public final class TodayModel {
     public private(set) var isLoading = false
     /// Sources that failed during the last load. The screen still shows whatever the others returned.
     public private(set) var failedSources: [DataSourceKind] = []
+    /// Why each failed source failed (the system's own message), so the screen can say more than "failed".
+    private var failureReasons: [DataSourceKind: String] = [:]
+    /// Set when asking a source for access failed, e.g. Apple Health without the HealthKit entitlement.
+    public private(set) var accessError: String?
 
     private let sources: [any MetricsSource]
     private let calendar: Calendar
@@ -64,6 +68,11 @@ public final class TodayModel {
 
     public var showsLoadingIndicator: Bool { isLoading && metrics == nil }
     public var showsSourceWarning: Bool { !failedSources.isEmpty }
+    /// "Apple Health: <system message>" for each failed source, one per line.
+    public var sourceWarningDetail: String? {
+        let lines = failedSources.compactMap { kind in failureReasons[kind].map { "\(kind.displayName): \($0)" } }
+        return lines.isEmpty ? nil : lines.joined(separator: "\n")
+    }
     public var showsNoDataHint: Bool { !isLoading && metrics == nil && failedSources.isEmpty }
     /// The "Connect Apple Health" button: shown while there is nothing to display.
     public var showsConnectHealth: Bool { !isLoading && metrics == nil }
@@ -84,6 +93,7 @@ public final class TodayModel {
         let range = today.adding(days: -6, calendar: calendar)...today
         var byDay: [CalendarDay: DailyMetrics] = [:]
         var failures: [DataSourceKind] = []
+        var reasons: [DataSourceKind: String] = [:]
 
         for source in sources {
             guard await source.isAvailable() else { continue }
@@ -93,19 +103,28 @@ public final class TodayModel {
                 }
             } catch {
                 failures.append(source.kind)
+                reasons[source.kind] = error.localizedDescription
             }
         }
 
         week = byDay.values.filter { !$0.sources.isEmpty }.sorted { $0.day < $1.day }
         metrics = byDay[today].flatMap { $0.sources.isEmpty ? nil : $0 }
         failedSources = failures
+        failureReasons = reasons
         // TODO(phase 2): compute readiness with the Analytics rules engine (evidence review first, ADR-0012).
     }
 
     /// Asks every source for access (the Apple Health permission sheet), then reloads.
     public func connectHealth(now: Date = .now) async {
+        accessError = nil
         for source in sources {
-            await source.requestAccess()
+            do {
+                try await source.requestAccess()
+            } catch {
+                accessError = L10n.format(
+                    "{1} could not ask for permission: {2}", source.kind.displayName, error.localizedDescription
+                )
+            }
         }
         await load(now: now)
     }

@@ -53,13 +53,23 @@ public struct TodayView: View {
                             )
                             .font(.footnote)
                             .foregroundStyle(.secondary)
+                            if let error = model.accessError {
+                                Label(error, systemImage: "exclamationmark.triangle")
+                                    .font(.footnote)
+                                    .foregroundStyle(.red)
+                            }
                         }
                     }
 
                     if model.showsSourceWarning {
-                        Label("Some sources could not be updated.", systemImage: "exclamationmark.triangle")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
+                        VStack(alignment: .leading, spacing: Spacing.small) {
+                            Label("Some sources could not be updated.", systemImage: "exclamationmark.triangle")
+                            if let detail = model.sourceWarningDetail {
+                                Text(detail).textSelection(.enabled)
+                            }
+                        }
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                     }
 
                 }

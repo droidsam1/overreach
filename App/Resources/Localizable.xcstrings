@@ -9759,6 +9759,23 @@
         }
       }
     },
+    "{1} could not ask for permission: {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} no ha podido pedir permiso: {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} non puido pedir permiso: {2}"
+          }
+        }
+      }
+    },
     "{1} {2} sessions in a row. Intentional? Declare a block, or vary the focus.": {
       "extractionState": "manual",
       "localizations": {
