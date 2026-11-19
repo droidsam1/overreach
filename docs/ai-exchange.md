@@ -46,7 +46,56 @@ Shared from **Plan → Ask AI**. It is raw data with no instructions. Its top-le
 - **Status:** these are the app's deterministic rules (`docs/design/progression-engine.md`), not a judgement on
   the athlete.
 
-## Import messages — AI → app
+The pack also lists `imports`: the formats the app can read back, with this reference.
 
-Planned in issue #34: routines and exercise settings first, then training blocks. Each item will carry an `id` so
-that importing it again updates it instead of duplicating it.
+## `overreach.plan` v1 — AI → app
+
+The user copies the reply format from **Plan → Ask AI → Copy the reply format** into the chat when they want
+routines or exercise settings. The AI answers with one JSON code block. The user pastes the whole answer, or opens
+it as a file. The app shows what would change and saves nothing until the user confirms.
+
+```json
+{
+  "format": "overreach.plan",
+  "version": 1,
+  "routines": [
+    { "id": "upper-a", "name": "Upper A", "focus": "strength",
+      "exercises": ["Bench Press (Barbell)", "Bent Over Row (Barbell)"] }
+  ],
+  "exerciseSettings": [
+    { "exercise": "Bench Press (Barbell)", "focus": "strength",
+      "scheme": { "type": "rpeBased", "sets": 4, "reps": 4, "targetRPE": 8 },
+      "incrementKg": 2.5, "isMainLift": true }
+  ]
+}
+```
+
+### Routines
+
+| Field | Content |
+|---|---|
+| `id` | Stable key chosen by the AI. Importing a routine with the same `id` again updates it. Without an `id`, a routine with the same name is updated. |
+| `name` | Required. |
+| `focus` | Optional: `strength`, `hypertrophy`, `mixed` or `endurance`. |
+| `exercises` | Required. Names in order. They are matched to the catalog by name or alias, ignoring case, accents and extra spaces. |
+
+### Exercise settings
+
+Settings are keyed by `exercise`, and fields left out keep their current value.
+
+- **`focus`:** declares the exercise's focus. If its scheme was the one suggested for the previous focus, it changes
+  to the one suggested for the new focus.
+- **`scheme`:** replaces the scheme. `sets` must be 1–10, reps 1–50 and `targetRPE` 5–10 (8 if left out).
+- **`incrementKg`:** 0–20.
+- **`isMainLift`:** `true` or `false`.
+
+### Validation
+
+- **All or nothing.** Any problem blocks the whole import, so a plan is never half-applied. Examples are an unknown
+  exercise (the closest catalog name is suggested), an empty or unnamed routine, a repeated `id`, or a value out of
+  range.
+- **Correction.** The app writes a correction in English for the user to paste back into the chat.
+- **Versions.** A newer version is refused with a request to update the app. Every version documented here stays
+  readable.
+
+Still to come in #34: training blocks with weekly sessions and per-session prescriptions.

@@ -290,6 +290,23 @@
         }
       }
     },
+    "A routine has no name.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una rutina no tiene nombre."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unha rutina non ten nome."
+          }
+        }
+      }
+    },
     "A {1} session was trained as {2}.": {
       "extractionState": "manual",
       "localizations": {
@@ -303,6 +320,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unha sesión de {1} adestrouse como {2}."
+          }
+        }
+      }
+    },
+    "AI plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan de la IA"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan da IA"
           }
         }
       }
@@ -834,6 +868,23 @@
         }
       }
     },
+    "Bring the answer back": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traer la respuesta"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traer a resposta"
+          }
+        }
+      }
+    },
     "Cable": {
       "extractionState": "manual",
       "localizations": {
@@ -1140,6 +1191,40 @@
         }
       }
     },
+    "Copy the correction for the AI": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar la corrección para la IA"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar a corrección para a IA"
+          }
+        }
+      }
+    },
+    "Copy the reply format": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar el formato de respuesta"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar o formato de resposta"
+          }
+        }
+      }
+    },
     "Core": {
       "extractionState": "manual",
       "localizations": {
@@ -1344,6 +1429,23 @@
         }
       }
     },
+    "Could not open that file.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido abrir ese archivo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido abrir ese ficheiro."
+          }
+        }
+      }
+    },
     "Could not open that file. Try choosing it again.": {
       "extractionState": "manual",
       "localizations": {
@@ -1412,6 +1514,23 @@
         }
       }
     },
+    "Could not read your exercises and routines. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se han podido leer tus ejercicios y rutinas. Inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puideron ler os teus exercicios e rutinas. Téntao de novo."
+          }
+        }
+      }
+    },
     "Could not read your history, so these targets may be off.": {
       "extractionState": "manual",
       "localizations": {
@@ -1425,6 +1544,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non se puido ler o teu historial, así que estes obxectivos poden non ser correctos."
+          }
+        }
+      }
+    },
+    "Could not save everything. Import the answer again to finish.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido guardar todo. Importa la respuesta otra vez para terminar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido gardar todo. Importa a resposta outra vez para rematar."
           }
         }
       }
@@ -2228,6 +2364,23 @@
         }
       }
     },
+    "Exercise settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes de ejercicios"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Axustes de exercicios"
+          }
+        }
+      }
+    },
     "Exercises": {
       "extractionState": "manual",
       "localizations": {
@@ -2874,6 +3027,23 @@
         }
       }
     },
+    "Imported {1} routines and {2} exercise settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importadas {1} rutinas y {2} configuraciones de ejercicio."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importadas {1} rutinas e {2} configuracións de exercicio."
+          }
+        }
+      }
+    },
     "Importing continues in Settings, where you choose your Strong CSV file.": {
       "extractionState": "manual",
       "localizations": {
@@ -2938,6 +3108,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "En Strong: Axustes → Exportar datos. Importar outra vez o mesmo ficheiro non crea duplicados."
+          }
+        }
+      }
+    },
+    "Invalid value in {1}: {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valor no válido en {1}: {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valor non válido en {1}: {2}."
           }
         }
       }
@@ -3435,6 +3622,23 @@
         }
       }
     },
+    "Needs fixing": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay que corregir"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hai que corrixir"
+          }
+        }
+      }
+    },
     "Needs muscles": {
       "extractionState": "manual",
       "localizations": {
@@ -3448,6 +3652,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Faltan músculos"
+          }
+        }
+      }
+    },
+    "New": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nueva"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nova"
           }
         }
       }
@@ -3639,6 +3860,23 @@
         }
       }
     },
+    "No plan found. Copy the reply format into the chat and ask again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha encontrado ningún plan. Copia el formato de respuesta en el chat y vuelve a pedirlo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se atopou ningún plan. Copia o formato de resposta no chat e volve pedilo."
+          }
+        }
+      }
+    },
     "No recent backup found in this folder. Check that it is still available, then back up now.": {
       "extractionState": "manual",
       "localizations": {
@@ -3792,6 +4030,23 @@
         }
       }
     },
+    "Open a file…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir un archivo…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir un ficheiro…"
+          }
+        }
+      }
+    },
     "Optional. It is only used as training context.": {
       "extractionState": "manual",
       "localizations": {
@@ -3839,6 +4094,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Outros nomes"
+          }
+        }
+      }
+    },
+    "Paste the correction into the chat and bring the new answer. Nothing was saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pega la corrección en el chat y trae la nueva respuesta. No se ha guardado nada."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pega a corrección no chat e trae a nova resposta. Non se gardou nada."
           }
         }
       }
@@ -4574,6 +4846,23 @@
         }
       }
     },
+    "Routine “{1}” has no exercises.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La rutina «{1}» no tiene ejercicios."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A rutina «{1}» non ten exercicios."
+          }
+        }
+      }
+    },
     "Routines": {
       "extractionState": "manual",
       "localizations": {
@@ -5101,6 +5390,23 @@
         }
       }
     },
+    "Some exercise settings do not say which exercise.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algunos ajustes no indican a qué ejercicio se refieren."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algúns axustes non indican a que exercicio se refiren."
+          }
+        }
+      }
+    },
     "Some sources could not be updated.": {
       "extractionState": "manual",
       "localizations": {
@@ -5526,6 +5832,40 @@
         }
       }
     },
+    "The plan could not be read: {1}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido leer el plan: {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido ler o plan: {1}."
+          }
+        }
+      }
+    },
+    "The plan has no routines or exercise settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El plan no tiene rutinas ni ajustes de ejercicios."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O plan non ten rutinas nin axustes de exercicios."
+          }
+        }
+      }
+    },
     "The smallest jump you can make with this exercise.": {
       "extractionState": "manual",
       "localizations": {
@@ -5624,6 +5964,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "A este ficheiro fáltanlle estas columnas: {1}. Volve exportalo desde Strong."
+          }
+        }
+      }
+    },
+    "This is not an Overreach plan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto no es un plan de Overreach."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isto non é un plan de Overreach."
+          }
+        }
+      }
+    },
+    "This plan needs a newer version of the app.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este plan necesita una versión más reciente de la app."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este plan necesita unha versión máis recente da app."
+          }
+        }
+      }
+    },
+    "This plan uses a version the app does not know.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este plan usa una versión que la app no conoce."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este plan usa unha versión que a app non coñece."
           }
         }
       }
@@ -5900,6 +6291,23 @@
         }
       }
     },
+    "Two routines share the id “{1}”.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dos rutinas comparten el id «{1}»."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dúas rutinas comparten o id «{1}»."
+          }
+        }
+      }
+    },
     "Unknown": {
       "extractionState": "manual",
       "localizations": {
@@ -5930,6 +6338,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Exercicio descoñecido"
+          }
+        }
+      }
+    },
+    "Unknown exercise “{1}”.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejercicio desconocido: «{1}»."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercicio descoñecido: «{1}»."
+          }
+        }
+      }
+    },
+    "Unknown exercise “{1}”. Closest: {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejercicio desconocido: «{1}». El más parecido: {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercicio descoñecido: «{1}». O máis parecido: {2}."
+          }
+        }
+      }
+    },
+    "Updates": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualiza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualiza"
           }
         }
       }
@@ -6172,6 +6631,23 @@
         }
       }
     },
+    "When you want routines or exercise settings, paste the reply format into the chat. Then paste the AI's answer here: you see every change before it is saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuando quieras rutinas o ajustes de ejercicios, pega el formato de respuesta en el chat. Después pega aquí la respuesta de la IA: verás cada cambio antes de guardarlo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cando queiras rutinas ou axustes de exercicios, pega o formato de resposta no chat. Despois pega aquí a resposta da IA: verás cada cambio antes de gardalo."
+          }
+        }
+      }
+    },
     "Which lifts are stalled, and what should I try?": {
       "extractionState": "manual",
       "localizations": {
@@ -6372,6 +6848,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "evidencia limitada"
+          }
+        }
+      }
+    },
+    "main lift": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ejercicio principal"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "exercicio principal"
           }
         }
       }

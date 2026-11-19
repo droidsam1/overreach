@@ -54,8 +54,13 @@ public struct WorkoutView: View {
                 await model.load()
                 await routines.load()
             }
-            // Progression settings may have changed in another tab.
-            .onAppear { Task { await model.applySettingsChanges() } }
+            // Progression settings and routines may have changed in another tab (e.g. imported from an AI).
+            .onAppear {
+                Task {
+                    await model.applySettingsChanges()
+                    await routines.load()
+                }
+            }
         }
     }
 

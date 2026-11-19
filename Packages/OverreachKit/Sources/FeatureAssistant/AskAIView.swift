@@ -1,19 +1,25 @@
 import AssistantPresentation
 import DesignSystem
 import SwiftUI
+import UniformTypeIdentifiers
 #if canImport(UIKit)
 import UIKit
 #endif
 
 // Views only: layout, styling and sharing. The data and texts come from `AssistantPresentation` (ADR-0014).
 
-/// "Ask AI" (ADR-0017): shares the training context as raw data with ChatGPT, Claude or another chat app.
+/// "Ask AI" (ADR-0017): shares the training context as raw data with ChatGPT, Claude or another chat app, and
+/// brings the AI's routines and exercise settings back.
 public struct AskAIView: View {
     @State private var model: AskAIModel
+    @State private var importer: PlanImportModel
     @State private var didCopy = false
+    @State private var didCopyFormat = false
+    @State private var isPickingFile = false
 
-    public init(model: AskAIModel) {
+    public init(model: AskAIModel, importer: PlanImportModel) {
         _model = State(initialValue: model)
+        _importer = State(initialValue: importer)
     }
 
     public var body: some View {
@@ -89,15 +95,162 @@ public struct AskAIView: View {
                     """
                 )
             }
+            answerSection
         }
         .navigationTitle("Ask AI")
         .task { await model.prepare() }
+        .fileImporter(isPresented: $isPickingFile, allowedContentTypes: [.json, .plainText, .text]) { result in
+            readPicked(result)
+        }
+        .sheet(isPresented: $importer.isShowingPreview) {
+            PlanImportPreviewView(model: importer)
+        }
+    }
+
+    private var answerSection: some View {
+        Section {
+            Button {
+                copyToClipboard(importer.formatGuide)
+                didCopyFormat = true
+            } label: {
+                if didCopyFormat {
+                    Label("Copied", systemImage: "checkmark")
+                } else {
+                    Label("Copy the reply format", systemImage: "curlybraces")
+                }
+            }
+            PasteButton(payloadType: String.self) { [importer] texts in
+                Task { @MainActor in await importer.read(pasted: texts) }
+            }
+            Button("Open a file…", systemImage: "folder") { isPickingFile = true }
+            if let result = importer.resultMessage {
+                Label(result, systemImage: "checkmark.circle").foregroundStyle(.green)
+            }
+            if let message = importer.errorMessage {
+                Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+            }
+        } header: {
+            Text("Bring the answer back")
+        } footer: {
+            Text(
+                """
+                When you want routines or exercise settings, paste the reply format into the chat. Then paste the \
+                AI's answer here: you see every change before it is saved.
+                """
+            )
+        }
+    }
+
+    private func readPicked(_ result: Result<URL, any Error>) {
+        guard case let .success(url) = result else {
+            importer.fileCouldNotBeOpened()
+            return
+        }
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+        guard let data = try? Data(contentsOf: url) else {
+            importer.fileCouldNotBeOpened()
+            return
+        }
+        Task { await importer.read(fileData: data) }
     }
 
     private func copy(_ text: String) {
-        #if canImport(UIKit)
-        UIPasteboard.general.string = text
-        #endif
+        copyToClipboard(text)
         didCopy = true
     }
+}
+
+/// What an AI answer would change, with the problems that block it and a correction to send back.
+struct PlanImportPreviewView: View {
+    let model: PlanImportModel
+    @State private var didCopyCorrection = false
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if let preview = model.preview {
+                    if !preview.issues.isEmpty {
+                        Section {
+                            ForEach(preview.issues, id: \.self) { issue in
+                                Label(issue, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                            }
+                            if let correction = preview.correction {
+                                Button {
+                                    copyToClipboard(correction)
+                                    didCopyCorrection = true
+                                } label: {
+                                    if didCopyCorrection {
+                                        Label("Copied", systemImage: "checkmark")
+                                    } else {
+                                        Label("Copy the correction for the AI", systemImage: "doc.on.doc")
+                                    }
+                                }
+                            }
+                        } header: {
+                            Text("Needs fixing")
+                        } footer: {
+                            Text("Paste the correction into the chat and bring the new answer. Nothing was saved.")
+                        }
+                    }
+                    if !preview.routines.isEmpty {
+                        Section("Routines") {
+                            ForEach(preview.routines) { row in
+                                ChangeRow(title: row.name, detail: row.detail, isUpdate: row.isUpdate)
+                            }
+                        }
+                    }
+                    if !preview.settings.isEmpty {
+                        Section("Exercise settings") {
+                            ForEach(preview.settings) { row in
+                                ChangeRow(title: row.exercise, detail: row.detail, isUpdate: row.isUpdate)
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("AI plan")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { model.cancel() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Import") { Task { await model.confirm() } }
+                        .disabled(!(model.preview?.canImport ?? false))
+                }
+            }
+        }
+    }
+}
+
+private struct ChangeRow: View {
+    let title: String
+    let detail: String
+    let isUpdate: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+            HStack {
+                Text(title).bold()
+                Spacer()
+                Group {
+                    if isUpdate {
+                        Text("Updates")
+                    } else {
+                        Text("New")
+                    }
+                }
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+            }
+            Text(detail).font(.footnote).foregroundStyle(.secondary)
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private func copyToClipboard(_ text: String) {
+    #if canImport(UIKit)
+    UIPasteboard.general.string = text
+    #endif
 }
