@@ -21,14 +21,19 @@ public final class SessionEditorModel: Identifiable {
     private let health: (any HealthWorkoutWriter)?
     private let clock: @Sendable () -> Date
 
+    /// Effort is shown as reps in reserve instead of RPE (the athlete's choice).
+    public let showsRepsInReserve: Bool
+
     public init(
         session: StrengthSession,
         catalog: [Exercise],
         workouts: any WorkoutRepository,
         backup: (any BackupService)? = nil,
         health: (any HealthWorkoutWriter)? = nil,
+        showsRepsInReserve: Bool = false,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
+        self.showsRepsInReserve = showsRepsInReserve
         self.draft = session
         self.original = session
         self.catalog = catalog

@@ -120,6 +120,23 @@
         }
       }
     },
+    "0: you could not have done another. 1: the last rep was a real fight and clearly slowed down. 2–3: hard, but you had some left. 4 or more: comfortable.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0: no podrías haber hecho otra. 1: la última fue una lucha y se frenó claramente. 2–3: costó, pero quedaba margen. 4 o más: cómoda."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0: non poderías facer outra. 1: a última foi unha loita e freou claramente. 2–3: custou, pero quedaba marxe. 4 ou máis: cómoda."
+          }
+        }
+      }
+    },
     "1 rep left": {
       "extractionState": "manual",
       "localizations": {
@@ -375,19 +392,19 @@
         }
       }
     },
-    "Add a set: {1} weekly sets is on the low side.": {
+    "Add a set: {1} weekly sets is on the low side for this muscle.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Añade una serie: {1} series semanales es poco."
+            "value": "Añade una serie: {1} series semanales es poco para este músculo."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Engade unha serie: {1} series semanais é pouco."
+            "value": "Engade unha serie: {1} series semanais é pouco para este músculo."
           }
         }
       }
@@ -902,6 +919,23 @@
         }
       }
     },
+    "Both mean the same: RPE = 10 − reps in reserve. Your history and targets do not change.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ambas significan lo mismo: RPE = 10 − repeticiones en recámara. Tu historial y tus objetivos no cambian."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ambas significan o mesmo: RPE = 10 − repeticións en reserva. O teu historial e os teus obxectivos non cambian."
+          }
+        }
+      }
+    },
     "Bring the answer back": {
       "extractionState": "manual",
       "localizations": {
@@ -987,19 +1021,19 @@
         }
       }
     },
-    "Change the rep range for a few weeks.": {
+    "Change the rep range for a few weeks: a different stimulus often gets progress going again.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cambia el rango de repeticiones durante unas semanas."
+            "value": "Cambia el rango de repeticiones unas semanas: un estímulo distinto suele reactivar el progreso."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cambia o rango de repeticións durante unhas semanas."
+            "value": "Cambia o rango de repeticións unhas semanas: un estímulo distinto adoita reactivar o progreso."
           }
         }
       }
@@ -1072,19 +1106,19 @@
         }
       }
     },
-    "Choose the RPE: how hard the set was, counted as the reps you had left.": {
+    "Choose the effort: how many reps you had left, as RPE or reps in reserve.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Elige el RPE: lo dura que fue la serie, contado como las repeticiones que te quedaban."
+            "value": "Elige el esfuerzo: cuántas repeticiones te quedaban, como RPE o como repeticiones en recámara."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Escolle o RPE: o dura que foi a serie, contado como as repeticións que che quedaban."
+            "value": "Escolle o esforzo: cantas repeticións che quedaban, como RPE ou como repeticións en reserva."
           }
         }
       }
@@ -1769,6 +1803,40 @@
         }
       }
     },
+    "Count them anyway": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contarlos igualmente"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contalos igualmente"
+          }
+        }
+      }
+    },
+    "Counts for progression": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuenta para la progresión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conta para a progresión"
+          }
+        }
+      }
+    },
     "Create one with +, or save a past session as a routine from History.": {
       "extractionState": "manual",
       "localizations": {
@@ -1956,19 +2024,19 @@
         }
       }
     },
-    "Deload this lift for a week (−{1}).": {
+    "Deload this lift for a week (−{1}) to shed fatigue, then build back up.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Haz una descarga de este levantamiento durante una semana (−{1})."
+            "value": "Descarga este ejercicio una semana (−{1}) para soltar fatiga y luego vuelve a subir."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fai unha descarga deste levantamento durante unha semana (−{1})."
+            "value": "Descarga este exercicio unha semana (−{1}) para soltar fatiga e logo volve subir."
           }
         }
       }
@@ -2568,19 +2636,19 @@
         }
       }
     },
-    "First time: choose a weight for {1} reps that leaves about {2} more in reserve (RPE {3}).": {
+    "First time: choose a weight for {1} reps that leaves about {2} more in reserve ({3}).": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Primera vez: elige un peso para {1} repeticiones que te deje unas {2} más en reserva (RPE {3})."
+            "value": "Primera vez: elige un peso para {1} repeticiones que te deje unas {2} más en reserva ({3})."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Primeira vez: escolle un peso para {1} repeticións que che deixe unhas {2} máis en reserva (RPE {3})."
+            "value": "Primeira vez: escolle un peso para {1} repeticións que che deixe unhas {2} máis en reserva ({3})."
           }
         }
       }
@@ -2857,6 +2925,23 @@
         }
       }
     },
+    "Holding: your best estimated 1RM in the last {1} sessions ({2}) does not beat the {3} before ({4}), but you are meeting your targets, so keep going.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manteniendo: tu mejor 1RM estimado de las últimas {1} sesiones ({2}) no supera al de las {3} anteriores ({4}), pero estás cumpliendo los objetivos: sigue así."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantendo: o teu mellor 1RM estimado das últimas {1} sesións ({2}) non supera o das {3} anteriores ({4}), pero estás cumprindo os obxectivos: segue así."
+          }
+        }
+      }
+    },
     "Hormonal contraception": {
       "extractionState": "manual",
       "localizations": {
@@ -2921,6 +3006,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Como anotar as series"
+          }
+        }
+      }
+    },
+    "How to rate effort": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cómo medir el esfuerzo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Como medir o esforzo"
           }
         }
       }
@@ -3231,6 +3333,23 @@
         }
       }
     },
+    "Keep training": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguir entrenando"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguir adestrando"
+          }
+        }
+      }
+    },
     "Kettlebell": {
       "extractionState": "manual",
       "localizations": {
@@ -3350,6 +3469,40 @@
         }
       }
     },
+    "Last time you were 1 rep short.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La última vez te faltó 1 repetición."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A última vez faltouche 1 repetición."
+          }
+        }
+      }
+    },
+    "Last time you were {1} reps short.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La última vez te faltaron {1} repeticiones."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A última vez faltáronche {1} repeticións."
+          }
+        }
+      }
+    },
     "Library": {
       "extractionState": "manual",
       "localizations": {
@@ -3414,6 +3567,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Incremento de carga"
+          }
+        }
+      }
+    },
+    "Log effort as": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anotar el esfuerzo como"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anotar o esforzo como"
           }
         }
       }
@@ -3618,6 +3788,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mixto"
+          }
+        }
+      }
+    },
+    "Most people guess about 1 rep too few, more so in long sets and with light loads. If you hesitate between two values, pick the one with more reps left. (moderate evidence)": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La mayoría calcula ~1 repetición de menos, más aún en series largas y con cargas ligeras. Si dudas entre dos valores, elige el de más repeticiones en recámara. (evidencia moderada)"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A maioría calcula ~1 repetición de menos, máis aínda en series longas e con cargas lixeiras. Se dubidas entre dous valores, escolle o de máis repeticións en reserva. (evidencia moderada)"
           }
         }
       }
@@ -4387,6 +4574,23 @@
         }
       }
     },
+    "Progressing: your best estimated 1RM in the last {1} sessions ({2}) beats the {3} before ({4}).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progresando: tu mejor 1RM estimado de las últimas {1} sesiones ({2}) supera al de las {3} anteriores ({4})."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progresando: o teu mellor 1RM estimado das últimas {1} sesións ({2}) supera o das {3} anteriores ({4})."
+          }
+        }
+      }
+    },
     "Progression": {
       "extractionState": "manual",
       "localizations": {
@@ -4438,6 +4642,57 @@
         }
       }
     },
+    "RIR %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RIR %@"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RIR %@"
+          }
+        }
+      }
+    },
+    "RIR {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RIR {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RIR {1}"
+          }
+        }
+      }
+    },
+    "RIR –": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RIR –"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RIR –"
+          }
+        }
+      }
+    },
     "RPE": {
       "extractionState": "manual",
       "localizations": {
@@ -4485,6 +4740,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Escala RPE"
+          }
+        }
+      }
+    },
+    "RPE {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RPE {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RPE {1}"
           }
         }
       }
@@ -4574,19 +4846,19 @@
         }
       }
     },
-    "Remove a set: {1} weekly sets is on the high side.": {
+    "Remove a set: {1} weekly sets is on the high side; fatigue may be holding you back.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quita una serie: {1} series semanales es mucho."
+            "value": "Quita una serie: {1} series semanales es mucho; la fatiga puede estar frenándote."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quita unha serie: {1} series semanais é moito."
+            "value": "Quita unha serie: {1} series semanais é moito; a fatiga pode estar freándote."
           }
         }
       }
@@ -4689,6 +4961,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Substituír exercicio"
+          }
+        }
+      }
+    },
+    "Reps in reserve (RIR)": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeticiones en recámara (RIR)"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeticións en reserva (RIR)"
           }
         }
       }
@@ -5046,6 +5335,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gardar como rutina"
+          }
+        }
+      }
+    },
+    "Save without counting them": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar sin contarlos"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gardar sen contalos"
           }
         }
       }
@@ -5543,6 +5849,23 @@
         }
       }
     },
+    "Some exercises are unfinished": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay ejercicios sin terminar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hai exercicios sen rematar"
+          }
+        }
+      }
+    },
     "Some sources could not be updated.": {
       "extractionState": "manual",
       "localizations": {
@@ -5590,6 +5913,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Estancado: proba, por orde:"
+          }
+        }
+      }
+    },
+    "Stalled: your best estimated 1RM in the last {1} sessions ({2}) does not beat the {3} before ({4}), and you missed the target in {5} of them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estancado: tu mejor 1RM estimado de las últimas {1} sesiones ({2}) no supera al de las {3} anteriores ({4}), y no cumpliste el objetivo en {5} de ellas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estancado: o teu mellor 1RM estimado das últimas {1} sesións ({2}) non supera o das {3} anteriores ({4}), e non cumpriches o obxectivo en {5} delas."
           }
         }
       }
@@ -5747,36 +6087,36 @@
         }
       }
     },
-    "Swap to a close variation for {1}–{2} weeks.": {
+    "Swap to a close variation for {1}–{2} weeks, then come back: the new movement is easier to progress and keeps the muscles working.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cambia a una variante cercana durante {1}–{2} semanas."
+            "value": "Cambia a una variante parecida durante {1}–{2} semanas y luego vuelve: es más fácil progresar en el movimiento nuevo y los músculos siguen trabajando."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cambia a unha variante próxima durante {1}–{2} semanas."
+            "value": "Cambia a unha variante parecida durante {1}–{2} semanas e logo volve: é máis doado progresar no movemento novo e os músculos seguen traballando."
           }
         }
       }
     },
-    "Switch to a rep range (double progression).": {
+    "Switch to a rep range (double progression): adding reps before load gives you more small steps to progress.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pasa a un rango de repeticiones (doble progresión)."
+            "value": "Cambia a un rango de repeticiones (doble progresión): sumar repeticiones antes que peso te da más pasos pequeños para progresar."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pasa a un rango de repeticións (dobre progresión)."
+            "value": "Cambia a un rango de repeticións (dobre progresión): sumar repeticións antes que peso dáche máis pasos pequenos para progresar."
           }
         }
       }
@@ -5849,19 +6189,19 @@
         }
       }
     },
-    "Target: {1}{2} @ RPE {3}": {
+    "Target: {1}{2} @ {3}": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Objetivo: {1}{2} @ RPE {3}"
+            "value": "Objetivo: {1}{2} @ {3}"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Obxectivo: {1}{2} @ RPE {3}"
+            "value": "Obxectivo: {1}{2} @ {3}"
           }
         }
       }
@@ -6172,6 +6512,23 @@
         }
       }
     },
+    "To check yourself, now and then take the last set of a safe exercise, such as a machine or an isolation exercise, to failure and compare. Never with heavy barbell lifts without safeties. (coaching heuristic)": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para comprobarte, de vez en cuando lleva al fallo la última serie de un ejercicio seguro, como una máquina o un aislamiento, y compara. Nunca en levantamientos pesados con barra sin seguros. (heurística de entrenamiento)"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para comprobarte, de cando en vez leva ao fallo a última serie dun exercicio seguro, como unha máquina ou un illamento, e compara. Nunca en levantamentos pesados con barra sen seguros. (heurística de adestramento)"
+          }
+        }
+      }
+    },
     "To keep progressing, add external load or switch to a harder variation.": {
       "extractionState": "manual",
       "localizations": {
@@ -6342,19 +6699,19 @@
         }
       }
     },
-    "Today: {1}, which is {2} of your estimated max ({3}) for {4} reps at RPE {5}.": {
+    "Today: {1}, which is {2} of your estimated max ({3}) for {4} reps at {5}.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hoy: {1}, el {2} de tu máximo estimado ({3}), para {4} repeticiones a RPE {5}."
+            "value": "Hoy: {1}, el {2} de tu máximo estimado ({3}), para {4} repeticiones a {5}."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hoxe: {1}, o {2} do teu máximo estimado ({3}), para {4} repeticións a RPE {5}."
+            "value": "Hoxe: {1}, o {2} do teu máximo estimado ({3}), para {4} repeticións a {5}."
           }
         }
       }
@@ -6440,6 +6797,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dúas rutinas comparten o id «{1}»."
+          }
+        }
+      }
+    },
+    "Unfinished: not counted for progression": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin terminar: no cuenta para la progresión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen rematar: non conta para a progresión"
+          }
+        }
+      }
+    },
+    "Unfinished: {1}. If you stopped early, leave them out of your progression so your next targets stay right. The work is saved either way.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin terminar: {1}. Si paraste antes de tiempo, déjalos fuera de tu progresión para que tus próximos objetivos sigan siendo correctos. El trabajo se guarda en ambos casos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen rematar: {1}. Se paraches antes de tempo, déixaos fóra da túa progresión para que os teus próximos obxectivos sigan sendo correctos. O traballo gárdase en ambos casos."
           }
         }
       }
@@ -6563,19 +6954,19 @@
         }
       }
     },
-    "Use smaller jumps ({1} kg).": {
+    "Use smaller jumps ({1} kg): you were only 1 rep short, and a smaller step lets you keep adding load.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Usa saltos más pequeños ({1} kg)."
+            "value": "Usa saltos más pequeños ({1} kg): te faltó solo 1 repetición, y un salto menor te deja seguir subiendo."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Usa saltos máis pequenos ({1} kg)."
+            "value": "Usa saltos máis pequenos ({1} kg): faltouche só 1 repetición, e un salto menor permíteche seguir subindo."
           }
         }
       }
@@ -6814,6 +7205,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Para que adestras?"
+          }
+        }
+      }
+    },
+    "When the set ends, ask yourself: how many more reps could I have done with good form? That number is your reps in reserve.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al terminar la serie, pregúntate: ¿cuántas repeticiones más podría haber hecho con buena técnica? Ese número son tus repeticiones en recámara."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ao rematar a serie, pregúntate: cantas repeticións máis podería ter feito con boa técnica? Ese número son as túas repeticións en reserva."
           }
         }
       }

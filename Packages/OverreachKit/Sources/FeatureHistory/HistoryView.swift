@@ -122,6 +122,11 @@ private struct SessionDetailView: View {
                     if let notes = entry.notes {
                         Text(notes).font(.footnote).foregroundStyle(.secondary)
                     }
+                    if !entry.countsForProgression {
+                        Label("Unfinished: not counted for progression", systemImage: "flag")
+                            .font(.footnote)
+                            .foregroundStyle(.orange)
+                    }
                 }
             }
         }

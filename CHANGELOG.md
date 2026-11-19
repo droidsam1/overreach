@@ -7,6 +7,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Log effort as RPE or as reps in reserve (RIR), chosen from "How to log sets". Sets still store RPE, so history,
+  targets and the AI context do not change. The guide explains how to rate effort and the common bias of guessing
+  about 1 rep too few (`rir-estimation`).
+- "Stalled", "Holding" and "Progressing" explain why, with the numbers behind them (best estimated 1RM recently
+  against before, missed targets) and the evidence level. Stall suggestions say why they help.
+- Finishing with unfinished exercises asks whether they count for progression. Left out, they are saved and shown
+  as unfinished in History, but the engine ignores them for targets and stalls. This can be changed later from
+  the session editor.
 - Settings → Appearance: light, dark or the same as the iPhone (the default).
 
 ### Fixed

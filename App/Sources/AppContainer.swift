@@ -114,7 +114,7 @@ final class AppContainer {
     func makeWorkoutModel() -> WorkoutModel {
         WorkoutModel(
             workouts: workouts, exercises: exercises, progression: progression, backup: backup, health: health,
-            restAlerts: restAlerts
+            restAlerts: restAlerts, profiles: profiles
         )
     }
 
@@ -123,7 +123,10 @@ final class AppContainer {
     }
 
     func makeHistoryModel() -> HistoryModel {
-        HistoryModel(workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health)
+        HistoryModel(
+            workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
+            profiles: profiles
+        )
     }
 
     func makePlanModel() -> PlanModel {

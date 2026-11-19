@@ -154,7 +154,7 @@ public enum ContextPackBuilder {
                 .init(exercise: name(entry.exerciseID), notes: entry.notes, sets: entry.sets.map { set in
                     .init(kind: set.kind == .working ? nil : set.kind.rawValue, weightKg: set.weightKg, reps: set.reps,
                           rpe: set.rpe, durationSeconds: set.durationSeconds, distanceMeters: set.distanceMeters)
-                })
+                }, countsForProgression: entry.countsForProgression ? nil : false)
             }
         )
     }
