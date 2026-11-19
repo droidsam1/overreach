@@ -24,6 +24,8 @@ public struct UpNextRow: Hashable, Sendable {
     public let detail: String
     /// "Bench Press, Row"
     public let exerciseList: String
+    /// "This week: 1 of 3 sessions"
+    public let weekProgress: String?
 }
 
 /// The saved routines (issue #15), and the next session of the training plan (issue #34). Starting one is done by
@@ -36,24 +38,29 @@ public final class RoutinesModel {
     public private(set) var errorMessage: String?
     /// The plan's next session; `nil` without a plan running today.
     public private(set) var upNext: UpNextRow?
+    /// Proposed changes to the running block (missed sessions, a break, an illness).
+    public private(set) var planChecks: [PlanCheckRow] = []
 
     private let repository: any RoutineRepository
     private let exerciseRepository: any ExerciseRepository
     private let backup: (any BackupService)?
     private let profiles: (any ProfileRepository)?
     private let workouts: (any WorkoutRepository)?
+    private let checkIns: (any CheckInRepository)?
     private let calendar: Calendar
     private let clock: @Sendable () -> Date
 
     /// - Parameters:
     ///   - profiles: where the plan's blocks are (`AthleteProfile.declaredBlocks`).
     ///   - workouts: past sessions, to know which routine of the block comes next.
+    ///   - checkIns: recent check-ins, to notice an illness.
     public init(
         routines: any RoutineRepository,
         exercises: any ExerciseRepository,
         backup: (any BackupService)? = nil,
         profiles: (any ProfileRepository)? = nil,
         workouts: (any WorkoutRepository)? = nil,
+        checkIns: (any CheckInRepository)? = nil,
         calendar: Calendar = .current,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
@@ -62,6 +69,7 @@ public final class RoutinesModel {
         self.backup = backup
         self.profiles = profiles
         self.workouts = workouts
+        self.checkIns = checkIns
         self.calendar = calendar
         self.clock = clock
     }
@@ -107,19 +115,49 @@ public final class RoutinesModel {
         await loadUpNext()
     }
 
-    /// The plan's next session. Best effort: without a profile or sessions there is simply nothing up next.
+    /// Accepts a proposed change: the plan in the profile is updated and the follow-up recomputed.
+    public func accept(_ check: PlanCheckRow) async {
+        guard check.adjustment.changesThePlan, let profiles else { return }
+        do {
+            var profile = try await profiles.profile()
+            profile.declaredBlocks = PlanReviewer.applying(
+                check.adjustment, to: check.block, in: profile.declaredBlocks, calendar: calendar
+            )
+            try await profiles.save(profile)
+        } catch {
+            errorMessage = L10n.text("Could not change the plan. Try again.")
+            return
+        }
+        await backup?.backUpIfConfigured(now: clock())
+        await loadUpNext()
+    }
+
+    /// How far back sessions are read for the follow-up: enough to notice a break before the block.
+    static let lookbackDays = 60
+
+    /// The plan's next session and its follow-up. Best effort: without a profile or sessions there is simply
+    /// nothing up next.
     private func loadUpNext() async {
         guard let profile = try? await profiles?.profile() else {
             upNext = nil
+            planChecks = []
             return
         }
         let now = clock()
         let today = CalendarDay(now, calendar: calendar)
-        let earliest = profile.declaredBlocks.map(\.start).min() ?? today
+        let lookback = today.adding(days: -Self.lookbackDays, calendar: calendar)
+        let earliest = min(profile.declaredBlocks.map(\.start).min() ?? today, lookback)
         let sessions = (try? await workouts?.sessions(from: earliest.startDate(in: calendar), to: now)) ?? []
+        let recentCheckIns = (try? await checkIns?.checkIns(in: today.adding(days: -1, calendar: calendar)...today))
+            ?? []
         let planned = PlanSchedule.next(
             blocks: profile.declaredBlocks, routines: routines, sessions: sessions, today: today, calendar: calendar
         )
+        let review = PlanReviewer.review(
+            blocks: profile.declaredBlocks, sessions: sessions, checkIns: recentCheckIns, today: today,
+            calendar: calendar
+        )
+        planChecks = review.map(PlanFollowUpText.rows) ?? []
         upNext = planned.map { planned in
             let block = planned.block.name ?? planned.block.focus.displayName
             let detail = planned.totalWeeks.map { L10n.format("{1} · week {2} of {3}", block, planned.week, $0) }
@@ -129,7 +167,8 @@ public final class RoutinesModel {
                 routine: planned.routine,
                 title: planned.routine.name,
                 detail: detail,
-                exerciseList: planned.routine.exerciseIDs.compactMap { names[$0] }.joined(separator: ", ")
+                exerciseList: planned.routine.exerciseIDs.compactMap { names[$0] }.joined(separator: ", "),
+                weekProgress: review.flatMap(PlanFollowUpText.weekProgress)
             )
         }
     }

@@ -76,6 +76,7 @@ public enum PlanImporter {
     static let rpeRange = 5.0...10.0
     static let incrementRange = 0.0...20.0
     static let weekRange = 1...52
+    static let sessionsPerWeekRange = 1...14
 
     public static func failed(_ failure: PlanMessageReader.Failure) -> PlanImport {
         PlanImport(issues: [.unreadable(failure)])
@@ -394,12 +395,17 @@ extension PlanImporter {
                 let value = proposal.weeks.map(String.init) ?? "missing"
                 issues.append(.invalidValue(field: "\(field).weeks", value: value, expected: "1 to 52"))
             }
+            if let perWeek = proposal.sessionsPerWeek, !sessionsPerWeekRange.contains(perWeek) {
+                let path = "\(field).sessionsPerWeek"
+                issues.append(.invalidValue(field: path, value: "\(perWeek)", expected: "1 to 14"))
+            }
             let routineIDs = (proposal.routines ?? []).compactMap { routines.id(for: $0, issues: &issues) }
             guard issues.count == before, let focus else { continue }
             let name = proposal.name?.trimmingCharacters(in: .whitespacesAndNewlines)
             result.append(TrainingBlock(
                 focus: focus, start: start, plannedWeeks: weeks, isDeclared: true,
-                name: name?.isEmpty == false ? name : nil, routineIDs: routineIDs
+                name: name?.isEmpty == false ? name : nil, routineIDs: routineIDs,
+                sessionsPerWeek: proposal.sessionsPerWeek
             ))
             start = start.adding(days: weeks * 7, calendar: calendar)
         }

@@ -40,5 +40,21 @@ the first missed day.
 
 - Train shows "Up next in your plan" with the block and week, and starts it in one tap.
 - Editing a routine keeps its prescriptions. The editor does not change them yet, so an AI or a new import does.
-- Not covered yet (#34 follow-up): comparing planned with completed work, deload weeks inside a block, and
-  proposing adjustments after missed sessions or poor recovery.
+- Not covered yet: deload weeks inside a block, and adjustments from HRV, resting heart rate and sleep (they
+  need the readiness rules of phase 2).
+
+## Follow-up (added 2026-11-19)
+
+6. **Planned against done.** Blocks can say `sessionsPerWeek` (default: one per routine). `PlanReviewer` counts,
+   per week of the running block, the sessions started from its routines (or any strength session in a block
+   without routines). Train shows "This week: 1 of 3 sessions".
+7. **Proposals, never automatic changes** (as ADR-0013's balance checks). Each has its reason and evidence level
+   (`docs/evidence.md`):
+   - a recent "ill" check-in → rest until symptoms ease (`illness-return`), and nothing else;
+   - 14 days or more without strength sessions → keep the plan and ease back in (`retraining-after-break`), and
+     nothing else, because a break is not a pattern;
+   - under two thirds of the planned sessions over the last two finished weeks → fewer sessions a week
+     (`frequency-volume-equated`) and, when the missed sessions add up to whole weeks, a longer block
+     (`plan-adherence`).
+   Accepting changes the block in the profile. Extending moves the later declared blocks and is recorded in
+   `TrainingBlock.extendedWeeks`, so the same missed sessions are never offered twice.

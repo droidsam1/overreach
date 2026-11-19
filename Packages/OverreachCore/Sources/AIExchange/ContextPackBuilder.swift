@@ -113,7 +113,8 @@ public enum ContextPackBuilder {
             declaredBlocks: profile.declaredBlocks.map { block in
                 let names = block.routineIDs.compactMap { routineNames[$0] }
                 return .init(focus: block.focus.rawValue, start: block.start.description,
-                             plannedWeeks: block.plannedWeeks, name: block.name, routines: names.isEmpty ? nil : names)
+                             plannedWeeks: block.plannedWeeks, name: block.name, routines: names.isEmpty ? nil : names,
+                             sessionsPerWeek: block.sessionsPerWeek)
             }
         )
     }

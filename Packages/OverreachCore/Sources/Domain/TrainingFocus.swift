@@ -49,10 +49,14 @@ public struct TrainingBlock: Hashable, Codable, Sendable {
     public var name: String?
     /// Routines trained in this block, in rotation order (a training plan, issue #34). Empty = no planned sessions.
     public var routineIDs: [UUID]
+    /// Planned strength sessions a week; `nil` = one per routine.
+    public var sessionsPerWeek: Int?
+    /// Weeks added to the block to make up for missed sessions, so the same missed sessions are not counted twice.
+    public var extendedWeeks: Int
 
     public init(
         focus: TrainingFocus, start: CalendarDay, plannedWeeks: Int? = nil, isDeclared: Bool, name: String? = nil,
-        routineIDs: [UUID] = []
+        routineIDs: [UUID] = [], sessionsPerWeek: Int? = nil, extendedWeeks: Int = 0
     ) {
         self.focus = focus
         self.start = start
@@ -60,7 +64,12 @@ public struct TrainingBlock: Hashable, Codable, Sendable {
         self.isDeclared = isDeclared
         self.name = name
         self.routineIDs = routineIDs
+        self.sessionsPerWeek = sessionsPerWeek
+        self.extendedWeeks = extendedWeeks
     }
+
+    /// Sessions a week the plan expects (at least one).
+    public var plannedSessionsPerWeek: Int { max(1, sessionsPerWeek ?? routineIDs.count) }
 
     /// The first day after the block, when its length is known.
     public func end(calendar: Calendar = .current) -> CalendarDay? {
@@ -70,7 +79,7 @@ public struct TrainingBlock: Hashable, Codable, Sendable {
 
 extension TrainingBlock {
     private enum CodingKeys: String, CodingKey {
-        case focus, start, plannedWeeks, isDeclared, name, routineIDs
+        case focus, start, plannedWeeks, isDeclared, name, routineIDs, sessionsPerWeek, extendedWeeks
     }
 
     /// Tolerant decoding (ADR-0018): blocks saved before plans existed have no name or routines.
@@ -82,7 +91,9 @@ extension TrainingBlock {
             plannedWeeks: try container.decodeIfPresent(Int.self, forKey: .plannedWeeks),
             isDeclared: try container.decode(Bool.self, forKey: .isDeclared),
             name: try container.decodeIfPresent(String.self, forKey: .name),
-            routineIDs: try container.decodeIfPresent([UUID].self, forKey: .routineIDs) ?? []
+            routineIDs: try container.decodeIfPresent([UUID].self, forKey: .routineIDs) ?? [],
+            sessionsPerWeek: try container.decodeIfPresent(Int.self, forKey: .sessionsPerWeek),
+            extendedWeeks: try container.decodeIfPresent(Int.self, forKey: .extendedWeeks) ?? 0
         )
     }
 }

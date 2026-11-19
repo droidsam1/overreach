@@ -7,6 +7,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Plan check (#34, ADR-0019). Train shows this week's planned and completed sessions. When sessions keep being
+  missed, it proposes fewer sessions a week (with the same weekly sets, results are about the same) and a longer
+  block. After a break of two weeks or more it says to keep the plan and ease back in, and after an "ill"
+  check-in, to rest until the symptoms ease. Each proposal says why, with its evidence level, and nothing changes
+  until you accept it. Plans can set `sessionsPerWeek` per block.
 - Train from a plan (#34, ADR-0019). An AI plan can now include training blocks (`blocks`, `startDate`) and
   sets and reps for an exercise in one routine only (`routines[].prescriptions`), so a lift can be 5 × 3 in a
   strength block and 3 × 8–12 in a hypertrophy block. Train shows "Up next in your plan", with the block and week,

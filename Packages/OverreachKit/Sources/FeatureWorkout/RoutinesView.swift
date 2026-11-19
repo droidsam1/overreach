@@ -32,6 +32,9 @@ struct StartSessionView: View {
                             VStack(alignment: .leading, spacing: Spacing.xSmall) {
                                 Text(next.title).font(.headline).foregroundStyle(.primary)
                                 Text(next.detail).font(.subheadline).foregroundStyle(.secondary)
+                                if let progress = next.weekProgress {
+                                    Text(progress).font(.subheadline.monospacedDigit()).foregroundStyle(.secondary)
+                                }
                                 Text(next.exerciseList)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
@@ -49,6 +52,15 @@ struct StartSessionView: View {
                     .accessibilityHint("Starts this session")
                 } header: {
                     Text("Up next in your plan")
+                }
+            }
+            if !routines.planChecks.isEmpty {
+                Section("Plan check") {
+                    ForEach(routines.planChecks) { check in
+                        PlanCheckView(check: check) {
+                            Task { await routines.accept(check) }
+                        }
+                    }
                 }
             }
             Section {
@@ -158,5 +170,30 @@ struct RoutineEditorView: View {
                     .task { await model.reloadCatalog() }
             }
         }
+    }
+}
+
+/// A proposed change to the plan: what, why (with the evidence level) and, when it changes the plan, a button.
+private struct PlanCheckView: View {
+    let check: PlanCheckRow
+    let onAccept: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            Label {
+                Text(check.text).font(.subheadline.weight(.semibold))
+            } icon: {
+                Image(systemName: "lightbulb.fill").foregroundStyle(.orange)
+            }
+            Text(check.reason)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            if let action = check.actionTitle {
+                Button(action, action: onAccept)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+            }
+        }
+        .padding(.vertical, Spacing.xSmall)
     }
 }
