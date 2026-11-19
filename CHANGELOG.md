@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- Plan → Ask AI (ADR-0017): shares your training as versioned raw data (`overreach.context` v1: sessions with notes,
+  exercise settings, routines, goal, trends and health metrics) with ChatGPT, Claude or another chat app, as text or
+  as a `.json` file, with an optional first request. The format is documented in `docs/ai-exchange.md`.
+
 ### Changed
 - The reasons under each target now say what to do today with its numbers (for example "Today: drop to 72.5 kg and
   aim for 8 reps…"), and the RPE menu says how many reps in reserve each value means.

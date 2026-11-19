@@ -10,6 +10,7 @@ let package = Package(
         .library(name: "Analytics", targets: ["Analytics"]),
         .library(name: "StrongImport", targets: ["StrongImport"]),
         .library(name: "Reports", targets: ["Reports"]),
+        .library(name: "AIExchange", targets: ["AIExchange"]),
         // Presentation (ADR-0014): screen state, intents and texts. SwiftUI views in OverreachKit only render them.
         .library(name: "PresentationKit", targets: ["PresentationKit"]),
         .library(name: "ExercisesPresentation", targets: ["ExercisesPresentation"]),
@@ -19,6 +20,7 @@ let package = Package(
         .library(name: "SettingsPresentation", targets: ["SettingsPresentation"]),
         .library(name: "TodayPresentation", targets: ["TodayPresentation"]),
         .library(name: "OnboardingPresentation", targets: ["OnboardingPresentation"]),
+        .library(name: "AssistantPresentation", targets: ["AssistantPresentation"]),
         // Generated test data (large anonymised history). Tests only; never linked by the app.
         .library(name: "Fixtures", targets: ["Fixtures"]),
     ],
@@ -31,6 +33,8 @@ let package = Package(
         .target(name: "StrongImport", dependencies: ["Domain"]),
         // Markdown report shared with ChatGPT/Claude, and context for the in-app assistant.
         .target(name: "Reports", dependencies: ["Domain", "Analytics"]),
+        // Versioned messages exchanged with AI chat apps (ADR-0017, docs/ai-exchange.md).
+        .target(name: "AIExchange", dependencies: ["Domain", "Analytics"]),
 
         // Presentation layer (ADR-0014). One module per feature; they never import each other or SwiftUI.
         .target(name: "PresentationKit", dependencies: ["Domain"], path: "Sources/Presentation/PresentationKit"),
@@ -69,6 +73,11 @@ let package = Package(
             dependencies: ["Domain", "PresentationKit"],
             path: "Sources/Presentation/OnboardingPresentation"
         ),
+        .target(
+            name: "AssistantPresentation",
+            dependencies: ["Domain", "PresentationKit", "AIExchange"],
+            path: "Sources/Presentation/AssistantPresentation"
+        ),
 
         // Generated test data shared by test targets in both packages.
         .target(name: "Fixtures", dependencies: ["Domain"]),
@@ -76,6 +85,7 @@ let package = Package(
         .testTarget(name: "DomainTests", dependencies: ["Domain"]),
         .testTarget(name: "AnalyticsTests", dependencies: ["Analytics", "Domain"]),
         .testTarget(name: "ReportsTests", dependencies: ["Reports", "Domain"]),
+        .testTarget(name: "AIExchangeTests", dependencies: ["AIExchange", "Domain", "Fixtures"]),
         .testTarget(name: "StrongImportTests", dependencies: ["StrongImport", "Domain"]),
         .testTarget(name: "PresentationKitTests", dependencies: ["PresentationKit", "Domain"]),
         .testTarget(
@@ -105,6 +115,10 @@ let package = Package(
         .testTarget(
             name: "OnboardingPresentationTests",
             dependencies: ["OnboardingPresentation", "Domain", "Fixtures"]
+        ),
+        .testTarget(
+            name: "AssistantPresentationTests",
+            dependencies: ["AssistantPresentation", "AIExchange", "PresentationKit", "Domain", "Fixtures"]
         ),
         .testTarget(name: "PerformanceTests", dependencies: ["Analytics", "StrongImport", "Domain", "Fixtures"]),
     ]

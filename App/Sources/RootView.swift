@@ -1,4 +1,6 @@
+import AssistantPresentation
 import ExercisesPresentation
+import FeatureAssistant
 import FeatureExercises
 import FeatureHistory
 import FeatureOnboarding
@@ -29,6 +31,7 @@ struct RootView: View {
     @State private var backupModel: BackupModel
     @State private var exercisesModel: ExercisesModel
     @State private var onboardingModel: OnboardingModel
+    @State private var askAIModel: AskAIModel
     @State private var selectedTab = AppTab.today
     @Environment(\.scenePhase) private var scenePhase
 
@@ -42,6 +45,7 @@ struct RootView: View {
         _backupModel = State(initialValue: container.makeBackupModel())
         _exercisesModel = State(initialValue: container.makeExercisesModel())
         _onboardingModel = State(initialValue: container.makeOnboardingModel())
+        _askAIModel = State(initialValue: container.makeAskAIModel())
     }
 
     var body: some View {
@@ -56,7 +60,13 @@ struct RootView: View {
                 HistoryView(model: historyModel)
             }
             Tab("Plan", systemImage: "list.bullet.clipboard", value: AppTab.plan) {
-                PlanView(model: planModel)
+                PlanView(model: planModel) {
+                    NavigationLink {
+                        AskAIView(model: askAIModel)
+                    } label: {
+                        Label("Ask AI", systemImage: "bubble.left.and.text.bubble.right")
+                    }
+                }
             }
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
                 SettingsView(importModel: importModel, backupModel: backupModel) {

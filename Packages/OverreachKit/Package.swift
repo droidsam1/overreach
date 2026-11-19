@@ -72,7 +72,9 @@ let package = Package(
         .target(name: "FeaturePlan", dependencies: uiDependencies + [
             .product(name: "PlanPresentation", package: core),
         ]),
-        .target(name: "FeatureAssistant", dependencies: uiDependencies + ["AIKit"]),
+        .target(name: "FeatureAssistant", dependencies: uiDependencies + [
+            "AIKit", .product(name: "AssistantPresentation", package: core),
+        ]),
         .target(name: "FeatureSettings", dependencies: uiDependencies + [
             .product(name: "SettingsPresentation", package: core),
         ]),
