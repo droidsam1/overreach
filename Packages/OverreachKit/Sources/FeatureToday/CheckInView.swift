@@ -1,0 +1,73 @@
+import DesignSystem
+import SwiftUI
+import TodayPresentation
+
+/// The daily check-in: sick, energy, soreness and a note. Renders `CheckInModel`; `onSaved` reloads Today.
+struct CheckInView: View {
+    @Bindable var model: CheckInModel
+    let onSaved: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Toggle("I'm sick", isOn: $model.isSick)
+                } footer: {
+                    Text("Fever, flu, a cold or a stomach bug. The light turns red until you feel better.")
+                }
+
+                Section("Energy") {
+                    Picker("Energy", selection: $model.energy) {
+                        ForEach(model.energyOptions) { option in
+                            Text(option.name).tag(Optional(option.value))
+                        }
+                    }
+                    .pickerStyle(.inline)
+                    .labelsHidden()
+                }
+
+                Section("Muscle soreness") {
+                    Picker("Muscle soreness", selection: $model.soreness) {
+                        ForEach(model.sorenessOptions) { option in
+                            Text(option.name).tag(Optional(option.value))
+                        }
+                    }
+                    .pickerStyle(.inline)
+                    .labelsHidden()
+                }
+
+                Section("Note") {
+                    TextField("Anything worth remembering", text: $model.note, axis: .vertical)
+                        .lineLimit(1...4)
+                }
+
+                if let error = model.errorMessage {
+                    Section {
+                        Label(error, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                    }
+                }
+            }
+            .navigationTitle("Check-in")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        Task {
+                            if await model.save() {
+                                onSaved()
+                                dismiss()
+                            }
+                        }
+                    }
+                    .disabled(!model.canSave)
+                }
+            }
+        }
+    }
+}
