@@ -7,6 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Backups you can rely on (ADR-0018): Settings warns, with a badge, when your data is only on the iPhone. The
+  first-run setup offers "Restore from a backup". After a reinstall, choosing the backup folder offers to restore
+  it. A frozen v1 backup in the tests guarantees future versions keep loading today's data, and there is a
+  migration step for format changes.
+
+### Added
 - Log effort as RPE or as reps in reserve (RIR), chosen from "How to log sets". Sets still store RPE, so history,
   targets and the AI context do not change. The guide explains how to rate effort and the common bias of guessing
   about 1 rep too few (`rir-estimation`).

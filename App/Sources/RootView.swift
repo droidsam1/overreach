@@ -87,10 +87,11 @@ struct RootView: View {
                     }
                 }
             }
-            .badge(exercisesModel.needsMappingCount)
+            .badge(exercisesModel.needsMappingCount + backupModel.badgeCount)
         }
         .preferredColorScheme(appearance.colorScheme)
         .task {
+            await backupModel.load()
             await backupModel.checkRestoreOffer()
             await exercisesModel.load()
             // With a backup on offer, the setup waits for the answer: a restore makes it unnecessary.
@@ -100,7 +101,15 @@ struct RootView: View {
         }
         .fullScreenCover(isPresented: $onboardingModel.isPresented) {
             OnboardingView(model: onboardingModel) { destination in
-                selectedTab = destination == .importHistory ? .settings : .train
+                switch destination {
+                case .train:
+                    selectedTab = .train
+                case .importHistory:
+                    selectedTab = .settings
+                case .restoreBackup:
+                    selectedTab = .settings
+                    backupModel.requestFolderChoice()
+                }
             }
         }
         .onChange(of: importModel.state) {

@@ -16,6 +16,10 @@ public final class BackupModel {
     public private(set) var restoreOffer: BackupSummary?
     /// Data waiting for the user to confirm a restore.
     public private(set) var pendingRestore: BackupSummary?
+    /// The device has sessions or other user data.
+    public private(set) var hasUserData = false
+    /// Another screen (the first-run setup) asked Settings to open the folder picker.
+    public var isRequestingFolderChoice = false
 
     private var pendingData: Data?
     private let service: any BackupService
@@ -50,11 +54,26 @@ public final class BackupModel {
 
     public var lastBackupText: String? { lastBackup.map { Self.dateText($0.createdAt) } }
 
-    /// Automatic backups fail silently, so a folder without a recent copy is pointed out here.
+    /// Automatic backups fail silently, so a missing folder or a folder without a recent copy is pointed out here.
     public var backupWarning: String? {
-        guard isConfigured else { return nil }
+        guard isConfigured else {
+            guard hasUserData else { return nil }
+            return L10n.text(
+                "Your data is only on this iPhone. Choose an iCloud Drive folder: the app then backs up on its own, "
+                    + "and you can restore it if you delete the app."
+            )
+        }
         if let lastBackup, clock().timeIntervalSince(lastBackup.createdAt) < Self.staleAfter { return nil }
         return L10n.text("No recent backup found in this folder. Check that it is still available, then back up now.")
+    }
+
+    /// 1 when the backup needs attention, for the Settings tab badge.
+    public var badgeCount: Int { backupWarning == nil ? 0 : 1 }
+
+    /// Opens the folder picker in Settings (e.g. "Restore from a backup" in the first-run setup). After a
+    /// reinstall, choosing the folder that holds the backup offers to restore it.
+    public func requestFolderChoice() {
+        isRequestingFolderChoice = true
     }
 
     static func describe(_ summary: BackupSummary) -> String {
@@ -78,6 +97,7 @@ public final class BackupModel {
     }
 
     public func load() async {
+        hasUserData = (try? await service.hasUserData()) ?? false
         isConfigured = await service.isConfigured()
         folderName = await service.folderName()
         lastBackup = try? await service.latestBackup()?.summary
@@ -186,6 +206,7 @@ public final class BackupModel {
         if await service.backUpIfConfigured(now: clock()) {
             lastBackup = try? await service.latestBackup()?.summary
         }
+        hasUserData = (try? await service.hasUserData()) ?? hasUserData
     }
 
     private func restore(_ data: Data) async {
