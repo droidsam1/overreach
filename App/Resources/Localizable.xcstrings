@@ -256,6 +256,23 @@
         }
       }
     },
+    "7-day avg {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Media 7 días {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Media 7 días {1}"
+          }
+        }
+      }
+    },
     "A backup with {1} sessions from {2} was found in your backup folder.": {
       "extractionState": "manual",
       "localizations": {
@@ -745,6 +762,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aparencia"
+          }
+        }
+      }
+    },
+    "Apple Health": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Salud"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Saúde"
           }
         }
       }
@@ -1306,6 +1340,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Próximos meses"
+          }
+        }
+      }
+    },
+    "Connect Apple Health": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar Apple Salud"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar Apple Saúde"
           }
         }
       }
@@ -2156,6 +2207,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Declarar un bloque indica á app que unha serie de sesións parecidas é intencionada."
+          }
+        }
+      }
+    },
+    "Deep {1} h · REM {2} h": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profundo {1} h · REM {2} h"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profundo {1} h · REM {2} h"
           }
         }
       }
@@ -3023,6 +3091,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Antebrazos"
+          }
+        }
+      }
+    },
+    "From {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De {1}"
+          }
+        }
+      }
+    },
+    "Garmin": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin"
           }
         }
       }
@@ -3996,6 +4098,23 @@
         }
       }
     },
+    "Manual": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual"
+          }
+        }
+      }
+    },
     "Maximum reps: %lld": {
       "extractionState": "manual",
       "localizations": {
@@ -4863,6 +4982,23 @@
         }
       }
     },
+    "Overreach": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach"
+          }
+        }
+      }
+    },
     "Page %lld of %lld": {
       "extractionState": "manual",
       "localizations": {
@@ -5386,23 +5522,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Récords e próximos obxectivos"
-          }
-        }
-      }
-    },
-    "Recovery data will appear here once Apple Health or Garmin is connected.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Los datos de recuperación aparecerán aquí cuando conectes Apple Salud o Garmin."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Os datos de recuperación aparecerán aquí cando conectes Apple Saúde ou Garmin."
           }
         }
       }
@@ -6614,6 +6733,23 @@
         }
       }
     },
+    "Sleep, HRV, resting heart rate and steps come from Apple Health: from an Apple Watch, from Garmin Connect (turn on Apple Health in its settings) or from the iPhone itself. If you already allowed it, check Health → Sharing → Apps → Overreach.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El sueño, la VFC, el pulso en reposo y los pasos vienen de Apple Salud: de un Apple Watch, de Garmin Connect (activa Apple Salud en sus ajustes) o del propio iPhone. Si ya diste permiso, revisa Salud → Compartir → Apps → Overreach."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O sono, a VFC, o pulso en repouso e os pasos veñen de Apple Saúde: dun Apple Watch, de Garmin Connect (activa Apple Saúde nos seus axustes) ou do propio iPhone. Se xa deches permiso, revisa Saúde → Compartir → Apps → Overreach."
+          }
+        }
+      }
+    },
     "Some exercise settings could not be read, so this analysis may be incomplete.": {
       "extractionState": "manual",
       "localizations": {
@@ -6835,6 +6971,23 @@
         }
       }
     },
+    "Steps": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasos"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasos"
+          }
+        }
+      }
+    },
     "Strength": {
       "extractionState": "manual",
       "localizations": {
@@ -6865,6 +7018,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Forza e músculo"
+          }
+        }
+      }
+    },
+    "Strong": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strong"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strong"
           }
         }
       }
@@ -7868,6 +8038,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Paseos habituais ao día"
+          }
+        }
+      }
+    },
+    "VO2max": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VO2máx"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VO2máx"
           }
         }
       }
