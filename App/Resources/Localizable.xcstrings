@@ -511,6 +511,23 @@
         }
       }
     },
+    "Add warm-up sets": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir series de calentamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Engadir series de quecemento"
+          }
+        }
+      }
+    },
     "Advice adapts to your walks and never removes the ones you can't skip.": {
       "extractionState": "manual",
       "localizations": {
@@ -4064,6 +4081,23 @@
         }
       }
     },
+    "Optional: 5–10 minutes of easy cardio before lifting tends to help. ({1})": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opcional: 5–10 minutos de cardio suave antes de levantar suele ayudar. ({1})"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opcional: 5–10 minutos de cardio suave antes de levantar adoita axudar. ({1})"
+          }
+        }
+      }
+    },
     "Other": {
       "extractionState": "manual",
       "localizations": {
@@ -5148,6 +5182,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Series"
+          }
+        }
+      }
+    },
+    "Sets marked W are suggested warm-ups. Mark the ones you do; they are saved apart and do not count for progress. Swipe to delete the ones you skip.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las series marcadas con C son calentamientos sugeridos. Marca las que hagas: se guardan aparte y no cuentan para tu progreso. Desliza para borrar las que no hagas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As series marcadas con Q son quecementos suxeridos. Marca as que fagas: gárdanse á parte e non contan para o teu progreso. Desliza para borrar as que non fagas."
           }
         }
       }
@@ -6525,6 +6576,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quecemento"
+          }
+        }
+      }
+    },
+    "Warm-up set %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serie de calentamiento %lld"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serie de quecemento %lld"
+          }
+        }
+      }
+    },
+    "Warm-up: one set close to today's load, because these muscles are already warm from earlier exercises. ({1})": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calentamiento: una serie cerca del peso de hoy, porque estos músculos ya están calientes de ejercicios anteriores. ({1})"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quecemento: unha serie preto do peso de hoxe, porque estes músculos xa están quentes de exercicios anteriores. ({1})"
+          }
+        }
+      }
+    },
+    "Warm-up: {1} sets with few reps, from light to close to today's load, so the work sets start ready but fresh. They do not count for progress. ({2})": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calentamiento: {1} series de pocas repeticiones, de ligero a cerca del peso de hoy, para empezar las series de trabajo preparado pero fresco. No cuentan para tu progreso. ({2})"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quecemento: {1} series de poucas repeticións, de lixeiro a preto do peso de hoxe, para comezar as series de traballo preparado pero fresco. Non contan para o teu progreso. ({2})"
           }
         }
       }

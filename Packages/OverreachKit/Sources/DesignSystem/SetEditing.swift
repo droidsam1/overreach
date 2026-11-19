@@ -62,21 +62,31 @@ public struct SetValueFields: View {
     }
 }
 
-/// The set number shown at the start of a set row.
+/// The set number shown at the start of a set row; "W" for warm-up sets.
 public struct SetNumberLabel: View {
     private let number: Int
+    private let isWarmUp: Bool
     @ScaledMetric(relativeTo: .subheadline) private var width: CGFloat = 20
 
-    public init(_ number: Int) {
+    public init(_ number: Int, isWarmUp: Bool = false) {
         self.number = number
+        self.isWarmUp = isWarmUp
     }
 
     public var body: some View {
-        Text("\(number)")
-            .font(.subheadline.monospacedDigit())
-            .foregroundStyle(.secondary)
-            .frame(minWidth: width)
-            .accessibilityLabel("Set \(number)")
+        Group {
+            if isWarmUp {
+                Text("W")
+                    .foregroundStyle(.orange)
+                    .accessibilityLabel("Warm-up set \(number)")
+            } else {
+                Text("\(number)")
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel("Set \(number)")
+            }
+        }
+        .font(.subheadline.monospacedDigit())
+        .frame(minWidth: width)
     }
 }
 
@@ -209,6 +219,13 @@ public struct SetLoggingGuide: View {
                         starts.
                         """,
                         systemImage: "checkmark.circle"
+                    )
+                    Label(
+                        """
+                        Sets marked W are suggested warm-ups. Mark the ones you do; they are saved apart and do not \
+                        count for progress. Swipe to delete the ones you skip.
+                        """,
+                        systemImage: "flame"
                     )
                 }
                 Section {

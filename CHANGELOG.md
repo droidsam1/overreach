@@ -6,7 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed
+- The progression engine ignored the kind of set: warm-up sets in the history now no longer count for targets,
+  stalls or the working weight.
+
 ### Added
+- Warm-up sets (evidence: `warm-up-specific`, `warm-up-ramp`). Main lifts and the first exercise for each muscle get
+  a ramp to close to today's load with few reps; other exercises get one on demand from their menu. Warm-ups show
+  as W, do not start the rest timer and are saved apart. An optional general warm-up is suggested until the
+  first set.
 - Bring an AI's answer back (#34, ADR-0017): copy the reply format into ChatGPT or Claude, then paste its answer or
   open it as a file. The app previews the routines and exercise settings it would create or update. A problem such
   as an unknown exercise blocks the import and gives a correction to paste back into the chat. Importing the same

@@ -11,13 +11,19 @@ public struct DraftSet: Identifiable, Hashable, Sendable {
     public var reps: Int?
     public var rpe: Double?
     public var isDone: Bool
+    /// A suggested warm-up set: saved as a warm-up, so it never counts for progress or volume.
+    public let isWarmUp: Bool
 
-    public init(id: UUID = UUID(), weightKg: Double?, reps: Int?, rpe: Double? = nil, isDone: Bool = false) {
+    public init(
+        id: UUID = UUID(), weightKg: Double?, reps: Int?, rpe: Double? = nil, isDone: Bool = false,
+        isWarmUp: Bool = false
+    ) {
         self.id = id
         self.weightKg = weightKg
         self.reps = reps
         self.rpe = rpe
         self.isDone = isDone
+        self.isWarmUp = isWarmUp
     }
 }
 
@@ -39,11 +45,22 @@ public struct DraftExercise: Identifiable, Hashable, Sendable {
     var scheme: ProgressionScheme
     /// The athlete's notes on this exercise (pain, technique, machine settings). Saved trimmed; empty = none.
     public var notes = ""
+    /// Warm-up sets suggested for today's target, whether or not they were added.
+    var warmUpPlan: [WarmUpSet] = []
+    /// Its muscles were already worked earlier in the session, so the warm-up is shorter.
+    var isPrimed = false
 
-    /// 1-based position of a set, for its row label.
+    /// 1-based position of a set among the sets of its kind (warm-ups and working sets are numbered apart).
     public func number(of setID: DraftSet.ID) -> Int {
-        (sets.firstIndex { $0.id == setID } ?? 0) + 1
+        guard let set = sets.first(where: { $0.id == setID }) else { return 1 }
+        return (sets.filter { $0.isWarmUp == set.isWarmUp }.firstIndex { $0.id == setID } ?? 0) + 1
     }
+
+    /// The sets that count: everything except warm-ups.
+    public var workingSets: [DraftSet] { sets.filter { !$0.isWarmUp } }
+
+    /// Whether "Add warm-up sets" has something to add.
+    public var canAddWarmUp: Bool { !warmUpPlan.isEmpty && !sets.contains(where: \.isWarmUp) }
 }
 
 /// What the logger shows about an exercise's target: one-line summary plus the reasons behind it.
@@ -97,16 +114,40 @@ extension DraftExercise {
                 "\(index + 1). \(suggestion.text) (\(suggestion.evidence.level.displayName))"
             }
         }
+        var reasons = target.reasons.map { reason in
+            let context = ReasonContext(target: target, scheme: scheme, format: format)
+            return "\(reason.instruction(context)) (\(reason.evidence.level.displayName))"
+        }
+        if let warmUp = warmUpReason {
+            reasons.append(warmUp)
+        }
         return TargetSummary(
             targetLine: targetLine,
             focusLine: focusLine,
             status: status.text,
             isStalled: status.isStalled,
-            reasons: target.reasons.map { reason in
-                let context = ReasonContext(target: target, scheme: scheme, format: format)
-                return "\(reason.instruction(context)) (\(reason.evidence.level.displayName))"
-            },
+            reasons: reasons,
             stallSuggestions: suggestions
+        )
+    }
+
+    /// Why the warm-up sets are there, when there are any.
+    private var warmUpReason: String? {
+        let warmUps = sets.filter(\.isWarmUp)
+        guard !warmUps.isEmpty else { return nil }
+        let count = warmUps.count
+        let level = WarmUpEvidence.specific.level.displayName
+        if isPrimed {
+            return L10n.format(
+                "Warm-up: one set close to today's load, because these muscles are already warm from earlier "
+                    + "exercises. ({1})",
+                level
+            )
+        }
+        return L10n.format(
+            "Warm-up: {1} sets with few reps, from light to close to today's load, so the work sets start ready but "
+                + "fresh. They do not count for progress. ({2})",
+            count, level
         )
     }
 }
@@ -130,6 +171,15 @@ public final class WorkoutModel {
     public let rest: RestTimerModel
 
     public var isSessionActive: Bool { startedAt != nil }
+
+    /// An optional general warm-up, suggested until the first set is done.
+    public var generalWarmUpTip: String? {
+        guard isSessionActive, !exercises.contains(where: { $0.sets.contains(where: \.isDone) }) else { return nil }
+        return L10n.format(
+            "Optional: 5–10 minutes of easy cardio before lifting tends to help. ({1})",
+            WarmUpEvidence.general.level.displayName
+        )
+    }
 
     /// Exercises offered by the "Add exercise" picker.
     public var exerciseChoices: [ExerciseChoice] { catalog.map(ExerciseChoice.init) }
@@ -296,16 +346,50 @@ public final class WorkoutModel {
         let focus = declaredFocus ?? inferredFocus
         let target = ProgressionTargets.next(history: history, settings: settings)
         let status = StallDetection.status(history: history, settings: settings)
-        let sets = target.sets.map { planned in
+        let working = target.sets.map { planned in
             DraftSet(weightKg: planned.weightKg ?? history.last?.workingWeightKg, reps: planned.reps)
         }
+        let primed = isPrimed(exercise, before: id)
+        let plan = working.first.map { first in
+            WarmUpPrescription.sets(
+                workingWeightKg: first.weightKg ?? 0, reps: first.reps ?? 1,
+                targetRPE: target.sets.first?.targetRPE ?? settings.scheme.targetRPE, equipment: exercise.equipment,
+                incrementKg: settings.incrementKg, primed: primed
+            )
+        } ?? []
+        // Main lifts and the first exercise for its muscles get the warm-up; the rest only on demand.
+        let warmUps = settings.isMainLift || !primed ? Self.draftSets(plan) : []
         return DraftExercise(
-            id: id, exercise: exercise, target: target, status: status, sets: sets, focus: focus,
+            id: id, exercise: exercise, target: target, status: status, sets: warmUps + working, focus: focus,
             isFocusInferred: declaredFocus == nil && focus != nil,
             restSeconds: FocusPrescription.for(focus ?? .hypertrophy).restSeconds,
             appliedSettings: stored,
-            scheme: settings.scheme
+            scheme: settings.scheme,
+            warmUpPlan: plan,
+            isPrimed: primed
         )
+    }
+
+    private static func draftSets(_ plan: [WarmUpSet]) -> [DraftSet] {
+        plan.map { DraftSet(weightKg: $0.weightKg, reps: $0.reps, isWarmUp: true) }
+    }
+
+    /// Whether the muscles of `exercise` were worked (primary or secondary) by an exercise before `id` in the session.
+    private func isPrimed(_ exercise: Exercise, before id: DraftExercise.ID) -> Bool {
+        let earlier = exercises.firstIndex { $0.id == id }.map { Array(exercises[..<$0]) } ?? exercises
+        let worked = earlier.reduce(into: Set<MuscleGroup>()) { worked, previous in
+            worked.formUnion(previous.exercise.primaryMuscles)
+            worked.formUnion(previous.exercise.secondaryMuscles)
+        }
+        return !exercise.primaryMuscles.isDisjoint(with: worked)
+    }
+
+    /// Adds the suggested warm-up sets before the working sets of an exercise ("Add warm-up sets").
+    public func addWarmUp(to exerciseID: DraftExercise.ID) {
+        guard let index = exercises.firstIndex(where: { $0.id == exerciseID }), exercises[index].canAddWarmUp else {
+            return
+        }
+        exercises[index].sets.insert(contentsOf: Self.draftSets(exercises[index].warmUpPlan), at: 0)
     }
 
     public func removeExercise(_ exerciseID: DraftExercise.ID) {
@@ -313,10 +397,10 @@ public final class WorkoutModel {
         rest.stop(exerciseID: exerciseID)
     }
 
-    /// Adds a set copying the last set's values.
+    /// Adds a working set copying the last working set's values.
     public func addSet(to exerciseID: DraftExercise.ID) {
         guard let index = exercises.firstIndex(where: { $0.id == exerciseID }) else { return }
-        let last = exercises[index].sets.last
+        let last = exercises[index].sets.last { !$0.isWarmUp }
         exercises[index].sets.append(DraftSet(weightKg: last?.weightKg, reps: last?.reps, rpe: last?.rpe))
     }
 
@@ -326,14 +410,17 @@ public final class WorkoutModel {
         rest.stop(setID: setID)
     }
 
-    /// Marks a set as performed, which starts the rest, or undoes it, which stops the rest it started.
+    /// Marks a set as performed, which starts the rest (not after warm-ups), or undoes it, which stops the rest it
+    /// started.
     public func setDone(_ isDone: Bool, set setID: DraftSet.ID, in exerciseID: DraftExercise.ID) {
         guard let index = exercises.firstIndex(where: { $0.id == exerciseID }),
               let setIndex = exercises[index].sets.firstIndex(where: { $0.id == setID }),
               exercises[index].sets[setIndex].isDone != isDone else { return }
         exercises[index].sets[setIndex].isDone = isDone
         if isDone {
-            rest.start(after: setID, of: exercises[index])
+            if !exercises[index].sets[setIndex].isWarmUp {
+                rest.start(after: setID, of: exercises[index])
+            }
         } else {
             rest.stop(setID: setID)
         }
@@ -347,7 +434,10 @@ public final class WorkoutModel {
         let now = clock()
         let entries = exercises.compactMap { exercise -> ExerciseEntry? in
             let done = exercise.sets.filter(\.isDone).map { set in
-                WorkoutSet(weightKg: set.weightKg, reps: set.reps, rpe: set.rpe, completedAt: now)
+                WorkoutSet(
+                    kind: set.isWarmUp ? .warmup : .working, weightKg: set.weightKg, reps: set.reps, rpe: set.rpe,
+                    completedAt: now
+                )
             }
             return done.isEmpty ? nil : ExerciseEntry(
                 exerciseID: exercise.exercise.id, sets: done, notes: Self.trimmedOrNil(exercise.notes)

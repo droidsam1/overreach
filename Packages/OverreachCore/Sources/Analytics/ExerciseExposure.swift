@@ -13,12 +13,13 @@ public struct ExerciseExposure: Hashable, Sendable {
         }
     }
 
-    /// Exposures of `exerciseID` across `sessions`, oldest first. Sessions without usable sets are skipped.
+    /// Exposures of `exerciseID` across `sessions`, oldest first, with working sets only: warm-ups would shift
+    /// set positions and the working weight. Sessions without usable sets are skipped.
     public static func history(of exerciseID: UUID, in sessions: [StrengthSession]) -> [ExerciseExposure] {
         sessions
             .sorted { $0.startedAt < $1.startedAt }
             .compactMap { session -> ExerciseExposure? in
-                let sets = session.entries.filter { $0.exerciseID == exerciseID }.flatMap(\.sets)
+                let sets = session.entries.filter { $0.exerciseID == exerciseID }.flatMap(\.sets).filter(\.isWorking)
                 let exposure = ExerciseExposure(date: session.startedAt, sets: sets)
                 return exposure.sets.isEmpty ? nil : exposure
             }

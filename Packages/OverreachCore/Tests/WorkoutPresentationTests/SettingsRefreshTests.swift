@@ -31,20 +31,21 @@ struct SettingsRefreshTests {
 
     @Test func changedSettingsRefreshTheTargetAndSets() async throws {
         let (model, store) = await makeModel()
-        #expect(model.exercises[0].sets[0].weightKg == 62.5)
+        #expect(model.exercises[0].workingSets[0].weightKg == 62.5)
 
         try await store.save(microplates, for: bench.id)
         await model.applySettingsChanges()
 
         #expect(model.exercises[0].target.sets[0].weightKg == 61.25)
-        #expect(model.exercises[0].sets[0].weightKg == 61.25)
+        #expect(model.exercises[0].workingSets[0].weightKg == 61.25)
     }
 
     @Test func withoutChangesWhatTheUserTypedStays() async {
         let (model, _) = await makeModel()
-        model.exercises[0].sets[0].weightKg = 70
+        let last = model.exercises[0].sets.count - 1
+        model.exercises[0].sets[last].weightKg = 70
         await model.applySettingsChanges()
-        #expect(model.exercises[0].sets[0].weightKg == 70)
+        #expect(model.exercises[0].sets[last].weightKg == 70)
     }
 
     @Test func loggedSetsAreKeptWhileTheTargetUpdates() async throws {
@@ -67,6 +68,6 @@ struct SettingsRefreshTests {
         try await store.deleteProgressionSettings(for: bench.id)
         await model.applySettingsChanges()
 
-        #expect(model.exercises[0].sets[0].weightKg == 62.5)
+        #expect(model.exercises[0].workingSets[0].weightKg == 62.5)
     }
 }
