@@ -48,6 +48,7 @@ struct SessionEditorView: View {
             }
             .navigationTitle("Edit session")
             .toolbar { toolbar }
+            .keyboardDoneButton()
             .interactiveDismissDisabled(model.hasChanges)
             .sheet(isPresented: $isAddingExercise) {
                 ExercisePicker(items: pickerItems) { model.addExercise(id: $0) }

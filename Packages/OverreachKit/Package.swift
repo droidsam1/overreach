@@ -83,6 +83,7 @@ let package = Package(
         ]),
 
         // MARK: Tests
+        .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),
         .testTarget(name: "PersistenceTests", dependencies: [
             "Persistence", .product(name: "Domain", package: core), .product(name: "Fixtures", package: core),
         ]),

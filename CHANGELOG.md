@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- Easier weight and reps fields while logging. The whole field, unit included, is the tap target. Tapping selects
+  the value so typing replaces it. A "Done" button above the keyboard and scrolling hide the keyboard. Values save
+  as you type, so marking a set right after typing keeps them.
+
 ### Added
 - Bring an AI's answer back (#34, ADR-0017): copy the reply format into ChatGPT or Claude, then paste its answer or
   open it as a file. The app previews the routines and exercise settings it would create or update. A problem such
