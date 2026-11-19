@@ -212,3 +212,52 @@ A break is 14 days without strength sessions; low adherence is under two thirds 
 two finished weeks of a block; the proposed frequency is the sessions actually done per week, rounded up;
 missed sessions add whole weeks to the block, at most 4 in all, and each missed week is offered once. All
 configurable. Reviewed 2026-11-19.
+
+## Readiness
+
+The daily traffic light on Today (ADR-0020). Each signal compares today with the person's own baseline; how they
+combine is a labelled heuristic.
+
+### `readiness-hrv` — moderate
+HRV-guided training (train hard while the 7-day rolling ln HRV is inside the personal normal range, easy when it
+drops below) gives similar or slightly better endurance and VO2max changes than predefined plans, with fewer
+non-responders and better vagal HRV; effects on performance are trivial to small and the trials are few.
+A 7-day rolling average is more valid than a single morning value, and needs at least ~3 valid nights a week.
+The one RCT of HRV-guided resistance training found no advantage for strength or muscle (small sample, older
+women), so HRV only moderates intensity here and never decides the strength plan alone.
+→ Baseline = mean ± 0.5 SD of ln nightly HRV over the previous 60 days (≥ 14 nights); signal when the 7-day mean
+(≥ 3 nights) is below that range. Apple Watch reports SDNN, not RMSSD, and wearable HRV agrees only loosely
+with chest-strap references: the same personal-range rule is applied to whatever the source reports, which is a
+heuristic transfer.
+Refs: Düking et al. 2021, J Sci Med Sport 24:1180 (meta-analysis, wearables); Manresa-Rocamora et al. 2021, Int
+J Environ Res Public Health 18:10299 (meta-analysis); Granero-Gallegos et al. 2020, Int J Environ Res Public
+Health 17:7999 (meta-analysis); Vesterinen et al. 2016, Med Sci Sports Exerc 48:1347 (RCT, SWC protocol); Plews
+et al. 2012, Eur J Appl Physiol 112:3729 (7-day rolling average); Front Physiol 2024, 15:1472702 (RCT,
+HRV-guided resistance training, n = 21); Sensors 2024, 24:6220 (Apple Watch HRV validity). Reviewed 2026-11-19.
+
+### `readiness-resting-hr` — limited
+Short-term overload raises resting HR moderately, longer overload does not, and changes must be read together with
+other signs; daily resting measures are most useful next to training logs and questionnaires.
+→ Signal when today's resting HR is ≥ 5 bpm above its 60-day mean (≥ 14 nights). The 5 bpm threshold is a
+coaching default (configurable). Refs: Bosquet et al. 2008, Br J Sports Med 42:709 (systematic review, PubMed
+18308872); Buchheit 2014, Front Physiol 5:73 (review). Reviewed 2026-11-19.
+
+### `readiness-sleep` — moderate
+Acute sleep loss lowers performance: about −3 % for maximal strength and more for endurance and
+strength-endurance, with high heterogeneity; the effect likely grows over several short nights. Athletes often
+sleep < 7 h, and sleep need is individual rather than a fixed 7–9 h.
+→ Signal when last night was under 6 h (configurable; a personal sleep baseline is a later refinement).
+Refs: Craven et al. 2022, Sports Med 52:2669 (meta-analysis); Walsh et al. 2021, Br J Sports Med 55:356 (expert
+consensus). Reviewed 2026-11-19.
+
+### `readiness-subjective` — moderate
+Self-reported well-being responds to acute and chronic training load more sensitively and consistently than common
+objective markers, and the two often disagree, so both are worth collecting.
+→ Check-in energy ≤ 2 / 5 and soreness 3 / 3 are one signal each. Refs: Saw, Main & Gastin 2016, Br J Sports Med
+50:281 (systematic review, 56 studies). Reviewed 2026-11-19.
+
+### `readiness-combination` — heuristic
+Sick in the check-in → red (see `illness-return`). No signal → green; one or more → amber; two or more with at
+least one of HRV or resting HR → red. Subjective and sleep signals alone never make it red. Nothing to judge
+(no baseline, no sleep, no check-in) → unknown. Phase-aware baselines for naturally cycling users (ADR-0009)
+are not applied yet. All thresholds configurable. Reviewed 2026-11-19.

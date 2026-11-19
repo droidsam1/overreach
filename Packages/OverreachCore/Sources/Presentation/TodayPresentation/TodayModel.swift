@@ -1,7 +1,14 @@
+import Analytics
 import Domain
 import Foundation
 import Observation
 import PresentationKit
+
+/// One reason behind the readiness light, with the strength of its evidence.
+public struct ReadinessLine: Hashable, Sendable {
+    public let text: String
+    public let evidence: String
+}
 
 /// State and actions of the Today screen (ADR-0003, ADR-0014): dependencies come in as `Domain` protocols, the
 /// view only reads state and calls actions.
@@ -21,6 +28,8 @@ public final class TodayModel {
     public private(set) var accessError: String?
 
     private let sources: [any MetricsSource]
+    private let checkIns: (any CheckInRepository)?
+    private let readinessSettings: ReadinessRules.Settings
     private let calendar: Calendar
     private let format: Format
 
@@ -28,6 +37,25 @@ public final class TodayModel {
 
     public var readinessLevel: ReadinessLevel { readiness.level }
     public var readinessTitle: String { readiness.level.displayName }
+
+    /// What the light means for today's training.
+    public var readinessAdvice: String {
+        switch readiness.level {
+        case .green: L10n.text("Train as planned.")
+        case .amber: L10n.text("Keep it easy: an easy run (zone 1–2) or light strength.")
+        case .red: L10n.text("Rest or go for a walk today.")
+        case .unknown: L10n.text("Not enough data yet to judge today.")
+        }
+    }
+
+    /// Why the light has its colour, each reason with its evidence level.
+    public var readinessLines: [ReadinessLine] {
+        readiness.reasons.map { reason in
+            ReadinessLine(
+                text: text(for: reason), evidence: ReadinessRules.evidence(for: reason).level.displayName
+            )
+        }
+    }
 
     public var hrvMs: Double? { metrics?.hrvNightlyAverageMs }
     public var restingHeartRate: Double? { metrics?.restingHeartRate }
@@ -79,8 +107,15 @@ public final class TodayModel {
 
     /// - Parameter sources: metric sources in priority order. When two sources report the same value,
     ///   the first one wins (e.g. `[garmin, appleHealth]`).
-    public init(sources: [any MetricsSource], calendar: Calendar = .current, format: Format = Format()) {
+    /// - Parameter checkIns: today's check-in adds how the user feels (and "sick") to the readiness light.
+    public init(
+        sources: [any MetricsSource], checkIns: (any CheckInRepository)? = nil,
+        readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
+        format: Format = Format()
+    ) {
         self.sources = sources
+        self.checkIns = checkIns
+        self.readinessSettings = readinessSettings
         self.calendar = calendar
         self.format = format
     }
@@ -90,7 +125,9 @@ public final class TodayModel {
         defer { isLoading = false }
 
         let today = CalendarDay(now, calendar: calendar)
-        let range = today.adding(days: -6, calendar: calendar)...today
+        // The readiness baselines need weeks of history; the screen shows the last 7 days.
+        let range = today.adding(days: -readinessSettings.baselineDays, calendar: calendar)...today
+        let weekStart = today.adding(days: -6, calendar: calendar)
         var byDay: [CalendarDay: DailyMetrics] = [:]
         var failures: [DataSourceKind] = []
         var reasons: [DataSourceKind: String] = [:]
@@ -107,11 +144,15 @@ public final class TodayModel {
             }
         }
 
-        week = byDay.values.filter { !$0.sources.isEmpty }.sorted { $0.day < $1.day }
+        let history = byDay.values.filter { !$0.sources.isEmpty }.sorted { $0.day < $1.day }
+        week = history.filter { $0.day >= weekStart }
         metrics = byDay[today].flatMap { $0.sources.isEmpty ? nil : $0 }
         failedSources = failures
         failureReasons = reasons
-        // TODO(phase 2): compute readiness with the Analytics rules engine (evidence review first, ADR-0012).
+        let checkIn = try? await checkIns?.checkIn(for: today)
+        readiness = ReadinessRules.readiness(
+            today: today, history: history, checkIn: checkIn, settings: readinessSettings, calendar: calendar
+        )
     }
 
     /// Asks every source for access (the Apple Health permission sheet), then reloads.
@@ -127,6 +168,25 @@ public final class TodayModel {
             }
         }
         await load(now: now)
+    }
+
+    private func text(for reason: ReadinessReason) -> String {
+        switch reason {
+        case .markedSick:
+            L10n.text("Marked as sick in today's check-in. Rest until the symptoms ease.")
+        case .hrvBelowBaseline(let nights):
+            L10n.format("HRV below your usual range ({1} of the last 7 nights low).", String(nights))
+        case .restingHeartRateElevated(let bpm):
+            L10n.format("Resting HR {1} bpm above your usual.", format.number(bpm, maxFractionDigits: 0))
+        case .shortSleep(let hours):
+            L10n.format("Short sleep: {1} h.", format.number(hours, maxFractionDigits: 1))
+        case .lowEnergy(let score):
+            L10n.format("Low energy in today's check-in ({1}/5).", String(score))
+        case .highSoreness(let score):
+            L10n.format("Sore muscles in today's check-in ({1}/3).", String(score))
+        case .missingData:
+            L10n.text("It needs about two weeks of HRV or resting HR from Apple Health, last night's sleep or a check-in.")
+        }
     }
 
     private func average(_ value: (DailyMetrics) -> Double?) -> Double? {

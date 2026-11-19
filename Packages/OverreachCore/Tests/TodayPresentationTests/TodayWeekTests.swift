@@ -19,6 +19,13 @@ private actor WeekSource: MetricsSource {
     func runs(from start: Date, to end: Date) async throws -> [RunActivity] { [] }
 }
 
+private struct OneCheckIn: CheckInRepository {
+    let stored: CheckIn
+    func checkIn(for day: CalendarDay) async throws -> CheckIn? { day == stored.day ? stored : nil }
+    func checkIns(in range: ClosedRange<CalendarDay>) async throws -> [CheckIn] { [] }
+    func save(_ checkIn: CheckIn) async throws {}
+}
+
 @MainActor
 @Suite("Today with a week of data")
 struct TodayWeekTests {
@@ -62,5 +69,43 @@ struct TodayWeekTests {
 
         await model.connectHealth(now: now)
         #expect(await source.accessRequests == 1)
+    }
+
+    @Test func todaysCheckInFeedsTheReadinessLight() async {
+        let todayKey = CalendarDay(now, calendar: calendar)
+        let checkIns = OneCheckIn(stored: CheckIn(day: todayKey, isSick: true))
+        let model = TodayModel(sources: [WeekSource(days: [])], checkIns: checkIns, calendar: calendar)
+
+        await model.load(now: now)
+
+        #expect(model.readinessLevel == .red)
+        #expect(model.readinessAdvice == "Rest or go for a walk today.")
+        #expect(
+            model.readinessLines.map(\.text) == ["Marked as sick in today's check-in. Rest until the symptoms ease."]
+        )
+        #expect(model.readinessLines.first?.evidence == EvidenceLevel.limited.displayName)
+    }
+
+    @Test func shortSleepExplainsTheAmberLight() async {
+        let model = TodayModel(
+            sources: [WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)])], calendar: calendar,
+            format: Format(locale: Locale(identifier: "en_US"))
+        )
+
+        await model.load(now: now)
+
+        #expect(model.readinessLevel == .amber)
+        #expect(model.readinessLines.map(\.text) == ["Short sleep: 5 h."])
+        #expect(model.readinessLines.map(\.evidence) == [EvidenceLevel.moderate.displayName])
+    }
+
+    @Test func withoutDataTheLightSaysWhatItNeeds() async {
+        let model = TodayModel(sources: [WeekSource(days: [])], calendar: calendar)
+
+        await model.load(now: now)
+
+        #expect(model.readinessLevel == .unknown)
+        #expect(model.readinessAdvice == "Not enough data yet to judge today.")
+        #expect(model.readinessLines.count == 1)
     }
 }

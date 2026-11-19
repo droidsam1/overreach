@@ -157,6 +157,10 @@ public enum MarkdownReportRenderer {
             "Resting HR \(format(bpm, decimals: 0)) bpm above baseline"
         case .shortSleep(let hours):
             "Short sleep: \(format(hours, decimals: 1)) h"
+        case .lowEnergy(let score):
+            "Low energy in today's check-in (\(score)/5)"
+        case .highSoreness(let score):
+            "Sore muscles in today's check-in (\(score)/3)"
         case .missingData:
             "Some data is missing"
         }

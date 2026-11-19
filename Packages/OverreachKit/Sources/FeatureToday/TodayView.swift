@@ -17,7 +17,16 @@ public struct TodayView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.large) {
-                    StatusBadge(title: model.readinessTitle, tone: model.readinessLevel.tone)
+                    VStack(alignment: .leading, spacing: Spacing.small) {
+                        StatusBadge(title: model.readinessTitle, tone: model.readinessLevel.tone)
+                        Text(model.readinessAdvice).font(.headline)
+                        ForEach(model.readinessLines, id: \.self) { line in
+                            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                                Text(line.text).font(.subheadline)
+                                Text(line.evidence).font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                    }
 
                     LazyVGrid(columns: columns, spacing: Spacing.medium) {
                         MetricTile(title: "Sleep", value: model.sleepHours, unit: "h", fractionDigits: 1,

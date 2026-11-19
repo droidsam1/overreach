@@ -3350,6 +3350,23 @@
         }
       }
     },
+    "HRV below your usual range ({1} of the last 7 nights low).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC por debajo de tu rango habitual ({1} de las últimas 7 noches bajas)."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC por debaixo do teu rango habitual ({1} das últimas 7 noites baixas)."
+          }
+        }
+      }
+    },
     "Hamstrings": {
       "extractionState": "manual",
       "localizations": {
@@ -3877,6 +3894,23 @@
         }
       }
     },
+    "It needs about two weeks of HRV or resting HR from Apple Health, last night's sleep or a check-in.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Necesita unas dos semanas de VFC o FC en reposo de Apple Salud, el sueño de anoche o un registro diario."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Precisa unhas dúas semanas de VFC ou FC en repouso de Apple Saúde, o sono da pasada noite ou un rexistro diario."
+          }
+        }
+      }
+    },
     "Items are merged by id: nothing is duplicated.": {
       "extractionState": "manual",
       "localizations": {
@@ -3890,6 +3924,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Os elementos combínanse por identificador: non se duplica nada."
+          }
+        }
+      }
+    },
+    "Keep it easy: an easy run (zone 1–2) or light strength.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy suave: carrera fácil (zona 1–2) o fuerza ligera."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe suave: carreira doada (zona 1–2) ou forza lixeira."
           }
         }
       }
@@ -4234,6 +4285,23 @@
         }
       }
     },
+    "Low energy in today's check-in ({1}/5).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poca energía en el registro de hoy ({1}/5)."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pouca enerxía no rexistro de hoxe ({1}/5)."
+          }
+        }
+      }
+    },
     "Machine": {
       "extractionState": "manual",
       "localizations": {
@@ -4315,6 +4383,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Manual"
+          }
+        }
+      }
+    },
+    "Marked as sick in today's check-in. Rest until the symptoms ease.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Has marcado que estás enfermo en el registro de hoy. Descansa hasta que mejoren los síntomas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marcaches que estás enfermo no rexistro de hoxe. Descansa ata que melloren os síntomas."
           }
         }
       }
@@ -4978,6 +5063,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ningunha"
+          }
+        }
+      }
+    },
+    "Not enough data yet to judge today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no hay datos suficientes para valorar hoy."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda non hai datos dabondo para valorar hoxe."
           }
         }
       }
@@ -5815,6 +5917,23 @@
         }
       }
     },
+    "Readiness light": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semáforo de recuperación"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semáforo de recuperación"
+          }
+        }
+      }
+    },
     "Records and next targets": {
       "extractionState": "manual",
       "localizations": {
@@ -6036,6 +6155,23 @@
         }
       }
     },
+    "Rest or go for a walk today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy descansa o sal a caminar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe descansa ou sae camiñar."
+          }
+        }
+      }
+    },
     "Rest over": {
       "extractionState": "manual",
       "localizations": {
@@ -6083,6 +6219,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "FC en repouso"
+          }
+        }
+      }
+    },
+    "Resting HR {1} bpm above your usual.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FC en reposo {1} lpm por encima de lo habitual."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FC en repouso {1} ppm por riba do habitual."
           }
         }
       }
@@ -7005,6 +7158,23 @@
         }
       }
     },
+    "Short sleep: {1} h.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poco sueño: {1} h."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pouco sono: {1} h."
+          }
+        }
+      }
+    },
     "Shoulders": {
       "extractionState": "manual",
       "localizations": {
@@ -7222,6 +7392,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Algunhas fontes non se puideron actualizar."
+          }
+        }
+      }
+    },
+    "Sore muscles in today's check-in ({1}/3).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agujetas en el registro de hoy ({1}/3)."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agulletas no rexistro de hoxe ({1}/3)."
           }
         }
       }
@@ -8195,6 +8382,23 @@
         }
       }
     },
+    "Today says whether to train hard, easy or rest, from your HRV, resting HR, sleep and check-in, with the reasons.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy te dice si entrenar fuerte, suave o descansar, según tu VFC, FC en reposo, sueño y registro diario, con los motivos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe dite se adestrar forte, suave ou descansar, segundo a túa VFC, FC en repouso, sono e rexistro diario, cos motivos."
+          }
+        }
+      }
+    },
     "Today: drop to {1} and aim for {2} reps. The last two times, some sets fell short of {3} with the previous weight.": {
       "extractionState": "manual",
       "localizations": {
@@ -8344,6 +8548,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Adestrar"
+          }
+        }
+      }
+    },
+    "Train as planned.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrena según lo previsto."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestra segundo o previsto."
           }
         }
       }
