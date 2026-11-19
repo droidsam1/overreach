@@ -47,7 +47,9 @@ public protocol MetricsSource: Sendable {
     /// Whether the source can be used right now (permissions granted, signed in, …).
     func isAvailable() async -> Bool
     /// Asks the user for access (e.g. the Apple Health permission sheet). Does nothing when not needed.
-    func requestAccess() async
+    /// Throws when the request itself cannot be made (e.g. the app was signed without the HealthKit entitlement),
+    /// not when the user declines.
+    func requestAccess() async throws
     func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics]
     func runs(from start: Date, to end: Date) async throws -> [RunActivity]
 }

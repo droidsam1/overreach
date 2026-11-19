@@ -7,9 +7,14 @@ private struct StubSource: MetricsSource {
     let kind: DataSourceKind
     var available = true
     var shouldFail = false
+    var accessFails = false
     var configure: @Sendable (inout DailyMetrics) -> Void = { _ in }
 
     func isAvailable() async -> Bool { available }
+
+    func requestAccess() async throws {
+        if accessFails { throw MissingEntitlement() }
+    }
 
     func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics] {
         if shouldFail { throw URLError(.notConnectedToInternet) }
@@ -19,6 +24,10 @@ private struct StubSource: MetricsSource {
     }
 
     func runs(from start: Date, to end: Date) async throws -> [RunActivity] { [] }
+}
+
+private struct MissingEntitlement: LocalizedError {
+    var errorDescription: String? { "Missing com.apple.developer.healthkit entitlement." }
 }
 
 @MainActor
@@ -46,6 +55,32 @@ struct TodayModelTests {
 
         #expect(model.metrics?.restingHeartRate == 55)
         #expect(model.failedSources == [.garmin])
+    }
+
+    @Test func aFailingSourceSaysWhy() async {
+        let model = TodayModel(sources: [StubSource(kind: .appleHealth, shouldFail: true)])
+
+        await model.load()
+
+        #expect(model.showsSourceWarning)
+        #expect(model.sourceWarningDetail == "Apple Health: \(URLError(.notConnectedToInternet).localizedDescription)")
+    }
+
+    @Test func aPermissionRequestThatCannotBeMadeIsShown() async {
+        let model = TodayModel(sources: [StubSource(kind: .appleHealth, accessFails: true)])
+
+        await model.connectHealth()
+
+        #expect(model.accessError?.contains("Missing com.apple.developer.healthkit entitlement.") == true)
+        #expect(model.accessError?.hasPrefix("Apple Health") == true)
+    }
+
+    @Test func aSuccessfulPermissionRequestShowsNoError() async {
+        let model = TodayModel(sources: [StubSource(kind: .appleHealth)])
+
+        await model.connectHealth()
+
+        #expect(model.accessError == nil)
     }
 
     @Test func noAvailableSourcesMeansNoMetrics() async {

@@ -35,10 +35,11 @@ public struct HealthKitMetricsSource: MetricsSource, ActivitySource {
         HKHealthStore.isHealthDataAvailable()
     }
 
-    /// Shows the Health permission sheet the first time; later calls return at once.
-    public func requestAccess() async {
+    /// Shows the Health permission sheet the first time; later calls return at once. Throws when HealthKit refuses
+    /// to ask, typically because the signature lacks the HealthKit entitlement (some sideloading setups drop it).
+    public func requestAccess() async throws {
         guard HKHealthStore.isHealthDataAvailable() else { return }
-        try? await store.requestAuthorization(toShare: [HKObjectType.workoutType()], read: Self.readTypes)
+        try await store.requestAuthorization(toShare: [HKObjectType.workoutType()], read: Self.readTypes)
     }
 
     public func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics] {
