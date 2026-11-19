@@ -2959,6 +2959,23 @@
         }
       }
     },
+    "Ignored: {1}. The app does not use this field.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ignorado: {1}. La app no usa este campo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ignorado: {1}. A app non usa este campo."
+          }
+        }
+      }
+    },
     "Import": {
       "extractionState": "manual",
       "localizations": {
@@ -6814,6 +6831,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Paga a pena revisar"
+          }
+        }
+      }
+    },
+    "Worth checking": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conviene revisar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Convén revisar"
+          }
+        }
+      }
+    },
+    "You can import it as it is, or send the correction and bring the new answer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Puedes importarlo tal cual o enviar la corrección y traer la nueva respuesta."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Podes importalo tal cal ou enviar a corrección e traer a nova resposta."
           }
         }
       }

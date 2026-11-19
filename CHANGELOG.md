@@ -10,11 +10,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - The progression engine ignored the kind of set: warm-up sets in the history now no longer count for targets,
   stalls or the working weight.
 
+### Changed
+- Easier weight and reps fields while logging. The whole field, unit included, is the tap target. Tapping selects
+  the value so typing replaces it. A "Done" button above the keyboard and scrolling hide the keyboard. Values save
+  as you type, so marking a set right after typing keeps them.
+
 ### Added
 - Warm-up sets (evidence: `warm-up-specific`, `warm-up-ramp`). Main lifts and the first exercise for each muscle get
   a ramp to close to today's load with few reps; other exercises get one on demand from their menu. Warm-ups show
   as W, do not start the rest timer and are saved apart. An optional general warm-up is suggested until the
   first set.
+- The reply format for AI answers includes a JSON Schema of `overreach.plan` v1, also published in
+  `docs/schemas/`. Corrections for the AI now locate broken JSON (line, column, the line itself). Fields the app
+  does not use are listed as warnings instead of being dropped silently.
 - Bring an AI's answer back (#34, ADR-0017): copy the reply format into ChatGPT or Claude, then paste its answer or
   open it as a file. The app previews the routines and exercise settings it would create or update. A problem such
   as an unknown exercise blocks the import and gives a correction to paste back into the chat. Importing the same

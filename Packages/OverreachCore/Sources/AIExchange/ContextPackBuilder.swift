@@ -85,7 +85,7 @@ public enum ContextPackBuilder {
             dailyMetrics: input.dailyMetrics.sorted { $0.day < $1.day }.map(metrics),
             runs: input.runs.sorted { $0.startedAt < $1.startedAt }.map { run(from: $0, calendar: calendar) },
             imports: [.init(format: PlanMessage.formatName, version: PlanMessage.currentVersion,
-                            reference: PlanMessage.referenceURL)]
+                            reference: PlanMessage.referenceURL, schema: PlanMessage.schemaURL)]
         )
     }
 

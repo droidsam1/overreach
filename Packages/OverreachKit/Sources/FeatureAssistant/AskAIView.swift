@@ -170,10 +170,13 @@ struct PlanImportPreviewView: View {
         NavigationStack {
             List {
                 if let preview = model.preview {
-                    if !preview.issues.isEmpty {
+                    if !preview.issues.isEmpty || !preview.warnings.isEmpty {
                         Section {
                             ForEach(preview.issues, id: \.self) { issue in
                                 Label(issue, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                            }
+                            ForEach(preview.warnings, id: \.self) { warning in
+                                Label(warning, systemImage: "info.circle").foregroundStyle(.orange)
                             }
                             if let correction = preview.correction {
                                 Button {
@@ -188,9 +191,17 @@ struct PlanImportPreviewView: View {
                                 }
                             }
                         } header: {
-                            Text("Needs fixing")
+                            if preview.canImport {
+                                Text("Worth checking")
+                            } else {
+                                Text("Needs fixing")
+                            }
                         } footer: {
-                            Text("Paste the correction into the chat and bring the new answer. Nothing was saved.")
+                            if preview.canImport {
+                                Text("You can import it as it is, or send the correction and bring the new answer.")
+                            } else {
+                                Text("Paste the correction into the chat and bring the new answer. Nothing was saved.")
+                            }
                         }
                     }
                     if !preview.routines.isEmpty {
