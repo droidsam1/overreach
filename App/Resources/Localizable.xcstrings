@@ -664,6 +664,23 @@
         }
       }
     },
+    "Appearance": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apariencia"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aparencia"
+          }
+        }
+      }
+    },
     "Ask AI": {
       "extractionState": "manual",
       "localizations": {
@@ -1816,6 +1833,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "D"
+          }
+        }
+      }
+    },
+    "Dark": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oscuro"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escuro"
           }
         }
       }
@@ -3329,6 +3363,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Biblioteca"
+          }
+        }
+      }
+    },
+    "Light": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claro"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claro"
           }
         }
       }
@@ -4927,6 +4978,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rutinas"
+          }
+        }
+      }
+    },
+    "Same as the iPhone": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Igual que el iPhone"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Igual que o iPhone"
           }
         }
       }

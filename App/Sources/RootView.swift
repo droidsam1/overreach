@@ -1,4 +1,5 @@
 import AssistantPresentation
+import DesignSystem
 import ExercisesPresentation
 import FeatureAssistant
 import FeatureExercises
@@ -34,6 +35,7 @@ struct RootView: View {
     @State private var askAIModel: AskAIModel
     @State private var planImportModel: PlanImportModel
     @State private var selectedTab = AppTab.today
+    @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.system
     @Environment(\.scenePhase) private var scenePhase
 
     init(container: AppContainer) {
@@ -87,6 +89,7 @@ struct RootView: View {
             }
             .badge(exercisesModel.needsMappingCount)
         }
+        .preferredColorScheme(appearance.colorScheme)
         .task {
             await backupModel.checkRestoreOffer()
             await exercisesModel.load()

@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- Settings → Appearance: light, dark or the same as the iPhone (the default).
+
 ### Fixed
 - The progression engine ignored the kind of set: warm-up sets in the history now no longer count for targets,
   stalls or the working weight.
