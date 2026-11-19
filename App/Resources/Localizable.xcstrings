@@ -1106,6 +1106,23 @@
         }
       }
     },
+    "Calendar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario"
+          }
+        }
+      }
+    },
     "Calves": {
       "extractionState": "manual",
       "localizations": {
@@ -1701,6 +1718,23 @@
         }
       }
     },
+    "Could not load your sessions for this month.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se han podido cargar tus sesiones de este mes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puideron cargar as túas sesións deste mes."
+          }
+        }
+      }
+    },
     "Could not merge the exercises. Nothing was lost; try again.": {
       "extractionState": "manual",
       "localizations": {
@@ -1782,6 +1816,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non se puideron preparar os teus datos. Téntao de novo."
+          }
+        }
+      }
+    },
+    "Could not read Apple Health. Your sessions are still shown.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido leer Apple Salud. Tus sesiones se siguen mostrando."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido ler Apple Saúde. As túas sesións seguen á vista."
           }
         }
       }
@@ -3316,6 +3367,23 @@
         }
       }
     },
+    "History calendar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario en el historial"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario no historial"
+          }
+        }
+      }
+    },
     "Holding": {
       "extractionState": "manual",
       "localizations": {
@@ -3758,6 +3826,23 @@
         }
       }
     },
+    "Km run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Km corridos"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Km corridos"
+          }
+        }
+      }
+    },
     "Last 12 weeks": {
       "extractionState": "manual",
       "localizations": {
@@ -3941,6 +4026,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carga lineal"
+          }
+        }
+      }
+    },
+    "List": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lista"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lista"
           }
         }
       }
@@ -4523,6 +4625,23 @@
         }
       }
     },
+    "Next month": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mes siguiente"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mes seguinte"
+          }
+        }
+      }
+    },
     "Next set: {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -4825,6 +4944,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Notas"
+          }
+        }
+      }
+    },
+    "Nothing recorded on this day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay nada registrado este día."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai nada rexistrado este día."
           }
         }
       }
@@ -5148,6 +5284,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Prefiro non dicilo"
+          }
+        }
+      }
+    },
+    "Previous month": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mes anterior"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mes anterior"
           }
         }
       }
@@ -6053,6 +6206,74 @@
         }
       }
     },
+    "Run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira"
+          }
+        }
+      }
+    },
+    "Runs": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreras"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreiras"
+          }
+        }
+      }
+    },
+    "Runs and steps appear here once Apple Health is connected (from Today).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las carreras y los pasos aparecen aquí cuando conectas Apple Salud (desde Hoy)."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As carreiras e os pasos aparecen aquí cando conectas Apple Saúde (desde Hoxe)."
+          }
+        }
+      }
+    },
+    "Runs: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreras: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreiras: {1}"
+          }
+        }
+      }
+    },
     "Safer data": {
       "extractionState": "manual",
       "localizations": {
@@ -6631,6 +6852,23 @@
         }
       }
     },
+    "Show as": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar como"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amosar como"
+          }
+        }
+      }
+    },
     "Similar exercises": {
       "extractionState": "manual",
       "localizations": {
@@ -6988,6 +7226,40 @@
         }
       }
     },
+    "Steps per day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasos al día"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasos ao día"
+          }
+        }
+      }
+    },
+    "Steps vs your average": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasos frente a tu media"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasos fronte á túa media"
+          }
+        }
+      }
+    },
     "Strength": {
       "extractionState": "manual",
       "localizations": {
@@ -7018,6 +7290,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Forza e músculo"
+          }
+        }
+      }
+    },
+    "Strength days, runs and steps month by month, with each day's details.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Días de fuerza, carreras y pasos mes a mes, con el detalle de cada día."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Días de forza, carreiras e pasos mes a mes, co detalle de cada día."
+          }
+        }
+      }
+    },
+    "Strength: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuerza: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forza: {1}"
           }
         }
       }
@@ -9007,6 +9313,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} series · {2}"
+          }
+        }
+      }
+    },
+    "{1} steps": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} pasos"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} pasos"
           }
         }
       }

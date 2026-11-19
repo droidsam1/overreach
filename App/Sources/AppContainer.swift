@@ -37,6 +37,8 @@ final class AppContainer {
     let onboardingStatus: any OnboardingStatusStore
     /// In priority order: when two sources report the same value, the first wins.
     let metricsSources: [any MetricsSource]
+    /// Apple Health: steps for the History calendar, and runs (Garmin Connect writes its runs there too).
+    let healthSource: (any MetricsSource & ActivitySource)?
 
     init(
         workouts: any WorkoutRepository,
@@ -50,7 +52,8 @@ final class AppContainer {
         restAlerts: any RestAlertScheduler = LocalRestAlerts(),
         health: any HealthWorkoutWriter = HealthKitWorkoutWriter(),
         onboardingStatus: any OnboardingStatusStore = DefaultsOnboardingStatus(),
-        metricsSources: [any MetricsSource]
+        metricsSources: [any MetricsSource],
+        healthSource: (any MetricsSource & ActivitySource)? = nil
     ) {
         self.workouts = workouts
         self.exercises = exercises
@@ -67,25 +70,27 @@ final class AppContainer {
             routines: routines, destination: backupDestination, appVersion: Self.appVersion
         )
         self.metricsSources = metricsSources
+        self.healthSource = healthSource
     }
 
     /// Production wiring: SwiftData on disk (ADR-0004). If the store cannot be opened, the app still runs on an
     /// in-memory store instead of crashing, and nothing is saved.
     static func live() -> AppContainer {
-        let sources: [any MetricsSource] = [GarminMetricsSource(), HealthKitMetricsSource()]
+        let healthKit = HealthKitMetricsSource()
+        let sources: [any MetricsSource] = [GarminMetricsSource(), healthKit]
         do {
             let store = SwiftDataStore.make(container: try PersistenceContainer.make())
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store,
-                metricsSources: sources
+                metricsSources: sources, healthSource: healthKit
             )
         } catch {
             let store = InMemoryStore(exercises: ExerciseCatalog.builtIn)
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store,
-                metricsSources: sources
+                metricsSources: sources, healthSource: healthKit
             )
         }
     }
@@ -125,7 +130,7 @@ final class AppContainer {
     func makeHistoryModel() -> HistoryModel {
         HistoryModel(
             workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
-            profiles: profiles, progression: progression
+            profiles: profiles, progression: progression, activity: healthSource, runs: healthSource
         )
     }
 

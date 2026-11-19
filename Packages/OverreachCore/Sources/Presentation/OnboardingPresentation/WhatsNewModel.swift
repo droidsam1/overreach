@@ -20,6 +20,10 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "calendar", title: L10n.text("History calendar"),
+                    detail: L10n.text("Strength days, runs and steps month by month, with each day's details.")
+                ),
+                ReleaseHighlight(
                     symbol: "list.bullet.clipboard.fill", title: L10n.text("Session summary"),
                     detail: L10n.text("After each session: plan adherence, records and next targets. Reopen it from History.")
                 ),
