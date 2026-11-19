@@ -1,3 +1,4 @@
+import Analytics
 import Domain
 import Foundation
 import Observation
@@ -14,28 +15,54 @@ public struct RoutineRow: Identifiable, Hashable, Sendable {
     public var name: String { routine.name }
 }
 
-/// The saved routines (issue #15). Starting one is done by `WorkoutModel.start(_:)`.
+/// The session a training plan has next, as shown at the top of Train.
+public struct UpNextRow: Hashable, Sendable {
+    public let routine: Routine
+    /// "Upper A"
+    public let title: String
+    /// "Strength · week 2 of 6"
+    public let detail: String
+    /// "Bench Press, Row"
+    public let exerciseList: String
+}
+
+/// The saved routines (issue #15), and the next session of the training plan (issue #34). Starting one is done by
+/// `WorkoutModel.start(_:)`.
 @MainActor
 @Observable
 public final class RoutinesModel {
     public private(set) var routines: [Routine] = []
     public private(set) var catalog: [Exercise] = []
     public private(set) var errorMessage: String?
+    /// The plan's next session; `nil` without a plan running today.
+    public private(set) var upNext: UpNextRow?
 
     private let repository: any RoutineRepository
     private let exerciseRepository: any ExerciseRepository
     private let backup: (any BackupService)?
+    private let profiles: (any ProfileRepository)?
+    private let workouts: (any WorkoutRepository)?
+    private let calendar: Calendar
     private let clock: @Sendable () -> Date
 
+    /// - Parameters:
+    ///   - profiles: where the plan's blocks are (`AthleteProfile.declaredBlocks`).
+    ///   - workouts: past sessions, to know which routine of the block comes next.
     public init(
         routines: any RoutineRepository,
         exercises: any ExerciseRepository,
         backup: (any BackupService)? = nil,
+        profiles: (any ProfileRepository)? = nil,
+        workouts: (any WorkoutRepository)? = nil,
+        calendar: Calendar = .current,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         repository = routines
         exerciseRepository = exercises
         self.backup = backup
+        self.profiles = profiles
+        self.workouts = workouts
+        self.calendar = calendar
         self.clock = clock
     }
 
@@ -76,6 +103,34 @@ public final class RoutinesModel {
             errorMessage = nil
         } catch {
             errorMessage = L10n.text("Could not load your routines.")
+        }
+        await loadUpNext()
+    }
+
+    /// The plan's next session. Best effort: without a profile or sessions there is simply nothing up next.
+    private func loadUpNext() async {
+        guard let profile = try? await profiles?.profile() else {
+            upNext = nil
+            return
+        }
+        let now = clock()
+        let today = CalendarDay(now, calendar: calendar)
+        let earliest = profile.declaredBlocks.map(\.start).min() ?? today
+        let sessions = (try? await workouts?.sessions(from: earliest.startDate(in: calendar), to: now)) ?? []
+        let planned = PlanSchedule.next(
+            blocks: profile.declaredBlocks, routines: routines, sessions: sessions, today: today, calendar: calendar
+        )
+        upNext = planned.map { planned in
+            let block = planned.block.name ?? planned.block.focus.displayName
+            let detail = planned.totalWeeks.map { L10n.format("{1} · week {2} of {3}", block, planned.week, $0) }
+                ?? L10n.format("{1} · week {2}", block, planned.week)
+            let names = exerciseNames
+            return UpNextRow(
+                routine: planned.routine,
+                title: planned.routine.name,
+                detail: detail,
+                exerciseList: planned.routine.exerciseIDs.compactMap { names[$0] }.joined(separator: ", ")
+            )
         }
     }
 
@@ -118,6 +173,8 @@ public final class RoutineEditorModel: Identifiable {
     /// `nil` = automatic.
     public var focus: TrainingFocus?
     public private(set) var exerciseIDs: [UUID]
+    /// Kept as they are: the editor does not change sets and reps (they come from a plan).
+    private let prescriptions: [RoutinePrescription]
 
     public let focusOptions: [Option<TrainingFocus>] = Option.trainingFocuses
     public let isNew: Bool
@@ -130,6 +187,7 @@ public final class RoutineEditorModel: Identifiable {
         id = routine?.id ?? UUID()
         name = routine?.name ?? ""
         focus = routine?.focus
+        prescriptions = routine?.prescriptions ?? []
         // Exercises that no longer exist can't be shown or trained, so they leave the routine on save.
         let known = Set(list.catalog.map(\.id))
         exerciseIDs = routine?.exerciseIDs.filter { known.contains($0) } ?? []
@@ -183,6 +241,8 @@ public final class RoutineEditorModel: Identifiable {
     /// Saves the routine. Returns true when the screen can close.
     public func save() async -> Bool {
         guard canSave else { return false }
-        return await list.save(Routine(id: id, name: trimmedName, focus: focus, exerciseIDs: exerciseIDs))
+        return await list.save(Routine(
+            id: id, name: trimmedName, focus: focus, exerciseIDs: exerciseIDs, prescriptions: prescriptions
+        ))
     }
 }

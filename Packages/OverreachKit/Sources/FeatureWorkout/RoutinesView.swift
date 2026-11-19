@@ -19,6 +19,38 @@ struct StartSessionView: View {
                 Label(message, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red)
             }
+            if let next = routines.upNext {
+                Section {
+                    Button {
+                        onStart(next.routine)
+                    } label: {
+                        HStack(spacing: Spacing.medium) {
+                            Image(systemName: "calendar.badge.clock")
+                                .font(.title2)
+                                .foregroundStyle(Color.accentColor)
+                                .accessibilityHidden(true)
+                            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                                Text(next.title).font(.headline).foregroundStyle(.primary)
+                                Text(next.detail).font(.subheadline).foregroundStyle(.secondary)
+                                Text(next.exerciseList)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(2)
+                            }
+                            Spacer()
+                            Image(systemName: "play.circle.fill")
+                                .font(.title)
+                                .foregroundStyle(Color.accentColor)
+                                .accessibilityHidden(true)
+                        }
+                        .contentShape(.rect)
+                    }
+                    .buttonStyle(.borderless)
+                    .accessibilityHint("Starts this session")
+                } header: {
+                    Text("Up next in your plan")
+                }
+            }
             Section {
                 Button("Start empty session", systemImage: "plus.circle.fill", action: onStartEmpty)
             } footer: {

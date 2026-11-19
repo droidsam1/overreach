@@ -22,10 +22,10 @@ Shared from **Plan → Ask AI**. It is raw data with no instructions. Its top-le
 | `format`, `version`, `about` | `overreach.context`, `1`, and a sentence saying what the data is |
 | `generatedAt`, `app`, `units` | When it was made, by which app version, and in which units |
 | `period` | `from` / `to` days the sessions, check-ins and metrics cover (4 weeks, 12 weeks or 6 months) |
-| `athlete` | `sex`, `birthYear`, `bodyMassKg`, `maxHeartRate`, `restingHeartRate`, `cycleTracking`; `goal` (`kind`: `strength`, `hypertrophy`, `general` or `hybrid`; `targetDate`; `priorityLifts` by name); `declaredBlocks` (`focus`, `start`, `plannedWeeks`) |
+| `athlete` | `sex`, `birthYear`, `bodyMassKg`, `maxHeartRate`, `restingHeartRate`, `cycleTracking`; `goal` (`kind`: `strength`, `hypertrophy`, `general` or `hybrid`; `targetDate`; `priorityLifts` by name); `declaredBlocks` (`focus`, `start`, `plannedWeeks`, `name`, `routines` by name) |
 | `catalog` | Names of every exercise in the app. Proposals should use these names. |
 | `exercises` | Exercises used in the period, in routines or with their own settings: `name`, `equipment`, `primaryMuscles`, `secondaryMuscles`, `isCustom`, and `progression` when the user changed the defaults |
-| `routines` | `id`, `name`, `focus`, `exercises` (names, in order) |
+| `routines` | `id`, `name`, `focus`, `exercises` (names, in order), `prescriptions` (`exercise`, `scheme`) when the routine has its own sets and reps |
 | `sessions` | Oldest first: `id`, `date`, `startedAt`, `durationSeconds`, `name`, `focus`, `source`, `sessionRPE`, `notes`, and `exercises` with `exercise` (name), `notes`, `sets` and `countsForProgression` (`false` only for an exercise left unfinished, which the app ignores for progression) |
 | `exerciseTrends` | Per exercise in the period: `exposures`, `status` (`progressing`, `holding`, `stalled`, `notEnoughData`, judged over the last year), `lastWorkingWeightKg`, and `estimatedOneRepMaxKg` per session (`date`, `kg`) |
 | `checkIns` | `date`, `isSick`, `energy` (1–5), `soreness` (1–5), `note` |
@@ -51,7 +51,7 @@ The pack also lists `imports`: the formats the app can read back, with this refe
 ## `overreach.plan` v1 — AI → app
 
 The user copies the reply format from **Plan → Ask AI → Copy the reply format** into the chat when they want
-routines or exercise settings. The AI answers with one JSON code block. The user pastes the whole answer, or opens
+routines, exercise settings or a multi-week plan. The AI answers with one JSON code block. The user pastes the whole answer, or opens
 it as a file. The app shows what would change and saves nothing until the user confirms.
 
 ```json
@@ -60,12 +60,20 @@ it as a file. The app shows what would change and saves nothing until the user c
   "version": 1,
   "routines": [
     { "id": "upper-a", "name": "Upper A", "focus": "strength",
-      "exercises": ["Bench Press (Barbell)", "Bent Over Row (Barbell)"] }
+      "exercises": ["Bench Press (Barbell)", "Bent Over Row (Barbell)"],
+      "prescriptions": [
+        { "exercise": "Bench Press (Barbell)",
+          "scheme": { "type": "rpeBased", "sets": 5, "reps": 3, "targetRPE": 8 } }
+      ] }
   ],
   "exerciseSettings": [
     { "exercise": "Bench Press (Barbell)", "focus": "strength",
       "scheme": { "type": "rpeBased", "sets": 4, "reps": 4, "targetRPE": 8 },
       "incrementKg": 2.5, "isMainLift": true }
+  ],
+  "startDate": "2027-01-04",
+  "blocks": [
+    { "name": "Strength", "focus": "strength", "weeks": 6, "routines": ["upper-a"] }
   ]
 }
 ```
@@ -78,6 +86,9 @@ it as a file. The app shows what would change and saves nothing until the user c
 | `name` | Required. |
 | `focus` | Optional: `strength`, `hypertrophy`, `mixed` or `endurance`. |
 | `exercises` | Required. Names in order. They are matched to the catalog by name or alias, ignoring case, accents and extra spaces. |
+| `prescriptions` | Optional. `exercise` (one of the routine's exercises) and `scheme` (as in exercise settings). In sessions started from this routine, that scheme replaces the exercise's own. This is how one lift can be 5 × 3 in a strength block and 3 × 8–12 in a hypertrophy block. The app still sets the load from recent sessions. |
+
+An `id` taken from the context pack (`routines[].id`) updates that routine.
 
 ### Exercise settings
 
@@ -88,6 +99,24 @@ Settings are keyed by `exercise`, and fields left out keep their current value.
 - **`scheme`:** replaces the scheme. `sets` must be 1–10, reps 1–50 and `targetRPE` 5–10 (8 if left out).
 - **`incrementKg`:** 0–20.
 - **`isMainLift`:** `true` or `false`.
+
+### Blocks
+
+`blocks` lists a multi-week plan in order. Each block starts the day after the previous one ends. The first starts
+on `startDate` (`YYYY-MM-DD`), or on the day of the import.
+
+| Field | Content |
+|---|---|
+| `name` | Optional, e.g. "Strength". |
+| `focus` | Required: `strength`, `hypertrophy`, `mixed` or `endurance`. |
+| `weeks` | Required, 1–52. |
+| `routines` | Optional. Routine `id`s or names, from this plan or already in the app, in rotation order. |
+
+- **Saved as declared blocks** in the profile (ADR-0013). Blocks that start before the plan are kept, and declared
+  blocks from the plan's start on are replaced. Focus checks treat a matching streak as intentional.
+- **Up next.** Train shows the running block's next session, with its week ("Strength · week 2 of 6"). Routines
+  rotate: the next one follows the routine of the last session started from the block, so a missed day moves the
+  plan back rather than skipping a session. Sessions not started from one of its routines do not move it.
 
 ### JSON Schema
 
@@ -113,4 +142,5 @@ The format is also a JSON Schema (draft 2020-12): [`schemas/overreach.plan.v1.sc
 - **Versions.** A newer version is refused with a request to update the app. Every version documented here stays
   readable.
 
-Still to come in #34: training blocks with weekly sessions and per-session prescriptions.
+Still to come in #34: comparing planned with completed work, and proposing adjustments after missed sessions or
+poor recovery.

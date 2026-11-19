@@ -102,7 +102,9 @@ final class AppContainer {
     // MARK: Feature factories
 
     func makePlanImportModel() -> PlanImportModel {
-        PlanImportModel(exercises: exercises, routines: routines, progression: progression, backup: backup)
+        PlanImportModel(
+            exercises: exercises, routines: routines, progression: progression, profiles: profiles, backup: backup
+        )
     }
 
     func makeAskAIModel() -> AskAIModel {
@@ -124,7 +126,9 @@ final class AppContainer {
     }
 
     func makeRoutinesModel() -> RoutinesModel {
-        RoutinesModel(routines: routines, exercises: exercises, backup: backup)
+        RoutinesModel(
+            routines: routines, exercises: exercises, backup: backup, profiles: profiles, workouts: workouts
+        )
     }
 
     func makeHistoryModel() -> HistoryModel {

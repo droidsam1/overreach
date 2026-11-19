@@ -7,6 +7,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Train from a plan (#34, ADR-0019). An AI plan can now include training blocks (`blocks`, `startDate`) and
+  sets and reps for an exercise in one routine only (`routines[].prescriptions`), so a lift can be 5 × 3 in a
+  strength block and 3 × 8–12 in a hypertrophy block. Train shows "Up next in your plan", with the block and week,
+  and starts it in one tap. The engine still sets every load from recent sessions. Routines rotate, so a missed
+  day never skips a session. The context pack shows the plan, so the AI can revise it.
 - History → Calendar: a month calendar (Monday first) with strength days, runs and a steps ring per day that
   fills against the month's average. It has a legend, month totals (sessions, runs, km run, steps per day) and,
   for a tapped day, its sessions (opening their detail), runs (distance, duration, pace, heart rate) and steps.

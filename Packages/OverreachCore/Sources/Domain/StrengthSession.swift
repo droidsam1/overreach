@@ -93,6 +93,8 @@ public struct StrengthSession: Identifiable, Hashable, Codable, Sendable {
     public var source: DataSourceKind
     /// Declared focus of the session. `nil` = inherit from the block, or infer from the sets.
     public var focus: TrainingFocus?
+    /// The routine it was started from, if any; it tells which planned session comes next.
+    public var routineID: UUID?
 
     public init(
         id: UUID = UUID(),
@@ -103,7 +105,8 @@ public struct StrengthSession: Identifiable, Hashable, Codable, Sendable {
         sessionRPE: Double? = nil,
         notes: String? = nil,
         source: DataSourceKind = .app,
-        focus: TrainingFocus? = nil
+        focus: TrainingFocus? = nil,
+        routineID: UUID? = nil
     ) {
         self.id = id
         self.name = name
@@ -114,6 +117,7 @@ public struct StrengthSession: Identifiable, Hashable, Codable, Sendable {
         self.notes = notes
         self.source = source
         self.focus = focus
+        self.routineID = routineID
     }
 
     public var durationSeconds: Double? {

@@ -80,6 +80,9 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var focus: String
         public var start: String
         public var plannedWeeks: Int?
+        public var name: String?
+        /// Routine names the block rotates through, in order (a training plan).
+        public var routines: [String]?
     }
 
     public struct ExerciseInfo: Codable, Hashable, Sendable {
@@ -116,6 +119,13 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var name: String
         public var focus: String?
         public var exercises: [String]
+        /// Sets and reps for exercises of this routine only.
+        public var prescriptions: [Prescription]?
+    }
+
+    public struct Prescription: Codable, Hashable, Sendable {
+        public var exercise: String
+        public var scheme: Scheme
     }
 
     public struct Session: Codable, Hashable, Sendable {

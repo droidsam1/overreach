@@ -45,11 +45,44 @@ public struct TrainingBlock: Hashable, Codable, Sendable {
     public var plannedWeeks: Int?
     /// `true` when the user chose it; `false` when inferred from logged sets.
     public var isDeclared: Bool
+    /// "Strength block"; `nil` for blocks declared without a name.
+    public var name: String?
+    /// Routines trained in this block, in rotation order (a training plan, issue #34). Empty = no planned sessions.
+    public var routineIDs: [UUID]
 
-    public init(focus: TrainingFocus, start: CalendarDay, plannedWeeks: Int? = nil, isDeclared: Bool) {
+    public init(
+        focus: TrainingFocus, start: CalendarDay, plannedWeeks: Int? = nil, isDeclared: Bool, name: String? = nil,
+        routineIDs: [UUID] = []
+    ) {
         self.focus = focus
         self.start = start
         self.plannedWeeks = plannedWeeks
         self.isDeclared = isDeclared
+        self.name = name
+        self.routineIDs = routineIDs
+    }
+
+    /// The first day after the block, when its length is known.
+    public func end(calendar: Calendar = .current) -> CalendarDay? {
+        plannedWeeks.map { start.adding(days: $0 * 7, calendar: calendar) }
+    }
+}
+
+extension TrainingBlock {
+    private enum CodingKeys: String, CodingKey {
+        case focus, start, plannedWeeks, isDeclared, name, routineIDs
+    }
+
+    /// Tolerant decoding (ADR-0018): blocks saved before plans existed have no name or routines.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            focus: try container.decode(TrainingFocus.self, forKey: .focus),
+            start: try container.decode(CalendarDay.self, forKey: .start),
+            plannedWeeks: try container.decodeIfPresent(Int.self, forKey: .plannedWeeks),
+            isDeclared: try container.decode(Bool.self, forKey: .isDeclared),
+            name: try container.decodeIfPresent(String.self, forKey: .name),
+            routineIDs: try container.decodeIfPresent([UUID].self, forKey: .routineIDs) ?? []
+        )
     }
 }

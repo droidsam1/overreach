@@ -67,14 +67,17 @@ public enum ContextPackBuilder {
             generatedAt: now,
             app: .init(name: "Overreach", version: input.appVersion),
             period: .init(from: period.lowerBound.description, to: period.upperBound.description),
-            athlete: athlete(input.profile, name: name),
+            athlete: athlete(input.profile, routines: input.routines, name: name),
             catalog: input.exercises.map(\.name).sorted(),
             exercises: usedIDs.compactMap { byID[$0] }
                 .sorted { $0.name < $1.name }
                 .map { exerciseInfo($0, settings: input.settings[$0.id]) },
             routines: input.routines.map { routine in
                 .init(id: routine.id.uuidString, name: routine.name, focus: routine.focus?.rawValue,
-                      exercises: routine.exerciseIDs.map(name))
+                      exercises: routine.exerciseIDs.map(name),
+                      prescriptions: routine.prescriptions.isEmpty ? nil : routine.prescriptions.map { item in
+                          .init(exercise: name(item.exerciseID), scheme: scheme(item.scheme))
+                      })
             },
             sessions: sessions.map { session(from: $0, name: name, calendar: calendar) },
             exerciseTrends: trends(input, sessions: sessions, byID: byID),
@@ -91,7 +94,10 @@ public enum ContextPackBuilder {
 
     // MARK: - Parts
 
-    private static func athlete(_ profile: AthleteProfile?, name: (UUID) -> String) -> ContextPack.Athlete {
+    private static func athlete(
+        _ profile: AthleteProfile?, routines: [Routine], name: (UUID) -> String
+    ) -> ContextPack.Athlete {
+        let routineNames = Dictionary(routines.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
         guard let profile else { return .init(declaredBlocks: []) }
         return .init(
             sex: profile.sex?.rawValue,
@@ -105,7 +111,9 @@ public enum ContextPackBuilder {
                       priorityLifts: goal.priorityLifts.map(name))
             },
             declaredBlocks: profile.declaredBlocks.map { block in
-                .init(focus: block.focus.rawValue, start: block.start.description, plannedWeeks: block.plannedWeeks)
+                let names = block.routineIDs.compactMap { routineNames[$0] }
+                return .init(focus: block.focus.rawValue, start: block.start.description,
+                             plannedWeeks: block.plannedWeeks, name: block.name, routines: names.isEmpty ? nil : names)
             }
         )
     }
