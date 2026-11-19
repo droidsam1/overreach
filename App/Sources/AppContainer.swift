@@ -96,6 +96,10 @@ final class AppContainer {
 
     // MARK: Feature factories
 
+    func makePlanImportModel() -> PlanImportModel {
+        PlanImportModel(exercises: exercises, routines: routines, progression: progression, backup: backup)
+    }
+
     func makeAskAIModel() -> AskAIModel {
         AskAIModel(
             workouts: workouts, exercises: exercises, progression: progression, profiles: profiles,

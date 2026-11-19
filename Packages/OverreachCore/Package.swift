@@ -85,7 +85,7 @@ let package = Package(
         .testTarget(name: "DomainTests", dependencies: ["Domain"]),
         .testTarget(name: "AnalyticsTests", dependencies: ["Analytics", "Domain"]),
         .testTarget(name: "ReportsTests", dependencies: ["Reports", "Domain"]),
-        .testTarget(name: "AIExchangeTests", dependencies: ["AIExchange", "Domain", "Fixtures"]),
+        .testTarget(name: "AIExchangeTests", dependencies: ["AIExchange", "Analytics", "Domain", "Fixtures"]),
         .testTarget(name: "StrongImportTests", dependencies: ["StrongImport", "Domain"]),
         .testTarget(name: "PresentationKitTests", dependencies: ["PresentationKit", "Domain"]),
         .testTarget(

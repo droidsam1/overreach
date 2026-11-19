@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Bring an AI's answer back (#34, ADR-0017): copy the reply format into ChatGPT or Claude, then paste its answer or
+  open it as a file. The app previews the routines and exercise settings it would create or update. A problem such
+  as an unknown exercise blocks the import and gives a correction to paste back into the chat. Importing the same
+  routine again updates it instead of duplicating it (`overreach.plan` v1).
 - Plan → Ask AI (ADR-0017): shares your training as versioned raw data (`overreach.context` v1: sessions with notes,
   exercise settings, routines, goal, trends and health metrics) with ChatGPT, Claude or another chat app, as text or
   as a `.json` file, with an optional first request. The format is documented in `docs/ai-exchange.md`.

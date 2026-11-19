@@ -29,6 +29,14 @@ public struct ContextPack: Codable, Hashable, Sendable {
     public var checkIns: [CheckInInfo]
     public var dailyMetrics: [Metrics]
     public var runs: [Run]
+    /// Formats the app can import back. Optional, added after v1 shipped.
+    public var imports: [ImportFormat]?
+
+    public struct ImportFormat: Codable, Hashable, Sendable {
+        public var format: String
+        public var version: Int
+        public var reference: String
+    }
 
     public struct AppInfo: Codable, Hashable, Sendable {
         public var name: String

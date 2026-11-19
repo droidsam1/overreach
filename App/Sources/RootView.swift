@@ -32,6 +32,7 @@ struct RootView: View {
     @State private var exercisesModel: ExercisesModel
     @State private var onboardingModel: OnboardingModel
     @State private var askAIModel: AskAIModel
+    @State private var planImportModel: PlanImportModel
     @State private var selectedTab = AppTab.today
     @Environment(\.scenePhase) private var scenePhase
 
@@ -46,6 +47,7 @@ struct RootView: View {
         _exercisesModel = State(initialValue: container.makeExercisesModel())
         _onboardingModel = State(initialValue: container.makeOnboardingModel())
         _askAIModel = State(initialValue: container.makeAskAIModel())
+        _planImportModel = State(initialValue: container.makePlanImportModel())
     }
 
     var body: some View {
@@ -62,7 +64,7 @@ struct RootView: View {
             Tab("Plan", systemImage: "list.bullet.clipboard", value: AppTab.plan) {
                 PlanView(model: planModel) {
                     NavigationLink {
-                        AskAIView(model: askAIModel)
+                        AskAIView(model: askAIModel, importer: planImportModel)
                     } label: {
                         Label("Ask AI", systemImage: "bubble.left.and.text.bubble.right")
                     }
