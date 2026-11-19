@@ -58,7 +58,8 @@ cd App && xcodegen generate && open Overreach.xcodeproj
 ```
 
 No Mac? Every push to `main` builds an installable `.ipa` on GitHub Actions — see
-[`docs/install-without-mac.md`](docs/install-without-mac.md).
+[`docs/install-without-mac.md`](docs/install-without-mac.md). To try a release, follow the
+[tester guide](docs/beta-guide.es.md) (Spanish).
 
 Run the core tests:
 

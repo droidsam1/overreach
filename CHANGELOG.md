@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-18
+
+First testable release, sideloaded without TestFlight. See the [tester guide](docs/beta-guide.es.md).
+
 ### Changed
 - Presentation layer (ADR-0014): screen state, intents and texts move to `<Feature>Presentation` modules in
   `OverreachCore` (Linux-testable); `Feature*` modules only render. `DesignSystem` no longer knows domain types,
