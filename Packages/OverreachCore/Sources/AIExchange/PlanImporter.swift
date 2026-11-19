@@ -14,6 +14,12 @@ public enum PlanIssue: Hashable, Sendable {
     case invalidValue(field: String, value: String, expected: String)
 }
 
+/// Something in an AI reply that the app leaves out without stopping the import.
+public enum PlanWarning: Hashable, Sendable {
+    /// A field the format does not have, or one that does not apply (e.g. `reps` in a double progression).
+    case ignoredField(String)
+}
+
 /// What importing an AI reply would change, computed before anything is saved.
 public struct PlanImport: Hashable, Sendable {
     public struct RoutineChange: Hashable, Sendable {
@@ -33,14 +39,19 @@ public struct PlanImport: Hashable, Sendable {
     public var routines: [RoutineChange] = []
     public var settings: [SettingsChange] = []
     public var issues: [PlanIssue] = []
+    public var warnings: [PlanWarning] = []
 
     /// Imports are all or nothing: any issue blocks them, so a half-applied plan never happens.
     public var canImport: Bool { issues.isEmpty && !(routines.isEmpty && settings.isEmpty) }
 
-    public init(routines: [RoutineChange] = [], settings: [SettingsChange] = [], issues: [PlanIssue] = []) {
+    public init(
+        routines: [RoutineChange] = [], settings: [SettingsChange] = [], issues: [PlanIssue] = [],
+        warnings: [PlanWarning] = []
+    ) {
         self.routines = routines
         self.settings = settings
         self.issues = issues
+        self.warnings = warnings
     }
 }
 
@@ -60,7 +71,7 @@ public enum PlanImporter {
         _ message: PlanMessage, exercises: [Exercise], routines: [Routine], settings: [UUID: ProgressionSettings]
     ) -> PlanImport {
         let lookup = ExerciseLookup(exercises)
-        var result = PlanImport()
+        var result = PlanImport(warnings: message.ignoredFields.map(PlanWarning.ignoredField))
         var keys = Set<String>()
         for (index, proposal) in (message.routines ?? []).enumerated() {
             if let change = routine(proposal, index: index, lookup: lookup, existing: routines, keys: &keys,
@@ -69,6 +80,7 @@ public enum PlanImporter {
             }
         }
         for (index, proposal) in (message.exerciseSettings ?? []).enumerated() {
+            result.warnings += inapplicableFields(of: proposal.scheme, field: "exerciseSettings[\(index)].scheme")
             if let change = exerciseSettings(proposal, index: index, lookup: lookup, stored: settings,
                                              issues: &result.issues) {
                 result.settings.removeAll { $0.exercise.id == change.exercise.id }  // the last one wins
@@ -206,17 +218,49 @@ public enum PlanImporter {
         return issues.count == before ? scheme : nil
     }
 
+    /// Fields of a scheme that its type does not use.
+    private static func inapplicableFields(of scheme: PlanMessage.SchemeProposal?, field: String) -> [PlanWarning] {
+        guard let scheme else { return [] }
+        let present: [(String, Bool)] = [
+            ("minReps", scheme.minReps != nil), ("maxReps", scheme.maxReps != nil), ("reps", scheme.reps != nil),
+            ("repBlocks", scheme.repBlocks != nil),
+        ]
+        let used: Set<String> = switch scheme.type {
+        case "doubleProgression": ["minReps", "maxReps"]
+        case "linearLoad", "rpeBased": ["reps"]
+        case "repCycle": ["repBlocks"]
+        default: ["minReps", "maxReps", "reps", "repBlocks"]  // the type itself is reported as an issue
+        }
+        return present.filter { $0.1 && !used.contains($0.0) }.map { .ignoredField("\(field).\($0.0)") }
+    }
+
     // MARK: - Correction for the AI
 
-    /// The text the user pastes back into the chat to get a fixed reply. English, for the AI.
-    public static func correctionPrompt(for issues: [PlanIssue]) -> String {
-        var lines = [
-            "Overreach could not import your plan (overreach.plan v1). Please fix these problems and send the whole "
-                + "JSON again:",
-        ]
-        lines += issues.map { "- " + explanation(of: $0) }
+    /// The text the user pastes back into the chat to get a fixed reply. English, for the AI. With only warnings,
+    /// it asks to remove the ignored fields.
+    public static func correctionPrompt(for issues: [PlanIssue], warnings: [PlanWarning] = []) -> String {
+        var lines: [String] = []
+        if issues.isEmpty {
+            lines.append("Overreach can import your plan (overreach.plan v1), but it ignored some fields. Please send "
+                + "the whole JSON again without them, or with the information in supported fields:")
+        } else {
+            lines.append("Overreach could not import your plan (overreach.plan v1). Please fix these problems and "
+                + "send the whole JSON again:")
+            lines += issues.map { "- " + explanation(of: $0) }
+            if !warnings.isEmpty {
+                lines.append("Also remove these fields, which the format does not have:")
+            }
+        }
+        lines += warnings.map { "- " + explanation(of: $0) }
+        lines.append("The reply must validate against the overreach.plan v1 JSON Schema: \(PlanMessage.schemaURL)")
         lines.append("Use exercise names exactly as listed in the \"catalog\" of my Overreach context.")
         return lines.joined(separator: "\n")
+    }
+
+    static func explanation(of warning: PlanWarning) -> String {
+        switch warning {
+        case let .ignoredField(path): "\(path) is not part of the format and was ignored."
+        }
     }
 
     static func explanation(of issue: PlanIssue) -> String {

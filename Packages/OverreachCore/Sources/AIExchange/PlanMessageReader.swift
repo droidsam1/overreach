@@ -54,17 +54,55 @@ public enum PlanMessageReader {
     private static func read(candidate: String) -> Result<PlanMessage, Failure> {
         let data = Data(candidate.utf8)
         let decoder = JSONDecoder()
-        guard let envelope = try? decoder.decode(Envelope.self, from: data) else {
-            return .failure(candidate.hasPrefix("{") ? .invalid("the JSON is not valid") : .noJSON)
+        let envelope: Envelope
+        do {
+            envelope = try decoder.decode(Envelope.self, from: data)
+        } catch {
+            guard candidate.hasPrefix("{") else { return .failure(.noJSON) }
+            return .failure(.invalid(JSONSyntax.describeProblem(in: candidate) ?? describe(error)))
         }
         guard envelope.format == PlanMessage.formatName else { return .failure(.notAPlan(format: envelope.format)) }
         let version = envelope.version ?? 0
         guard version <= PlanMessage.currentVersion else { return .failure(.newerVersion(version)) }
         guard version >= 1 else { return .failure(.unsupportedVersion(version)) }
         do {
-            return .success(try decoder.decode(PlanMessage.self, from: data))
+            var message = try decoder.decode(PlanMessage.self, from: data)
+            if let json = try? decoder.decode(JSONValue.self, from: data) {
+                message.ignoredFields = ignoredFields(in: json)
+            }
+            return .success(message)
         } catch {
             return .failure(.invalid(describe(error)))
+        }
+    }
+
+    /// Paths of the fields the format does not read, e.g. `routines[0].reps`.
+    static func ignoredFields(in json: JSONValue) -> [String] {
+        var found: [String] = []
+        unknown(in: json, kind: "plan", path: "", found: &found)
+        return found
+    }
+
+    private static let children: [String: (kind: String, isList: Bool)] = [
+        "routines": ("routine", true), "exerciseSettings": ("exerciseSettings", true), "scheme": ("scheme", false),
+    ]
+
+    private static func unknown(in json: JSONValue, kind: String, path: String, found: inout [String]) {
+        guard case let .object(fields) = json, let known = PlanMessage.fields[kind] else { return }
+        for key in fields.keys.sorted() {
+            let keyPath = path.isEmpty ? key : "\(path).\(key)"
+            guard known.contains(key) else {
+                found.append(keyPath)
+                continue
+            }
+            guard let child = children[key], let value = fields[key] else { continue }
+            if child.isList, case let .array(items) = value {
+                for (index, item) in items.enumerated() {
+                    unknown(in: item, kind: child.kind, path: "\(keyPath)[\(index)]", found: &found)
+                }
+            } else if !child.isList {
+                unknown(in: value, kind: child.kind, path: keyPath, found: &found)
+            }
         }
     }
 
