@@ -30,7 +30,9 @@ public final class PlanImportModel {
         public let settings: [SettingsRow]
         /// Why it cannot be imported, in the user's language.
         public let issues: [String]
-        /// The same issues as a message for the AI, to paste back into the chat.
+        /// Parts of the answer the app leaves out ("Ignored: routines[0].reps"). They do not block the import.
+        public let warnings: [String]
+        /// The issues and warnings as a message for the AI, to paste back into the chat.
         public let correction: String?
         public let canImport: Bool
     }
@@ -160,7 +162,9 @@ public final class PlanImportModel {
                             detail: detail(of: change.settings), isUpdate: change.isUpdate)
             },
             issues: planned.issues.map(text),
-            correction: planned.issues.isEmpty ? nil : PlanImporter.correctionPrompt(for: planned.issues),
+            warnings: planned.warnings.map(text),
+            correction: planned.issues.isEmpty && planned.warnings.isEmpty
+                ? nil : PlanImporter.correctionPrompt(for: planned.issues, warnings: planned.warnings),
             canImport: planned.canImport
         )
     }
@@ -188,6 +192,12 @@ public final class PlanImportModel {
             "\(sets) × \(reps) @ RPE \(format.number(rpe))"
         case let .repCycle(sets, blocks, rpe):
             "\(sets) × \(blocks.map(String.init).joined(separator: "/")) @ RPE \(format.number(rpe))"
+        }
+    }
+
+    private func text(_ warning: PlanWarning) -> String {
+        switch warning {
+        case let .ignoredField(path): L10n.format("Ignored: {1}. The app does not use this field.", path)
         }
     }
 

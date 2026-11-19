@@ -36,6 +36,8 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var format: String
         public var version: Int
         public var reference: String
+        /// JSON Schema of the format. Optional, added after v1 shipped.
+        public var schema: String?
     }
 
     public struct AppInfo: Codable, Hashable, Sendable {

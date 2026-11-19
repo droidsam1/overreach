@@ -89,12 +89,27 @@ Settings are keyed by `exercise`, and fields left out keep their current value.
 - **`incrementKg`:** 0–20.
 - **`isMainLift`:** `true` or `false`.
 
+### JSON Schema
+
+The format is also a JSON Schema (draft 2020-12): [`schemas/overreach.plan.v1.schema.json`](schemas/overreach.plan.v1.schema.json).
+
+- **In the reply format.** The schema is part of what the user copies into the chat, and the context pack links it
+  in `imports`.
+- **No extra fields.** It has types, required fields, allowed values and ranges, and `additionalProperties: false`.
+- **Guidance in chat apps.** Chat apps cannot enforce a schema, so the app still validates everything. A test keeps
+  the schema, the published file and the app's validation identical.
+
 ### Validation
 
 - **All or nothing.** Any problem blocks the whole import, so a plan is never half-applied. Examples are an unknown
   exercise (the closest catalog name is suggested), an empty or unnamed routine, a repeated `id`, or a value out of
   range.
-- **Correction.** The app writes a correction in English for the user to paste back into the chat.
+- **Correction.** The app writes a correction in English for the user to paste back into the chat. Each point
+  names the field path (`exerciseSettings[0].scheme.sets is 30; expected 1 to 10`). Broken JSON gets its line,
+  column, what was expected and the line itself, with hints for trailing commas, curly quotes and truncated text.
+- **Ignored fields.** Fields the format does not have, or that the scheme type does not use (e.g. `reps` in a
+  double progression), are listed as warnings. They do not block the import, and the correction can ask the AI to
+  remove them.
 - **Versions.** A newer version is refused with a request to update the app. Every version documented here stays
   readable.
 

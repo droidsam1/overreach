@@ -72,6 +72,16 @@ struct PlanImportModelTests {
         #expect(try await store.allRoutines().isEmpty)
     }
 
+    @Test func ignoredFieldsAreShownAndCanBeSentBack() async throws {
+        let (model, _) = makeModel()
+        await model.read(text: answer.replacingOccurrences(of: "\"name\":\"Full A\"", with: "\"name\":\"Full A\",\"day\":1"))
+
+        let preview = try #require(model.preview)
+        #expect(preview.canImport)
+        #expect(preview.warnings == ["Ignored: routines[0].day. The app does not use this field."])
+        #expect(preview.correction?.contains("routines[0].day is not part of the format") == true)
+    }
+
     @Test func textWithoutAPlanSaysWhatToDo() async throws {
         let (model, _) = makeModel()
         await model.read(text: "Sounds good, let's do it!")
