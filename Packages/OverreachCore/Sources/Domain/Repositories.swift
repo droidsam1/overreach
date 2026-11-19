@@ -84,6 +84,9 @@ public protocol ProgressionSettingsRepository: Sendable {
 public protocol OnboardingStatusStore: Sendable {
     func isOnboardingCompleted() async -> Bool
     func markOnboardingCompleted() async
+    /// The last app version whose "What's new" the user saw; `nil` if never.
+    func lastSeenReleaseNotesVersion() async -> String?
+    func markReleaseNotesSeen(version: String) async
 }
 
 /// Alerts the user when a rest ends while the app is in the background. There is at most one pending alert.

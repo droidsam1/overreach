@@ -139,6 +139,10 @@ final class AppContainer {
         )
     }
 
+    func makeWhatsNewModel() -> WhatsNewModel {
+        WhatsNewModel(status: onboardingStatus, workouts: workouts, currentVersion: Self.appVersion)
+    }
+
     func makeOnboardingModel() -> OnboardingModel {
         OnboardingModel(profiles: profiles, workouts: workouts, status: onboardingStatus)
     }

@@ -94,6 +94,8 @@ existing modules to do it.
 - **Stored data stays readable (ADR-0018).** A new field in any persisted type is optional or decoded with a
   default; anything that would change existing data needs a backup format bump and a migration step.
   `BackupFormatV1Tests` holds a frozen v1 backup: never edit it.
+- **Each release adds its highlights** to `ReleaseNotes.all` (OnboardingPresentation): users who update see
+  them once in "What's new". New features worth showing to new users also get a page in the first-run tour.
 - No secrets in the repo. Signing settings live in `App/Config/Local.xcconfig` (git-ignored).
 - Every non-obvious decision gets an ADR (`docs/adr/NNNN-title.md`).
 

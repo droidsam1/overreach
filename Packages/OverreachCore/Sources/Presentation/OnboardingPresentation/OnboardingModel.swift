@@ -10,8 +10,12 @@ public enum OnboardingDestination: Hashable, Sendable {
     case restoreBackup
 }
 
-/// Optional first-run setup (issue #18). Every step can be skipped, and it can be reopened from Settings.
-/// It is only offered on a device with no training data, so it never interrupts an existing user or a restore.
+/// Optional first-run setup (issue #18): a short visual tour of what the app does, then the basic data. Every
+/// page and step can be skipped, and the data steps can be reopened from Settings (without the tour). It is only
+/// offered on a device with no training data, so it never interrupts an existing user or a restore.
+///
+/// To extend it (e.g. a Garmin sign-in or Health permissions), add a `TourPage` to show a feature or a `Step` to
+/// ask for data; the order is the order of the cases.
 @MainActor
 @Observable
 public final class OnboardingModel {
@@ -19,8 +23,15 @@ public final class OnboardingModel {
         case goal, about, walking, start
     }
 
+    /// The tour shown before the data steps on a first launch.
+    public enum TourPage: Int, CaseIterable, Hashable, Sendable {
+        case welcome, logging, coaching, assistant, safety
+    }
+
     public var isPresented = false
     public private(set) var step: Step = .goal
+    /// The tour page on screen; `nil` once the tour is over or skipped (the data steps show).
+    public private(set) var tourPage: TourPage?
     public private(set) var errorMessage: String?
 
     public var goalKind: TrainingGoal.Kind?
@@ -69,6 +80,12 @@ public final class OnboardingModel {
     }
 
     public var canGoBack: Bool { step != .goal }
+
+    /// Position of the tour page, for the page dots.
+    public var tourIndex: Int { tourPage?.rawValue ?? TourPage.allCases.count }
+    public var tourCount: Int { TourPage.allCases.count }
+    public var isLastTourPage: Bool { tourPage == TourPage.allCases.last }
+    public var canGoBackInTour: Bool { (tourPage?.rawValue ?? 0) > 0 }
     public var canSkipStep: Bool { step != .start }
     public var showsCycleTracking: Bool { sex == .female }
     public var showsWalkDetails: Bool { hasDog || (usualWalksPerDay ?? 0) > 0 }
@@ -86,6 +103,7 @@ public final class OnboardingModel {
                 return
             }
             open(with: stored)
+            tourPage = TourPage.allCases.first
         } catch {
             // The app works without the setup: it is offered again next time.
         }
@@ -99,6 +117,22 @@ public final class OnboardingModel {
             errorMessage = L10n.text("Could not load your profile.")
             open(with: AthleteProfile())
         }
+    }
+
+    /// Next tour page, or the first data step after the last one.
+    public func nextTourPage() {
+        guard let tourPage else { return }
+        self.tourPage = TourPage(rawValue: tourPage.rawValue + 1)
+    }
+
+    public func previousTourPage() {
+        guard let tourPage, tourPage.rawValue > 0 else { return }
+        self.tourPage = TourPage(rawValue: tourPage.rawValue - 1)
+    }
+
+    /// Goes straight to the data steps.
+    public func skipTour() {
+        tourPage = nil
     }
 
     public func next() {
@@ -174,6 +208,7 @@ public final class OnboardingModel {
         cycleTracking = stored.cycleTracking  // After `sex`, which can reset it.
         applyWalking(stored.walkingRoutine)
         step = .goal
+        tourPage = nil
         isPresented = true
     }
 
