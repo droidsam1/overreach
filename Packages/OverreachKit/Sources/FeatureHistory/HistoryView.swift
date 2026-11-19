@@ -71,7 +71,7 @@ private struct SessionRow: View {
 
 /// One session's sets, with an Edit button. Reads the session from the model so it reflects saved edits.
 private struct SessionDetailView: View {
-    let model: HistoryModel
+    @Bindable var model: HistoryModel
     let sessionID: UUID
     @State private var editor: SessionEditorModel?
 
@@ -79,6 +79,9 @@ private struct SessionDetailView: View {
         if let detail = model.detail(for: sessionID) {
             content(detail)
                 .toolbar {
+                    Button("View summary", systemImage: "list.bullet.clipboard") {
+                        Task { await model.showReport(for: sessionID) }
+                    }
                     Button("Save as routine", systemImage: "square.and.arrow.down") {
                         Task { await model.saveAsRoutine(sessionID: sessionID) }
                     }
@@ -86,6 +89,9 @@ private struct SessionDetailView: View {
                 }
                 .sheet(item: $editor) { editor in
                     SessionEditorView(model: editor) { model.didSave($0) }
+                }
+                .sheet(item: $model.report) { report in
+                    SessionReportSheet(content: SessionReportContent(report))
                 }
                 .alert(
                     model.routineNotice ?? "",

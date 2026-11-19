@@ -92,6 +92,24 @@ public enum SessionReviewer {
         )
     }
 
+    /// Reviews a past session against the targets the engine gave it from the history before it (e.g. from
+    /// History). Settings are today's: a scheme changed since then is not reflected.
+    public static func review(
+        _ session: StrengthSession, history: [StrengthSession], exercises: [Exercise],
+        settings: [UUID: ProgressionSettings]
+    ) -> SessionReview {
+        let earlier = history.filter { $0.id != session.id && $0.startedAt < session.startedAt }
+        var targets: [UUID: ExerciseTarget] = [:]
+        for exercise in exercises where session.entries.contains(where: { $0.exerciseID == exercise.id }) {
+            let before = ExerciseExposure.history(of: exercise.id, in: earlier)
+            guard !before.isEmpty else { continue }
+            targets[exercise.id] = ProgressionTargets.next(
+                history: before, settings: settings[exercise.id] ?? ProgressionSettings(for: exercise)
+            )
+        }
+        return review(session, targets: targets, history: history, exercises: exercises, settings: settings)
+    }
+
     private static func review(
         _ entry: ExerciseEntry, of exercise: Exercise, in session: StrengthSession, target: ExerciseTarget?,
         earlier: [StrengthSession], settings: ProgressionSettings

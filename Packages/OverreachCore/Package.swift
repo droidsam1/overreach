@@ -37,7 +37,9 @@ let package = Package(
         .target(name: "AIExchange", dependencies: ["Domain", "Analytics"]),
 
         // Presentation layer (ADR-0014). One module per feature; they never import each other or SwiftUI.
-        .target(name: "PresentationKit", dependencies: ["Domain"], path: "Sources/Presentation/PresentationKit"),
+        .target(
+            name: "PresentationKit", dependencies: ["Domain", "Analytics"], path: "Sources/Presentation/PresentationKit"
+        ),
         .target(
             name: "ExercisesPresentation",
             dependencies: ["Domain", "Analytics", "PresentationKit"],

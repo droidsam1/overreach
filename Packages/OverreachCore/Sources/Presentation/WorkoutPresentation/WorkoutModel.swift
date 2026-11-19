@@ -212,7 +212,7 @@ public final class WorkoutModel {
     public var exercises: [DraftExercise] = []
     public private(set) var errorMessage: String?
     /// The summary of the session just finished; set it to `nil` to dismiss it.
-    public var summary: SessionSummary?
+    public var summary: SessionReport?
     /// The rest between sets.
     public let rest: RestTimerModel
 
@@ -579,13 +579,13 @@ public final class WorkoutModel {
 
     private func makeSummary(
         of session: StrengthSession, targets: [UUID: ExerciseTarget], now: Date
-    ) async -> SessionSummary {
+    ) async -> SessionReport {
         let history = (try? await workouts.sessions(from: now.addingTimeInterval(-Self.historyWindow), to: now)) ?? []
         let settings = (try? await progression.allProgressionSettings()) ?? [:]
         let review = SessionReviewer.review(
             session, targets: targets, history: history, exercises: catalog, settings: settings
         )
-        return SessionSummary(review: review, effortScale: effortScale, format: Format())
+        return SessionReport(review: review, effortScale: effortScale, format: Format())
     }
 
     public func discard() {

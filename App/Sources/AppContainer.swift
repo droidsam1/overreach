@@ -125,7 +125,7 @@ final class AppContainer {
     func makeHistoryModel() -> HistoryModel {
         HistoryModel(
             workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
-            profiles: profiles
+            profiles: profiles, progression: progression
         )
     }
 
