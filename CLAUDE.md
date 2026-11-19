@@ -91,6 +91,9 @@ existing modules to do it.
 - Strings shown to users go through `App/Resources/Localizable.xcstrings` (en, es, gl; ADR-0015). Models use
   `L10n.text` or `L10n.format("Step {1} of {2}", …)`; check with `python3 scripts/check-localization.py`. Code,
   comments and docs in English.
+- **Stored data stays readable (ADR-0018).** A new field in any persisted type is optional or decoded with a
+  default; anything that would change existing data needs a backup format bump and a migration step.
+  `BackupFormatV1Tests` holds a frozen v1 backup: never edit it.
 - No secrets in the repo. Signing settings live in `App/Config/Local.xcconfig` (git-ignored).
 - Every non-obvious decision gets an ADR (`docs/adr/NNNN-title.md`).
 

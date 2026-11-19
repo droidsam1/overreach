@@ -83,6 +83,12 @@ public struct SettingsView<Library: View>: View {
                 }
             }
             .task { await backupModel.load() }
+            // Asked from the first-run setup ("Restore from a backup"); runs when Settings first appears too.
+            .task(id: backupModel.isRequestingFolderChoice) {
+                guard backupModel.isRequestingFolderChoice else { return }
+                backupModel.isRequestingFolderChoice = false
+                pick(.backupFolder)
+            }
         }
     }
 
