@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- History → a session → "View summary" reopens its report, compared with the target the engine gave it then.
 - Backups you can rely on (ADR-0018): Settings warns, with a badge, when your data is only on the iPhone. The
   first-run setup offers "Restore from a backup". After a reinstall, choosing the backup folder offers to restore
   it. A frozen v1 backup in the tests guarantees future versions keep loading today's data, and there is a

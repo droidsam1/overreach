@@ -7277,6 +7277,23 @@
         }
       }
     },
+    "View summary": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver resumen"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver resumo"
+          }
+        }
+      }
+    },
     "Volume {1} compared with the last “{2}” ({3}).": {
       "extractionState": "manual",
       "localizations": {

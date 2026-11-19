@@ -70,6 +70,7 @@ public final class HistoryModel {
     private let backup: (any BackupService)?
     private let health: (any HealthWorkoutWriter)?
     private let profiles: (any ProfileRepository)?
+    private let progression: (any ProgressionSettingsRepository)?
     private let clock: @Sendable () -> Date
     private var effortScale = EffortScale.rpe
 
@@ -83,6 +84,7 @@ public final class HistoryModel {
         backup: (any BackupService)? = nil,
         health: (any HealthWorkoutWriter)? = nil,
         profiles: (any ProfileRepository)? = nil,
+        progression: (any ProgressionSettingsRepository)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
@@ -91,6 +93,7 @@ public final class HistoryModel {
         self.backup = backup
         self.health = health
         self.profiles = profiles
+        self.progression = progression
         self.clock = clock
     }
 
@@ -198,6 +201,19 @@ public final class HistoryModel {
     }
 
     /// The current version of a listed session.
+    /// The report of an open session ("View summary"); set it to `nil` to close it.
+    public var report: SessionReport?
+
+    /// Opens the report of a listed session: how it went against the targets the engine gave it then.
+    public func showReport(for sessionID: UUID, format: Format = Format()) async {
+        guard let session = session(id: sessionID) else { return }
+        let settings = (try? await progression?.allProgressionSettings()) ?? [:]
+        let review = SessionReviewer.review(
+            session, history: summaries.map(\.session), exercises: catalog, settings: settings
+        )
+        report = SessionReport(review: review, effortScale: effortScale, format: format)
+    }
+
     public func session(id: UUID) -> StrengthSession? {
         summaries.first { $0.id == id }?.session
     }
