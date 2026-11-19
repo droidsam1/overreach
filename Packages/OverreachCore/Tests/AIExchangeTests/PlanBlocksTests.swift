@@ -152,6 +152,18 @@ struct PlanBlocksTests {
         #expect(result == [past, inferred] + planned.blocks)
     }
 
+    @Test func sessionsPerWeekIsCheckedAndKept() throws {
+        let plan = """
+            {"format": "overreach.plan", "version": 1,
+             "routines": [{"id": "a", "name": "A", "exercises": ["Squat (Barbell)"]}],
+             "blocks": [{"focus": "strength", "weeks": 4, "routines": ["a"], "sessionsPerWeek": 3},
+                        {"focus": "strength", "weeks": 4, "routines": ["a"], "sessionsPerWeek": 20}]}
+            """
+        let planned = try importing(plan)
+        #expect(planned.issues == [.invalidValue(field: "blocks[1].sessionsPerWeek", value: "20", expected: "1 to 14")])
+        #expect(planned.blocks.first?.sessionsPerWeek == 3)
+    }
+
     @Test func aPlanWithOnlyBlocksCanBeImported() throws {
         let existing = Routine(name: "Legs", exerciseIDs: [squat.id])
         let plan = #"{"format": "overreach.plan", "version": 1, "blocks": [{"focus": "strength", "weeks": 2}]}"#

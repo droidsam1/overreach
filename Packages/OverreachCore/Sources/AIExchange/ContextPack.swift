@@ -83,6 +83,7 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var name: String?
         /// Routine names the block rotates through, in order (a training plan).
         public var routines: [String]?
+        public var sessionsPerWeek: Int?
     }
 
     public struct ExerciseInfo: Codable, Hashable, Sendable {

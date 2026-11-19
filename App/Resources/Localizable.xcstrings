@@ -613,6 +613,40 @@
         }
       }
     },
+    "Add {1} weeks": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir {1} semanas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Engadir {1} semanas"
+          }
+        }
+      }
+    },
+    "Add {1} weeks to “{2}” to make up for missed sessions.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade {1} semanas a «{2}» para recuperar las sesiones perdidas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Engade {1} semanas a «{2}» para recuperar as sesións perdidas."
+          }
+        }
+      }
+    },
     "Advice adapts to your walks and never removes the ones you can't skip.": {
       "extractionState": "manual",
       "localizations": {
@@ -1561,6 +1595,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Correccións que a IA entende"
+          }
+        }
+      }
+    },
+    "Could not change the plan. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido cambiar el plan. Inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido cambiar o plan. Téntao de novo."
           }
         }
       }
@@ -5288,6 +5339,23 @@
         }
       }
     },
+    "Plan check": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisión del plan"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisión do plan"
+          }
+        }
+      }
+    },
     "Plan my next block": {
       "extractionState": "manual",
       "localizations": {
@@ -5318,6 +5386,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Planifica coa túa IA"
+          }
+        }
+      }
+    },
+    "Plan {1} a week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planear {1} por semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planear {1} por semana"
+          }
+        }
+      }
+    },
+    "Plan {1} sessions a week instead of {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planea {1} sesiones por semana en vez de {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planea {1} sesións por semana en vez de {2}."
           }
         }
       }
@@ -7345,6 +7447,23 @@
         }
       }
     },
+    "Stop sets a rep or two earlier than usual for a week. Strength lost in a break comes back quickly.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Durante una semana, termina cada serie una o dos repeticiones antes de lo habitual. La fuerza perdida en un parón vuelve rápido."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Durante unha semana, remata cada serie unha ou dúas repeticións antes do habitual. A forza perdida nun parón volve axiña."
+          }
+        }
+      }
+    },
     "Strength": {
       "extractionState": "manual",
       "localizations": {
@@ -7685,6 +7804,23 @@
         }
       }
     },
+    "The blocks after it move back by the same time.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los bloques siguientes se retrasan lo mismo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os bloques seguintes atrásanse o mesmo."
+          }
+        }
+      }
+    },
     "The end time is before the start time.": {
       "extractionState": "manual",
       "localizations": {
@@ -7800,6 +7936,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "O salto máis pequeno que podes facer con este exercicio."
+          }
+        }
+      }
+    },
+    "There is no fixed timeline: how you feel decides when to train again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay un plazo fijo: cómo te encuentras decide cuándo volver a entrenar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai un prazo fixo: como te atopas decide cando volver adestrar."
           }
         }
       }
@@ -7936,6 +8089,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Este plan usa unha versión que a app non coñece."
+          }
+        }
+      }
+    },
+    "This week: {1} of {2} sessions": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta semana: {1} de {2} sesiones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta semana: {1} de {2} sesións"
           }
         }
       }
@@ -8977,6 +9147,40 @@
         }
       }
     },
+    "You did about {1} a week lately. With the same weekly sets, fewer sessions build about the same strength and muscle.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimamente hiciste unas {1} por semana. Con las mismas series semanales, menos sesiones dan casi la misma fuerza y músculo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultimamente fixeches unhas {1} por semana. Coas mesmas series semanais, menos sesións dan case a mesma forza e músculo."
+          }
+        }
+      }
+    },
+    "You logged being ill. Rest until the symptoms ease, then come back gradually.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Has indicado que estás enfermo. Descansa hasta que mejoren los síntomas y vuelve poco a poco."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indicaches que estás enfermo. Descansa ata que melloren os síntomas e volve pouco a pouco."
+          }
+        }
+      }
+    },
     "Your data is only on this iPhone. Choose an iCloud Drive folder: the app then backs up on its own, and you can restore it if you delete the app.": {
       "extractionState": "manual",
       "localizations": {
@@ -9347,6 +9551,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bloque de {1} {2}, durante {3}–{4} semanas."
+          }
+        }
+      }
+    },
+    "{1} days since your last session. Keep the plan and ease back in.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} días desde tu última sesión. Mantén el plan y vuelve poco a poco."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} días desde a túa última sesión. Mantén o plan e volve pouco a pouco."
           }
         }
       }

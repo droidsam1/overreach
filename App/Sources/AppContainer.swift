@@ -127,7 +127,8 @@ final class AppContainer {
 
     func makeRoutinesModel() -> RoutinesModel {
         RoutinesModel(
-            routines: routines, exercises: exercises, backup: backup, profiles: profiles, workouts: workouts
+            routines: routines, exercises: exercises, backup: backup, profiles: profiles, workouts: workouts,
+            checkIns: checkIns
         )
     }
 

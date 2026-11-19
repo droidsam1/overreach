@@ -47,6 +47,8 @@ public struct PlanMessage: Codable, Hashable, Sendable {
         public var weeks: Int?
         /// Routine ids (or names) of this plan or already in the app, in rotation order.
         public var routines: [String]?
+        /// Strength sessions planned each week; absent = one per routine.
+        public var sessionsPerWeek: Int?
     }
 
     /// How one exercise progresses. Absent fields keep their current value.
@@ -73,7 +75,7 @@ public struct PlanMessage: Codable, Hashable, Sendable {
         "plan": ["format", "version", "routines", "exerciseSettings", "blocks", "startDate"],
         "routine": ["id", "name", "focus", "exercises", "prescriptions"],
         "prescription": ["exercise", "scheme"],
-        "block": ["name", "focus", "weeks", "routines"],
+        "block": ["name", "focus", "weeks", "routines", "sessionsPerWeek"],
         "exerciseSettings": ["exercise", "focus", "scheme", "incrementKg", "isMainLift"],
         "scheme": ["type", "sets", "minReps", "maxReps", "reps", "repBlocks", "targetRPE"],
     ]
@@ -225,6 +227,12 @@ extension PlanMessage {
                     "type": "string",
                     "minLength": 1
                   }
+                },
+                "sessionsPerWeek": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 14,
+                  "description": "Strength sessions planned each week. Absent: one per routine."
                 }
               }
             },
@@ -395,7 +403,7 @@ extension PlanMessage {
           ],
           "startDate": "2027-01-04",
           "blocks": [
-            { "name": "Strength", "focus": "strength", "weeks": 6, "routines": ["upper-a"] }
+            { "name": "Strength", "focus": "strength", "weeks": 6, "routines": ["upper-a"], "sessionsPerWeek": 3 }
           ]
         }
         ```

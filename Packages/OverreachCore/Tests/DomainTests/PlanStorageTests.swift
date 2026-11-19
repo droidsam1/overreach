@@ -37,6 +37,9 @@ struct PlanStorageTests {
         let block = try JSONDecoder().decode(TrainingBlock.self, from: Data(old.utf8))
         #expect(block.name == nil)
         #expect(block.routineIDs.isEmpty)
+        #expect(block.sessionsPerWeek == nil)
+        #expect(block.extendedWeeks == 0)
+        #expect(block.plannedSessionsPerWeek == 1)
         #expect(block.end(calendar: Calendar(identifier: .gregorian)) == CalendarDay(year: 2026, month: 10, day: 13))
     }
 

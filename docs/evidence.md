@@ -177,3 +177,38 @@ Reviewed 2026-11-16.
 ### `focus-heuristics` — heuristic
 Set classification cut-offs (≤ 6 reps at ≥ 78 % e1RM = strength; ≥ 15 reps = endurance; 60 % majority), streak
 lengths, block lengths (4–8 weeks), templates and deload placement. All configurable. Reviewed 2026-11-16.
+
+## Training plans
+
+### `frequency-volume-equated` — strong
+With weekly volume equated, how many days a week a muscle is trained makes little or no difference to strength or
+hypertrophy; the apparent benefit of higher frequency comes from the extra volume.
+→ When planned sessions keep being missed, the follow-up proposes fewer sessions a week (the user keeps their
+weekly sets in fewer, fuller sessions) instead of a plan they cannot keep.
+Refs: Schoenfeld, Grgic & Krieger 2019, J Sports Sci 37:1286 (meta-analysis, 25 studies); Grgic et al. 2018,
+Sports Med 48:1207 (meta-analysis, strength); Saric et al. 2019, J Strength Cond Res 33:S122 (RCT, trained men,
+3 vs 6 sessions). Reviewed 2026-11-19.
+
+### `retraining-after-break` — moderate
+A break of up to ~10 weeks lowers strength and size, but they come back quickly with retraining, and after a
+second training block the outcomes match continuous training. Strength is kept better than size. Evidence on how
+long gains last without training is thin and mostly in untrained or older people.
+→ After 14 days or more without strength sessions, the follow-up says to keep the plan and ease back in, rather
+than restart or shorten it.
+Refs: Halonen et al. 2024, Scand J Med Sci Sports 34:e14739 (RCT, n = 55); Ogasawara et al. 2011, Clin Physiol
+Funct Imaging 31:399 (randomised, PubMed 21771261); Encarnação et al. 2022, Muscles 1:1 (systematic review); Grgic 2022, Int J Environ Res
+Public Health 19:14048 (meta-analysis, older adults). Reviewed 2026-11-19.
+
+### `illness-return` — limited
+For acute respiratory illness in athletes, return to training is decided by symptoms, severity and warning signs,
+not by a fixed timeline; most cases cost a few days.
+→ A recent "ill" check-in replaces every other proposal with "rest until the symptoms ease, then come back
+gradually". The app never says when it is safe to train: it is not a medical device.
+Refs: Schwellnus et al. 2022, IOC consensus, Br J Sports Med 56:1066; Snyders et al. 2022, Br J Sports Med
+(systematic review, 54 studies). Reviewed 2026-11-19.
+
+### `plan-adherence` — heuristic
+A break is 14 days without strength sessions; low adherence is under two thirds of planned sessions over the last
+two finished weeks of a block; the proposed frequency is the sessions actually done per week, rounded up;
+missed sessions add whole weeks to the block, at most 4 in all, and each missed week is offered once. All
+configurable. Reviewed 2026-11-19.

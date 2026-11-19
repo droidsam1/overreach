@@ -20,12 +20,7 @@ public enum PlanSchedule {
         blocks: [TrainingBlock], routines: [Routine], sessions: [StrengthSession], today: CalendarDay,
         calendar: Calendar = .current
     ) -> PlannedSession? {
-        let declared = blocks.filter(\.isDeclared).sorted { $0.start < $1.start }
-        guard let index = declared.lastIndex(where: { $0.start <= today }) else { return nil }
-        let block = declared[index]
-        if let end = block.end(calendar: calendar), end <= today { return nil }
-        if index + 1 < declared.count, declared[index + 1].start <= today { return nil }
-
+        guard let block = runningBlock(blocks, today: today, calendar: calendar) else { return nil }
         let byID = Dictionary(routines.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let rotation = block.routineIDs.filter { byID[$0] != nil }
         guard let first = rotation.first else { return nil }
@@ -43,5 +38,15 @@ public enum PlanSchedule {
 
         let days = calendar.dateComponents([.day], from: blockStart, to: today.startDate(in: calendar)).day ?? 0
         return PlannedSession(block: block, routine: routine, week: days / 7 + 1, totalWeeks: block.plannedWeeks)
+    }
+
+    /// The declared block that contains `today`: the last one started on or before it, unless it has ended.
+    public static func runningBlock(
+        _ blocks: [TrainingBlock], today: CalendarDay, calendar: Calendar = .current
+    ) -> TrainingBlock? {
+        let declared = blocks.filter(\.isDeclared).sorted { $0.start < $1.start }
+        guard let block = declared.last(where: { $0.start <= today }) else { return nil }
+        if let end = block.end(calendar: calendar), end <= today { return nil }
+        return block
     }
 }

@@ -137,6 +137,12 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "sessionsPerWeek": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 14,
+          "description": "Strength sessions planned each week. Absent: one per routine."
         }
       }
     },

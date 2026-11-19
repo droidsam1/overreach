@@ -22,7 +22,7 @@ Shared from **Plan → Ask AI**. It is raw data with no instructions. Its top-le
 | `format`, `version`, `about` | `overreach.context`, `1`, and a sentence saying what the data is |
 | `generatedAt`, `app`, `units` | When it was made, by which app version, and in which units |
 | `period` | `from` / `to` days the sessions, check-ins and metrics cover (4 weeks, 12 weeks or 6 months) |
-| `athlete` | `sex`, `birthYear`, `bodyMassKg`, `maxHeartRate`, `restingHeartRate`, `cycleTracking`; `goal` (`kind`: `strength`, `hypertrophy`, `general` or `hybrid`; `targetDate`; `priorityLifts` by name); `declaredBlocks` (`focus`, `start`, `plannedWeeks`, `name`, `routines` by name) |
+| `athlete` | `sex`, `birthYear`, `bodyMassKg`, `maxHeartRate`, `restingHeartRate`, `cycleTracking`; `goal` (`kind`: `strength`, `hypertrophy`, `general` or `hybrid`; `targetDate`; `priorityLifts` by name); `declaredBlocks` (`focus`, `start`, `plannedWeeks`, `name`, `routines` by name, `sessionsPerWeek`) |
 | `catalog` | Names of every exercise in the app. Proposals should use these names. |
 | `exercises` | Exercises used in the period, in routines or with their own settings: `name`, `equipment`, `primaryMuscles`, `secondaryMuscles`, `isCustom`, and `progression` when the user changed the defaults |
 | `routines` | `id`, `name`, `focus`, `exercises` (names, in order), `prescriptions` (`exercise`, `scheme`) when the routine has its own sets and reps |
@@ -111,12 +111,16 @@ on `startDate` (`YYYY-MM-DD`), or on the day of the import.
 | `focus` | Required: `strength`, `hypertrophy`, `mixed` or `endurance`. |
 | `weeks` | Required, 1–52. |
 | `routines` | Optional. Routine `id`s or names, from this plan or already in the app, in rotation order. |
+| `sessionsPerWeek` | Optional, 1–14. Strength sessions planned each week; absent = one per routine. |
 
 - **Saved as declared blocks** in the profile (ADR-0013). Blocks that start before the plan are kept, and declared
   blocks from the plan's start on are replaced. Focus checks treat a matching streak as intentional.
 - **Up next.** Train shows the running block's next session, with its week ("Strength · week 2 of 6"). Routines
   rotate: the next one follows the routine of the last session started from the block, so a missed day moves the
   plan back rather than skipping a session. Sessions not started from one of its routines do not move it.
+- **Follow-up.** Train shows this week's planned and completed sessions, and proposes changes (ADR-0019,
+  `docs/evidence.md`): rest while ill, ease back in after a break of 14 days or more, and after two weeks below
+  two thirds of the planned sessions, fewer sessions a week and a longer block. The user accepts or ignores each.
 
 ### JSON Schema
 
@@ -142,5 +146,4 @@ The format is also a JSON Schema (draft 2020-12): [`schemas/overreach.plan.v1.sc
 - **Versions.** A newer version is refused with a request to update the app. Every version documented here stays
   readable.
 
-Still to come in #34: comparing planned with completed work, and proposing adjustments after missed sessions or
-poor recovery.
+Still to come: adjustments from HRV, resting heart rate and sleep, with the readiness rules of phase 2.
