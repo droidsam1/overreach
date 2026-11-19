@@ -49,6 +49,10 @@ public struct DraftExercise: Identifiable, Hashable, Sendable {
     var warmUpPlan: [WarmUpSet] = []
     /// Its muscles were already worked earlier in the session, so the warm-up is shorter.
     var isPrimed = false
+    /// The numbers behind the status, to explain it.
+    var stallFacts: StallFacts?
+    /// How effort is shown in the target and its reasons.
+    var effortScale = EffortScale.rpe
 
     /// 1-based position of a set among the sets of its kind (warm-ups and working sets are numbered apart).
     public func number(of setID: DraftSet.ID) -> Int {
@@ -72,6 +76,8 @@ public struct TargetSummary: Hashable, Sendable {
     /// "Progressing", "Stalled", …; `nil` without enough history.
     public let status: String?
     public let isStalled: Bool
+    /// Why the status is what it is, with the numbers and the evidence level; `nil` without enough history.
+    public let statusExplanation: String?
     /// What to do today and why, with its evidence level, e.g.
     /// "Today: go up to 62.5 kg. Last time you completed every rep. (strong evidence)".
     public let reasons: [String]
@@ -103,7 +109,9 @@ extension DraftExercise {
         if let first = target.sets.first {
             let weight = first.weightKg.map { format.kilograms($0) + " × " } ?? ""
             let reps = target.sets.map { String($0.reps) }.joined(separator: "/")
-            targetLine = L10n.format("Target: {1}{2} @ RPE {3}", weight, reps, format.number(first.targetRPE))
+            targetLine = L10n.format(
+                "Target: {1}{2} @ {3}", weight, reps, effortScale.text(rpe: first.targetRPE, format: format)
+            )
         } else {
             targetLine = L10n.text("Target:") + " –"
         }
@@ -115,7 +123,7 @@ extension DraftExercise {
             }
         }
         var reasons = target.reasons.map { reason in
-            let context = ReasonContext(target: target, scheme: scheme, format: format)
+            let context = ReasonContext(target: target, scheme: scheme, format: format, effortScale: effortScale)
             return "\(reason.instruction(context)) (\(reason.evidence.level.displayName))"
         }
         if let warmUp = warmUpReason {
@@ -126,9 +134,45 @@ extension DraftExercise {
             focusLine: focusLine,
             status: status.text,
             isStalled: status.isStalled,
+            statusExplanation: statusExplanation(format: format),
             reasons: reasons,
             stallSuggestions: suggestions
         )
+    }
+
+    /// "Stalled: your best estimated 1RM in the last 3 sessions (102 kg) does not beat the 6 before (103 kg)…".
+    private func statusExplanation(format: Format) -> String? {
+        guard let facts = stallFacts, status != .notEnoughData else { return nil }
+        let recent = format.kilograms((facts.recentBestKg * 10).rounded() / 10)
+        let previous = format.kilograms((facts.previousBestKg * 10).rounded() / 10)
+        var text: String
+        switch status {
+        case .progressing:
+            text = L10n.format(
+                "Progressing: your best estimated 1RM in the last {1} sessions ({2}) beats the {3} before ({4}).",
+                facts.recentSessions, recent, facts.previousSessions, previous
+            )
+        case .holding:
+            text = L10n.format(
+                "Holding: your best estimated 1RM in the last {1} sessions ({2}) does not beat the {3} before ({4}), "
+                    + "but you are meeting your targets, so keep going.",
+                facts.recentSessions, recent, facts.previousSessions, previous
+            )
+        case .stalled:
+            text = L10n.format(
+                "Stalled: your best estimated 1RM in the last {1} sessions ({2}) does not beat the {3} before ({4}), "
+                    + "and you missed the target in {5} of them.",
+                facts.recentSessions, recent, facts.previousSessions, previous, facts.misses
+            )
+            if let shortfall = facts.lastShortfall, shortfall > 0 {
+                text += " " + (shortfall == 1
+                    ? L10n.text("Last time you were 1 rep short.")
+                    : L10n.format("Last time you were {1} reps short.", shortfall))
+            }
+        case .notEnoughData:
+            return nil
+        }
+        return text + " (\(ProgressionEvidence.stallHeuristics.level.displayName))"
     }
 
     /// Why the warm-up sets are there, when there are any.
@@ -172,6 +216,26 @@ public final class WorkoutModel {
 
     public var isSessionActive: Bool { startedAt != nil }
 
+    /// How effort is logged and shown (Settings for the athlete; changed from the logging guide).
+    public private(set) var effortScale = EffortScale.rpe
+    public var showsRepsInReserve: Bool { effortScale == .repsInReserve }
+
+    /// Asks before finishing when some exercises are unfinished (see `unfinishedExplanation`).
+    public var isConfirmingUnfinished = false
+
+    /// Names of exercises with some working sets done and others not, e.g. when the session ends early.
+    public var unfinishedExerciseNames: [String] {
+        exercises.filter(Self.isUnfinished).map(\.name)
+    }
+
+    public var unfinishedExplanation: String {
+        L10n.format(
+            "Unfinished: {1}. If you stopped early, leave them out of your progression so your next targets stay "
+                + "right. The work is saved either way.",
+            unfinishedExerciseNames.joined(separator: ", ")
+        )
+    }
+
     /// An optional general warm-up, suggested until the first set is done.
     public var generalWarmUpTip: String? {
         guard isSessionActive, !exercises.contains(where: { $0.sets.contains(where: \.isDone) }) else { return nil }
@@ -192,6 +256,7 @@ public final class WorkoutModel {
     private let progression: any ProgressionSettingsRepository
     private let backup: (any BackupService)?
     private let health: (any HealthWorkoutWriter)?
+    private let profiles: (any ProfileRepository)?
     private let clock: @Sendable () -> Date
 
     /// How far back history is read to compute targets and stalls.
@@ -204,6 +269,7 @@ public final class WorkoutModel {
         backup: (any BackupService)? = nil,
         health: (any HealthWorkoutWriter)? = nil,
         restAlerts: (any RestAlertScheduler)? = nil,
+        profiles: (any ProfileRepository)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
@@ -211,6 +277,7 @@ public final class WorkoutModel {
         self.progression = progression
         self.backup = backup
         self.health = health
+        self.profiles = profiles
         self.clock = clock
         rest = RestTimerModel(alerts: restAlerts, clock: clock)
     }
@@ -221,6 +288,28 @@ public final class WorkoutModel {
         } catch {
             errorMessage = L10n.text("Could not load exercises.")
         }
+        await loadEffortScale()
+    }
+
+    private func loadEffortScale() async {
+        guard let profile = try? await profiles?.profile() else { return }
+        applyEffortScale(profile.effortScale)
+    }
+
+    private func applyEffortScale(_ scale: EffortScale) {
+        effortScale = scale
+        for index in exercises.indices {
+            exercises[index].effortScale = scale
+        }
+    }
+
+    /// Logs effort as RPE or reps in reserve from now on (stored in the profile; sets keep storing RPE).
+    public func setEffortScale(_ scale: EffortScale) async {
+        guard scale != effortScale else { return }
+        applyEffortScale(scale)
+        guard let profiles, var profile = try? await profiles.profile() else { return }
+        profile.effortScale = scale
+        try? await profiles.save(profile)
     }
 
     public func start(name: String = L10n.text("Workout")) {
@@ -306,6 +395,7 @@ public final class WorkoutModel {
     /// Brings the session up to date after progression settings changed elsewhere. Only affected exercises are
     /// touched, so typed values survive; exercises with completed sets keep their sets and update the target.
     public func applySettingsChanges() async {
+        await loadEffortScale()
         for current in exercises {
             let stored: ProgressionSettings?
             do {
@@ -366,7 +456,9 @@ public final class WorkoutModel {
             appliedSettings: stored,
             scheme: settings.scheme,
             warmUpPlan: plan,
-            isPrimed: primed
+            isPrimed: primed,
+            stallFacts: StallDetection.facts(history: history, settings: settings),
+            effortScale: effortScale
         )
     }
 
@@ -426,10 +518,26 @@ public final class WorkoutModel {
         }
     }
 
+    /// Finishes, or asks first when some exercises are unfinished (`isConfirmingUnfinished`).
+    public func requestFinish() async {
+        if unfinishedExerciseNames.isEmpty {
+            await finish()
+        } else {
+            isConfirmingUnfinished = true
+        }
+    }
+
+    nonisolated private static func isUnfinished(_ exercise: DraftExercise) -> Bool {
+        let working = exercise.workingSets
+        return working.contains(where: \.isDone) && working.contains { !$0.isDone }
+    }
+
     /// Saves the completed sets with the notes and closes the session. Returns `false` if saving failed (the draft
-    /// is kept). Notes of exercises without completed sets are dropped with them.
+    /// is kept). Notes of exercises without completed sets are dropped with them. With `countingUnfinished` false,
+    /// unfinished exercises are saved but do not count for progression.
     @discardableResult
-    public func finish() async -> Bool {
+    public func finish(countingUnfinished: Bool = true) async -> Bool {
+        isConfirmingUnfinished = false
         guard let startedAt else { return false }
         let now = clock()
         let entries = exercises.compactMap { exercise -> ExerciseEntry? in
@@ -440,7 +548,8 @@ public final class WorkoutModel {
                 )
             }
             return done.isEmpty ? nil : ExerciseEntry(
-                exerciseID: exercise.exercise.id, sets: done, notes: Self.trimmedOrNil(exercise.notes)
+                exerciseID: exercise.exercise.id, sets: done, notes: Self.trimmedOrNil(exercise.notes),
+                countsForProgression: countingUnfinished || !Self.isUnfinished(exercise)
             )
         }
         guard !entries.isEmpty else {

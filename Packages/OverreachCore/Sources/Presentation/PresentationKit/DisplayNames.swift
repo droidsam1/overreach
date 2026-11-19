@@ -126,3 +126,13 @@ extension CycleTrackingMode {
         }
     }
 }
+
+extension EffortScale {
+    /// "RPE 8" or "RIR 2" for a stored RPE.
+    public func text(rpe: Double, format: Format = Format()) -> String {
+        switch self {
+        case .rpe: L10n.format("RPE {1}", format.number(rpe))
+        case .repsInReserve: L10n.format("RIR {1}", format.number(max(0, 10 - rpe)))
+        }
+    }
+}

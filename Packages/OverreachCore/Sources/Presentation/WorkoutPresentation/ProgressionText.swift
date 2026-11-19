@@ -10,6 +10,7 @@ struct ReasonContext {
     let target: ExerciseTarget
     let scheme: ProgressionScheme
     let format: Format
+    var effortScale = EffortScale.rpe
 
     /// "75 kg", or "–" without a load (no history yet).
     var weight: String { target.sets.first?.weightKg.map(format.kilograms) ?? "–" }
@@ -71,8 +72,9 @@ extension ProgressionReason {
         switch self {
         case .noHistory:
             return L10n.format(
-                "First time: choose a weight for {1} reps that leaves about {2} more in reserve (RPE {3}).",
-                context.reps, format.number(max(0, 10 - context.rpe)), format.number(context.rpe)
+                "First time: choose a weight for {1} reps that leaves about {2} more in reserve ({3}).",
+                context.reps, format.number(max(0, 10 - context.rpe)),
+                context.effortScale.text(rpe: context.rpe, format: format)
             )
         case let .topOfRangeReached(reps):
             return context.topOfRangeReached(reps)
@@ -96,9 +98,10 @@ extension ProgressionReason {
             return L10n.format("Today is the {1}-rep block of your cycle.", reps)
         case let .loadFromEstimatedOneRepMax(estimate, percent):
             return L10n.format(
-                "Today: {1}, which is {2} of your estimated max ({3}) for {4} reps at RPE {5}.",
+                "Today: {1}, which is {2} of your estimated max ({3}) for {4} reps at {5}.",
                 context.weight, format.number(percent, maxFractionDigits: 0) + " %",
-                format.kilograms((estimate * 10).rounded() / 10), context.reps, format.number(context.rpe)
+                format.kilograms((estimate * 10).rounded() / 10), context.reps,
+                context.effortScale.text(rpe: context.rpe, format: format)
             )
         case .noLoadIncrementAvailable:
             return L10n.text("To keep progressing, add external load or switch to a harder variation.")
@@ -110,25 +113,38 @@ extension StallSuggestion {
     var text: String {
         switch self {
         case let .microload(increment):
-            L10n.format("Use smaller jumps ({1} kg).", increment.formatted())
+            L10n.format(
+                "Use smaller jumps ({1} kg): you were only 1 rep short, and a smaller step lets you keep adding load.",
+                increment.formatted()
+            )
         case .switchToDoubleProgression:
-            L10n.text("Switch to a rep range (double progression).")
+            L10n.text(
+                "Switch to a rep range (double progression): adding reps before load gives you more small steps to "
+                    + "progress."
+            )
         case .changeRepRange:
-            L10n.text("Change the rep range for a few weeks.")
+            L10n.text("Change the rep range for a few weeks: a different stimulus often gets progress going again.")
         case let .addSet(weekly):
             L10n.format(
-                "Add a set: {1} weekly sets is on the low side.",
+                "Add a set: {1} weekly sets is on the low side for this muscle.",
                 weekly.formatted(.number.precision(.fractionLength(0)))
             )
         case let .removeSet(weekly):
             L10n.format(
-                "Remove a set: {1} weekly sets is on the high side.",
+                "Remove a set: {1} weekly sets is on the high side; fatigue may be holding you back.",
                 weekly.formatted(.number.precision(.fractionLength(0)))
             )
         case let .swapVariation(weeks):
-            L10n.format("Swap to a close variation for {1}–{2} weeks.", weeks.lowerBound, weeks.upperBound)
+            L10n.format(
+                "Swap to a close variation for {1}–{2} weeks, then come back: the new movement is easier to progress "
+                    + "and keeps the muscles working.",
+                weeks.lowerBound, weeks.upperBound
+            )
         case let .deloadLift(reduction):
-            L10n.format("Deload this lift for a week (−{1}).", (reduction * 100).formatted() + " %")
+            L10n.format(
+                "Deload this lift for a week (−{1}) to shed fatigue, then build back up.",
+                (reduction * 100).formatted() + " %"
+            )
         }
     }
 }

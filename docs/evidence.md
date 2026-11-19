@@ -55,6 +55,22 @@ RPE scale anchored to reps in reserve (RPE = 10 − RIR). Loads for reps × RPE 
 1RM assuming a set of r reps at RIR behaves like a set of r + RIR to failure (Epley).
 Refs: Zourdos et al. 2016, J Strength Cond Res; Helms et al. 2016. Reviewed 2026-11-16.
 
+### `rir-estimation` — moderate
+Estimates of reps in reserve were about 1 rep off on average, usually too low: people thought they had fewer reps
+left than they did. A scoping review with exploratory meta-analysis (12 studies, 414 participants) found this,
+with very high heterogeneity. Estimates are more accurate close to failure, in sets with fewer reps and with
+heavier loads. Training experience did not clearly help (systematic review of 26 studies; findings conflict
+between studies).
+→ RPE and RIR are the same scale (RPE = 10 − RIR), and users choose how to log it. The effort guide warns about
+the bias: when unsure, pick the value with more reps left.
+Refs: Halperin et al. 2022, Sports Med 52(2):377–390; Russo et al. 2025, Phys Ther Rev 31(1) (systematic review).
+Reviewed 2026-11-19.
+
+### `rir-calibration` — heuristic
+The guide suggests taking the last set of a safe exercise (a machine or an isolation exercise) to failure now and
+then, to compare the estimate with what was possible. No trial shows this improves accuracy. Never with heavy
+barbell lifts without safeties.
+
 ### `autoregulation-load` — moderate
 Autoregulated (RPE/velocity) and percentage-based load prescription gave similar strength gains.
 → RPE-based scheme offered as an option, not as superior.

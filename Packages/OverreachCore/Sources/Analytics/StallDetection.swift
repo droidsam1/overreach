@@ -63,19 +63,31 @@ public enum StallDetection {
         weeklyFractionalSets: Double? = nil,
         thresholds: Thresholds = Thresholds()
     ) -> ExerciseStatus {
+        guard let facts = facts(history: history, settings: settings, thresholds: thresholds) else {
+            return .notEnoughData
+        }
+        if facts.recentBestKg > facts.previousBestKg * (1 + thresholds.minimumImprovement) { return .progressing }
+        guard facts.misses >= thresholds.minimumMisses else { return .holding }
+
+        return .stalled(suggestions: suggestions(
+            settings: settings, lastShortfall: facts.lastShortfall,
+            weeklyFractionalSets: weeklyFractionalSets, range: thresholds.weeklySetRange
+        ))
+    }
+
+    /// The numbers behind the status, to explain it; `nil` without enough history.
+    public static func facts(
+        history: [ExerciseExposure], settings: ProgressionSettings, thresholds: Thresholds = Thresholds()
+    ) -> StallFacts? {
         let recentCount = max(1, thresholds.recentExposures)
-        guard history.count > recentCount else { return .notEnoughData }
+        guard history.count > recentCount else { return nil }
 
         let recentStart = history.count - recentCount
         let baselineStart = max(0, recentStart - thresholds.baselineExposures)
-        let recent = history[recentStart...]
-        let baseline = history[baselineStart..<recentStart]
-
-        guard let bestRecent = recent.compactMap(\.bestEstimatedOneRepMax).max(),
-              let bestBefore = baseline.compactMap(\.bestEstimatedOneRepMax).max() else {
-            return .notEnoughData
+        guard let bestRecent = history[recentStart...].compactMap(\.bestEstimatedOneRepMax).max(),
+              let bestBefore = history[baselineStart..<recentStart].compactMap(\.bestEstimatedOneRepMax).max() else {
+            return nil
         }
-        if bestRecent > bestBefore * (1 + thresholds.minimumImprovement) { return .progressing }
 
         var misses = 0
         var lastShortfall: Int?
@@ -85,12 +97,10 @@ public enum StallDetection {
             misses += 1
             lastShortfall = shortfall(of: target, in: history[index])
         }
-        guard misses >= thresholds.minimumMisses else { return .holding }
-
-        return .stalled(suggestions: suggestions(
-            settings: settings, lastShortfall: lastShortfall,
-            weeklyFractionalSets: weeklyFractionalSets, range: thresholds.weeklySetRange
-        ))
+        return StallFacts(
+            recentBestKg: bestRecent, previousBestKg: bestBefore, recentSessions: recentCount,
+            previousSessions: recentStart - baselineStart, misses: misses, lastShortfall: lastShortfall
+        )
     }
 
     /// Largest rep gap between the plan and what was done.
@@ -127,4 +137,17 @@ public enum StallDetection {
         result.append(.deloadLift(loadReduction: 0.1))
         return result
     }
+}
+
+/// What the stall status is based on (`stall-heuristics`): best estimated 1RM of the recent sessions against the
+/// ones before, and how many recent sessions missed their target.
+public struct StallFacts: Hashable, Sendable {
+    public let recentBestKg: Double
+    public let previousBestKg: Double
+    public let recentSessions: Int
+    public let previousSessions: Int
+    /// Recent sessions that did not meet their target.
+    public let misses: Int
+    /// Reps missing in the last missed session.
+    public let lastShortfall: Int?
 }

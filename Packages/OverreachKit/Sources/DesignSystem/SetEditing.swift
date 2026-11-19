@@ -9,14 +9,19 @@ public struct SetValueFields: View {
     @Binding private var weightKg: Double?
     @Binding private var reps: Int?
     @Binding private var rpe: Double?
+    private let showsRepsInReserve: Bool
 
     /// RPE values offered in the picker.
     public static let rpeValues: [Double] = RPEScale.values.reversed()
 
-    public init(weightKg: Binding<Double?>, reps: Binding<Int?>, rpe: Binding<Double?>) {
+    /// - Parameter showsRepsInReserve: show effort as reps in reserve (RIR = 10 − RPE); the binding stays RPE.
+    public init(
+        weightKg: Binding<Double?>, reps: Binding<Int?>, rpe: Binding<Double?>, showsRepsInReserve: Bool = false
+    ) {
         _weightKg = weightKg
         _reps = reps
         _rpe = rpe
+        self.showsRepsInReserve = showsRepsInReserve
     }
 
     public var body: some View {
@@ -32,13 +37,19 @@ public struct SetValueFields: View {
                 Text("No RPE").tag(Double?.none)
                 // Keep a value outside the usual range (e.g. imported RPE 5) selectable.
                 ForEach(rpeOptions, id: \.self) { value in
-                    RPEText(value: value).tag(Double?.some(value))
+                    RPEText(value: value, asRepsInReserve: showsRepsInReserve).tag(Double?.some(value))
                 }
             }
         } label: {
             Group {
                 if let rpe {
-                    Text("RPE \(rpe.formatted())")
+                    if showsRepsInReserve {
+                        Text("RIR \(RPEScale.repsInReserve(rpe).formatted())")
+                    } else {
+                        Text("RPE \(rpe.formatted())")
+                    }
+                } else if showsRepsInReserve {
+                    Text("RIR –")
                 } else {
                     Text("RPE –")
                 }
@@ -151,16 +162,23 @@ public struct ExercisePicker: View {
     }
 }
 
-/// "RPE 8 · 2 reps left": an RPE value with the reps in reserve it stands for (RIR-based RPE scale).
+/// "RPE 8 · 2 reps left" (or "RIR 2 · 2 reps left"): an RPE value with the reps in reserve it stands for.
 struct RPEText: View {
     let value: Double
+    var asRepsInReserve = false
 
     var body: some View {
         if let meaning = RPEScale.meaning(of: value) {
-            Text("RPE \(value.formatted())") + Text(verbatim: " · ") + Text(meaning)
+            name + Text(verbatim: " · ") + Text(meaning)
         } else {
-            Text("RPE \(value.formatted())")
+            name
         }
+    }
+
+    private var name: Text {
+        asRepsInReserve
+            ? Text("RIR \(RPEScale.repsInReserve(value).formatted())")
+            : Text("RPE \(value.formatted())")
     }
 }
 
@@ -168,6 +186,8 @@ struct RPEText: View {
 enum RPEScale {
     /// From hardest to easiest.
     static let values: [Double] = Array(stride(from: 10.0, through: 6.0, by: -0.5))
+
+    static func repsInReserve(_ rpe: Double) -> Double { max(0, 10 - rpe) }
 
     static func meaning(of value: Double) -> LocalizedStringKey? {
         switch value {
@@ -185,15 +205,29 @@ enum RPEScale {
     }
 }
 
-/// How to log a set: what to change after lifting, the RPE scale and what notes are for. Static help.
+/// How to log a set: what to change after lifting, how to rate effort (`rir-estimation`, `rir-calibration`),
+/// the scale and what notes are for. With a binding, it also chooses between RPE and reps in reserve.
 public struct SetLoggingGuide: View {
     @Environment(\.dismiss) private var dismiss
+    private let showsRepsInReserve: Binding<Bool>?
 
-    public init() {}
+    public init(showsRepsInReserve: Binding<Bool>? = nil) {
+        self.showsRepsInReserve = showsRepsInReserve
+    }
 
     public var body: some View {
         NavigationStack {
             List {
+                if let showsRepsInReserve {
+                    Section {
+                        Picker("Log effort as", selection: showsRepsInReserve) {
+                            Text("RPE").tag(false)
+                            Text("Reps in reserve (RIR)").tag(true)
+                        }
+                    } footer: {
+                        Text("Both mean the same: RPE = 10 − reps in reserve. Your history and targets do not change.")
+                    }
+                }
                 Section {
                     Label(
                         """
@@ -203,7 +237,7 @@ public struct SetLoggingGuide: View {
                         systemImage: "pencil"
                     )
                     Label(
-                        "Choose the RPE: how hard the set was, counted as the reps you had left.",
+                        "Choose the effort: how many reps you had left, as RPE or reps in reserve.",
                         systemImage: "gauge.with.dots.needle.50percent"
                     )
                     Label(
@@ -222,9 +256,40 @@ public struct SetLoggingGuide: View {
                     )
                 }
                 Section {
+                    Text(
+                        """
+                        When the set ends, ask yourself: how many more reps could I have done with good form? That \
+                        number is your reps in reserve.
+                        """
+                    )
+                    Text(
+                        """
+                        0: you could not have done another. 1: the last rep was a real fight and clearly slowed down. \
+                        2–3: hard, but you had some left. 4 or more: comfortable.
+                        """
+                    )
+                    Text(
+                        """
+                        Most people guess about 1 rep too few, more so in long sets and with light loads. If you \
+                        hesitate between two values, pick the one with more reps left. (moderate evidence)
+                        """
+                    )
+                    Text(
+                        """
+                        To check yourself, now and then take the last set of a safe exercise, such as a machine or \
+                        an isolation exercise, to failure and compare. Never with heavy barbell lifts without \
+                        safeties. (coaching heuristic)
+                        """
+                    )
+                } header: {
+                    Text("How to rate effort")
+                }
+                Section {
                     ForEach(RPEScale.values, id: \.self) { value in
                         HStack {
                             Text("RPE \(value.formatted())").monospacedDigit()
+                            Text(verbatim: "·").foregroundStyle(.secondary)
+                            Text("RIR \(RPEScale.repsInReserve(value).formatted())").monospacedDigit()
                             Spacer()
                             if let meaning = RPEScale.meaning(of: value) {
                                 Text(meaning).foregroundStyle(.secondary)
