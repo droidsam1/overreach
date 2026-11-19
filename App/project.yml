@@ -93,6 +93,8 @@ targets:
         product: FeatureOnboarding
       - package: OverreachKit
         product: FeatureAssistant
+      - package: OverreachKit
+        product: DesignSystem
       - package: OverreachCore
         product: AssistantPresentation
       - package: OverreachCore

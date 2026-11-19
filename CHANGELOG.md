@@ -15,6 +15,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Finishing with unfinished exercises asks whether they count for progression. Left out, they are saved and shown
   as unfinished in History, but the engine ignores them for targets and stalls. This can be changed later from
   the session editor.
+- Settings → Appearance: light, dark or the same as the iPhone (the default).
 
 ### Fixed
 - The progression engine ignored the kind of set: warm-up sets in the history now no longer count for targets,

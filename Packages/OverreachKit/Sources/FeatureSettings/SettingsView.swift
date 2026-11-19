@@ -30,6 +30,8 @@ public struct SettingsView<Library: View>: View {
     @State private var exportURL: URL?
     private let library: Library
 
+    @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.system
+
     public init(importModel: ImportModel, backupModel: BackupModel, @ViewBuilder library: () -> Library) {
         _importModel = State(initialValue: importModel)
         _backupModel = State(initialValue: backupModel)
@@ -40,6 +42,13 @@ public struct SettingsView<Library: View>: View {
         NavigationStack {
             Form {
                 Section("Library") { library }
+                Section("Appearance") {
+                    Picker("Appearance", selection: $appearance) {
+                        ForEach(AppAppearance.allCases) { option in
+                            Text(option.title).tag(option)
+                        }
+                    }
+                }
                 backupSection
                 Section {
                     Picker("Weights in the file", selection: $importModel.weightUnit) {
