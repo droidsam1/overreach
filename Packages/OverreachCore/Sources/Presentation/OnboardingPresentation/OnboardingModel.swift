@@ -14,18 +14,19 @@ public enum OnboardingDestination: Hashable, Sendable {
 /// page and step can be skipped, and the data steps can be reopened from Settings (without the tour). It is only
 /// offered on a device with no training data, so it never interrupts an existing user or a restore.
 ///
-/// To extend it (e.g. a Garmin sign-in or Health permissions), add a `TourPage` to show a feature or a `Step` to
-/// ask for data; the order is the order of the cases.
+/// To extend it, add a `TourPage` to show a feature or a `Step` to ask for data; the order is the order of the cases.
+/// The devices step asks which watches the person uses; connecting Apple Health or Garmin from there is wired by the
+/// App (the setup flows belong to other features).
 @MainActor
 @Observable
 public final class OnboardingModel {
     public enum Step: Int, CaseIterable, Hashable, Sendable {
-        case goal, about, walking, start
+        case goal, about, walking, devices, start
     }
 
     /// The tour shown before the data steps on a first launch.
     public enum TourPage: Int, CaseIterable, Hashable, Sendable {
-        case welcome, logging, coaching, assistant, safety
+        case welcome, logging, coaching, assistant, recovery, safety
     }
 
     public var isPresented = false
@@ -45,6 +46,10 @@ public final class OnboardingModel {
     public var usualWalksPerDay: Int?
     public var walksAreFixed = false
     public var canRunDuringWalks = false
+    /// Devices picked on the devices step. Empty: only the iPhone.
+    public private(set) var wearables: Set<Wearable> = []
+    /// The Garmin setup was already offered in this run, so "Continue" no longer opens it.
+    private var hasOfferedGarmin = false
 
     public let goalOptions: [Option<TrainingGoal.Kind>] = TrainingGoal.Kind.allCases.map {
         Option(value: $0, name: $0.displayName)
@@ -89,6 +94,15 @@ public final class OnboardingModel {
     public var canSkipStep: Bool { step != .start }
     public var showsCycleTracking: Bool { sex == .female }
     public var showsWalkDetails: Bool { hasDog || (usualWalksPerDay ?? 0) > 0 }
+
+    /// The devices step: Apple Watch, Garmin, another watch. "Only my iPhone" is the empty choice.
+    public let wearableOptions: [Wearable] = Wearable.allCases
+    public var usesOnlyPhone: Bool { wearables.isEmpty }
+    public func isSelected(_ wearable: Wearable) -> Bool { wearables.contains(wearable) }
+    /// Garmin was picked: the step offers to connect it now (or later from Today or Settings).
+    public var offersGarminSetup: Bool { wearables.contains(.garmin) }
+    /// Everything except Garmin reaches the app through Apple Health (and the iPhone counts steps itself).
+    public var offersHealthAccess: Bool { true }
 
     // MARK: Intents
 
@@ -135,6 +149,31 @@ public final class OnboardingModel {
         tourPage = nil
     }
 
+    /// Picks or unpicks a device on the devices step.
+    public func toggle(_ wearable: Wearable) {
+        if wearables.contains(wearable) {
+            wearables.remove(wearable)
+        } else {
+            wearables.insert(wearable)
+        }
+    }
+
+    /// "Continue". On the devices step with Garmin picked and not connected yet, the first tap asks to open the
+    /// Garmin setup (returns true) instead of moving on; after it, or once connected, it moves on as usual.
+    public func continueTapped(isGarminConnected: Bool) -> Bool {
+        if step == .devices, offersGarminSetup, !isGarminConnected, !hasOfferedGarmin {
+            hasOfferedGarmin = true
+            return true
+        }
+        next()
+        return false
+    }
+
+    /// "Only my iPhone": no watch.
+    public func chooseOnlyPhone() {
+        wearables = []
+    }
+
     public func next() {
         step = Step(rawValue: step.rawValue + 1) ?? step
     }
@@ -153,6 +192,8 @@ public final class OnboardingModel {
             cycleTracking = profile.cycleTracking
         case .walking:
             applyWalking(profile.walkingRoutine)
+        case .devices:
+            wearables = profile.wearables
         case .start:
             return
         }
@@ -198,6 +239,7 @@ public final class OnboardingModel {
         updated.walkingRoutine.usualWalksPerDay = usualWalksPerDay
         updated.walkingRoutine.walksAreFixed = showsWalkDetails && walksAreFixed
         updated.walkingRoutine.canRunDuringWalks = showsWalkDetails && canRunDuringWalks
+        updated.wearables = wearables
         return updated
     }
 
@@ -207,6 +249,7 @@ public final class OnboardingModel {
         sex = stored.sex
         cycleTracking = stored.cycleTracking  // After `sex`, which can reset it.
         applyWalking(stored.walkingRoutine)
+        wearables = stored.wearables
         step = .goal
         tourPage = nil
         isPresented = true

@@ -59,3 +59,21 @@ struct ContextTypesTests {
         #expect(EvidenceLevel.moderate < .strong)
     }
 }
+
+@Suite("Profile wearables")
+struct ProfileWearablesTests {
+    @Test func olderProfilesHaveNoWatchesAndUnknownOnesAreDropped() throws {
+        let old = try JSONDecoder().decode(AthleteProfile.self, from: Data(#"{"cycleTracking":"off"}"#.utf8))
+        #expect(old.wearables.isEmpty)
+
+        let newer = try JSONDecoder().decode(
+            AthleteProfile.self, from: Data(#"{"wearables":["garmin","smartRing"]}"#.utf8)
+        )
+        #expect(newer.wearables == [.garmin])
+
+        let roundTrip = try JSONDecoder().decode(
+            AthleteProfile.self, from: JSONEncoder().encode(AthleteProfile(wearables: [.appleWatch, .garmin]))
+        )
+        #expect(roundTrip.wearables == [.appleWatch, .garmin])
+    }
+}

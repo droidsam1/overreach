@@ -5,6 +5,12 @@ public enum BiologicalSex: String, Codable, Sendable, CaseIterable {
     case female, male, unspecified
 }
 
+/// A device that records health data. Which ones the person uses decides what the app offers to connect (Apple
+/// Health permission, the Garmin setup) and what Today can show.
+public enum Wearable: String, Codable, Sendable, CaseIterable {
+    case appleWatch, garmin, otherWatch
+}
+
 /// How (and whether) the menstrual cycle is taken into account (ADR-0009).
 public enum CycleTrackingMode: String, Codable, Sendable, CaseIterable {
     /// No cycle data is used.
@@ -62,6 +68,8 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
     public var declaredBlocks: [TrainingBlock]
     /// How the user logs effort. Only the display changes: sets always store RPE.
     public var effortScale: EffortScale
+    /// Devices the person said they use (first-run setup). Empty: only the iPhone, or not asked yet.
+    public var wearables: Set<Wearable>
 
     public init(
         sex: BiologicalSex? = nil,
@@ -73,7 +81,8 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         walkingRoutine: WalkingRoutine = WalkingRoutine(),
         goal: TrainingGoal? = nil,
         declaredBlocks: [TrainingBlock] = [],
-        effortScale: EffortScale = .rpe
+        effortScale: EffortScale = .rpe,
+        wearables: Set<Wearable> = []
     ) {
         self.sex = sex
         self.birthYear = birthYear
@@ -85,6 +94,7 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         self.goal = goal
         self.declaredBlocks = declaredBlocks
         self.effortScale = effortScale
+        self.wearables = wearables
     }
 
     /// Whether cycle-aware logic applies: only when the user chose a natural cycle explicitly.
@@ -94,7 +104,7 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
 extension AthleteProfile {
     private enum CodingKeys: String, CodingKey {
         case sex, birthYear, bodyMassKg, maxHeartRate, restingHeartRate, cycleTracking, walkingRoutine, goal
-        case declaredBlocks, effortScale
+        case declaredBlocks, effortScale, wearables
     }
 
     /// Tolerant decoding: fields added in later versions fall back to their defaults, so older stores and
@@ -112,7 +122,11 @@ extension AthleteProfile {
                 ?? WalkingRoutine(),
             goal: try container.decodeIfPresent(TrainingGoal.self, forKey: .goal),
             declaredBlocks: try container.decodeIfPresent([TrainingBlock].self, forKey: .declaredBlocks) ?? [],
-            effortScale: try container.decodeIfPresent(EffortScale.self, forKey: .effortScale) ?? .rpe
+            effortScale: try container.decodeIfPresent(EffortScale.self, forKey: .effortScale) ?? .rpe,
+            // Unknown devices (from a newer version) are dropped, not fatal.
+            wearables: Set(
+                (try container.decodeIfPresent([String].self, forKey: .wearables) ?? []).compactMap(Wearable.init)
+            )
         )
     }
 }

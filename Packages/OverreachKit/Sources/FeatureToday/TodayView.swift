@@ -7,9 +7,12 @@ import TodayPresentation
 public struct TodayView: View {
     @State private var model: TodayModel
     @State private var checkInSheet: CheckInModel?
+    private let onConnectGarmin: () -> Void
 
-    public init(model: TodayModel) {
+    /// - Parameter onConnectGarmin: opens the Garmin setup (wired by the App: it belongs to Settings).
+    public init(model: TodayModel, onConnectGarmin: @escaping () -> Void = {}) {
         _model = State(initialValue: model)
+        self.onConnectGarmin = onConnectGarmin
     }
 
     private let columns = [GridItem(.adaptive(minimum: 150), spacing: Spacing.medium)]
@@ -39,14 +42,25 @@ public struct TodayView: View {
                     }
 
                     LazyVGrid(columns: columns, spacing: Spacing.medium) {
-                        MetricTile(title: "Sleep", value: model.sleepHours, unit: "h", fractionDigits: 1,
-                                   caption: model.sleepCaption ?? model.sleepAverageCaption)
-                        MetricTile(title: "HRV", value: model.hrvMs, unit: "ms", caption: model.hrvCaption)
-                        MetricTile(title: "Resting HR", value: model.restingHeartRate, unit: "bpm",
-                                   caption: model.restingHeartRateCaption)
-                        MetricTile(title: "Steps", value: model.steps, unit: "", caption: model.stepsCaption)
+                        if model.showsSleep {
+                            MetricTile(title: "Sleep", value: model.sleepHours, unit: "h", fractionDigits: 1,
+                                       caption: model.sleepCaption ?? model.sleepAverageCaption)
+                        }
+                        if model.showsHRV {
+                            MetricTile(title: "HRV", value: model.hrvMs, unit: "ms", caption: model.hrvCaption)
+                        }
+                        if model.showsRestingHeartRate {
+                            MetricTile(title: "Resting HR", value: model.restingHeartRate, unit: "bpm",
+                                       caption: model.restingHeartRateCaption)
+                        }
+                        if model.showsSteps {
+                            MetricTile(title: "Steps", value: model.steps, unit: "", caption: model.stepsCaption)
+                        }
                         if model.showsBodyBattery {
                             MetricTile(title: "Body Battery", value: model.bodyBattery, unit: "")
+                        }
+                        if model.showsStress {
+                            MetricTile(title: "Stress", value: model.stress, unit: "")
                         }
                         if model.showsVO2Max {
                             MetricTile(title: "VO2max", value: model.vo2Max, unit: "", fractionDigits: 1)
@@ -78,6 +92,19 @@ public struct TodayView: View {
                                     .foregroundStyle(.red)
                             }
                         }
+                    }
+
+                    if model.showsConnectGarmin {
+                        Button(action: onConnectGarmin) {
+                            FeatureHighlightRow(
+                                symbol: "applewatch.radiowaves.left.and.right", title: Text("Connect your Garmin"),
+                                detail: Text("Nightly HRV, sleep score and Body Battery for the readiness light. Three steps.")
+                            )
+                            .padding(Spacing.medium)
+                            .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
+                        }
+                        .buttonStyle(.plain)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
 
                     if model.showsSourceWarning {
