@@ -9,6 +9,7 @@ let package = Package(
         .library(name: "Domain", targets: ["Domain"]),
         .library(name: "Analytics", targets: ["Analytics"]),
         .library(name: "StrongImport", targets: ["StrongImport"]),
+        .library(name: "GarminImport", targets: ["GarminImport"]),
         .library(name: "Reports", targets: ["Reports"]),
         .library(name: "AIExchange", targets: ["AIExchange"]),
         // Presentation (ADR-0014): screen state, intents and texts. SwiftUI views in OverreachKit only render them.
@@ -31,6 +32,8 @@ let package = Package(
         .target(name: "Analytics", dependencies: ["Domain"]),
         // Strong CSV import (phase 1).
         .target(name: "StrongImport", dependencies: ["Domain"]),
+        // Garmin Connect Personal API responses → domain values (ADR-0022). Networking lives in OverreachKit.
+        .target(name: "GarminImport", dependencies: ["Domain"]),
         // Markdown report shared with ChatGPT/Claude, and context for the in-app assistant.
         .target(name: "Reports", dependencies: ["Domain", "Analytics"]),
         // Versioned messages exchanged with AI chat apps (ADR-0017, docs/ai-exchange.md).
@@ -89,6 +92,9 @@ let package = Package(
         .testTarget(name: "ReportsTests", dependencies: ["Reports", "Domain"]),
         .testTarget(name: "AIExchangeTests", dependencies: ["AIExchange", "Analytics", "Domain", "Fixtures"]),
         .testTarget(name: "StrongImportTests", dependencies: ["StrongImport", "Domain"]),
+        .testTarget(
+            name: "GarminImportTests", dependencies: ["GarminImport", "Domain"], resources: [.copy("Fixtures")]
+        ),
         .testTarget(name: "PresentationKitTests", dependencies: ["PresentationKit", "Domain"]),
         .testTarget(
             name: "ExercisesPresentationTests",

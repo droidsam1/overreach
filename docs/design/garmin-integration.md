@@ -245,9 +245,12 @@ the Keychain live in `OverreachKit`.
 OverreachCore
   GarminImport (new, depends on Domain only)
     DTOs          Decodable mirrors of Garmin JSON. Every field optional, unknown keys ignored.
-    Mapping       DTO → DailyMetrics / RunActivity / DailyActivity / MenstrualEvent. Pure functions.
-    SyncPlan      Which days to fetch: last synced day, today's re-fetch, gaps, max window. Pure.
-    FIT (later)   Minimal FIT decoder for activity files (records, laps, sessions).
+    GarminDecoding   JSON → records (HRV night, sleep, daily summary, VO2max, activity). Tolerant: 204 = no data,
+                     a field of another type reads as missing, a record without date/id is skipped and counted,
+                     only a wrong overall shape throws.
+    GarminMapping    records → DailyMetrics / RunActivity / RecordedStrengthActivity. Pure functions.
+    GarminEndpoint   request paths and per-request range limits; GarminSyncPlan: days to fetch and windows.
+    FIT (later)      Minimal FIT decoder for activity files (records, laps, sessions).
 OverreachKit
   GarminSource (rewritten)
     GarminTokenProvider   personal key in the Keychain → 24 h access token (cached in memory and Keychain,
@@ -284,8 +287,19 @@ values win where both have them (HRV, sleep stages), and Health fills the rest.
   banner 7 days before. On 401 with a fresh token: the key was revoked, so show "Reconnect Garmin".
 - **Deduplicate runs.** Garmin also writes runs to Health. Match by start time (±2 min) and duration; keep the
   Garmin record (it has training effect and the FIT file) and drop the Health copy.
-- **Secrets.** Key and token only in the Keychain (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`), never in
-  logs, backups (ADR-0018 backup excludes them) or AI reports.
+- **Secrets.** The key and its expiry date live in the iOS **Keychain**, which encrypts them with keys protected
+  by the Secure Enclave. They are never in logs, the JSON backup (ADR-0018), AI reports or exchange messages.
+  - **The person enters the key once.** Keychain items survive app updates and re-signing with the same Apple ID (a
+    free account re-signs every 7 days; the access group is tied to the team, not to the install). Today they also
+    survive deleting and reinstalling the app, though Apple does not promise this.
+  - **The key item is `kSecAttrSynchronizable` with `kSecAttrAccessibleAfterFirstUnlock`.** iCloud Keychain then
+    keeps it end-to-end encrypted in the person's own iCloud account and brings it back on a new iPhone or after a
+    restore. That is the owner's storage, not a third party (Supplemental Terms §1). Without iCloud Keychain it
+    stays on the device. It must not be `ThisDeviceOnly`, because that is lost on a device restore.
+  - **The 24 h token is a separate item**, `ThisDeviceOnly` and not synchronised: it is cheap to mint again.
+  - **Losing the key is recoverable.** If no key is found, Settings explains how to create one. A key that Garmin
+    rejects (401 on the token call) shows "Reconnect Garmin". A banner and a local notification warn 7 days before
+    the expiry date the person picked (30 days to 1 year).
 - **Kill switch.** Disconnecting deletes the key and token; imported values stay (they are the user's data,
   `sources` shows where they came from).
 - **Provenance.** `DailyMetrics.sources` already records Garmin; reasons on Today can say "HRV from Garmin".
@@ -324,7 +338,7 @@ Health when a matched Garmin recording exists.
 | Step | Content | Where |
 |---|---|---|
 | 0 | Done (2026-11-20): checked against Garmin's official OpenAPI document, FAQ, client and Supplemental Terms, and live with a real key; synthetic fixtures recorded; ADR-0022 accepted. Rate limits remain unpublished by design. | docs |
-| 1 | `GarminImport`: DTOs + mapping for the HRV range, sleep range and daily summaries v2 (which carry resting HR, steps, stress, Body Battery, respiration and SpO2), with recorded fixtures and Swift Testing tests. | OverreachCore |
+| 1 | Done (2026-11-20): `GarminImport` decodes HRV, sleep, daily summaries v2, VO2max and activities, maps them to `DailyMetrics`, `RunActivity` and `RecordedStrengthActivity`, and plans the requests (first sync of 60 days = 6 requests). Tested against the fixtures. | OverreachCore |
 | 2 | `GarminSource`: token provider, HTTP client, `MetricsSource` for daily metrics. Wire in `AppContainer`. | OverreachKit, App |
 | 3 | Settings: connect (paste key + expiry), status, last sync, disconnect; localized texts (en, es, gl). | SettingsPresentation, FeatureSettings |
 | 4 | Readiness: HRV from Garmin feeds `ReadinessRules` (already source-agnostic); evidence note on Garmin HRV (nightly RMSSD) versus Apple SDNN, which are not comparable, so baselines must be per metric type. | Analytics, `docs/evidence.md` |

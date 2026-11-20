@@ -32,8 +32,9 @@ The analysis is in `docs/design/garmin-integration.md`.
 4. Apple Health remains the base source. Garmin values win where both exist, and the app works fully without
    Garmin.
 5. The key is personal (Garmin Connect Personal API Supplemental Terms, 2026-10-01): it is used only by its owner,
-   in their own copy of the app, and never shared or disclosed. It stays in the Keychain and is sent only to Garmin;
-   it is kept out of backups, AI reports, exchange messages and logs.
+   in their own copy of the app, and never shared or disclosed. It stays in the Keychain, synchronised through the
+   person's own iCloud Keychain so it survives updates, reinstalls and a new phone, and is sent only to Garmin. It is
+   kept out of backups, AI reports, exchange messages and logs.
 6. Rate limits are unpublished and may change, so the client throttles itself, backs off on 429/427/5xx and syncs
    incrementally.
 7. Strength workouts recorded on the watch never become sessions. They are paired with logged sessions by time

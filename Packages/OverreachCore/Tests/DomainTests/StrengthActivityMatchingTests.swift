@@ -124,7 +124,8 @@ struct StrengthActivityMatchingTests {
         #expect(empty.bySession.isEmpty)
         #expect(empty.unmatched.isEmpty)
 
-        let onlySessions = StrengthActivityMatching.match(sessions: [session(date(19, 18), minutes: 60)], activities: [])
+        let logged = session(date(19, 18), minutes: 60)
+        let onlySessions = StrengthActivityMatching.match(sessions: [logged], activities: [])
         #expect(onlySessions.bySession.isEmpty)
     }
 }

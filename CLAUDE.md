@@ -31,6 +31,7 @@ Packages/
     Domain                Entities + repository/source protocols
     Analytics             Load, progression, fatigue, ACWR, readiness rules (pure functions)
     StrongImport          Strong CSV parsing + exercise → muscle-group mapping
+    GarminImport          Garmin Personal API responses → domain values, endpoints, sync plan (ADR-0022)
     Reports               Markdown report for sharing with ChatGPT/Claude
     AIExchange            Versioned messages exchanged with AI chat apps (ADR-0017, docs/ai-exchange.md)
     Presentation/         Per-feature screen state, intents and texts (ADR-0014). Linux-testable.
@@ -51,7 +52,7 @@ docs/                     Product definition and ADRs
 ## Dependency rules (enforced in Package.swift and SwiftLint — do not break them)
 
 1. `Domain` depends on nothing.
-2. `Analytics`, `StrongImport`, `Reports` depend only on `Domain` (and `Reports` on `Analytics`).
+2. `Analytics`, `StrongImport`, `GarminImport`, `Reports` depend only on `Domain` (and `Reports` on `Analytics`).
 3. Data modules (`Persistence`, `HealthKitSource`, `GarminSource`, `AIKit`, `LocalAlerts`) depend on `Domain`
    (+ `Reports` for `AIKit`) and implement its protocols.
 4. `FeatureX` depends on `XPresentation`, `PresentationKit`, `DesignSystem` and `Domain` (value types only;
