@@ -62,7 +62,7 @@ enum PlanFollowUpText {
             Texts(L10n.format("Plan {1} sessions a week instead of {2}.", perWeek, from),
              L10n.format(
                 "You did about {1} a week lately. With the same weekly sets, fewer sessions build about the same "
-                    + "strength and muscle.", perWeek
+                    + "muscle and nearly the same strength.", perWeek
              ),
              L10n.format("Plan {1} a week", perWeek))
         case let .extendBlock(weeks):

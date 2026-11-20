@@ -6614,23 +6614,6 @@
         }
       }
     },
-    "Rest or go for a walk today.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hoy descansa o sal a caminar."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hoxe descansa ou sae camiñar."
-          }
-        }
-      }
-    },
     "Rest over": {
       "extractionState": "manual",
       "localizations": {
@@ -9980,23 +9963,6 @@
         }
       }
     },
-    "You did about {1} a week lately. With the same weekly sets, fewer sessions build about the same strength and muscle.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Últimamente hiciste unas {1} por semana. Con las mismas series semanales, menos sesiones dan casi la misma fuerza y músculo."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ultimamente fixeches unhas {1} por semana. Coas mesmas series semanais, menos sesións dan case a mesma forza e músculo."
-          }
-        }
-      }
-    },
     "You logged being ill. Rest until the symptoms ease, then come back gradually.": {
       "extractionState": "manual",
       "localizations": {
@@ -12084,6 +12050,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "A VFC adoita baixar na segunda metade do ciclo menstrual, así que isto por si só non pon o semáforo en vermello."
+          }
+        }
+      }
+    },
+    "Make it a recovery day: a walk or a very easy session. If you lift, keep it light (RPE 6 or less).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy, día de recuperación: un paseo o una sesión muy suave. Si levantas, que sea ligero (RPE 6 o menos)."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe, día de recuperación: un paseo ou unha sesión moi suave. Se levantas, que sexa lixeiro (RPE 6 ou menos)."
+          }
+        }
+      }
+    },
+    "You did about {1} a week lately. With the same weekly sets, fewer sessions build about the same muscle and nearly the same strength.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimamente hiciste unas {1} por semana. Con las mismas series semanales, menos sesiones dan casi el mismo músculo y casi la misma fuerza."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultimamente fixeches unhas {1} por semana. Coas mesmas series semanais, menos sesións dan case o mesmo músculo e case a mesma forza."
           }
         }
       }

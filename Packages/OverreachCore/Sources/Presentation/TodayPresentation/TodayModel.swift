@@ -52,7 +52,7 @@ public final class TodayModel {
         switch readiness.level {
         case .green: L10n.text("Train as planned.")
         case .amber: L10n.text("Keep it easy: an easy run (zone 1–2) or light strength.")
-        case .red: L10n.text("Rest or go for a walk today.")
+        case .red: L10n.text("Make it a recovery day: a walk or a very easy session. If you lift, keep it light (RPE 6 or less).")
         case .unknown: L10n.text("Not enough data yet to judge today.")
         }
     }

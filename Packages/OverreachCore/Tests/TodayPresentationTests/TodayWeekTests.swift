@@ -79,7 +79,7 @@ struct TodayWeekTests {
         await model.load(now: now)
 
         #expect(model.readinessLevel == .red)
-        #expect(model.readinessAdvice == "Rest or go for a walk today.")
+        #expect(model.readinessAdvice == "Make it a recovery day: a walk or a very easy session. If you lift, keep it light (RPE 6 or less).")
         #expect(
             model.readinessLines.map(\.text) == ["Marked as sick in today's check-in. Rest until the symptoms ease."]
         )

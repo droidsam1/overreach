@@ -3,8 +3,8 @@ import Foundation
 
 /// Evidence behind the plan follow-up (issue #34, `docs/evidence.md`).
 public enum PlanEvidence {
-    /// With weekly volume equated, training frequency makes little or no difference to strength or hypertrophy
-    /// (Schoenfeld et al. 2019, Grgic et al. 2018, meta-analyses).
+    /// With weekly volume equated, training frequency makes no difference to hypertrophy and a small one to strength
+    /// (Schoenfeld et al. 2019, Grgic et al. 2018, Pelland et al. 2026, meta-analyses).
     public static let frequency = EvidenceReference(key: "frequency-volume-equated", level: .strong)
     /// Strength and size lost during a break of up to ~10 weeks come back quickly with retraining, and end up
     /// like continuous training (Halonen et al. 2024, RCT; Ogasawara et al. 2011).

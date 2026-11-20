@@ -25,10 +25,12 @@ availability first. Refs: ISSN position stand, Sims et al. 2023. Reviewed 2026-1
 Active recovery gives a small-to-moderate reduction in DOMS and perceived fatigue vs passive rest.
 Refs: Dupuy et al. 2018 (meta-analysis, 99 studies). Reviewed 2026-11-16.
 
-### `walking-no-interference` — strong
+### `walking-no-interference` — moderate
 Interference scales with endurance-training frequency/duration; concurrent aerobic training does not
-compromise hypertrophy or maximal strength (may blunt explosive strength). Low-intensity walking is below
-that. Refs: Wilson et al. 2012; Schumann et al. 2022 (meta-analyses). Reviewed 2026-11-16.
+compromise hypertrophy or maximal strength (may blunt explosive strength, more within the same session than with
+≥ 3 h between). Low-intensity walking is below that. Moderate, not strong: the trials are of structured endurance
+training, and walking is an extrapolation (in the safe direction). Refs: Wilson et al. 2012; Schumann et al. 2022,
+Sports Med 52:601 (meta-analyses). Reviewed 2026-11-20.
 
 ### `low-steps-exercise-resistance` — moderate
 ≈ 5,000 steps/day or fewer blunted the metabolic response to exercise; ≈ 8,500 protected it.
@@ -49,8 +51,10 @@ Refs: Plotkin et al. 2022, PeerJ 10:e14142 (RCT). Reviewed 2026-11-16.
 ### `proximity-to-failure` — strong
 Hypertrophy improves as sets end closer to failure; strength gains are similar across a wide range of RIR.
 → Default target RPE 8 (≈ 2 RIR) for hypertrophy work; strength work does not need to approach failure.
-Refs: Robinson et al. 2024, Sports Med (dose-response meta-regression, 55 studies); Refalo et al. 2024 (RCT).
-Reviewed 2026-11-16.
+Training to failure gave only a trivial hypertrophy advantage over stopping short (Refalo et al. 2023, 15 studies),
+and 1–2 RIR matched failure for quadriceps growth in trained lifters over 8 weeks (Refalo et al. 2024).
+Refs: Robinson et al. 2024, Sports Med 54(9) (dose-response meta-regression, 55 studies); Refalo et al. 2023, Sports
+Med 53(3) (meta-analysis); Refalo et al. 2024, J Sports Sci (RCT). Reviewed 2026-11-20.
 
 ### `rir-based-rpe` — moderate
 RPE scale anchored to reps in reserve (RPE = 10 − RIR). Loads for reps × RPE are derived from the estimated
@@ -186,12 +190,14 @@ Refs: Singer et al. 2024, Front Sports Act Living 6:1429789 (Bayesian meta-analy
 Longer rests (3 min vs 1 min) improved strength and hypertrophy in trained men. → Strength rest 3–5 min.
 Refs: Schoenfeld et al. 2016, J Strength Cond Res (RCT). Reviewed 2026-11-16.
 
-### `periodization` — strong
+### `periodization` — moderate
 With volume equated, periodised training improves 1RM more than non-periodised, not hypertrophy; undulating
 beats linear for 1RM in trained lifters. Linear vs daily undulating give similar hypertrophy.
 → Block suggestions for strength goals; for hypertrophy goals periodisation is optional.
+Level: one meta-analysis of short, heterogeneous studies with an effect only on 1RM, so moderate (was strong until
+the 2026-11-20 review); no newer synthesis found.
 Refs: Moesgaard et al. 2022, Sports Med 52:1647 (meta-analysis, 35 studies); Grgic et al. 2017, PeerJ 5:e3695.
-Reviewed 2026-11-16.
+Reviewed 2026-11-20.
 
 ### `focus-heuristics` — heuristic
 Set classification cut-offs (≤ 6 reps at ≥ 78 % e1RM = strength; ≥ 15 reps = endurance; 60 % majority), streak
@@ -200,13 +206,15 @@ lengths, block lengths (4–8 weeks), templates and deload placement. All config
 ## Training plans
 
 ### `frequency-volume-equated` — strong
-With weekly volume equated, how many days a week a muscle is trained makes little or no difference to strength or
-hypertrophy; the apparent benefit of higher frequency comes from the extra volume.
+With weekly volume equated, how many days a week a muscle is trained makes no difference to hypertrophy and a small
+one to strength; most of the apparent benefit of higher frequency comes from the extra volume. The follow-up text
+says so ("about the same muscle and nearly the same strength").
 → When planned sessions keep being missed, the follow-up proposes fewer sessions a week (the user keeps their
 weekly sets in fewer, fuller sessions) instead of a plan they cannot keep.
 Refs: Schoenfeld, Grgic & Krieger 2019, J Sports Sci 37:1286 (meta-analysis, 25 studies); Grgic et al. 2018,
 Sports Med 48:1207 (meta-analysis, strength); Saric et al. 2019, J Strength Cond Res 33:S122 (RCT, trained men,
-3 vs 6 sessions). Reviewed 2026-11-19.
+3 vs 6 sessions); Pelland et al. 2026, Sports Med 56(2):481 (meta-regressions: with volume equated, frequency
+still has a small effect on strength, none on hypertrophy). Reviewed 2026-11-20.
 
 ### `retraining-after-break` — moderate
 A break of up to ~10 weeks lowers strength and size, but they come back quickly with retraining, and after a
