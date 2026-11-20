@@ -26,6 +26,8 @@ public enum ProgressionReason: Hashable, Codable, Sendable {
     case nextRepBlock(reps: Int)
     case loadFromEstimatedOneRepMax(estimateKg: Double, percent: Double)
     case noLoadIncrementAvailable
+    /// An accepted deload week: fewer sets, less load and an RPE cap (ADR-0027).
+    case deloadWeek(sets: Int, loadReduction: Double, maximumRPE: Double)
 
     public var evidence: EvidenceReference {
         switch self {
@@ -35,6 +37,8 @@ public enum ProgressionReason: Hashable, Codable, Sendable {
             ProgressionEvidence.loadOrRepProgression
         case .loadFromEstimatedOneRepMax:
             ProgressionEvidence.rirBasedRPE
+        case .deloadWeek:
+            ProgressionEvidence.deloadDesign
         }
     }
 }

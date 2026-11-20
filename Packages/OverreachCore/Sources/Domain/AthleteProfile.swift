@@ -11,6 +11,22 @@ public enum Wearable: String, Codable, Sendable, CaseIterable {
     case appleWatch, garmin, otherWatch
 }
 
+/// A deload week the person accepted: from `start`, for `days` days.
+public struct DeloadRecord: Hashable, Codable, Sendable {
+    public var start: CalendarDay
+    public var days: Int
+
+    public init(start: CalendarDay, days: Int) {
+        self.start = start
+        self.days = days
+    }
+
+    /// Whether `day` falls inside the deload.
+    public func contains(_ day: CalendarDay, calendar: Calendar = .current) -> Bool {
+        day >= start && day < start.adding(days: max(1, days), calendar: calendar)
+    }
+}
+
 /// How (and whether) the menstrual cycle is taken into account (ADR-0009).
 public enum CycleTrackingMode: String, Codable, Sendable, CaseIterable {
     /// No cycle data is used.
@@ -70,6 +86,10 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
     public var effortScale: EffortScale
     /// Devices the person said they use (first-run setup). Empty: only the iPhone, or not asked yet.
     public var wearables: Set<Wearable>
+    /// Deload weeks the person accepted, oldest first (ADR-0027). The latest resets "weeks since the last deload".
+    public var deloads: [DeloadRecord]
+    /// A deload proposal was postponed until this day (inclusive).
+    public var deloadPostponedUntil: CalendarDay?
 
     public init(
         sex: BiologicalSex? = nil,
@@ -82,7 +102,9 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         goal: TrainingGoal? = nil,
         declaredBlocks: [TrainingBlock] = [],
         effortScale: EffortScale = .rpe,
-        wearables: Set<Wearable> = []
+        wearables: Set<Wearable> = [],
+        deloads: [DeloadRecord] = [],
+        deloadPostponedUntil: CalendarDay? = nil
     ) {
         self.sex = sex
         self.birthYear = birthYear
@@ -95,6 +117,8 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         self.declaredBlocks = declaredBlocks
         self.effortScale = effortScale
         self.wearables = wearables
+        self.deloads = deloads
+        self.deloadPostponedUntil = deloadPostponedUntil
     }
 
     /// Whether cycle-aware logic applies: only when the user chose a natural cycle explicitly.
@@ -104,7 +128,7 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
 extension AthleteProfile {
     private enum CodingKeys: String, CodingKey {
         case sex, birthYear, bodyMassKg, maxHeartRate, restingHeartRate, cycleTracking, walkingRoutine, goal
-        case declaredBlocks, effortScale, wearables
+        case declaredBlocks, effortScale, wearables, deloads, deloadPostponedUntil
     }
 
     /// Tolerant decoding: fields added in later versions fall back to their defaults, so older stores and
@@ -126,7 +150,9 @@ extension AthleteProfile {
             // Unknown devices (from a newer version) are dropped, not fatal.
             wearables: Set(
                 (try container.decodeIfPresent([String].self, forKey: .wearables) ?? []).compactMap(Wearable.init)
-            )
+            ),
+            deloads: try container.decodeIfPresent([DeloadRecord].self, forKey: .deloads) ?? [],
+            deloadPostponedUntil: try container.decodeIfPresent(CalendarDay.self, forKey: .deloadPostponedUntil)
         )
     }
 }

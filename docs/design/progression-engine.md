@@ -58,11 +58,16 @@ Proposed when the score of these signals crosses a threshold (weights and thresh
 | Performance drop: e1RM down > 3–5 % on several lifts | v0.1 |
 | Weeks since last deload ≥ planned interval (default 6) | v0.1 |
 | Last week's load > 1.5× the usual week (uncoupled) | v0.1 (strength), v0.2 (with running and walking above baseline) |
-| HRV 7-day average below the normal range for ≥ 5 days | v0.2 |
-| Resting HR ≥ 5 bpm above baseline for several days | v0.2 |
-| Short sleep (< 6 h) on most nights of the week | v0.2 |
-| High average stress (Garmin) | v0.2 |
-| Sickness in check-ins → return-to-training protocol instead of a deload | v0.2 |
+| HRV 7-day trend below the personal range on ≥ 5 of the last 7 days (one HRV statistic, ADR-0024) | v0.2 |
+| Resting HR ≥ 5 bpm above its baseline on ≥ 4 of the last 7 days | v0.2 |
+| Short sleep (< 6 h) on ≥ 4 of the last 7 nights | v0.2 |
+| Low energy (≤ 2/5) or high soreness (3/3) in ≥ 3 check-ins of the last 7 days | v0.2 |
+| Sickness in a check-in of the last 7 days → return-to-training note instead of a deload | v0.2 |
+
+Recovery signals (`deload-recovery-signals`) add 1 point each, at most 2 together, and never propose a deload on
+their own: a proposal needs at least one performance signal (stalls, e1RM drop or RPE creep). Garmin stress and Body
+Battery are not used (proprietary, unvalidated for this). Today shows the proposal with its reasons; accepting
+records a deload week, which also resets the "weeks since the last deload" signal (ADR-0027).
 
 For naturally cycling users, the HRV and resting-HR signals compare against phase-aware baselines, so normal
 luteal shifts don't fire a deload (`docs/design/cycle-aware-training.md`, ADR-0009).

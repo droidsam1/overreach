@@ -13617,6 +13617,329 @@
           }
         }
       }
+    },
+    "Deload week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana de descarga"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana de descarga"
+          }
+        }
+      }
+    },
+    "Deload week suggested": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Te sugerimos una semana de descarga"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suxerímosche unha semana de descarga"
+          }
+        }
+      }
+    },
+    "Estimated maxes dropped on {1} lifts this month.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los máximos estimados han bajado en {1} ejercicios este mes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os máximos estimados baixaron en {1} exercicios este mes."
+          }
+        }
+      }
+    },
+    "HRV below your usual range on {1} of the last 7 days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC por debajo de tu rango habitual en {1} de los últimos 7 días."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC por debaixo do teu rango habitual en {1} dos últimos 7 días."
+          }
+        }
+      }
+    },
+    "Less than 6 h of sleep on {1} of the last 7 nights.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menos de 6 h de sueño en {1} de las últimas 7 noches."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menos de 6 h de sono en {1} das últimas 7 noites."
+          }
+        }
+      }
+    },
+    "Low energy or sore in {1} check-ins this week.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poca energía o agujetas en {1} registros diarios esta semana."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pouca enerxía ou agulletas en {1} rexistros diarios esta semana."
+          }
+        }
+      }
+    },
+    "Resting HR above your usual on {1} of the last 7 days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FC en reposo por encima de lo habitual en {1} de los últimos 7 días."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FC en repouso por riba do habitual en {1} dos últimos 7 días."
+          }
+        }
+      }
+    },
+    "Start deload week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empezar semana de descarga"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comezar semana de descarga"
+          }
+        }
+      }
+    },
+    "The same weights feel harder on {1} lifts (RPE up).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los mismos pesos se sienten más duros en {1} ejercicios (sube el RPE)."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os mesmos pesos resultan máis duros en {1} exercicios (sobe o RPE)."
+          }
+        }
+      }
+    },
+    "Training load rose fast this week ({1}× your usual).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La carga de entrenamiento ha subido rápido esta semana ({1}× lo habitual)."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A carga de adestramento subiu rápido esta semana ({1}× o habitual)."
+          }
+        }
+      }
+    },
+    "Until %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hasta el %@"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ata o %@"
+          }
+        }
+      }
+    },
+    "half": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "la mitad"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a metade"
+          }
+        }
+      }
+    },
+    "{1} main lifts have stalled.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} ejercicios principales se han estancado."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} exercicios principais estancáronse."
+          }
+        }
+      }
+    },
+    "{1} weeks since your last deload.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} semanas desde tu última descarga."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} semanas desde a túa última descarga."
+          }
+        }
+      }
+    },
+    "Same exercises, {1} of the working sets, about {2} less load, RPE {3} at most.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mismos ejercicios, {1} de las series efectivas, un {2} menos de carga y RPE {3} como máximo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os mesmos exercicios, {1} das series efectivas, un {2} menos de carga e RPE {3} como máximo."
+          }
+        }
+      }
+    },
+    "Deloads when you need them": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descargas cuando las necesitas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descargas cando as precisas"
+          }
+        }
+      }
+    },
+    "When lifts stall and recovery has been poor all week, Today suggests a deload week and says why.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuando los ejercicios se estancan y la recuperación ha sido mala toda la semana, Hoy te sugiere una semana de descarga y te dice por qué."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cando os exercicios se estancan e a recuperación foi mala toda a semana, Hoxe suxíreche unha semana de descarga e dite por que."
+          }
+        }
+      }
+    },
+    "Deload week: today's targets have fewer sets, less load and easier efforts.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana de descarga: los objetivos de hoy tienen menos series, menos carga y esfuerzos más suaves."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana de descarga: os obxectivos de hoxe teñen menos series, menos carga e esforzos máis suaves."
+          }
+        }
+      }
+    },
+    "Deload week: {1} working sets, about {2} less load and {3} at most, to shed fatigue.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana de descarga: {1} series efectivas, un {2} menos de carga y {3} como máximo, para soltar fatiga."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana de descarga: {1} series efectivas, un {2} menos de carga e {3} como máximo, para soltar fatiga."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

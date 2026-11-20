@@ -9,6 +9,11 @@ public enum DeloadSignal: Hashable, Sendable {
     case weeksSinceDeload(Int)
     /// Last 7 days' load as a multiple of the usual week (e.g. 1.6 = 60 % above).
     case weeklyLoadSpike(ratio: Double)
+    /// Recovery over the last 7 days (`deload-recovery-signals`): they only reinforce training signals.
+    case hrvSuppressed(days: Int)
+    case restingHeartRateElevated(days: Int)
+    case shortSleep(nights: Int)
+    case poorWellbeing(checkIns: Int)
 
     public var evidence: EvidenceReference {
         switch self {
@@ -16,6 +21,16 @@ public enum DeloadSignal: Hashable, Sendable {
         case .rpeCreep: ProgressionEvidence.rpeCreep
         case .weeksSinceDeload: ProgressionEvidence.deloadPractice
         case .weeklyLoadSpike: ProgressionEvidence.weeklyLoadChange
+        case .hrvSuppressed, .restingHeartRateElevated, .shortSleep, .poorWellbeing:
+            ProgressionEvidence.deloadRecoverySignals
+        }
+    }
+
+    /// Stalls, an e1RM drop or RPE creep: evidence from training itself, which a proposal always needs.
+    public var isPerformanceSignal: Bool {
+        switch self {
+        case .liftsStalled, .performanceDrop, .rpeCreep: true
+        default: false
         }
     }
 }
@@ -32,6 +47,24 @@ public struct DeloadPlan: Hashable, Sendable {
 
     public static let standard = DeloadPlan(durationDays: 7, setMultiplier: 0.5, loadMultiplier: 0.9, maximumRPE: 7)
 
+    /// `target` reduced for a deload week: the same exercise with fewer sets (at least one), less load rounded to the
+    /// exercise's increment, and RPE capped. Rep targets stay. The deload reason comes first.
+    public func applied(to target: ExerciseTarget, incrementKg: Double) -> ExerciseTarget {
+        guard !target.sets.isEmpty else { return target }
+        let count = max(1, Int((Double(target.sets.count) * setMultiplier).rounded()))
+        let sets = target.sets.prefix(count).map { planned in
+            PlannedSet(
+                weightKg: planned.weightKg.map { LoadPrescription.round($0 * loadMultiplier, toIncrement: incrementKg) },
+                reps: planned.reps,
+                targetRPE: min(planned.targetRPE, maximumRPE)
+            )
+        }
+        let reason = ProgressionReason.deloadWeek(
+            sets: count, loadReduction: ((1 - loadMultiplier) * 1_000).rounded() / 1_000, maximumRPE: maximumRPE
+        )
+        return ExerciseTarget(sets: Array(sets), reasons: [reason] + target.reasons)
+    }
+
     public init(durationDays: Int, setMultiplier: Double, loadMultiplier: Double, maximumRPE: Double) {
         self.durationDays = durationDays
         self.setMultiplier = setMultiplier
@@ -46,11 +79,14 @@ public struct DeloadProposal: Hashable, Sendable {
     public var plan: DeloadPlan
 }
 
-/// Proposes a whole-programme deload from training signals (phase 1). Recovery signals join in phase 2.
+/// Proposes a whole-programme deload from training signals, reinforced by sustained recovery signals.
 ///
 /// Deloads are proposed from evidence of accumulated fatigue, not on a timer alone: the Delphi consensus defines
 /// them as reduced training stress to manage fatigue (Bell et al. 2023), and the only RCT found a cost to strength
-/// from a routine 1-week break (Coleman et al. 2024). Weights and threshold are heuristics and configurable.
+/// from a routine 1-week break (Coleman et al. 2024). No recovery marker is decisive on its own (Meeusen et al.
+/// 2013; Bellenger et al. 2016), so recovery adds at most `recoveryWeightCap` and a proposal always needs a
+/// performance signal. Being sick recently gives no proposal: return to training gradually instead
+/// (`illness-return`). Weights and thresholds are heuristics and configurable.
 public enum DeloadAdvisor {
     public struct Settings: Hashable, Sendable {
         public var plannedIntervalWeeks = 6
@@ -67,6 +103,14 @@ public enum DeloadAdvisor {
         public var performanceDropFraction = 0.03
         /// Window for RPE creep and performance drops.
         public var lookbackDays = 28
+        /// Points per sustained recovery signal, and the most they add together.
+        public var recoveryWeight = 1.0
+        public var recoveryWeightCap = 2.0
+        /// Days of the last 7 each recovery signal needs to count.
+        public var hrvLowDays = 5
+        public var restingHeartRateHighDays = 4
+        public var shortSleepNights = 4
+        public var poorWellbeingCheckIns = 3
         public var plan = DeloadPlan.standard
 
         public init() {}
@@ -86,9 +130,11 @@ public enum DeloadAdvisor {
         lifts: [Lift],
         lastDeload: Date?,
         weeklyLoad: WeeklyLoadChange? = nil,
+        recovery: RecoveryTrend? = nil,
         now: Date,
         settings: Settings = Settings()
     ) -> DeloadProposal? {
+        if recovery?.sickRecently == true { return nil }
         let mainLifts = lifts.filter(\.settings.isMainLift)
         let considered = mainLifts.isEmpty ? lifts : mainLifts
         var signals: [DeloadSignal] = []
@@ -131,7 +177,25 @@ public enum DeloadAdvisor {
             score += settings.loadSpikeWeight
         }
 
-        guard score >= settings.threshold else { return nil }
+        if let recovery {
+            var recoverySignals: [DeloadSignal] = []
+            if recovery.hrvLowDays >= settings.hrvLowDays {
+                recoverySignals.append(.hrvSuppressed(days: recovery.hrvLowDays))
+            }
+            if recovery.restingHeartRateHighDays >= settings.restingHeartRateHighDays {
+                recoverySignals.append(.restingHeartRateElevated(days: recovery.restingHeartRateHighDays))
+            }
+            if recovery.shortSleepNights >= settings.shortSleepNights {
+                recoverySignals.append(.shortSleep(nights: recovery.shortSleepNights))
+            }
+            if recovery.poorWellbeingCheckIns >= settings.poorWellbeingCheckIns {
+                recoverySignals.append(.poorWellbeing(checkIns: recovery.poorWellbeingCheckIns))
+            }
+            signals += recoverySignals
+            score += min(settings.recoveryWeightCap, Double(recoverySignals.count) * settings.recoveryWeight)
+        }
+
+        guard score >= settings.threshold, signals.contains(where: \.isPerformanceSignal) else { return nil }
         return DeloadProposal(signals: signals, score: score, plan: settings.plan)
     }
 

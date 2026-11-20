@@ -23,6 +23,8 @@ public enum ProgressionEvidence {
     public static let deloadCost = EvidenceReference(key: "deload-cost", level: .moderate)
     /// Stall window, miss counts, resets, microloading, variation swaps: coaching defaults.
     public static let stallHeuristics = EvidenceReference(key: "stall-heuristics", level: .heuristic)
+    /// Sustained recovery signals only reinforce a deload that training suggests (Meeusen 2013, Bellenger 2016).
+    public static let deloadRecoverySignals = EvidenceReference(key: "deload-recovery-signals", level: .limited)
     /// Rising RPE at the same load and reps as a fatigue signal.
     public static let rpeCreep = EvidenceReference(key: "rpe-creep", level: .heuristic)
     /// Last week's load against the usual week (uncoupled); a weak signal, never an injury-risk measure.

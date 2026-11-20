@@ -31,6 +31,9 @@ public struct TodayView: View {
                     if model.showsReadinessCard {
                         readiness
                     }
+                    if let advice = model.deloadAdvice {
+                        deload(advice)
+                    }
                     if let option = model.strengthOption {
                         easyStrength(option)
                     }
@@ -83,6 +86,42 @@ public struct TodayView: View {
             .task { await model.load() }
             .refreshable { await model.load() }
         }
+    }
+
+    /// A deload proposal with its reasons and the plan, or the deload week in progress.
+    private func deload(_ advice: DeloadAdvice) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            switch advice.state {
+            case let .proposed(reasons):
+                Label("Deload week suggested", systemImage: "arrow.down.right.circle.fill")
+                    .font(.headline)
+                    .foregroundStyle(.orange)
+                ForEach(reasons, id: \.self) { reason in
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        Text(reason.text).font(.subheadline)
+                        Text(reason.evidence).font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+                Text(advice.planText).font(.footnote).foregroundStyle(.secondary)
+                HStack {
+                    Button("Start deload week") { Task { await model.acceptDeload() } }
+                        .buttonStyle(.borderedProminent)
+                    Button("Not now") { Task { await model.postponeDeload() } }
+                        .buttonStyle(.bordered)
+                }
+            case let .inProgress(lastDay):
+                Label("Deload week", systemImage: "arrow.down.right.circle.fill")
+                    .font(.headline)
+                    .foregroundStyle(.tint)
+                Text(advice.planText).font(.subheadline)
+                Text("Until \(lastDay.formatted(.dateTime.weekday(.wide).day().month()))")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(Spacing.medium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
     }
 
     private var connectHealth: some View {
