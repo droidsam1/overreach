@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today suggests a deload week when your training shows fatigue (stalled lifts, dropping maxes or rising RPE) and
+  your recovery has been poor all week (HRV, resting heart rate, sleep or check-ins), with the reasons. Start it
+  or postpone it for a week; recovery alone never suggests a deload.
 - Log a watch-only strength workout from History: the new session starts with the watch's times, and once saved it
   shows the watch's heart rate and load. Apple Watch strength workouts appear too, and a Garmin workout and its
   Apple Health copy count once.

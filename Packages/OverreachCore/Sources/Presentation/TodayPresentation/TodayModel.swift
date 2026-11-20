@@ -31,6 +31,8 @@ public final class TodayModel {
     public private(set) var checkIn: CheckIn?
     public private(set) var recentTrainingDays: [RecentTrainingDay] = []
     public private(set) var strengthOption: StrengthOption?
+    /// A deload proposal (training reinforced by recovery, `deload-recovery-signals`) or the deload week in progress.
+    public private(set) var deloadAdvice: DeloadAdvice?
     private var trainingReadFailed = false
     private var activeLoad: UUID?
     private var loadedDay: CalendarDay?
@@ -309,6 +311,7 @@ public final class TodayModel {
         readiness = ReadinessRules.readiness(
             today: today, history: history, checkIn: checkIn, settings: readinessSettings, calendar: calendar
         )
+        await loadDeloadAdvice(today: today, now: now, history: history, profile: profile, loadID: loadID)
         await loadRecentTraining(in: weekStart...today, now: now, sources: availableSources, profile: profile,
                                  loadID: loadID)
     }
@@ -338,6 +341,48 @@ public final class TodayModel {
               !hasStrengthToday(sessions: sessions, recordings: recordings ?? [], now: now) else { return }
         await loadStrengthOption(today: range.upperBound, now: now, profile: profile, catalog: allExercises ?? [],
                                  loadID: loadID)
+    }
+
+    // MARK: Deload
+
+    /// Accepts the proposed deload: a deload week from today. It also resets "weeks since the last deload".
+    public func acceptDeload(now: Date = .now) async {
+        guard let profiles, var profile = try? await profiles.profile() else { return }
+        let today = CalendarDay(now, calendar: calendar)
+        profile.deloads.append(DeloadRecord(start: today, days: DeloadAdvisor.Settings().plan.durationDays))
+        profile.deloadPostponedUntil = nil
+        try? await profiles.save(profile)
+        await load(now: now)
+    }
+
+    /// Hides the proposal for a week. It comes back then if training and recovery still suggest it.
+    public func postponeDeload(now: Date = .now) async {
+        guard let profiles, var profile = try? await profiles.profile() else { return }
+        profile.deloadPostponedUntil = CalendarDay(now, calendar: calendar).adding(days: 6, calendar: calendar)
+        try? await profiles.save(profile)
+        deloadAdvice = nil
+    }
+
+    private func loadDeloadAdvice(
+        today: CalendarDay, now: Date, history: [DailyMetrics], profile: AthleteProfile?, loadID: UUID
+    ) async {
+        guard let profile, let workouts else {
+            deloadAdvice = nil
+            return
+        }
+        let weekStart = today.adding(days: -(RecoveryTrend.windowDays - 1), calendar: calendar)
+        async let logged = try? workouts.sessions(from: now.addingTimeInterval(-ProgressionTargets.historyWindow), to: now)
+        async let catalog = try? exercises?.allExercises()
+        async let allSettings = try? progression?.allProgressionSettings()
+        async let weekCheckIns = try? checkIns?.checkIns(in: weekStart...today)
+        let (sessions, allExercises, settings, recentCheckIns) = await (logged, catalog, allSettings, weekCheckIns)
+        guard activeLoad == loadID else { return }
+        let completed = (sessions ?? []).filter { RecentTraining.isCompleted($0, through: now) }
+        deloadAdvice = DeloadAdvice.make(
+            today: today, now: now, sessions: completed, exercises: allExercises ?? [], settings: settings ?? [:],
+            profile: profile, history: history, checkIns: recentCheckIns ?? [], readinessSettings: readinessSettings,
+            calendar: calendar, format: format
+        )
     }
 
     private func hasStrengthToday(sessions: [StrengthSession], recordings: [RecordedStrengthActivity], now: Date) -> Bool {
