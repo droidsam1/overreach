@@ -3,7 +3,7 @@ import Foundation
 @testable import PresentationKit
 import Testing
 
-@Suite("Further reading (ADR-0027)")
+@Suite("Further reading (ADR-0030)")
 struct FurtherReadingTests {
     /// `docs/evidence.md`, found from this file's path.
     private func registerKeys() throws -> Set<String> {

@@ -8,7 +8,7 @@ import PresentationKit
 public struct ExplainedLine: Hashable, Sendable {
     public let text: String
     public let evidence: String
-    /// "Learn more" for this line (ADR-0027); often empty.
+    /// "Learn more" for this line (ADR-0030); often empty.
     public let readings: [Reading]
 
     init(text: String, evidence: EvidenceReference) {

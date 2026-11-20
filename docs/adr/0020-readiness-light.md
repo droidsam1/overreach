@@ -1,4 +1,4 @@
-# ADR-0020: The readiness light compares today with the person's own baseline
+# 0020 — The readiness light compares today with the person's own baseline
 
 - Status: accepted
 - Date: 2026-11-19

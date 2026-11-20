@@ -1,4 +1,4 @@
-# ADR-0019: Training plans are declared blocks that rotate through routines
+# 0019 — Training plans are declared blocks that rotate through routines
 
 - Status: accepted
 - Date: 2026-11-19

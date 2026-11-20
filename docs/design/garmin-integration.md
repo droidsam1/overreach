@@ -221,7 +221,7 @@ explainable and would duplicate what `ReadinessRules` computes. Showing them is 
 
 - **Starter (free, up to 1,000 users) / Enterprise (paid from April 2027):** OAuth2 PKCE per user and push webhooks
   to a public HTTPS endpoint; no ping or backfill on Starter. It needs a server, which breaks "no backend"
-  (CLAUDE.md, ADR-0004). Revisit in phase 4 only if the app is distributed publicly and the Personal terms rule it
+  (AGENTS.md, ADR-0004). Revisit in phase 4 only if the app is distributed publicly and the Personal terms rule it
   out. Same data as Personal, plus the Training API (workouts to the watch).
 - **Connect IQ:** a watch app could record beat-to-beat intervals and compute HRV itself. Large effort, battery
   cost, separate toolchain. Keep as a plan B in case Garmin closes the Personal tier.

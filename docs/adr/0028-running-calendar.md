@@ -1,4 +1,4 @@
-# ADR-0028 Running calendar entries have a local date and stable identity
+# 0028 — Running calendar entries have a local date and stable identity
 
 - Status: accepted
 - Date: 2026-11-20

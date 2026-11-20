@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """Checks that every user-facing string is in App/Resources/Localizable.xcstrings, translated (ADR-0015).
 
-Usage: scripts/check-localization.py [--list]
+Usage: scripts/check-localization.py [--list] [--fix]
+  --fix  rewrites the catalogs in canonical form (keys sorted), e.g. after resolving a merge.
 """
 import json
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import xcstrings  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 CATALOG = ROOT / "App/Resources/Localizable.xcstrings"
@@ -106,6 +110,10 @@ def main():
     if "--list" in sys.argv:
         print(json.dumps(sorted(keys), ensure_ascii=False, indent=0))
         return 0
+    catalogs = [CATALOG, INFO_PLIST_CATALOG]
+    if "--fix" in sys.argv:
+        for catalog in catalogs:
+            xcstrings.save(catalog, xcstrings.load(catalog))
     strings = json.loads(CATALOG.read_text(encoding="utf-8"))["strings"]
     problems = [f"Not in the catalog: {key!r} ({path.relative_to(ROOT)})"
                 for key, path in sorted(keys.items()) if key not in strings]
@@ -124,6 +132,9 @@ def main():
         for language in LANGUAGES:
             if not entry.get("localizations", {}).get(language, {}).get("stringUnit", {}).get("value"):
                 problems.append(f"Missing {language} in InfoPlist: {key!r}")
+    for catalog in catalogs:
+        if catalog.read_text(encoding="utf-8").replace("\r\n", "\n") != xcstrings.dumps(xcstrings.load(catalog)):
+            problems.append(f"Not in canonical form: {catalog.relative_to(ROOT)}. Run with --fix.")
     print("\n".join(problems) or f"{len(strings)} strings translated into {', '.join(LANGUAGES)}.")
     return 1 if problems else 0
 

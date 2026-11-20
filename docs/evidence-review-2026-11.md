@@ -2,7 +2,7 @@
 
 A full pass over every rule, threshold, metric and user-facing text in Overreach against the most recent
 high-quality evidence (ADR-0012). It also maps each topic to further reading for the user, including Fitness
-Revolucionario (Marcos Vázquez) where it agrees with the evidence (proposal: ADR-0027).
+Revolucionario (Marcos Vázquez) where it agrees with the evidence (proposal: ADR-0030).
 
 - **Scope:** `Analytics` (progression, stalls, deloads, focus, blocks, plan follow-up, warm-ups, workload,
   readiness), the metrics in `DailyMetrics` and how Today and the logger present them, and the design docs for
@@ -19,7 +19,7 @@ All of §8 is implemented: the uncoupled weekly load comparison (`weekly-load-ch
 baseline (done on main as `HRVMetric`, ADR-0024 and ADR-0025, which this branch adopted instead of its own version)
 and the natural-cycle HRV note (`hrv-cycle-phase`), effective sets from RPE 6
 (`effective-set-threshold`), the wording and level changes, the "watch estimate" labels on Today, and further
-reading (ADR-0027, accepted). Still open: the Fitness Revolucionario links were located through a search index
+reading (ADR-0030, accepted). Still open: the Fitness Revolucionario links were located through a search index
 because the site could not be reached from the development environment; read each one before a release
 (`scripts/check-reading-links.py` from a normal network checks they resolve). Rules for run/lift, muscle recovery
 and steps (§2.4, §7) are for the phases that build them.
@@ -176,7 +176,7 @@ How each metric in `DailyMetrics` should be used, given what is known about its 
 Presentation rule that follows: **every number on screen tells the user whether it is measured, estimated by the
 watch, or computed by Overreach,** and only the first and last kinds feed rules.
 
-## 6. Further reading — map for ADR-0027
+## 6. Further reading — map for ADR-0030
 
 Fitness Revolucionario articles were located through a search index; the site could not be fetched from the
 development environment, so each link must be opened and read before it ships. "Agrees" means the summary found
@@ -235,7 +235,7 @@ by the same authors as several of the meta-analyses).
 3. Effective-set cut-off and register entry (§3.3).
 4. Wording changes and level adjustments (§3.4, §4), with localisation.
 5. "Measured / estimated / computed" labels on Today (§5).
-6. Further reading (ADR-0027), starting with the "agrees" rows of §6 after reading each article.
+6. Further reading (ADR-0030), starting with the "agrees" rows of §6 after reading each article.
 
 ## References (new or updated in this review)
 
