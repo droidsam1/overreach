@@ -145,6 +145,20 @@ public enum ReadinessRules {
         }
     }
 
+    /// A representative source from the evidence register for the reason, shared by Today and reports.
+    public static func evidenceURL(for reason: ReadinessReason) -> URL? {
+        let address: String
+        switch reason {
+        case .markedSick, .symptomsLimitTraining: address = "https://doi.org/10.1136/bjsports-2022-105759"
+        case .hrvBelowBaseline: address = "https://doi.org/10.3390/ijerph181910299"
+        case .restingHeartRateElevated: address = "https://pubmed.ncbi.nlm.nih.gov/18308872/"
+        case .shortSleep: address = "https://doi.org/10.1007/s40279-022-01706-y"
+        case .lowEnergy, .highSoreness: address = "https://pubmed.ncbi.nlm.nih.gov/26423706/"
+        case .missingData: return nil
+        }
+        return URL(string: address)
+    }
+
     /// Decide what is worth asking, without inferring stress or illness from the device (`readiness-context-prompt`).
     public static func contextQuestion(for readiness: Readiness) -> CheckIn.Context.Question? {
         var hasLowHRV = false

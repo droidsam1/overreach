@@ -180,6 +180,7 @@ struct CheckInModelTests {
         await model.load(now: now)
         let initialReadiness = model.readiness
         #expect(model.checkInButtonTitle == "Do new symptoms make you feel too unwell to train today?")
+        #expect(model.readinessSummary == "Your HRV is trending below your usual range and your resting heart rate is higher than usual.")
 
         let sheet = try #require(model.makeCheckInModel(now: now))
         sheet.contextAnswer = .yes

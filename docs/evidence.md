@@ -239,6 +239,10 @@ heuristic transfer, and only ever within one statistic (`hrv-metrics`).
 → Readiness reports the number of comparable daily readings actually used in the rolling window and indicates
 when either window has insufficient coverage. Missing, non-positive and non-finite values are excluded. The
 calendar windows retain their existing overlap, and the displayed count does not change the decision threshold.
+→ The Today details distinguish observed readings, the app's reference window and the remaining uncertainty about
+the cause. Recent workouts are aligned by local date to the latest comparable reading. Date order does not establish
+the precise sleep or measurement interval. For easy-run copy, conversational effort is a practical cue rather than
+a conversion to a particular zone system. [Foster et al., talk-test study](https://pubmed.ncbi.nlm.nih.gov/18277826/)
 Refs: Düking et al. 2021, J Sci Med Sport 24:1180 (meta-analysis, wearables); Manresa-Rocamora et al. 2021, Int
 J Environ Res Public Health 18:10299 (meta-analysis); Granero-Gallegos et al. 2020, Int J Environ Res Public
 Health 17:7999 (meta-analysis); Vesterinen et al. 2016, Med Sci Sports Exerc 48:1347 (RCT, SWC protocol); Plews

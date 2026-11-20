@@ -7,16 +7,22 @@ import TodayPresentation
 private actor WeekSource: MetricsSource {
     nonisolated let kind = DataSourceKind.appleHealth
     let days: [DailyMetrics]
+    let activities: [RunActivity]
     private(set) var accessRequests = 0
 
-    init(days: [DailyMetrics]) { self.days = days }
+    init(days: [DailyMetrics], activities: [RunActivity] = []) {
+        self.days = days
+        self.activities = activities
+    }
 
     func isAvailable() async -> Bool { true }
     func requestAccess() async { accessRequests += 1 }
     func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics] {
         days.filter { range.contains($0.day) }
     }
-    func runs(from start: Date, to end: Date) async throws -> [RunActivity] { [] }
+    func runs(from start: Date, to end: Date) async throws -> [RunActivity] {
+        activities.filter { (start...end).contains($0.startedAt) }
+    }
 }
 
 private struct OneCheckIn: CheckInRepository {
@@ -89,7 +95,55 @@ struct TodayWeekTests {
         await model.load(now: now)
 
         #expect(model.readinessLevel == .unknown)
+        #expect(model.showsReadinessCard)
         #expect(model.hrvCoverageNote == "Too few comparable HRV readings in the last 7 days (1 available, 3 needed).")
+    }
+
+    @Test func lowHRVExplainsTheComparisonWithoutInventingMissingNightsOrWorkouts() async {
+        let days = (0...30).map { offset in
+            let hrv: Double? = switch offset {
+            case 0...3: 34
+            case 4, 6: nil
+            default: 43
+            }
+            var value = day(-offset, sleepHours: offset == 0 ? 7.6 : nil, hrv: hrv, steps: nil)
+            value.restingHeartRate = offset == 0 ? 60 : 59
+            return value
+        }
+        let model = TodayModel(sources: [WeekSource(days: days)], calendar: calendar,
+                               format: Format(locale: Locale(identifier: "en_US")))
+        await model.load(now: now)
+
+        #expect(model.readinessLevel == .amber)
+        #expect(model.readinessSummary == "Your HRV is trending below your usual range.")
+        #expect(model.readinessAdvice == "Keep it easy today. Run at a pace you can talk at, or lift with light effort.")
+        #expect(model.readinessLines.first?.text.contains("4 of 5 comparable readings low") == true)
+        #expect(model.readinessLines.first?.source?.absoluteString == "https://doi.org/10.3390/ijerph181910299")
+        #expect(model.readinessContext.contains("Sleep last night was 7.6 h."))
+        #expect(model.readinessContext.contains(
+            "Resting heart rate today is 60 bpm. The average over 7 measured days in the last week is 59 bpm."
+        ))
+        #expect(model.readinessTrainingContext == nil)
+    }
+
+    @Test func showsOnlyWorkoutsFromTheDayBeforeTheLatestComparableReading() async throws {
+        let days = (0...25).map { offset in
+            day(-offset, sleepHours: nil, hrv: offset == 0 ? nil : (offset < 7 ? 32 : 50), steps: nil)
+        }
+        let older = RunActivity(id: "prior-workout", source: .appleHealth, name: "Intervals",
+                                startedAt: days[2].day.startDate(in: calendar).addingTimeInterval(18 * 3_600),
+                                durationSeconds: 1_800, distanceMeters: 4_000)
+        let sameDay = RunActivity(id: "same-day", source: .appleHealth, name: "Not before the reading",
+                                  startedAt: days[1].day.startDate(in: calendar).addingTimeInterval(18 * 3_600),
+                                  durationSeconds: 1_800, distanceMeters: 4_000)
+        let model = TodayModel(sources: [WeekSource(days: days, activities: [sameDay, older])], calendar: calendar)
+        await model.load(now: now)
+
+        let context = try #require(model.readinessTrainingContext)
+        #expect(context.workouts.count == 1)
+        #expect(context.workouts.first?.contains("Intervals") == true)
+        #expect(model.readinessContext.contains("Resting heart rate is unavailable for today."))
+        #expect(model.readinessContext.contains("Sleep data for last night is unavailable."))
     }
 
     @Test func connectingAsksForAccessAndReloads() async {

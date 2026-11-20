@@ -36,7 +36,7 @@ struct MarkdownReportRendererTests {
         #expect(markdown.contains("## Athlete context"))
         #expect(markdown.contains("Readiness: **amber**"))
         #expect(markdown.contains("HRV below its normal range for 4 nights"))
-        #expect(markdown.contains("HRV last night: 37 ms (normal range 40–48 ms)"))
+        #expect(markdown.contains("HRV last night: 37 ms (watch-reported range 40–48 ms)"))
         #expect(markdown.contains("| 2026-11-16 | 37 | – |"))
         #expect(markdown.contains("2026-11-16: sick; energy 2/5"))
         #expect(markdown.hasSuffix("## Question\n\nShould I run today?\n"))
@@ -59,6 +59,7 @@ struct MarkdownReportRendererTests {
         let markdown = MarkdownReportRenderer.render(TrainingReport(generatedAt: .now, readiness: readiness))
 
         #expect(markdown.contains("4 of 5 comparable readings low in the last 7 days"))
+        #expect(markdown.contains("[research source](https://doi.org/10.3390/ijerph181910299)"))
     }
 
     @Test func formatsPaceAsMinutesAndSeconds() {
