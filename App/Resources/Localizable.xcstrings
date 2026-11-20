@@ -1,6 +1,142 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "If you want to lift today": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si quieres hacer fuerza hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se queres facer forza hoxe"
+          }
+        }
+      }
+    },
+    "Up next in your plan · {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siguiente rutina del plan · {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguinte rutina do plan · {1}"
+          }
+        }
+      }
+    },
+    "Based on a recent session · {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A partir de una sesión reciente · {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A partir dunha sesión recente · {1}"
+          }
+        }
+      }
+    },
+    "Choose a familiar exercise and a light load. Finish each set with at least four reps left.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige un ejercicio que conozcas y una carga ligera. Termina cada serie sintiendo que podrías hacer al menos cuatro repeticiones más."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolle un exercicio que coñezas e unha carga lixeira. Remata cada serie sentindo que poderías facer polo menos catro repeticións máis."
+          }
+        }
+      }
+    },
+    "Use a lighter load or an easier version if you need it to keep the effort light.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si te cuesta mantener un esfuerzo suave, baja la carga o elige una variante más fácil."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se che custa manter un esforzo suave, baixa a carga ou escolle unha variante máis doada."
+          }
+        }
+      }
+    },
+    "Usual target · {1} × {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetivo habitual · {1} × {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obxectivo habitual · {1} × {2}"
+          }
+        }
+      }
+    },
+    "Last session · {1} × {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesión de referencia · {1} × {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesión de referencia · {1} × {2}"
+          }
+        }
+      }
+    },
+    "Easy option · {1} × {2}, with at least {3} reps left": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opción suave · {1} × {2}. Acaba cada serie pudiendo hacer al menos {3} repeticiones más."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opción suave · {1} × {2}. Remata cada serie podendo facer polo menos {3} repeticións máis."
+          }
+        }
+      }
+    },
     "Keep it easy today. Run at a pace you can talk at, or lift with light effort.": {
       "extractionState": "manual",
       "localizations": {

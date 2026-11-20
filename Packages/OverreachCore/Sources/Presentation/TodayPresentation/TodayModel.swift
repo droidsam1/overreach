@@ -30,6 +30,7 @@ public final class TodayModel {
     /// Today's check-in, once filled in.
     public private(set) var checkIn: CheckIn?
     public private(set) var recentTrainingDays: [RecentTrainingDay] = []
+    public private(set) var strengthOption: StrengthOption?
     private var trainingReadFailed = false
     private var activeLoad: UUID?
     private var loadedDay: CalendarDay?
@@ -46,6 +47,8 @@ public final class TodayModel {
     private let workouts: (any WorkoutRepository)?
     private let exercises: (any ExerciseRepository)?
     private let recordedStrength: (any RecordedStrengthSource)?
+    private let routines: (any RoutineRepository)?
+    private let progression: (any ProgressionSettingsRepository)?
     private let readinessSettings: ReadinessRules.Settings
     private let calendar: Calendar
     private let format: Format
@@ -235,7 +238,8 @@ public final class TodayModel {
         sources: [any MetricsSource], checkIns: (any CheckInRepository)? = nil, backup: (any BackupService)? = nil,
         garmin: (any GarminAccount)? = nil, profiles: (any ProfileRepository)? = nil,
         workouts: (any WorkoutRepository)? = nil, exercises: (any ExerciseRepository)? = nil,
-        recordedStrength: (any RecordedStrengthSource)? = nil,
+        recordedStrength: (any RecordedStrengthSource)? = nil, routines: (any RoutineRepository)? = nil,
+        progression: (any ProgressionSettingsRepository)? = nil,
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
@@ -247,6 +251,8 @@ public final class TodayModel {
         self.workouts = workouts
         self.exercises = exercises
         self.recordedStrength = recordedStrength
+        self.routines = routines
+        self.progression = progression
         self.readinessSettings = readinessSettings
         self.calendar = calendar
         self.format = format
@@ -256,6 +262,7 @@ public final class TodayModel {
         let loadID = UUID()
         activeLoad = loadID
         isLoading = true
+        strengthOption = nil
         defer {
             if activeLoad == loadID {
                 isLoading = false
@@ -288,7 +295,7 @@ public final class TodayModel {
 
         let checkIn = (try? await checkIns?.checkIn(for: today)).flatMap { $0.day == today ? $0 : nil }
         let garminConnected = await garmin?.connection() != nil
-        let profileWearsGarmin = (try? await profiles?.profile())?.wearables.contains(.garmin) ?? false
+        let profile = try? await profiles?.profile()
         guard activeLoad == loadID else { return }
         loadedDay = today
         let history = byDay.values.filter { !$0.sources.isEmpty }.sorted { $0.day < $1.day }
@@ -298,15 +305,17 @@ public final class TodayModel {
         failureReasons = reasons
         self.checkIn = checkIn
         isGarminConnected = garminConnected
-        wearsGarmin = profileWearsGarmin
+        wearsGarmin = profile?.wearables.contains(.garmin) ?? false
         readiness = ReadinessRules.readiness(
             today: today, history: history, checkIn: checkIn, settings: readinessSettings, calendar: calendar
         )
-        await loadRecentTraining(in: weekStart...today, now: now, sources: availableSources, loadID: loadID)
+        await loadRecentTraining(in: weekStart...today, now: now, sources: availableSources, profile: profile,
+                                 loadID: loadID)
     }
 
     private func loadRecentTraining(
-        in range: ClosedRange<CalendarDay>, now: Date, sources: [any MetricsSource], loadID: UUID
+        in range: ClosedRange<CalendarDay>, now: Date, sources: [any MetricsSource], profile: AthleteProfile?,
+        loadID: UUID
     ) async {
         // Include the previous day so copies across midnight can match before filtering to the visible week.
         let start = range.lowerBound.adding(days: -1, calendar: calendar).startDate(in: calendar)
@@ -324,6 +333,39 @@ public final class TodayModel {
         recentTrainingDays = RecentTraining(calendar: calendar, format: format).days(
             in: range, through: now, metrics: week, checkIns: currentCheckIn + (previousCheckIns ?? []),
             runs: runResult.activities, sessions: sessions ?? [], recordings: recordings ?? [], exercises: allExercises ?? []
+        )
+        guard readiness.level == .amber, let sessions,
+              !hasStrengthToday(sessions: sessions, recordings: recordings ?? [], now: now) else { return }
+        await loadStrengthOption(today: range.upperBound, now: now, profile: profile, catalog: allExercises ?? [],
+                                 loadID: loadID)
+    }
+
+    private func hasStrengthToday(sessions: [StrengthSession], recordings: [RecordedStrengthActivity], now: Date) -> Bool {
+        let start = calendar.startOfDay(for: now)
+        return sessions.contains { $0.startedAt <= now && ($0.endedAt ?? $0.startedAt) >= start }
+            || recordings.contains { $0.durationSeconds.isFinite && (start...now).contains($0.endedAt) }
+    }
+
+    private func loadStrengthOption(
+        today: CalendarDay, now: Date, profile: AthleteProfile?, catalog: [Exercise], loadID: UUID
+    ) async {
+        let blocks = profile?.declaredBlocks ?? []
+        let historyStart = now.addingTimeInterval(-ProgressionTargets.historyWindow)
+        let blockStart = PlanSchedule.runningBlock(blocks, today: today, calendar: calendar)?.start.startDate(in: calendar)
+        async let history = try? workouts?.sessions(from: min(historyStart, blockStart ?? historyStart), to: now)
+        async let allRoutines = try? routines?.allRoutines()
+        async let allSettings = try? progression?.allProgressionSettings()
+        let (sessions, availableRoutines, settings) = await (history, allRoutines, allSettings)
+        guard activeLoad == loadID, let sessions, !hasStrengthToday(sessions: sessions, recordings: [], now: now)
+        else { return }
+        let completed = sessions.filter { RecentTraining.isCompleted($0, through: now) }
+        let planned = PlanSchedule.next(blocks: blocks, routines: availableRoutines ?? [], sessions: completed,
+                                        today: today, calendar: calendar)
+        let familiarityStart = today.adding(days: -EasyStrengthAdjustment.familiarityDays, calendar: calendar)
+            .startDate(in: calendar)
+        strengthOption = StrengthOption.make(
+            routine: progression != nil && settings == nil ? nil : planned?.routine, sessions: completed,
+            exercises: catalog, settings: settings ?? [:], historyStart: historyStart, familiarityStart: familiarityStart
         )
     }
 

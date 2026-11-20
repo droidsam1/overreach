@@ -214,6 +214,20 @@ gradually". The app never says when it is safe to train: it is not a medical dev
 Refs: Schwellnus et al. 2022, IOC consensus, Br J Sports Med 56:1066; Snyders et al. 2022, Br J Sports Med
 (systematic review, 54 studies). Reviewed 2026-11-19.
 
+### `easy-strength-example` — heuristic
+
+On an amber day with no strength workout detected today, Today can show a separate light example. The next
+undated routine supplies the reference, using ordinary progression targets. If it has no recently performed
+exercises, a recent logged session supplies examples instead. A session with insufficient information falls back
+to an effort cue. Workouts already logged today or captured by the watch suppress the example.
+
+The defaults are up to three exercises performed in the last 42 days, up to two working sets per exercise
+(roughly half the reference, with one as the minimum), repetitions within the reference and recent exposure,
+and at least four repetitions in reserve. A lower reference effort is respected. A qualitative load cue avoids
+assuming a specific weight will feel light today. The opt-in example creates no session and has no effect on
+the rotation. Reduced volume and effort are used in deload practice. The studies support neither these exact
+numbers nor prescribing this example from HRV. Reviewed 2026-11-20. [Deload consensus](https://doi.org/10.1186/s40798-023-00633-0) · [Athlete survey](https://pubmed.ncbi.nlm.nih.gov/38499934/) · [Repetitions in reserve](https://pubmed.ncbi.nlm.nih.gov/27531969/)
+
 ### `plan-adherence` — heuristic
 A break is 14 days without strength sessions; low adherence is under two thirds of planned sessions over the last
 two finished weeks of a block; the proposed frequency is the sessions actually done per week, rounded up;

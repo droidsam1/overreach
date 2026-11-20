@@ -52,6 +52,20 @@ public struct ExerciseTarget: Hashable, Codable, Sendable {
 
 /// Next-session targets from history (`docs/design/progression-engine.md`). Pure and deterministic.
 public enum ProgressionTargets {
+    /// The logger and previews use the same history and setting priorities.
+    public static let historyWindow: TimeInterval = 365 * 86_400
+
+    public static func settings(
+        for exercise: Exercise, stored: ProgressionSettings?, focus: TrainingFocus?, prescription: ProgressionScheme?
+    ) -> ProgressionSettings {
+        var settings = stored ?? ProgressionSettings(for: exercise)
+        if stored == nil, let focus {
+            settings.scheme = FocusPrescription.for(focus).defaultScheme
+        }
+        if let prescription { settings.scheme = prescription }
+        return settings
+    }
+
     /// Tolerance on RPE when deciding whether a set was "easy enough" to progress.
     static let rpeTolerance = 0.5
     /// Consecutive misses at the same load before a linear-load reset.

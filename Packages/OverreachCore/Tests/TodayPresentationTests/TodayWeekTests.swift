@@ -1,4 +1,5 @@
 import Domain
+import Fixtures
 import Foundation
 import PresentationKit
 import Testing
@@ -30,6 +31,11 @@ private struct OneCheckIn: CheckInRepository {
     func checkIn(for day: CalendarDay) async throws -> CheckIn? { day == stored.day ? stored : nil }
     func checkIns(in range: ClosedRange<CalendarDay>) async throws -> [CheckIn] { [] }
     func save(_ checkIn: CheckIn) async throws {}
+}
+
+private struct OneStrengthRecording: RecordedStrengthSource {
+    let activity: RecordedStrengthActivity
+    func strengthActivities(from start: Date, to end: Date) async -> [RecordedStrengthActivity] { [activity] }
 }
 
 @MainActor
@@ -192,5 +198,90 @@ struct TodayWeekTests {
         #expect(model.readinessLevel == .unknown)
         #expect(model.readinessAdvice == "Not enough data yet to judge today.")
         #expect(model.readinessLines.count == 1)
+    }
+
+    @Test func amberShowsALighterExampleFromTheNextUndatedRoutine() async throws {
+        let squat = Exercise(name: "Squat", primaryMuscles: [.quadriceps], equipment: .barbell)
+        let newExercise = Exercise(name: "New exercise", primaryMuscles: [.glutes])
+        let first = Routine(name: "First", exerciseIDs: [squat.id])
+        let next = Routine(name: "Lower body", exerciseIDs: [squat.id, newExercise.id], prescriptions: [
+            RoutinePrescription(exerciseID: squat.id, scheme: .linearLoad(sets: 4, reps: 6, targetRPE: 8)),
+        ])
+        let previous = StrengthSession(
+            name: first.name, startedAt: now.addingTimeInterval(-3 * 86_400), endedAt: now.addingTimeInterval(-250_000),
+            entries: [ExerciseEntry(exerciseID: squat.id, sets: [WorkoutSet(weightKg: 70, reps: 6, rpe: 8)])],
+            routineID: first.id
+        )
+        let store = TestStore(exercises: [squat, newExercise], sessions: [previous], routines: [first, next])
+        let block = TrainingBlock(focus: .strength, start: day(-40, sleepHours: nil, hrv: nil, steps: nil).day,
+                                  plannedWeeks: 8, isDeclared: true, routineIDs: [first.id, next.id])
+        try await store.save(AthleteProfile(declaredBlocks: [block]))
+        try await store.save(ProgressionSettings(scheme: .linearLoad(sets: 3, reps: 10, targetRPE: 9), incrementKg: 2.5),
+                             for: squat.id)
+        let model = TodayModel(sources: [WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)])], profiles: store,
+                               workouts: store, exercises: store, routines: store, progression: store, calendar: calendar)
+
+        await model.load(now: now)
+
+        let option = try #require(model.strengthOption)
+        #expect(option.heading == "Up next in your plan · Lower body")
+        #expect(option.exerciseRows.map(\.title) == ["Squat"])
+        #expect(option.exerciseRows.first?.reference == "Usual target · 4 × 6")
+        #expect(option.exerciseRows.first?.suggestion == "Easy option · 2 × 6, with at least 4 reps left")
+        #expect(await store.sessions(from: .distantPast, to: now) == [previous])
+    }
+
+    @Test func amberWithoutAPlanUsesTheMostRecentFamiliarSession() async throws {
+        let squat = Exercise(name: "Squat", primaryMuscles: [.quadriceps])
+        let previous = StrengthSession(
+            name: "Gym", startedAt: now.addingTimeInterval(-86_400), endedAt: now.addingTimeInterval(-82_800),
+            entries: [ExerciseEntry(exerciseID: squat.id, sets: Array(repeating: WorkoutSet(reps: 8, rpe: 5), count: 3))]
+        )
+        let store = TestStore(exercises: [squat], sessions: [previous])
+        let model = TodayModel(sources: [WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)])],
+                               workouts: store, exercises: store, calendar: calendar)
+        await model.load(now: now)
+
+        let option = try #require(model.strengthOption)
+        #expect(option.heading == "Based on a recent session · Gym")
+        #expect(option.exerciseRows.first?.suggestion == "Easy option · 1 × 8, with at least 5 reps left")
+    }
+
+    @Test func alreadyCompletedStrengthAndSicknessHideTheOption() async {
+        let today = CalendarDay(now, calendar: calendar)
+        let now = today.startDate(in: calendar).addingTimeInterval(12 * 3_600)
+        let source = WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)])
+        let store = TestStore()
+        let recording = RecordedStrengthActivity(id: "gym", source: .garmin, startedAt: now.addingTimeInterval(-3_600),
+                                                 durationSeconds: 3_000)
+        let trained = TodayModel(sources: [source], workouts: store,
+                                 recordedStrength: OneStrengthRecording(activity: recording), calendar: calendar)
+        await trained.load(now: now)
+        #expect(trained.readinessLevel == .amber)
+        #expect(trained.strengthOption == nil)
+
+        let sick = TodayModel(sources: [source], checkIns: OneCheckIn(stored: CheckIn(day: today, isSick: true)),
+                              workouts: store, calendar: calendar)
+        await sick.load(now: now)
+        #expect(sick.readinessLevel == .red)
+        #expect(sick.strengthOption == nil)
+
+        let overnight = StrengthSession(name: "Late lift", startedAt: now.addingTimeInterval(-45_000),
+                                        endedAt: now.addingTimeInterval(-42_000))
+        let logged = TodayModel(sources: [source], workouts: TestStore(sessions: [overnight]), calendar: calendar)
+        await logged.load(now: now)
+        #expect(logged.readinessLevel == .amber)
+        #expect(logged.strengthOption == nil)
+    }
+
+    @Test func anEmptyHistoryOffersAnEffortCueWithoutInventingAnExercise() async throws {
+        let source = WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)])
+        let model = TodayModel(sources: [source], workouts: TestStore(), calendar: calendar)
+        await model.load(now: now)
+
+        let option = try #require(model.strengthOption)
+        #expect(option.heading == nil)
+        #expect(option.exerciseRows.isEmpty)
+        #expect(option.guidance.contains("at least four reps left"))
     }
 }
