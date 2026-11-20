@@ -364,9 +364,11 @@ Steps 1–4 are the shippable unit for phase 2 (v0.2). `ReleaseNotes.all` gets a
 ### Decided questions
 
 - **HRV statistic.** Garmin reports nightly RMSSD and Apple Health stores SDNN. `DailyMetrics.hrvMetric` labels every
-  value, merging keeps a value with its label, and readiness and Today only compare nights of one kind (ADR-0024).
+  value, merging keeps a value with its label, and readiness and Today only compare nights of one kind
+  ([ADR-0024](../adr/0024-hrv-baselines-per-statistic.md)). See the [HRV research note](hrv-sources.md) for the
+  evidence and the [follow-up proposal](../adr/0025-hrv-one-series-per-metric.md) for retaining both readings.
 - **Body Battery and stress** are shown on Today when Garmin provides them, as context. They are proprietary scores
-  and are never a rule input unless evidence supports it.
+  and are never a rule input unless evidence supports it (`composite-scores`).
 - **Daily summary v2** carries resting HR, steps, stress, Body Battery, respiration and SpO2 in one call; the separate
   endpoints are not used.
 

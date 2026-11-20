@@ -253,6 +253,41 @@ drop or rise (ADR-0024). Refs: Task Force of the ESC and NASPE 1996, Circulation
 Ginsberg 2017, Front Public Health 5:258 (review of HRV metrics and norms); Plews et al. 2013, Sports Med 43:773
 (ln RMSSD for athlete monitoring). Reviewed 2026-11-20.
 
+### `hrv-metric-type` — moderate
+SDNN and RMSSD measure different things (overall vs beat-to-beat variability; short-term SDNN tracks LF power,
+r = 0.90–0.94), RMSSD is the more robust metric in short recordings, and no conversion between them exists.
+Wearable HRV is comparable only within one device and one metric.
+→ Apple Watch SDNN and Garmin RMSSD use separate baselines (`hrv-metrics`). The [research note](design/hrv-sources.md)
+compares the two inputs and motivates preserving both values when they are available for the same night.
+Refs: Esco 2026, J Funct Morphol Kinesiol 11:304 (narrative review); Shaffer & Ginsberg 2017, Front Public Health
+5:258 (review); Munoz et al. 2015, PLoS One 10:e0138921 (n = 3,387); Doherty et al. 2025, Transl Exerc Biomed
+(review of 14 composite scores). Reviewed 2026-11-20.
+
+### `wearable-hrv-validity` — moderate
+Wrist HRV is inaccurate in absolute terms but reliable enough for a personal trend. Nocturnal RMSSD vs chest-strap
+ECG (536 nights): Garmin Fenix 6 CCC 0.87, MAPE 10.5 %, behind Oura (0.97–0.99) and WHOOP (0.94). Garmin Elevate
+v4: good test–retest reliability, proportional bias, individual errors up to about ±50 %. Apple Watch S9/Ultra 2
+SDNN: −8.3 ms bias, MAPE 28.9 %, outside a ±10 ms equivalence margin; no validation of the passive nocturnal SDNN
+(3–4 spot readings a night) that Health stores.
+→ Interpret wearable HRV against the person's own baseline for the same device. The use of passive Apple Watch
+SDNN in the readiness rule remains a heuristic transfer. Refs: Dial et al. 2025, Physiol Rep 13:e70527;
+Sensors 2026, 26:6549 (Elevate v4, n = 23);
+O'Grady et al. 2024, Sensors 24:6220; Miller et al. 2022, Sensors 22:6317. Reviewed 2026-11-20.
+
+### `hrv-nocturnal` — moderate
+Nocturnal HR and RMSSD are reliable, have a low typical error and respond to the preceding training load; their
+response to two weeks of overload tracked 3000 m performance changes, while morning values responded differently.
+→ Nightly averages are a valid input for the 7-day rolling rule. Refs: Nuuttila et al. 2022, Int J Sports Physiol
+Perform 17:1296; Nuuttila et al. 2024, Sports Med Open (overload study, doi 10.1186/s40798-024-00779-5); nocturnal
+vs morning in young athletes, 2021 (PMC8730395). Reviewed 2026-11-20.
+
+### `composite-scores` — limited
+Device scores (Garmin HRV status and baseline, Body Battery, training readiness, other brands' readiness and
+recovery) have undisclosed inputs, weights and baselines and no rigorous independent validation; they can change
+without notice.
+→ Shown as context, labelled as the device's, never a rule input. Refs: Doherty et al. 2025, Transl Exerc Biomed,
+doi 10.1515/teb-2025-0001; Garmin HRV status documentation. Reviewed 2026-11-20.
+
 ### `readiness-resting-hr` — limited
 Short-term overload raises resting HR moderately, longer overload does not, and changes must be read together with
 other signs; daily resting measures are most useful next to training logs and questionnaires.
