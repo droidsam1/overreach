@@ -2415,23 +2415,6 @@
         }
       }
     },
-    "Deep {1} h · REM {2} h": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Profundo {1} h · REM {2} h"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Profundo {1} h · REM {2} h"
-          }
-        }
-      }
-    },
     "Default:": {
       "extractionState": "manual",
       "localizations": {
@@ -12084,6 +12067,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ultimamente fixeches unhas {1} por semana. Coas mesmas series semanais, menos sesións dan case o mesmo músculo e case a mesma forza."
+          }
+        }
+      }
+    },
+    "Deep {1} h · REM {2} h (watch estimate)": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profundo {1} h · REM {2} h (estimación del reloj)"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profundo {1} h · REM {2} h (estimación do reloxo)"
+          }
+        }
+      }
+    },
+    "Garmin's estimate": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimación de Garmin"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimación de Garmin"
+          }
+        }
+      }
+    },
+    "Watch estimate, follow the trend": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimación del reloj: mira la tendencia"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimación do reloxo: mira a tendencia"
           }
         }
       }

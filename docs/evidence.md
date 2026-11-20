@@ -300,3 +300,24 @@ Sick in the check-in → red (see `illness-return`). No signal → green; one or
 least one of HRV or resting HR → red. Subjective and sleep signals alone never make it red. Nothing to judge
 (no baseline, no sleep, no check-in) → unknown. Phase-aware baselines for naturally cycling users (ADR-0009)
 are not applied yet. All thresholds configurable. Reviewed 2026-11-19.
+
+## Wearable data
+
+How Today presents numbers from the devices (evidence review 2026-11, §5). Only measured values and Overreach's own
+calculations feed rules; the devices' estimates are shown as such.
+
+### `wearable-sleep-stages` — limited
+Consumer wrist devices detect sleep well but agree only fairly to moderately with polysomnography on stages
+(κ ≈ 0.2–0.5 across six devices); an Apple Watch Series 8 underestimated deep sleep by about 43 minutes.
+→ Deep and REM sleep are shown as "watch estimate" and never feed a rule. Refs: Schyvens et al. 2025, Sleep Adv
+6(2):zpaf021; Apple Watch S8 validation 2024. Reviewed 2026-11-20.
+
+### `wearable-composite-scores` — limited
+Vendor readiness, energy and stress scores (Garmin Body Battery, stress, Training Readiness, sleep score) are
+proprietary composites; vendors validate the sensors, not the scores, and no independent validation was found.
+→ Shown as "Garmin's estimate", never a rule input or part of the readiness light. Reviewed 2026-11-20.
+
+### `wearable-vo2max` — moderate
+Exercise-based watch VO2max estimates are acceptable at group level but have wide individual error; resting-based
+ones overestimate. → Shown as a watch estimate to follow as a trend. Refs: Molina-García et al. 2022, Sports Med
+52:1577 (meta-analysis, INTERLIVE). Reviewed 2026-11-20.

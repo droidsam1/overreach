@@ -148,3 +148,13 @@ extension DataSourceKind {
         }
     }
 }
+
+extension HRVMeasure {
+    /// The HRV statistic, as shown next to a value: "RMSSD" (Garmin) or "SDNN" (Apple Watch).
+    public var displayName: String {
+        switch self {
+        case .overnightRMSSD: "RMSSD"
+        case .sleepSDNN, .daytimeSDNN: "SDNN"
+        }
+    }
+}

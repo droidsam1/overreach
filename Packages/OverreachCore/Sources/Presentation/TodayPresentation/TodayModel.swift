@@ -122,15 +122,34 @@ public final class TodayModel {
         garmin != nil && !isGarminConnected && !isLoading && (wearsGarmin || !showsMetrics)
     }
 
-    /// "Deep 1.2 h · REM 1.6 h".
+    // Every number says what kind it is (evidence review 2026-11, §5): measured by the devices, estimated by them, or
+    // computed by Overreach. Sleep stages, Garmin's scores and VO2max are the watch's estimates and never feed a rule.
+
+    /// "Deep 1.2 h · REM 1.6 h (watch estimate)": consumer sleep staging agrees only fairly to moderately with a
+    /// sleep lab (`wearable-sleep-stages`).
     public var sleepCaption: String? {
         guard let metrics, metrics.deepSleepSeconds != nil || metrics.remSleepSeconds != nil else { return nil }
         let hours = { (seconds: Double?) in self.format.number((seconds ?? 0) / 3_600, maxFractionDigits: 1) }
-        return L10n.format("Deep {1} h · REM {2} h", hours(metrics.deepSleepSeconds), hours(metrics.remSleepSeconds))
+        return L10n.format(
+            "Deep {1} h · REM {2} h (watch estimate)", hours(metrics.deepSleepSeconds), hours(metrics.remSleepSeconds)
+        )
     }
 
-    /// "7-day avg 42 ms", from the days that have a value.
-    public var hrvCaption: String? { average(\.hrvNightlyAverageMs).map { weekly(format.number($0, maxFractionDigits: 0) + " ms") } }
+    /// "7-day avg 42 ms · SDNN": only the days measured like today's value, and which measure it is, since
+    /// Garmin's RMSSD and the Apple Watch's SDNN are not comparable.
+    public var hrvCaption: String? {
+        let measure = metrics?.resolvedHRVMeasure ?? week.last { $0.hrvNightlyAverageMs != nil }?.resolvedHRVMeasure
+        let values = week.filter { $0.resolvedHRVMeasure == measure }.compactMap(\.hrvNightlyAverageMs)
+        guard !values.isEmpty else { return nil }
+        let text = weekly(format.number(values.reduce(0, +) / Double(values.count), maxFractionDigits: 0) + " ms")
+        return measure.map { "\(text) · \($0.displayName)" } ?? text
+    }
+
+    /// Body Battery and stress are Garmin's own scores, not validated independently (`wearable-composite-scores`).
+    public var bodyBatteryCaption: String { L10n.text("Garmin's estimate") }
+    public var stressCaption: String { L10n.text("Garmin's estimate") }
+    /// Watch VO2max estimates have a wide individual error: useful as a long-term trend (`wearable-vo2max`).
+    public var vo2MaxCaption: String { L10n.text("Watch estimate, follow the trend") }
     public var restingHeartRateCaption: String? {
         average(\.restingHeartRate).map { weekly(format.number($0, maxFractionDigits: 0) + " bpm") }
     }

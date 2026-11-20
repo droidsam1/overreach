@@ -53,12 +53,31 @@ struct TodayWeekTests {
         #expect(model.sleepHours == 7)
         #expect(model.steps == 9_000)
         #expect(model.week.count == 2)  // eight days ago is out of the week
-        #expect(model.sleepCaption == "Deep 1.2 h · REM 1.5 h")
+        #expect(model.sleepCaption == "Deep 1.2 h · REM 1.5 h (watch estimate)")
         #expect(model.hrvCaption == "7-day avg 45 ms")
         #expect(model.stepsCaption == "7-day avg 8,000")
         #expect(model.sourcesText == "From Apple Health")
         #expect(!model.showsBodyBattery)
         #expect(!model.showsConnectHealth)
+    }
+
+    @Test func theHRVAverageKeepsToTodaysMeasureAndNamesIt() async {
+        var today = day(0, sleepHours: 7, hrv: 50, steps: nil)
+        today.hrvMeasure = .overnightRMSSD
+        var garmin = day(-1, sleepHours: 7, hrv: 40, steps: nil)
+        garmin.hrvMeasure = .overnightRMSSD
+        var watch = day(-2, sleepHours: 7, hrv: 120, steps: nil)  // SDNN on a night Garmin missed
+        watch.hrvMeasure = .sleepSDNN
+        let model = TodayModel(
+            sources: [WeekSource(days: [watch, garmin, today])], calendar: calendar,
+            format: Format(locale: Locale(identifier: "en_US"))
+        )
+
+        await model.load(now: now)
+
+        #expect(model.hrvCaption == "7-day avg 45 ms · RMSSD")
+        #expect(model.vo2MaxCaption == "Watch estimate, follow the trend")
+        #expect(model.bodyBatteryCaption == "Garmin's estimate")
     }
 
     @Test func connectingAsksForAccessAndReloads() async {

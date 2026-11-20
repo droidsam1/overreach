@@ -57,13 +57,15 @@ public struct TodayView: View {
                             MetricTile(title: "Steps", value: model.steps, unit: "", caption: model.stepsCaption)
                         }
                         if model.showsBodyBattery {
-                            MetricTile(title: "Body Battery", value: model.bodyBattery, unit: "")
+                            MetricTile(title: "Body Battery", value: model.bodyBattery, unit: "",
+                                       caption: model.bodyBatteryCaption)
                         }
                         if model.showsStress {
-                            MetricTile(title: "Stress", value: model.stress, unit: "")
+                            MetricTile(title: "Stress", value: model.stress, unit: "", caption: model.stressCaption)
                         }
                         if model.showsVO2Max {
-                            MetricTile(title: "VO2max", value: model.vo2Max, unit: "", fractionDigits: 1)
+                            MetricTile(title: "VO2max", value: model.vo2Max, unit: "", fractionDigits: 1,
+                                       caption: model.vo2MaxCaption)
                         }
                     }
 
