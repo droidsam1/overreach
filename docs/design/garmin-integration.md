@@ -113,6 +113,39 @@ requests per minute is reported unofficially (`gcpapi-sync`). Garmin says nothin
 So the only things missing are the aggregate proprietary scores. Acute and chronic load can be computed from the
 per-activity `activityTrainingLoad`, our own way and with reasons (ADR-0012).
 
+### Live check with a real key (2026-11-20)
+
+One personal key (Forerunner, account with data since September 2026), about 30 requests in a few minutes:
+
+- **Token:** a JWT issued by `https://diauth.garmin.com`, valid exactly 24 h, with scopes `CONNECT_READ`,
+  `PERSONAL_API_FITNESS_READ`, `PERSONAL_API_WELLNESS_READ`, `PERSONAL_API_NUTRITION_READ` and `PERSONAL_API_USER_READ`.
+- **Endpoints:** every endpoint in the plan returned 200 with data. The menstrual cycle returns **204 with no body** when
+  there is no data, as does an HRV range with no nights. The undocumented `metrics-service/metrics/trainingreadiness`
+  and `…/trainingstatus` paths return **404 `{"error":"NOT_FOUND"}`**: confirmed not available.
+- **Rate limits:** no rate-limit headers (the host is behind Cloudflare) and no 429 at this pace. Still undocumented.
+- **Ranges:** daily summaries v2 accepted 365 days and returned **400 `{}`** at 400 days. HRV accepted 366 days.
+  Sleep accepted 32 days although 31 is documented; we keep to the documented limits.
+- **History:** every range back to the first day on the account came back. Ranges before it (2019, 2022) return
+  empty (`204` or `"data": []`), not errors. Depth beyond a few months could not be tested with this account.
+- **Data quirks** that `GarminImport` must handle:
+  - Sleep `sleep…TimestampGMT` and `…Local` are **epoch milliseconds** (integers). `…Local` is local wall time encoded as
+    if it were UTC. `calendarDate` is the morning the sleep ended.
+  - Activity `startTimeGMT` / `startTimeLocal` are `yyyy-MM-dd HH:mm:ss` **without a zone**. Summary v2 timestamps are
+    ISO strings. HRV values are integers (ms).
+  - VO2max is **sparse**: there is only an entry on days it changed. The `generic` entry carries `sport` and `subSport`,
+    which are not in the spec. `vO2MaxValue` on activities was null.
+  - `source` is `"GARMIN"` in summaries v2.
+  - **Strength workouts recorded on the watch** come back as `strength_training` activities with `totalSets`,
+    `totalReps`, `summarizedExerciseSets` (Garmin exercise categories), heart rate and `activityTrainingLoad`. They
+    overlap with sessions logged in Overreach (see open questions).
+- **Fixtures:** synthetic fixtures with the exact shape of these responses (same keys, nesting, nulls and enums;
+  every number changed, dates shifted, ids, names and locations removed) are in
+  `Packages/OverreachCore/Tests/GarminImportTests/Fixtures/`, made with `scripts/garmin-fixtures.py`. No real values
+  are in the repository.
+- **Recording fixtures from a cloud session:** the network proxy injects a saved key into *every* request to the
+  host, which overwrites the `Bearer` header that data calls need (the result is 403). Save the key, mint a token, remove
+  the saved key, then call with the token. The iPhone has no such proxy.
+
 ### Terms
 
 - Official FAQ, verbatim: the Personal API "allows Garmin customers to securely access their own Garmin Connect data
@@ -210,6 +243,8 @@ values win where both have them (HRV, sleep stages), and Health fills the rest.
 
 ### Robustness practices
 
+- **Empty is not an error.** 204 with no body and `"data": []` mean no data for those days; 404 means an endpoint is
+  gone (drift). 400 means a range that is too long, so split it.
 - **Tolerant decoding.** Every field optional, decode per item (one bad record never drops the day), ignore unknown
   keys, accept numbers as int or double. A field that disappears degrades that metric, nothing else.
 - **Schema drift detection.** The decoder counts missing expected fields and failed items per sync. Settings shows
@@ -239,7 +274,7 @@ values win where both have them (HRV, sleep stages), and Health fills the rest.
 
 | Step | Content | Where |
 |---|---|---|
-| 0 | Done in part (2026-11-20): auth, endpoints, ranges and field names checked against Garmin's official OpenAPI document, FAQ and client. Still open, needing a real key: the key's Terms and Conditions text, rate limits, historical depth, and recording anonymised fixtures. Then accept ADR-0022. | docs |
+| 0 | Done (2026-11-20): checked against Garmin's official OpenAPI document, FAQ and client, and live with a real key; synthetic fixtures recorded. Still open: the text of the key's Terms and Conditions (owner to read), rate limits (undocumented, none hit). Then accept ADR-0022. | docs |
 | 1 | `GarminImport`: DTOs + mapping for the HRV range, sleep range and daily summaries v2 (which carry resting HR, steps, stress, Body Battery, respiration and SpO2), with recorded fixtures and Swift Testing tests. | OverreachCore |
 | 2 | `GarminSource`: token provider, HTTP client, `MetricsSource` for daily metrics. Wire in `AppContainer`. | OverreachKit, App |
 | 3 | Settings: connect (paste key + expiry), status, last sync, disconnect; localized texts (en, es, gl). | SettingsPresentation, FeatureSettings |
@@ -251,6 +286,10 @@ values win where both have them (HRV, sleep stages), and Health fills the rest.
 Steps 1–4 are the shippable unit for phase 2 (v0.2). `ReleaseNotes.all` gets an entry when step 3 lands.
 
 ### Open questions
+
+- Strength sessions recorded on the watch overlap with sessions logged in Overreach. Do not import them as workouts:
+  match them to the logged session by time and attach Garmin's heart rate and `activityTrainingLoad` to it. If no
+  logged session matches, keep the load for ACWR (step 5).
 
 - HRV metric type: Garmin reports nightly RMSSD, while Apple Watch writes SDNN to Health. They must not share a baseline.
   Does `DailyMetrics` need a `hrvMetric` tag, or a separate field? (Decide in step 4, with evidence.)
