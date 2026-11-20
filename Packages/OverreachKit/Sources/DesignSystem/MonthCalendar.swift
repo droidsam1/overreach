@@ -19,7 +19,6 @@ public struct CalendarDayView: View {
     private let isSelected: Bool
 
     @ScaledMetric(relativeTo: .body) private var ringSize: CGFloat = 34
-    @ScaledMetric(relativeTo: .body) private var markerSize: CGFloat = 6
 
     /// - Parameter ringFraction: 0…1, or `nil` for no ring.
     public init(
@@ -52,26 +51,31 @@ public struct CalendarDayView: View {
                 Text(number)
                     .font(.callout.weight(isToday ? .bold : .regular))
                     .monospacedDigit()
-                    .minimumScaleFactor(0.5)
+                    .minimumScaleFactor(0.75)
                     .lineLimit(1)
-                    .foregroundStyle(isToday ? Color.accentColor : Color.primary)
+                    .foregroundStyle(isFuture ? .secondary : .primary)
                     .padding(4)
             }
-            .frame(width: ringSize, height: ringSize)
+            .frame(width: min(ringSize, 38), height: min(ringSize, 38))
             .overlay {
-                if isToday {
-                    Circle().strokeBorder(Color.accentColor, lineWidth: 1).padding(-3)
+                if isSelected {
+                    Circle().strokeBorder(Color.primary.opacity(0.7), lineWidth: 1).padding(-2)
+                } else if isToday {
+                    Circle().strokeBorder(Color.accentColor, lineWidth: 1).padding(-2)
                 }
             }
-            HStack(spacing: 3) {
-                Circle().fill(ActivityColor.strength).opacity(showsStrength ? 1 : 0)
-                Circle().fill(ActivityColor.run).opacity(showsRun ? 1 : 0)
+            HStack(spacing: Spacing.xSmall) {
+                RoundedRectangle(cornerRadius: 1).fill(ActivityColor.strength)
+                    .frame(width: 7, height: 7)
+                    .opacity(showsStrength ? 1 : 0)
+                Circle().fill(ActivityColor.run)
+                    .frame(width: 7, height: 7)
+                    .opacity(showsRun ? 1 : 0)
             }
-            .frame(width: markerSize * 2 + 3, height: markerSize)
+            .accessibilityHidden(true)
         }
         .padding(.vertical, Spacing.xSmall)
-        .frame(maxWidth: .infinity)
-        .opacity(isFuture ? 0.35 : 1)
+        .frame(maxWidth: .infinity, minHeight: 44)
         .contentShape(.rect)
     }
 }
@@ -79,6 +83,7 @@ public struct CalendarDayView: View {
 /// A legend entry: a small marker and what it means.
 public struct CalendarLegendItem: View {
     public enum Marker {
+        case square(Color)
         case dot(Color)
         case ring(Color)
     }
@@ -96,6 +101,8 @@ public struct CalendarLegendItem: View {
             Text(title)
         } icon: {
             switch marker {
+            case .square(let color):
+                RoundedRectangle(cornerRadius: 1).fill(color).frame(width: 8, height: 8)
             case .dot(let color):
                 Circle().fill(color).frame(width: 8, height: 8)
             case .ring(let color):
@@ -135,8 +142,7 @@ public struct CompactStat: View {
             Text(value)
                 .font(.title3.weight(.semibold))
                 .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
+                .multilineTextAlignment(.center)
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.secondary)

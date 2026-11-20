@@ -143,6 +143,22 @@ struct HistoryCalendarTests {
         #expect(try !cell(day(20), in: calendar).isToday)
     }
 
+    @Test func agendaShowsRecordedDaysAndRetainsAnEmptySelection() async {
+        let model = await model(
+            sessions: [session(on: day(2))],
+            activity: StepsSource([DailyActivity(day: day(8), steps: 1_100)]),
+            runs: RunsSource([run(on: day(5), kilometres: 5, minutes: 28)])
+        )
+        let calendar = model.calendar
+
+        #expect(calendar.agendaDays.compactMap(\.day) == [day(8), day(5), day(2)])
+        calendar.select(day(6))
+        #expect(calendar.agendaDays.compactMap(\.day) == [day(8), day(6), day(5), day(2)])
+        #expect(calendar.selectedDetail?.isEmpty == true)
+        calendar.select(day(6))
+        #expect(calendar.agendaDays.compactMap(\.day) == [day(8), day(5), day(2)])
+    }
+
     // MARK: Markers
 
     @Test func markersShowSessionsRunsBothAndNeither() async throws {

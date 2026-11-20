@@ -134,12 +134,12 @@ private struct EntrySection: View {
     var body: some View {
         Section {
             ForEach($entry.sets) { $set in
-                AdaptiveStack(spacing: Spacing.small) {
-                    SetNumberLabel(model.number(of: set.id, in: entry.id))
+                SetEntryRow(number: SetNumberLabel(model.number(of: set.id, in: entry.id))) {
                     SetValueFields(
                         weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe,
                         showsRepsInReserve: model.showsRepsInReserve
                     )
+                } action: {
                     Menu {
                         Picker("Set type", selection: $set.kind) {
                             ForEach(model.setKindOptions) { option in
@@ -149,7 +149,8 @@ private struct EntrySection: View {
                     } label: {
                         Text(set.kind.badge ?? "–")
                             .font(.caption.weight(.semibold))
-                            .frame(minWidth: 20)
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(Rectangle())
                     }
                     .accessibilityLabel("Set type")
                 }
@@ -174,6 +175,8 @@ private struct EntrySection: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
                 }
                 .accessibilityLabel("Exercise options")
             }

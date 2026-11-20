@@ -180,6 +180,13 @@ public final class HistoryCalendarModel {
         return blanks("leading", leading) + dayCells + blanks("trailing", trailing)
     }
 
+    /// The most recent recorded days first. Keep the selected day visible even when it has no activity.
+    public var agendaDays: [CalendarDayCell] {
+        cells.reversed().filter { cell in
+            cell.isSelected || cell.hasStrength || cell.hasRun || cell.stepsFraction != nil
+        }
+    }
+
     /// Sessions, runs, running km and average steps of the shown month. Runs and steps show "–" when they could
     /// not be read.
     public var totals: [CalendarTotal] {

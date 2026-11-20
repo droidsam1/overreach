@@ -29,7 +29,7 @@ public struct MetricTile: View {
             Text(title)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            HStack(alignment: .firstTextBaseline, spacing: Spacing.xSmall) {
+            AdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: Spacing.xSmall) {
                 Text(formattedValue)
                     .font(.title.weight(.semibold))
                     .monospacedDigit()
@@ -43,7 +43,7 @@ public struct MetricTile: View {
                 Text(caption)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -53,7 +53,29 @@ public struct MetricTile: View {
     }
 }
 
-/// A capsule with a status and its tone, e.g. a traffic light.
+/// Uses readable system text and a separate semantic symbol.
+public struct StatusLabel: View {
+    private let title: String
+    private let tone: StatusTone
+
+    public init(title: String, tone: StatusTone) {
+        self.title = title
+        self.tone = tone
+    }
+
+    public var body: some View {
+        Label {
+            Text(title)
+                .foregroundStyle(.primary)
+        } icon: {
+            Image(systemName: tone.symbolName)
+                .foregroundStyle(tone.color)
+                .accessibilityHidden(true)
+        }
+    }
+}
+
+/// A tinted badge for a semantic status, such as a readiness level.
 public struct StatusBadge: View {
     private let title: String
     private let tone: StatusTone
@@ -64,12 +86,11 @@ public struct StatusBadge: View {
     }
 
     public var body: some View {
-        Label(title, systemImage: tone.symbolName)
+        StatusLabel(title: title, tone: tone)
             .font(.headline)
-            .foregroundStyle(tone.color)
             .padding(.horizontal, Spacing.medium)
             .padding(.vertical, Spacing.small)
-            .background(tone.color.opacity(0.15), in: .capsule)
+            .background(tone.color.opacity(0.15), in: .rect(cornerRadius: Radius.card))
     }
 }
 
