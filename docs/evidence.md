@@ -286,10 +286,12 @@ Refs: Esco 2026, J Funct Morphol Kinesiol 11:304 (narrative review); Shaffer & G
 
 ### `wearable-hrv-validity` — moderate
 Wrist HRV is inaccurate in absolute terms but reliable enough for a personal trend. Nocturnal RMSSD vs chest-strap
-ECG (536 nights): Garmin Fenix 6 CCC 0.87, MAPE 10.5 %, behind Oura (0.97–0.99) and WHOOP (0.94). Garmin Elevate
-v4: good test–retest reliability, proportional bias, individual errors up to about ±50 %. Apple Watch S9/Ultra 2
-SDNN: −8.3 ms bias, MAPE 28.9 %, outside a ±10 ms equivalence margin; no validation of the passive nocturnal SDNN
-(3–4 spot readings a night) that Health stores.
+ECG (536 nights): Garmin Fenix 6 CCC 0.87, MAPE 10.5 %, behind Oura (0.97–0.99) and WHOOP (0.94); against each
+person's own baseline (nightly Z-scores) Garmin agreed least (CCC 0.77). Garmin Elevate v4 (short supine and seated
+recordings): test–retest ICC 0.84 / 0.79, proportional bias, individual errors from −43 % to +118 %. Apple Watch
+S9/Ultra 2 SDNN from 5-minute morning Breathe readings: −8.3 ms bias, limits of agreement −53.8 to +37.2 ms, MAPE
+28.9 %, outside a ±10 ms equivalence margin; no validation of the passive nocturnal SDNN (3–4 spot readings a
+night) that Health stores.
 → Interpret wearable HRV against the person's own baseline for the same device. The use of passive Apple Watch
 SDNN in the readiness rule remains a heuristic transfer. Refs: Dial et al. 2025, Physiol Rep 13:e70527;
 Sensors 2026, 26:6549 (Elevate v4, n = 23);
@@ -299,8 +301,8 @@ O'Grady et al. 2024, Sensors 24:6220; Miller et al. 2022, Sensors 22:6317. Revie
 Nocturnal HR and RMSSD are reliable, have a low typical error and respond to the preceding training load; their
 response to two weeks of overload tracked 3000 m performance changes, while morning values responded differently.
 → Nightly averages are a valid input for the 7-day rolling rule. Refs: Nuuttila et al. 2022, Int J Sports Physiol
-Perform 17:1296; Nuuttila et al. 2024, Sports Med Open (overload study, doi 10.1186/s40798-024-00779-5); nocturnal
-vs morning in young athletes, 2021 (PMC8730395). Reviewed 2026-11-20.
+Perform 17:1296; Nuuttila et al. 2024, Sports Med Open 10:120; Mishica et al. 2022, PLoS One 17:e0262333.
+Reviewed 2026-11-20 (full texts checked).
 
 ### `composite-scores` — limited
 Device scores (Garmin HRV status and baseline, Body Battery, training readiness, other brands' readiness and

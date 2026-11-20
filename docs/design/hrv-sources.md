@@ -49,18 +49,27 @@ Questions:
 
 - **Garmin.** Nocturnal RMSSD vs a chest-strap ECG over 536 nights (13 adults): Oura Gen 4 CCC 0.99 (MAPE 6 %),
   Oura Gen 3 0.97 (7 %), WHOOP 4.0 0.94 (8 %), **Garmin Fenix 6 0.87 (MAPE 10.5 ± 8.6 %)**, Polar 0.82 (16 %)
-  (Dial et al. 2025). Elevate v4 (Forerunner 955, n = 23, ECG): good resting HR and good test–retest reliability of
-  RMSSD, but proportional bias and wide limits of agreement (individual errors −43 % to +52 % supine); under-reads
-  more as true HRV rises (Sensors 2026, 26:6549). Older single-night data with an earlier sensor were worse
+  (Dial et al. 2025; Polar H10 reference averaged over the whole night). Garmin: 150 nights, bias −1.8 ms, limits of
+  agreement −15.2 to +11.6 ms. **Within-person agreement was weakest for Garmin**: with each night expressed as a
+  Z-score against the person's own 30-day reference, CCC was 0.77 (Oura Gen 4 0.91, WHOOP 0.76–0.86, Polar 0.79;
+  the paper's text and table differ for some devices, not for Garmin). Elevate v4 (Forerunner 955, n = 23, Biopac ECG,
+  short supine and seated recordings with paced breathing, not sleep): good resting HR; test–retest ICC of ln RMSSD
+  0.84 supine (same as the ECG) and 0.79 seated; poor concordance (CCC 0.89 supine, 0.78 seated), significant
+  proportional bias and individual errors of −43 % to +52 % supine and −41 % to +118 % seated. The authors advise
+  against using it as a substitute for ECG HRV at the individual level (Sensors 2026, 26:6549). Older single-night data with an earlier sensor were worse
   (Forerunner 245: −22 ms bias, ICC 0.24, partly from awake sampling; Miller et al. 2022).
-- **Apple Watch.** Series 9 / Ultra 2, 39 adults, 316 serial measurements over 14 days vs Polar H10: SDNN
-  under-read by 8.3 ms, MAPE 28.9 %, MAE 20.5 ms, outside the ±10 ms equivalence margin; resting HR agreed well
-  (O'Grady et al. 2024, Sensors 24:6220). R–R intervals themselves are accurate at rest (Series 6 vs 3-lead ECG,
+- **Apple Watch.** Series 9 / Ultra 2, 39 adults, 316 serial measurements over 14 days vs Polar H10 + Kubios. These
+  were **5-minute morning readings taken with the Breathe app**, not passive nocturnal readings: SDNN under-read by
+  8.3 ms (95 % CI −11.0 to −5.6), limits of agreement −53.8 to +37.2 ms, MAPE 28.9 %, MAE 20.5 ms, outside the
+  ±10 ms equivalence margin; resting HR agreed well (O'Grady et al. 2024, Sensors 24:6220). R–R intervals themselves are accurate at rest (Series 6 vs 3-lead ECG,
   2025; Hernando et al. 2018). **No study validates the passive nocturnal SDNN that Health stores**, and 3–4 spot
   readings a night are sensitive to sleep stage and circadian timing.
 
 → Both are usable only against the person's own baseline from the same device. Garmin's whole-night RMSSD is
-the better-supported input; Apple's nightly SDNN is a weaker one (fewer, spot readings; no nocturnal validation).
+the better-supported input; Apple's nightly SDNN is a weaker one (fewer, spot readings; no nocturnal validation,
+and even under ideal 5-minute morning conditions its limits of agreement span about ±45 ms). Even Garmin tracks
+deviations from a personal baseline only moderately (within-person CCC 0.77), which supports the existing design:
+a 7-day rolling mean, a ±0.5 SD band and HRV that never makes the light red on its own.
 
 ### 2.3 Nightly values work for monitoring (`hrv-nocturnal`)
 
@@ -68,9 +77,10 @@ the better-supported input; Apple's nightly SDNN is a weaker one (fewer, spot re
   first 4 h of sleep responds more than the full night or a morning reading (Nuuttila et al. 2022, IJSPP 17:1296).
 - Nocturnal and morning values correlate at baseline (r = 0.42–0.91) but their responses to two weeks of overload
   diverge, especially ln RMSSD; nocturnal changes tracked 3000 m performance changes (r = −0.50 for ln RMSSD)
-  (Nuuttila et al. 2024, Sports Med Open). In 11 young endurance athletes, nocturnal and morning HR and RMSSD did
-  not differ over the long term ("Evaluation of nocturnal vs. morning measures of heart rate indices in young
-  athletes", 2021, PMC8730395).
+  (Nuuttila et al. 2024, Sports Med Open 10:120; 24 recreational runners; ln RMSSD rose during the overload in all
+  segments except sleep onset). In 11 young endurance athletes (16 ± 1 years) over three weeks of similar training,
+  nocturnal (Emfit QS, under-mattress) and morning (Polar V800) RMSSD correlated strongly (r = 0.88–0.90) and did
+  not differ significantly (Mishica et al. 2022, PLoS One 17:e0262333).
 
 → The existing `readiness-hrv` method (7-day rolling ln mean vs the personal 60-day range) transfers to nightly
 RMSSD with reasonable support. Applying it to nightly Apple SDNN stays a heuristic transfer.
@@ -146,13 +156,14 @@ optional fields are introduced.
 - Nuuttila OP et al. Reliability and Sensitivity of Nocturnal HR and HRV in Monitoring Individual Responses to
   Training Load. Int J Sports Physiol Perform 2022;17:1296.
 - Nuuttila OP et al. Morning versus Nocturnal HR and HRV Responses to Intensified Training in Recreational
-  Runners. Sports Med Open 2024. doi:10.1186/s40798-024-00779-5.
-- Evaluation of nocturnal vs. morning measures of heart rate indices in young athletes. 2021 (PMC8730395).
+  Runners. Sports Med Open 2024;10:120. doi:10.1186/s40798-024-00779-5.
+- Mishica C et al. Evaluation of nocturnal vs. morning measures of heart rate indices in young athletes. PLoS One
+  2022;17:e0262333.
 - Doherty C et al. Readiness, recovery, and strain: an evaluation of composite health scores in consumer
   wearables. Transl Exerc Biomed 2025. doi:10.1515/teb-2025-0001.
 - Garmin, "Heart Rate Variability Status" (device manuals) and Garmin HRV blog; Terra and HRV4Training analyses of
   Apple Watch overnight sampling (secondary, for how Apple samples, not for validity).
 
-Not read in full in this session (the network blocks the journal hosts): the numbers above come from the
-abstracts and indexed full-text excerpts. Before implementing ADR-0025, check the Dial et al. and Esco PDFs for
-anything that contradicts §2.
+Full texts checked 2026-11-20 (PMC open-access text): Dial et al. 2025, O'Grady et al. 2024, the Elevate v4 study
+(2026), Nuuttila et al. 2024 and Mishica et al. 2022. Esco 2026 could not be downloaded (the publisher blocks
+automated access); its claims here rest on its abstract and indexed excerpts.
