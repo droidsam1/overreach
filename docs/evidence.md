@@ -312,6 +312,23 @@ objective markers, and the two often disagree, so both are worth collecting.
 → Check-in energy ≤ 2 / 5 and soreness 3 / 3 are one signal each. Refs: Saw, Main & Gastin 2016, Br J Sports Med
 50:281 (systematic review, 56 studies). Reviewed 2026-11-19.
 
+### `readiness-context-prompt` — heuristic
+
+Below-range HRV prompts a question about recent unusual stress. When resting heart rate is also above the
+personal reference, the first question asks whether new symptoms make the user feel too unwell to train.
+Daily-life HRV can vary with perceived stress and physical activity. The exact prompt and its priority are
+product heuristics. Stress is shown as self-reported context and has no weight in the traffic light. A negative,
+unsure or skipped answer neither clears the athlete to train nor counts as evidence of illness. Questions and
+answers apply only to the current day. Reviewed 2026-11-20. [Daily-life study](https://pubmed.ncbi.nlm.nih.gov/39032150/)
+
+### `readiness-reported-symptoms` — limited
+
+When the athlete reports that new symptoms make them feel too unwell to train, Today suggests skipping the
+session and reassessing how they feel. This extends the existing symptom-led approach to a direct self-report,
+without a diagnosis or a time to return. The IOC guidance applies to acute respiratory illness in athletes and
+considers symptoms and severity for return decisions. A wearable deviation only selects a question. The app
+offers no symptom-specific triage in this flow. Reviewed 2026-11-20. [IOC consensus](https://doi.org/10.1136/bjsports-2022-105759)
+
 ### `readiness-combination` — heuristic
 Sick in the check-in → red (see `illness-return`). No signal → green; one or more → amber; two or more with at
 least one of HRV or resting HR → red. Subjective and sleep signals alone never make it red. Nothing to judge

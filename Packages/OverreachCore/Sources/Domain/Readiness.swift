@@ -14,6 +14,7 @@ public enum ReadinessLevel: String, Codable, Sendable {
 /// Why the app reached a readiness level. The UI localizes these; `Reports` describes them in plain English.
 public enum ReadinessReason: Hashable, Codable, Sendable {
     case markedSick
+    case symptomsLimitTraining
     case hrvBelowBaseline(nights: Int)
     case restingHeartRateElevated(bpmAboveBaseline: Double)
     case shortSleep(hours: Double)

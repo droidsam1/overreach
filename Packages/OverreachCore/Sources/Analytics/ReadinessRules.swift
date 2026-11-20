@@ -13,6 +13,7 @@ public enum ReadinessEvidence {
     public static let sleep = EvidenceReference(key: "readiness-sleep", level: .moderate)
     /// Self-reported well-being tracks training load better than common objective markers (Saw et al. 2016).
     public static let subjective = EvidenceReference(key: "readiness-subjective", level: .moderate)
+    public static let reportedSymptoms = EvidenceReference(key: "readiness-reported-symptoms", level: .limited)
     /// How signals combine into green, amber and red: coaching defaults.
     public static let combination = EvidenceReference(key: "readiness-combination", level: .heuristic)
 }
@@ -68,8 +69,12 @@ public enum ReadinessRules {
         today: CalendarDay, history: [DailyMetrics], checkIn: CheckIn?, settings: Settings = Settings(),
         calendar: Calendar = .current
     ) -> Readiness {
+        let checkIn = checkIn.flatMap { $0.day == today ? $0 : nil }
         if checkIn?.isSick == true {
             return Readiness(level: .red, reasons: [.markedSick])
+        }
+        if checkIn?.context == CheckIn.Context(question: .symptoms, answer: .yes) {
+            return Readiness(level: .red, reasons: [.symptomsLimitTraining])
         }
 
         let byDay = Dictionary(history.map { ($0.day, $0) }, uniquingKeysWith: { first, _ in first })
@@ -108,7 +113,7 @@ public enum ReadinessRules {
         }
 
         if let checkIn {
-            evaluated = true
+            evaluated = evaluated || checkIn.energy != nil || checkIn.soreness != nil || checkIn.context == nil
             if let energy = checkIn.energy, energy <= settings.lowEnergy {
                 reasons.append(.lowEnergy(score: energy))
             }
@@ -131,12 +136,29 @@ public enum ReadinessRules {
     public static func evidence(for reason: ReadinessReason) -> EvidenceReference {
         switch reason {
         case .markedSick: PlanEvidence.illness
+        case .symptomsLimitTraining: ReadinessEvidence.reportedSymptoms
         case .hrvBelowBaseline: ReadinessEvidence.hrv
         case .restingHeartRateElevated: ReadinessEvidence.restingHeartRate
         case .shortSleep: ReadinessEvidence.sleep
         case .lowEnergy, .highSoreness: ReadinessEvidence.subjective
         case .missingData: ReadinessEvidence.combination
         }
+    }
+
+    /// Decide what is worth asking, without inferring stress or illness from the device (`readiness-context-prompt`).
+    public static func contextQuestion(for readiness: Readiness) -> CheckIn.Context.Question? {
+        var hasLowHRV = false
+        var hasElevatedPulse = false
+        for reason in readiness.reasons {
+            switch reason {
+            case .markedSick, .symptomsLimitTraining: return nil
+            case .hrvBelowBaseline: hasLowHRV = true
+            case .restingHeartRateElevated: hasElevatedPulse = true
+            default: break
+            }
+        }
+        guard hasLowHRV else { return nil }
+        return hasElevatedPulse ? .symptoms : .stress
     }
 
     /// Only nights of the same statistic as the latest night are compared (RMSSD and SDNN are not interchangeable,

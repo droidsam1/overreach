@@ -14,21 +14,25 @@ public final class CheckInModel: Identifiable {
     /// 0 (none) … 3 (very sore); `nil` = not answered.
     public var soreness: Int?
     public var note: String
+    public var contextAnswer: CheckIn.Context.Answer?
     public private(set) var isSaving = false
     public private(set) var errorMessage: String?
 
     public let day: CalendarDay
     private let original: CheckIn?
+    private let contextQuestion: CheckIn.Context.Question?
     private let checkIns: any CheckInRepository
     private let backup: (any BackupService)?
     private let clock: @Sendable () -> Date
 
     public init(
         day: CalendarDay, existing: CheckIn?, checkIns: any CheckInRepository, backup: (any BackupService)? = nil,
-        clock: @escaping @Sendable () -> Date = { Date() }
+        contextQuestion: CheckIn.Context.Question? = nil, clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.day = day
         self.original = existing
+        self.contextQuestion = existing?.context?.question ?? contextQuestion
+        self.contextAnswer = existing?.context?.answer
         self.isSick = existing?.isSick ?? false
         self.energy = existing?.energy
         self.soreness = existing?.soreness
@@ -36,6 +40,25 @@ public final class CheckInModel: Identifiable {
         self.checkIns = checkIns
         self.backup = backup
         self.clock = clock
+    }
+
+    public var contextQuestionTitle: String? { Self.title(for: contextQuestion) }
+
+    static func title(for question: CheckIn.Context.Question?) -> String? {
+        switch question {
+        case .symptoms: L10n.text("Do new symptoms make you feel too unwell to train today?")
+        case .stress: L10n.text("Have you felt more stressed than usual lately?")
+        case nil: nil
+        }
+    }
+
+    public var contextOptions: [Option<CheckIn.Context.Answer>] {
+        [
+            Option(value: .yes, name: L10n.text("Yes")),
+            Option(value: .no, name: L10n.text("No")),
+            Option(value: .unsure, name: L10n.text("Not sure")),
+            Option(value: .skipped, name: L10n.text("Skip for today")),
+        ]
     }
 
     public var energyOptions: [Option<Int>] {
@@ -60,8 +83,12 @@ public final class CheckInModel: Identifiable {
     /// The check-in as it would be saved.
     public var draft: CheckIn {
         let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        let context = contextQuestion.flatMap { question in
+            contextAnswer.map { CheckIn.Context(question: question, answer: $0) }
+        }
         return CheckIn(
-            day: day, isSick: isSick, energy: energy, soreness: soreness, note: trimmed.isEmpty ? nil : trimmed
+            day: day, isSick: isSick, energy: energy, soreness: soreness, note: trimmed.isEmpty ? nil : trimmed,
+            context: context
         )
     }
 
@@ -69,7 +96,7 @@ public final class CheckInModel: Identifiable {
     public var canSave: Bool {
         guard !isSaving else { return false }
         if let original { return draft != original }
-        return isSick || energy != nil || soreness != nil || draft.note != nil
+        return isSick || energy != nil || soreness != nil || draft.note != nil || draft.context != nil
     }
 
     /// Saves and returns `true`; on failure keeps the sheet open with `errorMessage`.

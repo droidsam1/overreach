@@ -1,6 +1,159 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Do new symptoms make you feel too unwell to train today?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Tienes síntomas nuevos que te hacen sentir demasiado mal para entrenar hoy?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tes síntomas novos que che fan sentir demasiado mal para adestrar hoxe?"
+          }
+        }
+      }
+    },
+    "Have you felt more stressed than usual lately?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Has sentido más estrés de lo habitual últimamente?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sentiches máis estrés do habitual ultimamente?"
+          }
+        }
+      }
+    },
+    "Yes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sí"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si"
+          }
+        }
+      }
+    },
+    "No": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non"
+          }
+        }
+      }
+    },
+    "Skip for today": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitir por hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitir por hoxe"
+          }
+        }
+      }
+    },
+    "Skip training today and reassess how you feel.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descansa hoy y vuelve a valorar cómo te encuentras."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descansa hoxe e volve valorar como te atopas."
+          }
+        }
+      }
+    },
+    "New symptoms affect training": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Síntomas nuevos que afectan al entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Síntomas novos que afectan ao adestramento"
+          }
+        }
+      }
+    },
+    "More stress than usual": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más estrés de lo habitual"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis estrés do habitual"
+          }
+        }
+      }
+    },
+    "You reported symptoms that make you feel too unwell to train.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Has indicado que los síntomas te hacen sentir demasiado mal para entrenar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indicaches que os síntomas che fan sentir demasiado mal para adestrar."
+          }
+        }
+      }
+    },
     "Leg working sets {1}": {
       "extractionState": "manual",
       "localizations": {

@@ -156,6 +156,8 @@ public enum MarkdownReportRenderer {
         switch reason {
         case .markedSick:
             "Marked as sick in today's check-in"
+        case .symptomsLimitTraining:
+            "Today's check-in says symptoms make training feel unsuitable"
         case .hrvBelowBaseline(let nights):
             if let coverage = hrvCoverage {
                 "HRV below its normal range (\(nights) of \(coverage.recentReadings) comparable readings low "

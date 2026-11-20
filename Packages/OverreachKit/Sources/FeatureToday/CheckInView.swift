@@ -11,6 +11,22 @@ struct CheckInView: View {
     var body: some View {
         NavigationStack {
             Form {
+                if let question = model.contextQuestionTitle {
+                    Section {
+                        Picker(selection: $model.contextAnswer) {
+                            ForEach(model.contextOptions) { option in
+                                Text(option.name).tag(Optional(option.value))
+                            }
+                        } label: {
+                            Text(question)
+                        }
+                        .pickerStyle(.inline)
+                        .labelsHidden()
+                    } header: {
+                        Text(question)
+                    }
+                }
+
                 Section {
                     Toggle("I'm sick", isOn: $model.isSick)
                 } footer: {
