@@ -103,16 +103,48 @@ public protocol HealthWorkoutWriter: Sendable {
     /// Writes the workout of `session`, replacing any workout already written for it.
     func saveWorkout(for session: StrengthSession) async throws
     func deleteWorkout(forSessionID sessionID: UUID) async throws
+    /// Strength workouts that other apps (e.g. Garmin Connect from a watch) wrote to the health app between `start`
+    /// and `end`. Empty when they cannot be read.
+    func strengthWorkoutsFromOtherSources(from start: Date, to end: Date) async throws -> [RecordedStrengthActivity]
 }
 
 extension HealthWorkoutWriter {
+    /// Default for writers that cannot read other apps' workouts: nothing to compare with.
+    public func strengthWorkoutsFromOtherSources(
+        from start: Date, to end: Date
+    ) async throws -> [RecordedStrengthActivity] {
+        []
+    }
+
     /// Brings the health app in line with `session`. Best effort: the session is already safe in the app.
+    /// A session another app already recorded (the same workout from a watch) is not written twice (ADR-0023).
     public func sync(_ session: StrengthSession) async {
-        if session.belongsInHealth {
+        if session.belongsInHealth, await recordedElsewhere([session]).isEmpty {
             try? await saveWorkout(for: session)
         } else {
             await removeWorkout(forSessionID: session.id)
         }
+    }
+
+    /// Removes this app's copy of sessions that another app recorded later, e.g. once Garmin Connect has synced the
+    /// watch's workout. Runs at launch over recent sessions. Best effort.
+    public func reconcile(_ sessions: [StrengthSession]) async {
+        for sessionID in await recordedElsewhere(sessions.filter(\.belongsInHealth)) {
+            await removeWorkout(forSessionID: sessionID)
+        }
+    }
+
+    /// Ids of the sessions that match a strength workout written by another app (`StrengthActivityMatching`).
+    private func recordedElsewhere(_ sessions: [StrengthSession]) async -> Set<UUID> {
+        guard let start = sessions.map(\.startedAt).min(),
+            let end = sessions.compactMap(\.endedAt).max()
+        else { return [] }
+        let margin: TimeInterval = 3_600
+        let others = (try? await strengthWorkoutsFromOtherSources(
+            from: start.addingTimeInterval(-margin), to: end.addingTimeInterval(margin)
+        )) ?? []
+        guard !others.isEmpty else { return [] }
+        return Set(StrengthActivityMatching.match(sessions: sessions, activities: others).bySession.keys)
     }
 
     /// Removes the workout of a session, if there is one. Best effort.

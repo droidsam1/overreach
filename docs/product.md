@@ -22,7 +22,7 @@ Non-goals: medical diagnosis, App Store publication (for now), sharing data betw
 | Sets, reps, kg, RPE | The app itself | Live session logger |
 | Historical strength data | Strong CSV | One-off import |
 | Resting HR, HR, sleep, steps, runs | Apple Health (written by Garmin Connect) | Official, automatic |
-| Nightly HRV, Body Battery, stress, respiration, SpO2, training status/readiness, load, recovery time, VO2max, race predictions, activity details | Garmin Connect (unofficial API) | Optional; tokens in Keychain; direct from iPhone |
+| Nightly HRV (with status and baseline), sleep score, Body Battery, stress, respiration, SpO2, VO2max, per-activity load and training effect, activity details and FIT files | Garmin Connect Personal API (official, ADR-0022) | Optional; the user's own key in Keychain; direct from iPhone |
 | Subjective state (sick, energy, soreness) | Daily check-in | 10 seconds |
 | Steps and walks (bouts, HR) | Apple Health + Garmin activities | Baseline-relative; ADR-0010 |
 | Menstrual cycle (flow, symptoms) | Apple Health (Cycle Tracking, Flo, Clue…) + check-in | Optional; context only (ADR-0009) |

@@ -31,6 +31,36 @@ public struct HealthKitWorkoutWriter: HealthWorkoutWriter {
         }
     }
 
+    /// Strength workouts written by other apps (e.g. Garmin Connect) in the range. Needs read permission for workouts,
+    /// which the metrics source asks for; without it HealthKit returns only this app's own workouts, which are skipped.
+    public func strengthWorkoutsFromOtherSources(
+        from start: Date, to end: Date
+    ) async throws -> [RecordedStrengthActivity] {
+        guard HKHealthStore.isHealthDataAvailable() else { return [] }
+        let strength = NSCompoundPredicate(orPredicateWithSubpredicates: [
+            HKQuery.predicateForWorkouts(with: .traditionalStrengthTraining),
+            HKQuery.predicateForWorkouts(with: .functionalStrengthTraining),
+        ])
+        let range = HKQuery.predicateForSamples(withStart: start, end: end)
+        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [strength, range])
+        let query = HKSampleQueryDescriptor(predicates: [.workout(predicate)], sortDescriptors: [])
+        let ownBundle = HKSource.default().bundleIdentifier
+        return try await query.result(for: store)
+            .filter { $0.sourceRevision.source.bundleIdentifier != ownBundle }
+            .map { workout in
+                RecordedStrengthActivity(
+                    id: workout.uuid.uuidString,
+                    source: .appleHealth,
+                    startedAt: workout.startDate,
+                    durationSeconds: workout.duration,
+                    averageHeartRate: workout.statistics(for: HKQuantityType(.heartRate))?
+                        .averageQuantity()?.doubleValue(for: .count().unitDivided(by: .minute())),
+                    maxHeartRate: workout.statistics(for: HKQuantityType(.heartRate))?
+                        .maximumQuantity()?.doubleValue(for: .count().unitDivided(by: .minute()))
+                )
+            }
+    }
+
     private var canWrite: Bool {
         store.authorizationStatus(for: HKObjectType.workoutType()) == .sharingAuthorized
     }

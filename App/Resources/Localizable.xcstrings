@@ -1463,6 +1463,23 @@
         }
       }
     },
+    "Connect your Garmin account first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta primero tu cuenta de Garmin."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta primeiro a túa conta de Garmin."
+          }
+        }
+      }
+    },
     "Context for reading recovery, never a fixed rule or a diagnosis. It stays in your own data and backups.": {
       "extractionState": "manual",
       "localizations": {
@@ -3401,6 +3418,57 @@
         }
       }
     },
+    "Garmin asks to wait a little. Try again in a few minutes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin pide esperar un poco. Vuelve a intentarlo en unos minutos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin pide agardar un pouco. Téntao de novo nuns minutos."
+          }
+        }
+      }
+    },
+    "Garmin didn't accept this key. It may be incomplete, deleted or expired: create a new one and paste it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin no ha aceptado esta clave. Puede estar incompleta, borrada o caducada: crea una nueva y pégala."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin non aceptou esta chave. Pode estar incompleta, borrada ou caducada: crea unha nova e pégaa."
+          }
+        }
+      }
+    },
+    "Garmin isn't answering right now. Try again later; nothing was lost.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin no responde ahora mismo. Vuelve a intentarlo más tarde; no se ha perdido nada."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin non responde agora mesmo. Téntao de novo máis tarde; non se perdeu nada."
+          }
+        }
+      }
+    },
     "Get started": {
       "extractionState": "manual",
       "localizations": {
@@ -3996,6 +4064,23 @@
         }
       }
     },
+    "Imported {1} days: {2} nights of HRV, {3} nights of sleep, {4} runs and {5} strength workouts.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importados {1} días: {2} noches de VFC, {3} noches de sueño, {4} carreras y {5} entrenamientos de fuerza."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importados {1} días: {2} noites de VFC, {3} noites de sono, {4} carreiras e {5} adestramentos de forza."
+          }
+        }
+      }
+    },
     "Imported {1} routines and {2} exercise settings.": {
       "extractionState": "manual",
       "localizations": {
@@ -4026,6 +4111,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Importadas {1} rutinas, {2} axustes de exercicio e un plan de {3} bloques."
+          }
+        }
+      }
+    },
+    "Importing your last 60 days… {1} of {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importando tus últimos 60 días… {1} de {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importando os teus últimos 60 días… {1} de {2}"
           }
         }
       }
@@ -4200,6 +4302,23 @@
         }
       }
     },
+    "Key valid until {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave válida hasta el {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chave válida ata o {1}"
+          }
+        }
+      }
+    },
     "Km run": {
       "extractionState": "manual",
       "localizations": {
@@ -4281,6 +4400,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Última copia"
+          }
+        }
+      }
+    },
+    "Last sync: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última sincronización: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última sincronización: {1}"
           }
         }
       }
@@ -5118,6 +5254,23 @@
         }
       }
     },
+    "No internet connection. Check it and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin conexión a internet. Revísala y vuelve a intentarlo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen conexión a internet. Revísaa e téntao de novo."
+          }
+        }
+      }
+    },
     "No RPE": {
       "extractionState": "manual",
       "localizations": {
@@ -5403,6 +5556,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non o sabes? Déixao baleiro e a app só usará o peso e as repeticións. Se as series no alto do rango che custan máis que o RPE obxectivo, o peso non sobe ata que che resulten máis doadas."
+          }
+        }
+      }
+    },
+    "Not synced yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún sin sincronizar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda sen sincronizar"
           }
         }
       }
@@ -8331,6 +8501,23 @@
         }
       }
     },
+    "That doesn't look like a key. In Garmin Connect, copy the key itself, then paste it here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eso no parece una clave. En Garmin Connect, copia la clave en sí y pégala aquí."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iso non parece unha chave. En Garmin Connect, copia a propia chave e pégaa aquí."
+          }
+        }
+      }
+    },
     "That file is not an Overreach backup.": {
       "extractionState": "manual",
       "localizations": {
@@ -8446,6 +8633,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "O cartafol ten unha copia e este dispositivo aínda non ten sesións. Restáuraa primeiro."
+          }
+        }
+      }
+    },
+    "The key couldn't be saved securely on this iPhone. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido guardar la clave de forma segura en este iPhone. Vuelve a intentarlo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido gardar a chave de forma segura neste iPhone. Téntao de novo."
           }
         }
       }
@@ -10167,6 +10371,57 @@
         }
       }
     },
+    "Your Garmin key expires in {1} days. Create a new one to keep importing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu clave de Garmin caduca en {1} días. Crea una nueva para seguir importando."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa chave de Garmin caduca en {1} días. Crea unha nova para seguir importando."
+          }
+        }
+      }
+    },
+    "Your Garmin key expires today. Create a new one to keep importing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu clave de Garmin caduca hoy. Crea una nueva para seguir importando."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa chave de Garmin caduca hoxe. Crea unha nova para seguir importando."
+          }
+        }
+      }
+    },
+    "Your Garmin key has expired. Create a new one to keep importing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu clave de Garmin ha caducado. Crea una nueva para seguir importando."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa chave de Garmin caducou. Crea unha nova para seguir importando."
+          }
+        }
+      }
+    },
     "{1} block {2}, for {3}–{4} weeks.": {
       "extractionState": "manual",
       "localizations": {
@@ -10265,6 +10520,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} min · {2} series de traballo · {3}"
+          }
+        }
+      }
+    },
+    "{1} records from Garmin could not be read. Garmin may have changed something; the rest was imported.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se han podido leer {1} registros de Garmin. Puede que Garmin haya cambiado algo; el resto se ha importado."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puideron ler {1} rexistros de Garmin. Pode que Garmin cambiase algo; o resto importouse."
           }
         }
       }

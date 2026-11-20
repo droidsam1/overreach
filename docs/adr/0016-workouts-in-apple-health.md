@@ -27,3 +27,4 @@ fail, and that must never put the training log at risk.
 
 - Sets, exercises and calories are not sent to Health.
 - A failed write is not retried until the session's times change.
+- Superseded in part by ADR-0023: a session another app already wrote to Health (e.g. from a watch) is not written.

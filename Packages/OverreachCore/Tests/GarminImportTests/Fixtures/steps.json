@@ -1,0 +1,86 @@
+[
+ {
+  "calendarDate": "2025-12-26",
+  "totalSteps": 19243,
+  "totalDistance": 15082,
+  "stepGoal": 17038
+ },
+ {
+  "calendarDate": "2025-12-27",
+  "totalSteps": 15986,
+  "totalDistance": 12465,
+  "stepGoal": 16956
+ },
+ {
+  "calendarDate": "2025-12-28",
+  "totalSteps": 18356,
+  "totalDistance": 14281,
+  "stepGoal": 16973
+ },
+ {
+  "calendarDate": "2025-12-29",
+  "totalSteps": 17225,
+  "totalDistance": 13428,
+  "stepGoal": 18383
+ },
+ {
+  "calendarDate": "2025-12-30",
+  "totalSteps": 16700,
+  "totalDistance": 13054,
+  "stepGoal": 17734
+ },
+ {
+  "calendarDate": "2025-12-31",
+  "totalSteps": 14352,
+  "totalDistance": 11336,
+  "stepGoal": 17463
+ },
+ {
+  "calendarDate": "2026-01-01",
+  "totalSteps": 16899,
+  "totalDistance": 13223,
+  "stepGoal": 16058
+ },
+ {
+  "calendarDate": "2026-01-02",
+  "totalSteps": 15613,
+  "totalDistance": 12147,
+  "stepGoal": 17152
+ },
+ {
+  "calendarDate": "2026-01-03",
+  "totalSteps": 15463,
+  "totalDistance": 12292,
+  "stepGoal": 15991
+ },
+ {
+  "calendarDate": "2026-01-04",
+  "totalSteps": 17633,
+  "totalDistance": 13832,
+  "stepGoal": 16275
+ },
+ {
+  "calendarDate": "2026-01-05",
+  "totalSteps": 16403,
+  "totalDistance": 12802,
+  "stepGoal": 17504
+ },
+ {
+  "calendarDate": "2026-01-06",
+  "totalSteps": 15462,
+  "totalDistance": 12124,
+  "stepGoal": 16775
+ },
+ {
+  "calendarDate": "2026-01-07",
+  "totalSteps": 16158,
+  "totalDistance": 13627,
+  "stepGoal": 16375
+ },
+ {
+  "calendarDate": "2026-01-08",
+  "totalSteps": 18250,
+  "totalDistance": 14251,
+  "stepGoal": 16560
+ }
+]

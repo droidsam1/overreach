@@ -1,0 +1,142 @@
+[
+ {
+  "calendarDate": "2025-12-26",
+  "values": {
+   "highStressDuration": 116,
+   "lowStressDuration": 18051,
+   "overallStressLevel": 24,
+   "restStressDuration": 40211,
+   "mediumStressDuration": 2777
+  }
+ },
+ {
+  "calendarDate": "2025-12-27",
+  "values": {
+   "highStressDuration": 632,
+   "lowStressDuration": 11549,
+   "overallStressLevel": 21,
+   "restStressDuration": 46712,
+   "mediumStressDuration": 1149
+  }
+ },
+ {
+  "calendarDate": "2025-12-28",
+  "values": {
+   "highStressDuration": 163,
+   "lowStressDuration": 14194,
+   "overallStressLevel": 23,
+   "restStressDuration": 36947,
+   "mediumStressDuration": 4063
+  }
+ },
+ {
+  "calendarDate": "2025-12-29",
+  "values": {
+   "highStressDuration": 530,
+   "lowStressDuration": 20402,
+   "overallStressLevel": 26,
+   "restStressDuration": 32431,
+   "mediumStressDuration": 4928
+  }
+ },
+ {
+  "calendarDate": "2025-12-30",
+  "values": {
+   "highStressDuration": 492,
+   "lowStressDuration": 19361,
+   "overallStressLevel": 26,
+   "restStressDuration": 27292,
+   "mediumStressDuration": 4266
+  }
+ },
+ {
+  "calendarDate": "2025-12-31",
+  "values": {
+   "highStressDuration": 871,
+   "lowStressDuration": 19205,
+   "overallStressLevel": 28,
+   "restStressDuration": 32535,
+   "mediumStressDuration": 7454
+  }
+ },
+ {
+  "calendarDate": "2026-01-01",
+  "values": {
+   "highStressDuration": 162,
+   "lowStressDuration": 15517,
+   "overallStressLevel": 24,
+   "restStressDuration": 33899,
+   "mediumStressDuration": 6001
+  }
+ },
+ {
+  "calendarDate": "2026-01-02",
+  "values": {
+   "highStressDuration": 877,
+   "lowStressDuration": 17888,
+   "overallStressLevel": 26,
+   "restStressDuration": 39576,
+   "mediumStressDuration": 5027
+  }
+ },
+ {
+  "calendarDate": "2026-01-03",
+  "values": {
+   "highStressDuration": 581,
+   "lowStressDuration": 21598,
+   "overallStressLevel": 27,
+   "restStressDuration": 37041,
+   "mediumStressDuration": 4238
+  }
+ },
+ {
+  "calendarDate": "2026-01-04",
+  "values": {
+   "highStressDuration": 219,
+   "lowStressDuration": 18375,
+   "overallStressLevel": 22,
+   "restStressDuration": 38610,
+   "mediumStressDuration": 1750
+  }
+ },
+ {
+  "calendarDate": "2026-01-05",
+  "values": {
+   "highStressDuration": 681,
+   "lowStressDuration": 22750,
+   "overallStressLevel": 29,
+   "restStressDuration": 28310,
+   "mediumStressDuration": 7262
+  }
+ },
+ {
+  "calendarDate": "2026-01-06",
+  "values": {
+   "highStressDuration": 938,
+   "lowStressDuration": 18538,
+   "overallStressLevel": 27,
+   "restStressDuration": 32221,
+   "mediumStressDuration": 6290
+  }
+ },
+ {
+  "calendarDate": "2026-01-07",
+  "values": {
+   "highStressDuration": 699,
+   "lowStressDuration": 20401,
+   "overallStressLevel": 30,
+   "restStressDuration": 28094,
+   "mediumStressDuration": 6470
+  }
+ },
+ {
+  "calendarDate": "2026-01-08",
+  "values": {
+   "highStressDuration": 1222,
+   "lowStressDuration": 12555,
+   "overallStressLevel": 25,
+   "restStressDuration": 38109,
+   "mediumStressDuration": 5389
+  }
+ }
+]

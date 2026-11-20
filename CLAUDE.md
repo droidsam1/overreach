@@ -31,6 +31,7 @@ Packages/
     Domain                Entities + repository/source protocols
     Analytics             Load, progression, fatigue, ACWR, readiness rules (pure functions)
     StrongImport          Strong CSV parsing + exercise → muscle-group mapping
+    GarminImport          Garmin Personal API responses → domain values, endpoints, sync plan (ADR-0022)
     Reports               Markdown report for sharing with ChatGPT/Claude
     AIExchange            Versioned messages exchanged with AI chat apps (ADR-0017, docs/ai-exchange.md)
     Presentation/         Per-feature screen state, intents and texts (ADR-0014). Linux-testable.
@@ -39,7 +40,7 @@ Packages/
   OverreachKit/           Apple frameworks (SwiftUI, SwiftData, HealthKit, Keychain)
     Persistence           Repositories (in-memory now, SwiftData CloudKit-ready in phase 1)
     HealthKitSource       Apple Health reader/writer
-    GarminSource          Unofficial Garmin Connect client (optional, isolated)
+    GarminSource          Garmin Connect Personal API client (optional, isolated; ADR-0022)
     AIKit                 LLMProvider protocol + adapters
     LocalAlerts           Local notifications (rest timer)
     DesignSystem          Colors, spacing, reusable components and charts. No domain types.
@@ -51,7 +52,7 @@ docs/                     Product definition and ADRs
 ## Dependency rules (enforced in Package.swift and SwiftLint — do not break them)
 
 1. `Domain` depends on nothing.
-2. `Analytics`, `StrongImport`, `Reports` depend only on `Domain` (and `Reports` on `Analytics`).
+2. `Analytics`, `StrongImport`, `GarminImport`, `Reports` depend only on `Domain` (and `Reports` on `Analytics`).
 3. Data modules (`Persistence`, `HealthKitSource`, `GarminSource`, `AIKit`, `LocalAlerts`) depend on `Domain`
    (+ `Reports` for `AIKit`) and implement its protocols.
 4. `FeatureX` depends on `XPresentation`, `PresentationKit`, `DesignSystem` and `Domain` (value types only;
@@ -105,6 +106,9 @@ existing modules to do it.
 # Pure-Swift core (works on macOS and Linux)
 swift test --package-path Packages/OverreachCore
 
+# Cloud sessions (Claude Code on the web, environment "overreach"): Swift 6.0.3 is preinstalled by the
+# environment's setup script, so the command above works as is.
+
 # Same, in Docker (Windows/any machine without Swift; same image as CI)
 ./scripts/test-core.sh            # or: ./scripts/test-core.ps1 ; extra args go to swift test
 
@@ -149,7 +153,8 @@ Phases 1–3 are the prototype. Keep each phase shippable.
 
 - Free Apple ID signing: the app expires after 7 days; iCloud/CloudKit and TestFlight need the paid account.
   Verify early that HealthKit signs correctly with a personal team.
-- Garmin does not write HRV to Apple Health; HRV comes from the unofficial Garmin Connect API
-  (`GarminSource`). Keep it optional and isolated; it can break when Garmin changes things (ADR-0005).
+- Garmin does not write HRV to Apple Health; HRV comes from the official Garmin Connect Personal API with the
+  user's own key (`GarminSource`, ADR-0022). Keep it optional and isolated. The key is personal: it stays in the
+  Keychain and never goes into backups, reports or logs. Rate limits are unpublished: throttle and back off.
 - iOS background refresh is not guaranteed: sync on app launch/foreground.
 - Minimum iOS 18 (ADR-0007).
