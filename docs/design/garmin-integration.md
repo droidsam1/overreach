@@ -327,7 +327,9 @@ logged in Overreach. Rules, so nothing is counted twice and the two never disagr
    sRPE load: the two are different units and must not be added together in ACWR without an evidence-based
    conversion (step 5).
 6. **Runs follow the same rule against Apple Health:** a Garmin run and the copy Garmin Connect writes to Health are
-   the same run. Keep the Garmin one, since it has load, training effect and the FIT file.
+   the same run. Keep the Garmin one, since it has load, training effect and the FIT file. The History calendar and
+   the AI report both use `RunDeduplication`. The calendar reads one day on each side of the month so copies around
+   midnight can be matched before the run count and distance are assigned to the preferred record's month.
 
 Apple Health can still show both workouts if Overreach writes the session (ADR-0016) and Garmin Connect writes its
 own recording. That is outside the app's data and does not affect Overreach. A later option is to skip writing to
@@ -355,7 +357,7 @@ Health when a matched Garmin recording exists.
 | 2 | Done (#65): `GarminService` (GarminImport) implements `GarminAccount` and `MetricsSource`: token minting and reuse, spacing and backoff, incremental sync, activity paging, cache. `GarminSource` supplies the Keychain, URLSession and the cache file. Wired in `AppContainer`. | Core, Kit, App |
 | 3 | Done (#65, #66): `GarminSetupModel` + `GarminSetupView` (three steps), Settings → Garmin, the devices step of the first-run setup, the Today card, an expiry notification a week before, translations. | SettingsPresentation, Feature* |
 | 4 | Done: Garmin HRV feeds `ReadinessRules`; every HRV value carries its statistic (`HRVMetric`) and baselines only compare nights of one kind (ADR-0024, `hrv-metrics`). | Domain, Analytics, `docs/evidence.md` |
-| 5 | Partly done: runs (with load and training effect) and `RecordedStrengthActivity` are imported; runs deduplicated against Health copies (`RunDeduplication`, used by the AI report); strength paired by `StrengthActivityMatching` and Health writes deduplicated (ADR-0023). History shows watch metrics on matched strength sessions and lists watch-only workouts. Next: walks (`ActivitySource`) and our own acute/chronic load from per-activity load (evidence first). | Core + Kit |
+| 5 | Partly done: Garmin runs are deduplicated against Health copies in the AI report and the History calendar, which shows their training load and training effect when available. Strength is paired by `StrengthActivityMatching` and Health writes are deduplicated (ADR-0023). History shows watch metrics on matched strength sessions and lists watch-only workouts. Next: walks (`ActivitySource`) and our own acute/chronic load from per-activity load (evidence first). | Core + Kit |
 | 6 | FIT decoding (laps, HR, power) for run load and the AI report. | OverreachCore |
 | 7 | Women's health → `CycleSource` (ADR-0009). | Core + Kit |
 

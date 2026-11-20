@@ -27,19 +27,34 @@ public enum HistoryRow: Identifiable, Sendable {
     }
 }
 
+/// One labeled value from a recorded workout.
+public struct HistoryMetric: Identifiable, Hashable, Sendable {
+    public let label: String
+    public let value: String
+    public var id: String { label }
+
+    static func training(load: Double?, aerobic: Double?, anaerobic: Double?, format: Format) -> [Self] {
+        [
+            load.map {
+                Self(label: L10n.text("Training load"), value: format.number($0))
+            },
+            aerobic.map {
+                Self(label: L10n.text("Aerobic training effect"), value: format.number($0, maxFractionDigits: 1))
+            },
+            anaerobic.map {
+                Self(label: L10n.text("Anaerobic training effect"), value: format.number($0, maxFractionDigits: 1))
+            }
+        ].compactMap { $0 }
+    }
+}
+
 /// Read-only display values from a watch, also shown alongside the matched session's logged sets.
 public struct HistoryStrengthActivity: Identifiable, Sendable {
-    public struct Metric: Identifiable, Sendable {
-        public let label: String
-        public let value: String
-        public var id: String { label }
-    }
-
     public let id: String
     public let source: String
     public let startedAt: Date
     public let durationSeconds: Double
-    public let metrics: [Metric]
+    public let metrics: [HistoryMetric]
 
     public var title: String { L10n.text("Strength workout") }
     public var subtitle: String { L10n.format("{1} · No logged session", source) }
@@ -51,20 +66,18 @@ public struct HistoryStrengthActivity: Identifiable, Sendable {
         durationSeconds = activity.durationSeconds
         metrics = [
             activity.averageHeartRate.map {
-                Metric(label: L10n.text("Average heart rate"), value: format.number($0, maxFractionDigits: 0) + " bpm")
+                HistoryMetric(
+                    label: L10n.text("Average heart rate"), value: format.number($0, maxFractionDigits: 0) + " bpm"
+                )
             },
             activity.maxHeartRate.map {
-                Metric(label: L10n.text("Maximum heart rate"), value: format.number($0, maxFractionDigits: 0) + " bpm")
-            },
-            activity.trainingLoad.map {
-                Metric(label: L10n.text("Training load"), value: format.number($0))
-            },
-            activity.aerobicTrainingEffect.map {
-                Metric(label: L10n.text("Aerobic training effect"), value: format.number($0, maxFractionDigits: 1))
-            },
-            activity.anaerobicTrainingEffect.map {
-                Metric(label: L10n.text("Anaerobic training effect"), value: format.number($0, maxFractionDigits: 1))
+                HistoryMetric(
+                    label: L10n.text("Maximum heart rate"), value: format.number($0, maxFractionDigits: 0) + " bpm"
+                )
             }
-        ].compactMap { $0 }
+        ].compactMap { $0 } + HistoryMetric.training(
+            load: activity.trainingLoad, aerobic: activity.aerobicTrainingEffect,
+            anaerobic: activity.anaerobicTrainingEffect, format: format
+        )
     }
 }

@@ -53,7 +53,7 @@ public struct SessionDetail: Sendable {
     public let recording: HistoryStrengthActivity?
 }
 
-/// Past strength sessions, newest first, plus the month calendar with runs and steps from Apple Health.
+/// Past strength sessions, newest first, plus the month calendar with runs and steps.
 @MainActor
 @Observable
 public final class HistoryModel {
@@ -90,7 +90,7 @@ public final class HistoryModel {
         profiles: (any ProfileRepository)? = nil,
         progression: (any ProgressionSettingsRepository)? = nil,
         activity: (any ActivitySource)? = nil,
-        runs: (any MetricsSource)? = nil,
+        runSources: [any MetricsSource] = [],
         recordedStrength: (any RecordedStrengthSource)? = nil,
         calendar: Calendar = .current,
         format: Format = Format(),
@@ -107,7 +107,8 @@ public final class HistoryModel {
         self.format = format
         self.clock = clock
         self.calendar = HistoryCalendarModel(
-            workouts: workouts, activity: activity, runs: runs, calendar: calendar, format: format, clock: clock
+            workouts: workouts, activity: activity, runSources: runSources,
+            calendar: calendar, format: format, clock: clock
         )
     }
 
