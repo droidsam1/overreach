@@ -153,6 +153,7 @@ public enum BlockAdvisor {
         current: TrainingBlock?,
         today: CalendarDay,
         horizonWeeks: Int = 52,
+        recentlyDeloaded: Bool = false,
         calendar: Calendar = .current
     ) -> [PlannedBlock] {
         let kind = goal?.kind ?? .general
@@ -174,7 +175,7 @@ public enum BlockAdvisor {
         if let focus = current?.focus, first.switchInWeeks > 0 {
             append(focus, first.switchInWeeks)
         }
-        if first.switchInWeeks == 0, current != nil { append(nil, 1) }
+        if first.switchInWeeks == 0, current != nil, !recentlyDeloaded { append(nil, 1) }
 
         var horizon = horizonWeeks
         var peak: (target: CalendarDay, strengthWeeks: Int)?

@@ -52,6 +52,23 @@
         }
       }
     },
+    "No training recorded": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin entrenamientos registrados"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen adestramentos rexistrados"
+          }
+        }
+      }
+    },
     "No upcoming running days.": {
       "extractionState": "manual",
       "localizations": {
@@ -966,6 +983,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Obxectivo habitual · {1} × {2}"
+          }
+        }
+      }
+    },
+    "Last deload 1 week ago": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última descarga hace una semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última descarga hai unha semana"
+          }
+        }
+      }
+    },
+    "Last deload less than a week ago": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última descarga hace menos de una semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última descarga hai menos dunha semana"
+          }
+        }
+      }
+    },
+    "Last deload {1} weeks ago": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última descarga hace {1} semanas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última descarga hai {1} semanas"
           }
         }
       }
@@ -3775,6 +3843,23 @@
         }
       }
     },
+    "Count as deload": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contar como descarga"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contar como descarga"
+          }
+        }
+      }
+    },
     "Count them anyway": {
       "extractionState": "manual",
       "localizations": {
@@ -3788,6 +3873,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Contalos igualmente"
+          }
+        }
+      }
+    },
+    "Count this period as a deload?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Contar este periodo como descarga?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contar este período como descarga?"
           }
         }
       }
@@ -7617,6 +7719,23 @@
         }
       }
     },
+    "Plan detects unplanned deloads from your training history.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan detecta descargas no planificadas en tu historial de entrenamiento."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan detecta descargas non planificadas no teu historial de adestramento."
+          }
+        }
+      }
+    },
     "Plan my next block": {
       "extractionState": "manual",
       "localizations": {
@@ -8157,6 +8276,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Récords e próximos obxectivos"
+          }
+        }
+      }
+    },
+    "Recovery history": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historial de recuperación"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historial de recuperación"
           }
         }
       }
@@ -8786,6 +8922,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carreira"
+          }
+        }
+      }
+    },
+    "Running may have been lighter than usual": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es posible que las carreras fueran más suaves de lo habitual"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "É posible que as carreiras fosen máis suaves do habitual"
           }
         }
       }
@@ -13890,6 +14043,23 @@
         }
       }
     },
+    "Only light running recorded": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo se registraron carreras suaves"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Só se rexistraron carreiras suaves"
+          }
+        }
+      }
+    },
     "Only my iPhone": {
       "extractionState": "manual",
       "localizations": {
@@ -14090,6 +14260,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Crea unha nova en Axustes → Garmin para seguir importando. Son os mesmos tres pasos."
+          }
+        }
+      }
+    },
+    "Strength training load was well below usual or planned": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La carga de fuerza fue muy inferior a la habitual o planificada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A carga de forza foi moi inferior á habitual ou planificada"
           }
         }
       }
@@ -14736,6 +14923,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Os mesmos exercicios, {1} das series efectivas, un {2} menos de carga e RPE {3} como máximo."
+          }
+        }
+      }
+    },
+    "Deloads and rest periods": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descargas y periodos de descanso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descargas e períodos de descanso"
           }
         }
       }

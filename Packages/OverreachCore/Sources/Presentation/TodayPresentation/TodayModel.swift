@@ -337,34 +337,37 @@ public final class TodayModel {
             today: today, history: history, checkIn: checkIn, settings: readinessSettings,
             tracksNaturalCycle: profile?.usesCyclePhase ?? false, calendar: calendar
         )
-        await loadDeloadAdvice(today: today, now: now, history: history, profile: profile, loadID: loadID)
         await loadRecentTraining(in: weekStart...today, now: now, sources: availableSources, profile: profile,
-                                 loadID: loadID)
+                                 loadID: loadID, metricsHistory: history)
     }
 
     private func loadRecentTraining(
         in range: ClosedRange<CalendarDay>, now: Date, sources: [any MetricsSource], profile: AthleteProfile?,
-        loadID: UUID
+        loadID: UUID, metricsHistory: [DailyMetrics]
     ) async {
         // Include the previous day so copies across midnight can match before filtering to the visible week.
         let start = range.lowerBound.adding(days: -1, calendar: calendar).startDate(in: calendar)
+        let deloadStart = range.upperBound.adding(days: -DeloadDetection.historyDays, calendar: calendar)
+            .startDate(in: calendar)
+        let readsDeloadHistory = profile != nil && workouts != nil
         let runningStart = hasRunningGoal && (readiness.level == .amber || readiness.level == .green)
             ? range.upperBound.adding(days: -EasyRunAdvisor.historyDays, calendar: calendar).startDate(in: calendar)
             : start
         async let logged = try? workouts?.sessions(from: start, to: now)
         async let catalog = try? exercises?.allExercises()
-        async let watch = recordedStrength?.strengthActivities(from: start, to: now)
+        async let watch = recordedStrength?.strengthActivities(from: readsDeloadHistory ? deloadStart : start, to: now)
         async let checkInHistory = try? checkIns?.checkIns(in: range)
-        async let runs = Self.readRecentRuns(sources: sources, from: runningStart, to: now)
+        async let runs = Self.readRecentRuns(sources: sources, from: readsDeloadHistory ? min(deloadStart, runningStart) : runningStart, to: now)
         let (sessions, allExercises, recordings, previousCheckIns, runResult) = await (
             logged, catalog, watch, checkInHistory, runs
         )
         guard activeLoad == loadID else { return }
         trainingReadFailed = runResult.failed || (workouts != nil && sessions == nil)
         let currentCheckIn = checkIn.map { [$0] } ?? []
+        let recentRecordings = (recordings ?? []).filter { $0.endedAt >= start }
         recentTrainingDays = RecentTraining(calendar: calendar, format: format).days(
             in: range, through: now, metrics: week, checkIns: currentCheckIn + (previousCheckIns ?? []),
-            runs: runResult.activities, sessions: sessions ?? [], recordings: recordings ?? [], exercises: allExercises ?? []
+            runs: runResult.activities, sessions: sessions ?? [], recordings: recentRecordings, exercises: allExercises ?? []
         )
         if hasRunningGoal, let goal = profile?.goal, let running = goal.running,
            let decision = EasyRunAdvisor.advise(
@@ -373,8 +376,16 @@ public final class TodayModel {
            ) {
             runningOption = RunningOption(goal: running, decision: decision, calendar: calendar, format: format)
         }
-        guard readiness.level == .amber, let sessions,
-              !hasStrengthToday(sessions: sessions, recordings: recordings ?? [], now: now) else { return }
+        await loadDeloadAdvice(
+            now: now, history: metricsHistory, profile: profile,
+            training: DeloadTraining(
+                runs: runResult.activities, runReadFailed: runResult.failed,
+                recordings: recordings ?? [], catalog: allExercises ?? []
+            ),
+            loadID: loadID
+        )
+        guard activeLoad == loadID, readiness.level == .amber, let sessions,
+              !hasStrengthToday(sessions: sessions, recordings: recentRecordings, now: now) else { return }
         await loadStrengthOption(today: range.upperBound, now: now, profile: profile, catalog: allExercises ?? [],
                                  loadID: loadID)
     }
@@ -399,26 +410,44 @@ public final class TodayModel {
         deloadAdvice = nil
     }
 
+    private struct DeloadTraining {
+        let runs: [RunActivity]
+        let runReadFailed: Bool
+        let recordings: [RecordedStrengthActivity]
+        let catalog: [Exercise]
+    }
+
     private func loadDeloadAdvice(
-        today: CalendarDay, now: Date, history: [DailyMetrics], profile: AthleteProfile?, loadID: UUID
+        now: Date, history: [DailyMetrics], profile: AthleteProfile?, training: DeloadTraining, loadID: UUID
     ) async {
         guard let profile, let workouts else {
             deloadAdvice = nil
             return
         }
+        let today = CalendarDay(now, calendar: calendar)
         let weekStart = today.adding(days: -(RecoveryTrend.windowDays - 1), calendar: calendar)
-        async let logged = try? workouts.sessions(from: now.addingTimeInterval(-ProgressionTargets.historyWindow), to: now)
-        async let catalog = try? exercises?.allExercises()
+        let start = today.adding(days: -DeloadDetection.historyDays, calendar: calendar).startDate(in: calendar)
+        async let logged = try? workouts.sessions(from: start, to: now)
+        async let allRoutines = try? routines?.allRoutines()
         async let allSettings = try? progression?.allProgressionSettings()
         async let weekCheckIns = try? checkIns?.checkIns(in: weekStart...today)
-        let (sessions, allExercises, settings, recentCheckIns) = await (logged, catalog, allSettings, weekCheckIns)
+        let (sessions, routines, settings, recentCheckIns) = await (logged, allRoutines, allSettings, weekCheckIns)
         guard activeLoad == loadID else { return }
         let completed = (sessions ?? []).filter { RecentTraining.isCompleted($0, through: now) }
-        deloadAdvice = DeloadAdvice.make(
-            today: today, now: now, sessions: completed, exercises: allExercises ?? [], settings: settings ?? [:],
-            profile: profile, history: history, checkIns: recentCheckIns ?? [], readinessSettings: readinessSettings,
-            calendar: calendar, format: format
-        )
+        let calendar = calendar
+        let format = format
+        let readinessSettings = readinessSettings
+        let advice = await Task.detached(priority: .userInitiated) {
+            DeloadAdvice.make(
+                today: today, now: now, sessions: completed, exercises: training.catalog, settings: settings ?? [:],
+                profile: profile, history: history, checkIns: recentCheckIns ?? [],
+                runs: training.runs, runReadFailed: training.runReadFailed, routines: routines ?? [],
+                recordings: training.recordings,
+                readinessSettings: readinessSettings, calendar: calendar, format: format
+            )
+        }.value
+        guard activeLoad == loadID else { return }
+        deloadAdvice = advice
     }
 
     private func hasStrengthToday(sessions: [StrengthSession], recordings: [RecordedStrengthActivity], now: Date) -> Bool {

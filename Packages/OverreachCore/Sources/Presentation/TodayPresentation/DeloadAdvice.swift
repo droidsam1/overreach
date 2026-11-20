@@ -29,6 +29,8 @@ public struct DeloadAdvice: Hashable, Sendable {
     public static func make(
         today: CalendarDay, now: Date, sessions: [StrengthSession], exercises: [Exercise],
         settings: [UUID: ProgressionSettings], profile: AthleteProfile, history: [DailyMetrics], checkIns: [CheckIn],
+        runs: [RunActivity] = [], runReadFailed: Bool = false, routines: [Routine] = [],
+        recordings: [RecordedStrengthActivity] = [],
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(),
         advisorSettings: DeloadAdvisor.Settings = DeloadAdvisor.Settings(),
         calendar: Calendar = .current, format: Format = Format()
@@ -57,9 +59,14 @@ public struct DeloadAdvice: Hashable, Sendable {
         let recovery = RecoveryTrend.assess(
             today: today, history: history, checkIns: checkIns, settings: readinessSettings, calendar: calendar
         )
+        let detected = DeloadDetection.periods(
+            sessions: sessions, runs: runs, profile: profile, routines: routines, exercises: byID,
+            settings: settings, runReadFailed: runReadFailed, recordings: recordings, today: today, calendar: calendar
+        )
         let lastDeload = profile.deloads.last.map { $0.start.startDate(in: calendar) }
         guard let proposal = DeloadAdvisor.proposal(
-            lifts: lifts, lastDeload: lastDeload, recovery: recovery, now: now, settings: advisorSettings
+            lifts: lifts, lastDeload: lastDeload, recovery: recovery, now: now, settings: advisorSettings,
+            detectedDeloads: detected, calendar: calendar
         ) else { return nil }
         let reasons = proposal.signals.map {
             DeloadReasonLine(text: text(for: $0, format: format), evidence: $0.evidence.level.displayName)
