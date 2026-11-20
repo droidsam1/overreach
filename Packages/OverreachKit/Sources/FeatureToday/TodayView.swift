@@ -30,6 +30,9 @@ public struct TodayView: View {
                     if model.showsReadinessCard {
                         readiness
                     }
+                    if let option = model.strengthOption {
+                        easyStrength(option)
+                    }
                     if model.showsCheckIn {
                         checkIn
                     }
@@ -143,6 +146,28 @@ public struct TodayView: View {
                     .padding(.top, Spacing.small)
                 }
             }
+        }
+    }
+
+    private func easyStrength(_ option: StrengthOption) -> some View {
+        DisclosureGroup("If you want to lift today") {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                if let heading = option.heading {
+                    Text(heading).font(.subheadline)
+                }
+                ForEach(option.exerciseRows) { row in
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        Text(row.title).font(.subheadline.weight(.semibold))
+                        Text(row.reference).foregroundStyle(.secondary)
+                        Text(row.suggestion)
+                    }
+                    .font(.subheadline)
+                }
+                Text(option.guidance).font(.subheadline)
+                Text(option.evidence).font(.caption).foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, Spacing.small)
         }
     }
 

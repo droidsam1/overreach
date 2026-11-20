@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- On an amber day, Today can show an optional light strength example alongside the next routine or recent session.
 - Today explains low HRV in plain language, puts it alongside measured recovery and recent training, and links to the research.
 - Today can offer one optional check-in question about symptoms or unusual stress when HRV stays below your range.
 - History lists logged strength sessions, watch-only strength and runs together, with activity and source

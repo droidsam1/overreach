@@ -292,7 +292,7 @@ public final class WorkoutModel {
     private let clock: @Sendable () -> Date
 
     /// How far back history is read to compute targets and stalls.
-    static let historyWindow: TimeInterval = 365 * 86_400
+    static let historyWindow = ProgressionTargets.historyWindow
 
     public init(
         workouts: any WorkoutRepository,
@@ -477,15 +477,10 @@ public final class WorkoutModel {
             warnAboutTargets()
         }
         let declaredFocus = stored?.focus ?? sessionFocus
-        var settings = stored ?? ProgressionSettings(for: exercise)
-        if stored == nil, let declaredFocus {
-            settings.scheme = FocusPrescription.for(declaredFocus).defaultScheme
-        }
         // A routine's prescription wins in that routine; the engine still sets the load from history.
         let prescribed = sessionRoutine?.prescription(for: exercise.id)
-        if let prescribed {
-            settings.scheme = prescribed
-        }
+        let settings = ProgressionTargets.settings(for: exercise, stored: stored, focus: declaredFocus,
+                                                   prescription: prescribed)
         let inferredFocus = FocusClassifier.dominant(history.indices.suffix(3).compactMap { index in
             FocusClassifier.focus(of: history[index], previous: Array(history[..<index]))
         })
