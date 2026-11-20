@@ -20,10 +20,16 @@ struct HistoryModelTests {
         )
     }
 
-    private func model(_ sessions: [StrengthSession]) async -> (HistoryModel, TestStore) {
+    private func model(
+        _ sessions: [StrengthSession], recordings: [RecordedStrengthActivity] = []
+    ) async -> (HistoryModel, TestStore) {
         let store = TestStore(exercises: [squat], sessions: sessions)
         let fixedNow = now
-        let model = HistoryModel(workouts: store, exercises: store, routines: store, clock: { fixedNow })
+        let model = HistoryModel(
+            workouts: store, exercises: store, routines: store,
+            recordedStrength: recordings.isEmpty ? nil : StrengthRecordings(activities: recordings),
+            format: format, clock: { fixedNow }
+        )
         await model.load()
         return (model, store)
     }
@@ -49,6 +55,51 @@ struct HistoryModelTests {
     @Test func emptyStateOnlyWithoutSessions() async {
         let (model, _) = await model([])
         #expect(model.showsEmptyState)
+    }
+
+    @Test func matchedWatchMetricsEnrichTheDetailAndUnmatchedWorkoutsAppearInOrder() async throws {
+        let logged = session("Lower", daysAgo: 2, sets: [WorkoutSet(weightKg: 100, reps: 5)])
+        let older = session("Upper", daysAgo: 4, sets: [])
+        let matched = RecordedStrengthActivity(
+            id: "matched", source: .garmin, startedAt: logged.startedAt.addingTimeInterval(-5 * 60),
+            durationSeconds: 4_200, averageHeartRate: 125, trainingLoad: 42.5, aerobicTrainingEffect: 2.5,
+            totalSets: 20, totalReps: 100
+        )
+        let watchOnly = RecordedStrengthActivity(
+            id: "watch-only", source: .garmin, startedAt: now.addingTimeInterval(-86_400), durationSeconds: 1_800
+        )
+        let (model, store) = await model([older, logged], recordings: [matched, watchOnly])
+
+        #expect(model.rows.map(\.id) == [.recording(watchOnly.id), .session(logged.id), .session(older.id)])
+        let detail = try #require(model.detail(for: logged.id, format: format))
+        #expect(detail.recording?.source == "Garmin")
+        #expect(detail.recording?.metrics.map(\.value) == ["125 bpm", "42.5", "2.5"])
+        #expect(detail.entries.first?.sets.map(\.text) == ["100 kg × 5"])
+        #expect(detail.durationSeconds == 3_600)
+        #expect(model.detail(for: older.id)?.recording == nil)
+        #expect(await store.sessions(from: .distantPast, to: .distantFuture) == [older, logged])
+    }
+
+    @Test func watchOnlyWorkoutPreventsTheEmptyStateAndRematchesAfterAnEditOrDeletion() async throws {
+        let logged = session("Lower", daysAgo: 2, sets: [])
+        let recording = RecordedStrengthActivity(
+            id: "watch", source: .garmin, startedAt: now.addingTimeInterval(-86_400), durationSeconds: 1_800
+        )
+        let (model, _) = await model([], recordings: [recording])
+        #expect(!model.showsEmptyState)
+        #expect(model.rows.map(\.id) == [.recording(recording.id)])
+
+        model.didSave(logged)
+        #expect(model.rows.map(\.id) == [.recording(recording.id), .session(logged.id)])
+        var edited = logged
+        edited.startedAt = recording.startedAt
+        edited.endedAt = recording.endedAt
+        model.didSave(edited)
+        #expect(model.rows.map(\.id) == [.session(logged.id)])
+        #expect(model.detail(for: logged.id)?.recording?.id == recording.id)
+
+        await model.delete(logged.id)
+        #expect(model.rows.map(\.id) == [.recording(recording.id)])
     }
 
     @Test func detailDescribesSetsAndEstimatesOneRepMaxForWorkingSets() async throws {
@@ -89,6 +140,14 @@ struct HistoryModelTests {
         #expect(model.makeEditor(forSessionID: listed.id)?.draft == listed)
         #expect(model.makeEditor(forSessionID: UUID()) == nil)
         #expect(model.detail(for: UUID()) == nil)
+    }
+}
+
+private struct StrengthRecordings: RecordedStrengthSource {
+    let activities: [RecordedStrengthActivity]
+
+    func strengthActivities(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
+        activities.filter { $0.startedAt >= start && $0.startedAt <= end }
     }
 }
 

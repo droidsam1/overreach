@@ -6,7 +6,7 @@ import GarminImport
 /// Linux); this module supplies the Keychain, URLSession and a cache file.
 public enum GarminConnect {
     /// The account (connect, sync, disconnect) and the metrics source are the same object.
-    public static func makeService() -> any GarminAccount & MetricsSource {
+    public static func makeService() -> any GarminAccount & MetricsSource & RecordedStrengthSource {
         GarminService(
             transport: URLSessionGarminTransport(),
             secrets: KeychainGarminSecrets(),

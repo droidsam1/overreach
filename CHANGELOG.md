@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- History shows Garmin heart rate, training load and training effect on matched strength sessions. Watch-only
+  strength workouts appear in the same list with their own read-only details.
 - Plan check (#34, ADR-0019). Train shows this week's planned and completed sessions. When sessions keep being
   missed, it proposes fewer sessions a week (with the same weekly sets, results are about the same) and a longer
   block. After a break of two weeks or more it says to keep the plan and ease back in, and after an "ill"
@@ -50,6 +52,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings → Appearance: light, dark or the same as the iPhone (the default).
 
 ### Fixed
+- Garmin sync counts each activity once when the same activity appears on multiple API pages.
 - The progression engine ignored the kind of set: warm-up sets in the history now no longer count for targets,
   stalls or the working weight.
 
