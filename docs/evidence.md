@@ -227,13 +227,47 @@ The one RCT of HRV-guided resistance training found no advantage for strength or
 women), so HRV only moderates intensity here and never decides the strength plan alone.
 → Baseline = mean ± 0.5 SD of ln nightly HRV over the previous 60 days (≥ 14 nights); signal when the 7-day mean
 (≥ 3 nights) is below that range. Apple Watch reports SDNN, not RMSSD, and wearable HRV agrees only loosely
-with chest-strap references: the same personal-range rule is applied to whatever the source reports, which is a
-heuristic transfer.
+with chest-strap references: the same personal-range rule is applied to one series at a time (one metric from
+one source, `hrv-metric-type`), which for Apple SDNN is a heuristic transfer.
 Refs: Düking et al. 2021, J Sci Med Sport 24:1180 (meta-analysis, wearables); Manresa-Rocamora et al. 2021, Int
 J Environ Res Public Health 18:10299 (meta-analysis); Granero-Gallegos et al. 2020, Int J Environ Res Public
 Health 17:7999 (meta-analysis); Vesterinen et al. 2016, Med Sci Sports Exerc 48:1347 (RCT, SWC protocol); Plews
 et al. 2012, Eur J Appl Physiol 112:3729 (7-day rolling average); Front Physiol 2024, 15:1472702 (RCT,
 HRV-guided resistance training, n = 21); Sensors 2024, 24:6220 (Apple Watch HRV validity). Reviewed 2026-11-19.
+
+### `hrv-metric-type` — moderate
+SDNN and RMSSD measure different things (overall vs beat-to-beat variability; short-term SDNN tracks LF power,
+r = 0.90–0.94), RMSSD is the more robust metric in short recordings, and no conversion between them exists.
+Wearable HRV is comparable only within one device and one metric.
+→ Apple Watch SDNN and Garmin RMSSD are kept as separate series and never share a baseline; when both qualify,
+the rule uses RMSSD; a new source starts its own baseline (ADR-0024, `docs/design/hrv-sources.md`).
+Refs: Esco 2026, J Funct Morphol Kinesiol 11:304 (narrative review); Shaffer & Ginsberg 2017, Front Public Health
+5:258 (review); Munoz et al. 2015, PLoS One 10:e0138921 (n = 3,387); Doherty et al. 2025, Transl Exerc Biomed
+(review of 14 composite scores). Reviewed 2026-11-20.
+
+### `wearable-hrv-validity` — moderate
+Wrist HRV is inaccurate in absolute terms but reliable enough for a personal trend. Nocturnal RMSSD vs chest-strap
+ECG (536 nights): Garmin Fenix 6 CCC 0.87, MAPE 10.5 %, behind Oura (0.97–0.99) and WHOOP (0.94). Garmin Elevate
+v4: good test–retest reliability, proportional bias, individual errors up to about ±50 %. Apple Watch S9/Ultra 2
+SDNN: −8.3 ms bias, MAPE 28.9 %, outside a ±10 ms equivalence margin; no validation of the passive nocturnal SDNN
+(3–4 spot readings a night) that Health stores.
+→ Only the person's own baseline from the same device is used; Apple nightly SDNN is the weaker input and its
+reasons say so. Refs: Dial et al. 2025, Physiol Rep 13:e70527; Sensors 2026, 26:6549 (Elevate v4, n = 23);
+O'Grady et al. 2024, Sensors 24:6220; Miller et al. 2022, Sensors 22:6317. Reviewed 2026-11-20.
+
+### `hrv-nocturnal` — moderate
+Nocturnal HR and RMSSD are reliable, have a low typical error and respond to the preceding training load; their
+response to two weeks of overload tracked 3000 m performance changes, while morning values responded differently.
+→ Nightly averages are a valid input for the 7-day rolling rule. Refs: Nuuttila et al. 2022, Int J Sports Physiol
+Perform 17:1296; Nuuttila et al. 2024, Sports Med Open (overload study, doi 10.1186/s40798-024-00779-5); nocturnal
+vs morning in young athletes, 2021 (PMC8730395). Reviewed 2026-11-20.
+
+### `composite-scores` — limited
+Device scores (Garmin HRV status and baseline, Body Battery, training readiness, other brands' readiness and
+recovery) have undisclosed inputs, weights and baselines and no rigorous independent validation; they can change
+without notice.
+→ Shown as context, labelled as the device's, never a rule input. Refs: Doherty et al. 2025, Transl Exerc Biomed,
+doi 10.1515/teb-2025-0001; Garmin HRV status documentation. Reviewed 2026-11-20.
 
 ### `readiness-resting-hr` — limited
 Short-term overload raises resting HR moderately, longer overload does not, and changes must be read together with

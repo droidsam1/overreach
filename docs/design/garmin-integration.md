@@ -341,7 +341,7 @@ Health when a matched Garmin recording exists.
 | 1 | Done (2026-11-20): `GarminImport` decodes HRV, sleep, daily summaries v2, VO2max and activities, maps them to `DailyMetrics`, `RunActivity` and `RecordedStrengthActivity`, and plans the requests (first sync of 60 days = 6 requests). Tested against the fixtures. | OverreachCore |
 | 2 | `GarminSource`: token provider, HTTP client, `MetricsSource` for daily metrics. Wire in `AppContainer`. | OverreachKit, App |
 | 3 | Settings: connect (paste key + expiry), status, last sync, disconnect; localized texts (en, es, gl). | SettingsPresentation, FeatureSettings |
-| 4 | Readiness: HRV from Garmin feeds `ReadinessRules` (already source-agnostic); evidence note on Garmin HRV (nightly RMSSD) versus Apple SDNN, which are not comparable, so baselines must be per metric type. | Analytics, `docs/evidence.md` |
+| 4 | Readiness: HRV from Garmin feeds `ReadinessRules`, one series per metric (research done 2026-11-20: `docs/design/hrv-sources.md`, ADR-0024). | Analytics, `docs/evidence.md` |
 | 5 | Activities: summaries → `RunActivity` (with `activityTrainingLoad` and training effect), walks (`ActivitySource`) and `RecordedStrengthActivity`; runs deduplicated with Health; strength paired with logged sessions by `StrengthActivityMatching` (done); our own acute/chronic load from per-activity load (evidence first). | Core + Kit |
 | 6 | FIT decoding (laps, HR, power) for run load and the AI report. | OverreachCore |
 | 7 | Women's health → `CycleSource` (ADR-0009). | Core + Kit |
@@ -351,10 +351,10 @@ Steps 1–4 are the shippable unit for phase 2 (v0.2). `ReleaseNotes.all` gets a
 ### Open questions
 
 
-- HRV metric type: Garmin reports nightly RMSSD, while Apple Watch writes SDNN to Health. They must not share a baseline.
-  Does `DailyMetrics` need a `hrvMetric` tag, or a separate field? (Decide in step 4, with evidence.)
-- Is Body Battery worth showing, given it is a proprietary score? It is cheap to store; it is shown as context and
-  never used as a rule input unless evidence supports it.
+- ~~HRV metric type~~ Researched 2026-11-20 (`docs/design/hrv-sources.md`, ADR-0024 proposed): separate fields per
+  metric, the rule judges one series and prefers RMSSD, a new source starts its own baseline.
+- ~~Body Battery~~ No independent validation of composite scores (`composite-scores`): shown as Garmin context,
+  never a rule input.
 - Exact rate limits (about 100 per minute reported unofficially). A 60-day backfill is about 6 requests: one daily
   summaries call (up to a year), two sleep calls (31 days), one HRV range, two Body Battery calls, plus activity pages.
 - Daily summary v2 versus the separate stress, steps and Body Battery endpoints: v2 covers most fields in one call.
