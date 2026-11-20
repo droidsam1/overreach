@@ -5,6 +5,8 @@ Levels: **strong** (meta-analyses / umbrella reviews / position stands built on 
 low-certainty syntheses), **limited** (consensus, observational, mechanistic), **heuristic** (coaching default,
 configurable). Keys are referenced from code as `EvidenceReference(key:level:)`.
 
+Latest full review: `docs/evidence-review-2026-11.md` (2026-11-20), with open findings and proposed entries.
+
 ## Menstrual cycle
 
 ### `cycle-phase-performance` — limited (no phase-based rules)
@@ -87,8 +89,8 @@ strength); counting indirect sets as 0.5 ("fractional") fits best. Per-session b
 fractional sets per muscle (preprint).
 → Effective sets per muscle use 1 / 0.5 weighting; stall suggestions add/remove a set relative to a
 configurable 10–20 weekly fractional sets range (heuristic within the evidence).
-Refs: Pelland et al. (meta-regressions, 67 studies, 2026); Remmert et al. 2025 (SportRxiv preprint).
-Reviewed 2026-11-16.
+Refs: Pelland et al. 2026, Sports Med 56(2):481–505 (meta-regressions, 67 studies); Remmert et al. 2025 (SportRxiv
+preprint). Reviewed 2026-11-20 (`docs/evidence-review-2026-11.md`).
 
 ### `deload-design` — limited
 Expert Delphi consensus defines a deload as a period of reduced training stress to mitigate fatigue and
@@ -110,8 +112,13 @@ Same load and reps over 3 exposures with RPE up ≥ 1 point → accumulated fati
 Reviewed 2026-11-16.
 
 ### `acwr` — heuristic
-Acute:chronic workload ratio > 1.5 as a weak signal only; its injury-prediction validity is disputed.
-Reviewed 2026-11-16.
+Acute:chronic workload ratio > 1.5 as a weak signal only; its injury-prediction validity is disputed. The coupled
+form (acute week inside the chronic window, as `Workload.acuteChronicRatio` computes it today) creates a spurious
+acute–chronic correlation, and the association with injury has been argued to be largely an artefact of the ratio.
+Never shown as injury risk. Replacement with an uncoupled "this week vs your usual week" comparison is recommended
+before the ratio is wired into deload proposals (`docs/evidence-review-2026-11.md`, §3.1).
+Refs: Lolli et al. 2019, Br J Sports Med 53:921; Impellizzeri et al. 2020, Int J Sports Physiol Perform;
+Impellizzeri et al. 2021, Sports Med 51:581. Reviewed 2026-11-20.
 
 ## Warm-up
 
