@@ -1,6 +1,312 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Add strength day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir día de fuerza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Engadir día de forza"
+          }
+        }
+      }
+    },
+    "Add training day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir día de entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Engadir día de adestramento"
+          }
+        }
+      }
+    },
+    "Compare with an easy strength option": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparar con una variante suave"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparar cunha variante suave"
+          }
+        }
+      }
+    },
+    "Hybrid calendar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario híbrido"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario híbrido"
+          }
+        }
+      }
+    },
+    "No upcoming training days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay próximos días de entrenamiento."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai días de adestramento próximos."
+          }
+        }
+      }
+    },
+    "Past training days": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Días de entrenamiento pasados"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Días de adestramento pasados"
+          }
+        }
+      }
+    },
+    "Remove strength day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar día de fuerza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar día de forza"
+          }
+        }
+      }
+    },
+    "Routine": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rutina"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rutina"
+          }
+        }
+      }
+    },
+    "Running rest day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día de descanso de carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día de descanso de carreira"
+          }
+        }
+      }
+    },
+    "Schedule strength alongside running and compare an easier option on amber days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planifica fuerza junto con carrera y compara una variante suave los días en ámbar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planifica forza xunto coa carreira e compara unha variante suave nos días en ámbar."
+          }
+        }
+      }
+    },
+    "Scheduled routine unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rutina programada no disponible"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rutina programada non dispoñible"
+          }
+        }
+      }
+    },
+    "Strength day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día de fuerza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día de forza"
+          }
+        }
+      }
+    },
+    "Strength rest day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día de descanso de fuerza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día de descanso de forza"
+          }
+        }
+      }
+    },
+    "Strength · {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuerza · {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forza · {1}"
+          }
+        }
+      }
+    },
+    "There is already a strength entry on this date.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya hay una asignación de fuerza en esta fecha."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xa hai unha asignación de forza nesta data."
+          }
+        }
+      }
+    },
+    "Today's plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan de hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan de hoxe"
+          }
+        }
+      }
+    },
+    "Upcoming training days": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximos días de entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximos días de adestramento"
+          }
+        }
+      }
+    },
+    "Use familiar exercises from this routine and finish each set with at least four reps left.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige ejercicios conocidos de esta rutina y termina cada serie con al menos cuatro repeticiones en reserva."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolle exercicios coñecidos desta rutina e remata cada serie con polo menos catro repeticións en reserva."
+          }
+        }
+      }
+    },
     "You have several runs planned today. Review them in Plan before adding or replacing a run.": {
       "extractionState": "manual",
       "localizations": {
@@ -18,40 +324,6 @@
         }
       }
     },
-    "Running calendar": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Calendario de carrera"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Calendario de carreira"
-          }
-        }
-      }
-    },
-    "Upcoming running days": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Próximos días de carrera"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Próximos días de carreira"
-          }
-        }
-      }
-    },
     "No training recorded": {
       "extractionState": "manual",
       "localizations": {
@@ -65,40 +337,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen adestramentos rexistrados"
-          }
-        }
-      }
-    },
-    "No upcoming running days.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No hay próximos días de carrera en el calendario."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Non hai próximos días de carreira no calendario."
-          }
-        }
-      }
-    },
-    "Past running days": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Días de carrera anteriores"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Días de carreira anteriores"
           }
         }
       }

@@ -40,8 +40,8 @@ struct PlanModelTests {
         let store = TestStore(exercises: [squat, bench], sessions: history)
         let fixedNow = now
         let model = PlanModel(
-            profiles: store, workouts: store, exercises: store, progression: store, clock: { fixedNow },
-            calendar: calendar, runSources: runSources
+            profiles: store, workouts: store, exercises: store, progression: store, routines: store,
+            clock: { fixedNow }, calendar: calendar, runSources: runSources
         )
         await model.load()
         return (model, store)
@@ -116,6 +116,7 @@ struct PlanModelTests {
             "nextRun":{"day":{"year":2026,"month":11,"day":20},"purpose":"intervals","durationMinutes":35}}
             """
         let goal = try JSONDecoder().decode(TrainingGoal.self, from: Data(old.utf8))
+        #expect(goal.scheduledStrength.isEmpty)
         let original = try #require(goal.scheduledRuns.first)
         #expect(try JSONDecoder().decode(TrainingGoal.self, from: Data(old.utf8)).scheduledRuns.first?.id == original.id)
         try await store.save(AthleteProfile(goal: goal))
@@ -167,6 +168,52 @@ struct PlanModelTests {
         second.completion = PlannedRunCompletion(mirror)
         #expect(!(await model.saveRunningEntry(second)))
         #expect(model.errorMessage == "That run is already linked to another entry.")
+    }
+
+    @Test func strengthAssignmentsShareTheCalendarAndKeepTheirIdentityWhenMoved() async throws {
+        let (model, store) = await model()
+        let routine = Routine(name: "Lower", exerciseIDs: [squat.id])
+        try await store.save(routine)
+        let day = CalendarDay(now, calendar: calendar)
+        let block = TrainingBlock(focus: .strength, start: day, isDeclared: true, routineIDs: [routine.id])
+        let run = PlannedRun(day: day, purpose: .easy)
+        let goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000), nextRun: run)
+        try await store.save(AthleteProfile(goal: goal, declaredBlocks: [block]))
+        await model.load()
+
+        var draft = model.editStrengthEntry()
+        #expect(model.strengthRoutineOptions(for: draft).map(\.value) == [routine.id])
+        draft.routineID = routine.id
+        #expect(await model.saveStrengthEntry(draft))
+        #expect(model.upcomingCalendarRows.map(\.id) == [.strength(draft.id), .run(run.id)])
+
+        let rest = model.editStrengthEntry()
+        #expect(!(await model.saveStrengthEntry(rest)))
+        let profile = await store.profile()
+        let backup = BackupDocument(createdAt: now, profile: profile)
+        #expect(try BackupCodec.decode(BackupCodec.encode(backup)).profile == profile)
+
+        let entry = try #require(profile.goal?.scheduledStrength.first)
+        var moved = model.editStrengthEntry(entry)
+        moved.date = now.addingTimeInterval(86_400)
+        #expect(await model.saveStrengthEntry(moved))
+        #expect(await model.saveStrengthEntry(rest))
+        #expect(model.upcomingCalendarRows.map(\.id) == [.strength(rest.id), .run(run.id), .strength(entry.id)])
+        #expect(await model.removeStrengthEntry(entry.id))
+        #expect(!(await model.saveStrengthEntry(moved)))
+        let saved = await store.profile()
+        #expect(saved.goal?.scheduledStrength.map(\.id) == [rest.id])
+        #expect(saved.goal?.scheduledRuns == [run])
+        #expect(saved.declaredBlocks == [block])
+    }
+
+    @Test func strengthCalendarIsAvailableWithoutARunningGoal() async {
+        let (model, _) = await model()
+        await model.setGoal(kind: .hybrid)
+        #expect(model.showsHybridCalendar)
+        #expect(!model.showsRunningCalendar)
+        let rest = model.editStrengthEntry()
+        #expect(await model.saveStrengthEntry(rest))
     }
 
     @Test func newBlockIsDeclaredAndClampedToTheAllowedLength() async throws {

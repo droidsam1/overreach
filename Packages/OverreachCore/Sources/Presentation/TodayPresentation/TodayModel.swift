@@ -32,6 +32,8 @@ public final class TodayModel {
     /// Today's check-in, once filled in.
     public private(set) var checkIn: CheckIn?
     public private(set) var recentTrainingDays: [RecentTrainingDay] = []
+    public private(set) var scheduledStrengthToday: ScheduledTrainingRow?
+    public private(set) var scheduledRunsToday: [ScheduledTrainingRow] = []
     public private(set) var strengthOption: StrengthOption?
     public private(set) var runningOption: RunningOption?
     private var hasRunningGoal = false
@@ -71,7 +73,7 @@ public final class TodayModel {
         }
         return switch readiness.level {
         case .green: L10n.text("Train as planned.")
-        case .amber: hasRunningGoal ? L10n.text("Keep it easy today.")
+        case .amber: hasRunningGoal || scheduledStrengthToday != nil ? L10n.text("Keep it easy today.")
             : L10n.text("Keep it easy today. Run at a pace you can talk at, or lift with light effort.")
         case .red: L10n.text("Make it a recovery day: a walk or a very easy session. If you lift, keep it light (RPE 6 or less).")
         case .unknown: L10n.text("Not enough data yet to judge today.")
@@ -286,6 +288,8 @@ public final class TodayModel {
         let loadID = UUID()
         activeLoad = loadID
         isLoading = true
+        scheduledStrengthToday = nil
+        scheduledRunsToday = []
         strengthOption = nil
         runningOption = nil
         defer {
@@ -369,13 +373,9 @@ public final class TodayModel {
             in: range, through: now, metrics: week, checkIns: currentCheckIn + (previousCheckIns ?? []),
             runs: runResult.activities, sessions: sessions ?? [], recordings: recentRecordings, exercises: allExercises ?? []
         )
-        if hasRunningGoal, let goal = profile?.goal, let running = goal.running,
-           let decision = EasyRunAdvisor.advise(
-               goal: running, targetDay: goal.targetDate, schedule: goal.scheduledRuns, readiness: readiness, metrics: metrics,
-               runs: runResult.failed ? [] : runResult.activities, now: now, calendar: calendar
-           ) {
-            runningOption = RunningOption(goal: running, decision: decision, calendar: calendar, format: format)
-        }
+        let today = range.upperBound
+        let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
+        loadRunningPlan(goal: goal, today: today, now: now, runs: runResult.failed ? [] : runResult.activities)
         await loadDeloadAdvice(
             now: now, history: metricsHistory, profile: profile,
             training: DeloadTraining(
@@ -384,10 +384,36 @@ public final class TodayModel {
             ),
             loadID: loadID
         )
-        guard activeLoad == loadID, readiness.level == .amber, let sessions,
+        guard activeLoad == loadID else { return }
+        let assignment = goal?.scheduledStrength.first { $0.day == today }
+        var assignedRoutine: Routine?
+        if let assignment {
+            if let routineID = assignment.routineID {
+                assignedRoutine = (try? await routines?.allRoutines())?.first { $0.id == routineID }
+            }
+            guard activeLoad == loadID else { return }
+            scheduledStrengthToday = ScheduledTrainingRow.strength(
+                assignment, routine: assignedRoutine, sessions: sessions ?? [], now: now, calendar: calendar
+            )
+            // A rest day or a missing assigned routine suppresses the undated fallback.
+            guard assignedRoutine != nil else { return }
+        }
+        guard readiness.level == .amber, let sessions,
               !hasStrengthToday(sessions: sessions, recordings: recentRecordings, now: now) else { return }
-        await loadStrengthOption(today: range.upperBound, now: now, profile: profile, catalog: allExercises ?? [],
-                                 loadID: loadID)
+        await loadStrengthOption(today: today, now: now, profile: profile, assignedRoutine: assignedRoutine,
+                                 catalog: allExercises ?? [], loadID: loadID)
+    }
+
+    private func loadRunningPlan(goal: TrainingGoal?, today: CalendarDay, now: Date, runs: [RunActivity]) {
+        guard let goal, let running = goal.running else { return }
+        let schedule = goal.scheduledRuns
+        scheduledRunsToday = schedule.filter { $0.day == today }.map { ScheduledTrainingRow.run($0, format: format) }
+        if let decision = EasyRunAdvisor.advise(
+            goal: running, targetDay: goal.targetDate, schedule: schedule, readiness: readiness, metrics: metrics,
+            runs: runs, now: now, calendar: calendar
+        ), decision != .plannedRest {
+            runningOption = RunningOption(goal: running, decision: decision, calendar: calendar, format: format)
+        }
     }
 
     // MARK: Deload
@@ -457,13 +483,14 @@ public final class TodayModel {
     }
 
     private func loadStrengthOption(
-        today: CalendarDay, now: Date, profile: AthleteProfile?, catalog: [Exercise], loadID: UUID
+        today: CalendarDay, now: Date, profile: AthleteProfile?, assignedRoutine: Routine?, catalog: [Exercise],
+        loadID: UUID
     ) async {
-        let blocks = profile?.declaredBlocks ?? []
+        let blocks = assignedRoutine == nil ? profile?.declaredBlocks ?? [] : []
         let historyStart = now.addingTimeInterval(-ProgressionTargets.historyWindow)
         let blockStart = PlanSchedule.runningBlock(blocks, today: today, calendar: calendar)?.start.startDate(in: calendar)
         async let history = try? workouts?.sessions(from: min(historyStart, blockStart ?? historyStart), to: now)
-        async let allRoutines = try? routines?.allRoutines()
+        async let allRoutines = assignedRoutine == nil ? try? routines?.allRoutines() : nil
         async let allSettings = try? progression?.allProgressionSettings()
         let (sessions, availableRoutines, settings) = await (history, allRoutines, allSettings)
         guard activeLoad == loadID, let sessions, !hasStrengthToday(sessions: sessions, recordings: [], now: now)
@@ -473,9 +500,12 @@ public final class TodayModel {
                                         today: today, calendar: calendar)
         let familiarityStart = today.adding(days: -EasyStrengthAdjustment.familiarityDays, calendar: calendar)
             .startDate(in: calendar)
+        let settingsUnavailable = progression != nil && settings == nil
         strengthOption = StrengthOption.make(
-            routine: progression != nil && settings == nil ? nil : planned?.routine, sessions: completed,
-            exercises: catalog, settings: settings ?? [:], historyStart: historyStart, familiarityStart: familiarityStart
+            routine: assignedRoutine ?? (settingsUnavailable ? nil : planned?.routine),
+            isDated: assignedRoutine != nil, sessions: completed,
+            exercises: assignedRoutine != nil && settingsUnavailable ? [] : catalog,
+            settings: settings ?? [:], historyStart: historyStart, familiarityStart: familiarityStart
         )
     }
 

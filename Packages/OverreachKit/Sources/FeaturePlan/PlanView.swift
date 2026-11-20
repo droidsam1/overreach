@@ -137,8 +137,8 @@ public struct PlanView<Assistant: View>: View {
                     }
                 }
             }
-            if model.showsRunningCalendar {
-                NavigationLink("Running calendar") { RunningCalendarView(model: model) }
+            if model.showsHybridCalendar {
+                NavigationLink("Hybrid calendar") { HybridCalendarView(model: model) }
             }
         }
     }
