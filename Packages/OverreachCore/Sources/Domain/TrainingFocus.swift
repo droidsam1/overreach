@@ -31,7 +31,18 @@ public struct TrainingGoal: Hashable, Codable, Sendable {
     /// Lifts whose 1RM matters most (e.g. squat, bench, deadlift).
     public var priorityLifts: [UUID]
     public var running: RunningGoal?
+    /// The single-entry format shipped before the calendar. Prefer `scheduledRuns` for reads.
     public var nextRun: PlannedRun?
+    public private(set) var runningSchedule: [PlannedRun]?
+
+    public var scheduledRuns: [PlannedRun] {
+        runningSchedule ?? nextRun.map { [$0] } ?? []
+    }
+
+    public mutating func setRunningSchedule(_ entries: [PlannedRun]) {
+        runningSchedule = entries
+        nextRun = nil
+    }
 
     public init(
         kind: Kind, targetDate: CalendarDay? = nil, priorityLifts: [UUID] = [],

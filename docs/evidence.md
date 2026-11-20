@@ -259,6 +259,8 @@ For a hybrid running goal, Today can offer conversational running on green or am
 data. Green needs recent comparable HRV or sleep. Amber needs an active HRV, resting heart rate or sleep signal.
 Reported severe soreness, red or unknown readiness, a run already completed today, unavailable history, and a
 follow-up date today or tomorrow for an event suppress the example. An explicit running rest day is respected.
+Review multiple due running sessions together in Plan. The advisor checks the whole calendar through tomorrow
+for an event or quality workout and treats an explicitly confirmed link today as completed even during a source outage.
 Green keeps planned quality and long sessions in place. On amber, a dated non-race run can be replaced by the
 suggestion without modifying the saved plan.
 

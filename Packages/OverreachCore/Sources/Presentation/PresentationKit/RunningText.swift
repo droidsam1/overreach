@@ -14,6 +14,17 @@ extension PlannedRun.Purpose {
     }
 }
 
+extension PlannedRun {
+    public func displayName(format: Format = Format()) -> String {
+        var parts = [purpose.displayName]
+        if let distanceMeters, distanceMeters > 0 {
+            parts.append(format.number(Double(distanceMeters) / 1_000, maxFractionDigits: 3) + " km")
+        }
+        if let durationMinutes, durationMinutes > 0 { parts.append("\(durationMinutes) min") }
+        return parts.joined(separator: " · ")
+    }
+}
+
 extension RunningGoal {
     public func displayName(format: Format = Format()) -> String {
         let distance = format.number(Double(distanceMeters) / 1_000, maxFractionDigits: 3)

@@ -98,6 +98,9 @@ public struct PlanView<Assistant: View>: View {
                     }
                 }
             }
+            if model.showsRunningCalendar {
+                NavigationLink("Running calendar") { RunningCalendarView(model: model) }
+            }
         }
     }
 

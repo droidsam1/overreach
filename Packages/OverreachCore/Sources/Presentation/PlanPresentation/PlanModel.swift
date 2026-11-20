@@ -76,6 +76,7 @@ public final class PlanModel {
     private let progression: any ProgressionSettingsRepository
     private let clock: @Sendable () -> Date
     private let calendar: Calendar
+    private let runSources: [any MetricsSource]
 
     public init(
         profiles: any ProfileRepository,
@@ -83,7 +84,7 @@ public final class PlanModel {
         exercises: any ExerciseRepository,
         progression: any ProgressionSettingsRepository,
         clock: @escaping @Sendable () -> Date = { Date() },
-        calendar: Calendar = .current
+        calendar: Calendar = .current, runSources: [any MetricsSource] = []
     ) {
         self.profiles = profiles
         self.workouts = workouts
@@ -91,8 +92,9 @@ public final class PlanModel {
         self.progression = progression
         self.clock = clock
         self.calendar = calendar
+        self.runSources = runSources
         targetDate = clock().addingTimeInterval(Self.defaultTargetWeeks * 7 * 86_400)
-        runningDraft = RunningPlanDraft(goal: nil, now: clock(), calendar: calendar)
+        runningDraft = RunningPlanDraft(goal: nil)
     }
 
     /// Default distance of a new target date.
@@ -108,6 +110,7 @@ public final class PlanModel {
     public let focusOptions: [Option<TrainingFocus>] = Option.trainingFocuses
     public let runningSessionOptions = PlannedRun.Purpose.allCases.map { Option(value: $0, name: $0.displayName) }
     public var showsRunningPlan: Bool { goalKind == .hybrid }
+    public var showsRunningCalendar: Bool { showsRunningPlan && profile.goal?.running != nil }
     public var runningGoalSummary: String? { profile.goal?.running?.displayName() }
     public var runningGoalPace: String? {
         guard let pace = runningDraft.goal?.targetPaceSecondsPerKm else { return nil }
@@ -183,7 +186,7 @@ public final class PlanModel {
     // MARK: Actions
 
     public func resetRunningPlanEditor() {
-        runningDraft = RunningPlanDraft(goal: profile.goal, now: clock(), calendar: calendar)
+        runningDraft = RunningPlanDraft(goal: profile.goal)
     }
 
     @discardableResult
@@ -192,7 +195,6 @@ public final class PlanModel {
         isSavingRunningPlan = true
         defer { isSavingRunningPlan = false }
         goal.running = runningDraft.goal
-        goal.nextRun = runningDraft.nextRun(calendar: calendar)
         await save(goal: goal)
         return profile.goal == goal
     }
@@ -291,5 +293,133 @@ public final class PlanModel {
         suggestion = analysis.suggestion
         plan = analysis.plan
         findings = analysis.findings
+    }
+}
+
+extension PlanModel {
+    public var upcomingRunningEntries: [RunningCalendarRow] {
+        let today = CalendarDay(clock(), calendar: calendar)
+        return (profile.goal?.scheduledRuns ?? []).filter { $0.day >= today }.sorted { $0.day < $1.day }
+            .map { calendarRow(for: $0, isPast: false) }
+    }
+
+    public var pastRunningEntries: [RunningCalendarRow] {
+        let today = CalendarDay(clock(), calendar: calendar)
+        return (profile.goal?.scheduledRuns ?? []).filter { $0.day < today }.sorted { $0.day > $1.day }
+            .map { calendarRow(for: $0, isPast: true) }
+    }
+
+    public func editRunningEntry(_ entry: PlannedRun? = nil) -> RunningCalendarDraft {
+        errorMessage = nil
+        return RunningCalendarDraft(entry: entry, today: clock(), calendar: calendar)
+    }
+
+    public func saveRunningEntry(_ draft: RunningCalendarDraft) async -> Bool {
+        guard draft.canSave else { return false }
+        return await updateRunningCalendar(id: draft.id, entry: draft.entry(calendar: calendar), isNew: draft.isNew)
+    }
+
+    public func removeRunningEntry(_ id: UUID) async -> Bool {
+        await updateRunningCalendar(id: id, entry: nil, isNew: false)
+    }
+
+    public func runningCompletionChoices(for draft: RunningCalendarDraft) async -> [RunningCompletionChoice] {
+        let selectedDay = CalendarDay(draft.date, calendar: calendar)
+        let now = clock()
+        let start = selectedDay.adding(days: -1, calendar: calendar).startDate(in: calendar)
+        let end = min(now, selectedDay.adding(days: 2, calendar: calendar).startDate(in: calendar))
+        let saved = draft.completion.map {
+            RunningCompletionChoice(completion: $0, title: L10n.text("Linked run"))
+        }
+        guard selectedDay <= CalendarDay(now, calendar: calendar) else { return [] }
+        let activities = await withTaskGroup(of: [RunActivity].self) { group in
+            for source in runSources {
+                group.addTask {
+                    guard await source.isAvailable() else { return [] }
+                    return (try? await source.runs(from: start, to: end)) ?? []
+                }
+            }
+            var combined: [RunActivity] = []
+            for await batch in group { combined += batch }
+            return combined
+        }
+        let otherLinks = (profile.goal?.scheduledRuns ?? []).filter { $0.id != draft.id }.compactMap(\.completion)
+        let style = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).hour().minute()
+        let choices = RunDeduplication.removingDuplicates(activities).filter { activity in
+            CalendarDay(activity.startedAt, calendar: calendar) == selectedDay
+                && activity.durationSeconds.isFinite && activity.durationSeconds >= 0
+                && activity.startedAt.addingTimeInterval(activity.durationSeconds) <= now
+                && !otherLinks.contains { $0.matches(activity) }
+                && !(draft.completion?.matches(activity) ?? false)
+        }.map { activity in
+            let title = (activity.name ?? L10n.text("Run")) + " · " + activity.startedAt.formatted(style)
+            return RunningCompletionChoice(completion: PlannedRunCompletion(activity), title: title)
+        }
+        return (saved.map { [$0] } ?? []) + choices
+    }
+
+    private func calendarRow(for entry: PlannedRun, isPast: Bool) -> RunningCalendarRow {
+        let style = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).day().month(.abbreviated).year()
+        let status: String?
+        if entry.completion != nil {
+            status = L10n.text("Completed")
+        } else if isPast, entry.purpose != .rest {
+            status = L10n.text("No recorded run linked")
+        } else {
+            status = nil
+        }
+        return RunningCalendarRow(entry: entry, date: entry.day.startDate(in: calendar).formatted(style),
+                                  title: entry.displayName(), status: status)
+    }
+
+    private func updateRunningCalendar(id: UUID, entry: PlannedRun?, isNew: Bool) async -> Bool {
+        guard showsRunningCalendar, !isSavingRunningPlan else { return false }
+        isSavingRunningPlan = true
+        defer { isSavingRunningPlan = false }
+        do {
+            var updated = try await profiles.profile()
+            guard var goal = updated.goal, goal.kind == .hybrid, goal.running != nil else { return false }
+            var schedule = goal.scheduledRuns
+            let index = schedule.firstIndex { $0.id == id }
+            if let entry {
+                // An edit prepared against an entry that was removed cannot recreate it.
+                guard isNew == (index == nil) else { return false }
+                guard canSchedule(entry, among: schedule) else { return false }
+                if let index { schedule[index] = entry } else { schedule.append(entry) }
+            } else {
+                guard let index else { return true }
+                schedule.remove(at: index)
+            }
+            goal.setRunningSchedule(schedule)
+            updated.goal = goal
+            try await profiles.save(updated)
+            profile = updated
+            errorMessage = nil
+            return true
+        } catch {
+            errorMessage = L10n.text("Could not save your plan. Try again.")
+            return false
+        }
+    }
+
+    private func canSchedule(_ entry: PlannedRun, among entries: [PlannedRun]) -> Bool {
+        let others = entries.filter { $0.id != entry.id }
+        if others.contains(where: { $0.day == entry.day && ($0.purpose == .rest || entry.purpose == .rest) }) {
+            errorMessage = L10n.text("A running rest day must be the only entry on that date.")
+            return false
+        }
+        if let completion = entry.completion {
+            guard CalendarDay(completion.startedAt, calendar: calendar) == entry.day,
+                  completion.durationSeconds.isFinite, completion.durationSeconds >= 0,
+                  completion.startedAt.addingTimeInterval(completion.durationSeconds) <= clock() else {
+                errorMessage = L10n.text("Choose a completed run from this date.")
+                return false
+            }
+            if others.compactMap(\.completion).contains(where: { $0.matches(completion) }) {
+                errorMessage = L10n.text("That run is already linked to another entry.")
+                return false
+            }
+        }
+        return true
     }
 }

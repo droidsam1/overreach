@@ -9,21 +9,26 @@ public enum EasyRunAdvisor {
     public enum Decision: Hashable, Sendable {
         case plannedRest
         case nearEvent
+        case multipleToday
         case example(minutes: Int, plan: PlannedRun?, isToday: Bool, recentRuns: Int)
     }
 
     public static func advise(
-        goal: RunningGoal, targetDay: CalendarDay?, planned: PlannedRun?, readiness: Readiness,
+        goal: RunningGoal, targetDay: CalendarDay?, schedule: [PlannedRun], readiness: Readiness,
         metrics: DailyMetrics?, runs: [RunActivity], now: Date, calendar: Calendar = .current
     ) -> Decision? {
         guard goal.distanceMeters > 0, readiness.level == .green || readiness.level == .amber else { return nil }
         let today = CalendarDay(now, calendar: calendar)
         let tomorrow = today.adding(days: 1, calendar: calendar)
-        let next = planned.flatMap { $0.day >= today ? $0 : nil }
-        let scheduledToday = next?.day == today
-        if scheduledToday, next?.purpose == .rest { return .plannedRest }
-        if let next, next.purpose == .race, next.day <= tomorrow { return .nearEvent }
+        let pending = schedule.filter { $0.day >= today && $0.completion == nil }
+        let due = pending.filter { $0.day == today }
+        if due.contains(where: { $0.purpose == .rest }) { return .plannedRest }
+        if pending.contains(where: { $0.purpose == .race && $0.day <= tomorrow }) { return .nearEvent }
         if let targetDay, (today...tomorrow).contains(targetDay) { return .nearEvent }
+        if schedule.contains(where: { $0.day == today && $0.completion != nil }) { return nil }
+        if due.count > 1 { return .multipleToday }
+        let next = due.first ?? pending.min { $0.day < $1.day }
+        let scheduledToday = next?.day == today
         if scheduledToday, readiness.level == .green, next?.purpose != .easy { return nil }
         guard hasBiometricSupport(readiness, metrics: metrics, today: today, calendar: calendar) else { return nil }
 
@@ -44,7 +49,7 @@ public enum EasyRunAdvisor {
         let typical = durations[(durations.count - 1) / 2]
         let fraction = readiness.level == .amber ? 0.75 : 1.0
         let plannedMinutes = next?.durationMinutes.flatMap { $0 > 0 ? Double($0) : nil }
-        let qualityTomorrow = next?.day == tomorrow && [.intervals, .tempo, .long].contains(next?.purpose)
+        let qualityTomorrow = pending.contains { $0.day == tomorrow && [.intervals, .tempo, .long].contains($0.purpose) }
         let ceiling = qualityTomorrow ? 15.0 : (goal.aimsForPainFree ? 20.0 : 30.0)
         let planCeiling = plannedMinutes.map { $0 * (scheduledToday ? fraction : 1) } ?? ceiling
         let minutes = Int(min(ceiling, typical * fraction, planCeiling).rounded(.down))

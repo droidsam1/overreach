@@ -76,6 +76,7 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var priorityLifts: [String]
         public var running: RunningObjective?
         public var nextRun: NextRun?
+        public var runningSchedule: [NextRun]?
     }
 
     public struct RunningObjective: Codable, Hashable, Sendable {
@@ -85,9 +86,12 @@ public struct ContextPack: Codable, Hashable, Sendable {
     }
 
     public struct NextRun: Codable, Hashable, Sendable {
+        public var id: UUID?
         public var day: String
         public var purpose: String
         public var durationMinutes: Int?
+        public var distanceMeters: Int?
+        public var completed: Bool?
     }
 
     public struct Block: Codable, Hashable, Sendable {

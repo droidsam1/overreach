@@ -26,15 +26,20 @@ public struct RunningOption: Hashable, Sendable {
             context = nil
             evidence = nil
             source = nil
+        case .multipleToday:
+            plan = nil
+            advice = L10n.text("You have several runs planned today. Review them in Plan before adding or replacing a run.")
+            context = nil
+            evidence = nil
+            source = nil
         case .example(let minutes, let next, let isToday, let recentRuns):
             if let next {
-                let label = next.purpose.displayName
-                let minuteLabel = next.durationMinutes.flatMap { $0 > 0 ? " · \($0) min" : nil } ?? ""
+                let label = next.displayName(format: format)
                 let style = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
                 let date = next.day.startDate(in: calendar).formatted(style.day().month(.abbreviated))
                 plan = isToday
-                    ? L10n.format("Today's running plan · {1}", label + minuteLabel)
-                    : L10n.format("Next planned running day · {1} · {2}", date, label + minuteLabel)
+                    ? L10n.format("Today's running plan · {1}", label)
+                    : L10n.format("Next planned running day · {1} · {2}", date, label)
             } else {
                 plan = nil
             }

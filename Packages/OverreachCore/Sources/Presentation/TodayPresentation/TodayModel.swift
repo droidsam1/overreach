@@ -368,7 +368,7 @@ public final class TodayModel {
         )
         if hasRunningGoal, let goal = profile?.goal, let running = goal.running,
            let decision = EasyRunAdvisor.advise(
-               goal: running, targetDay: goal.targetDate, planned: goal.nextRun, readiness: readiness, metrics: metrics,
+               goal: running, targetDay: goal.targetDate, schedule: goal.scheduledRuns, readiness: readiness, metrics: metrics,
                runs: runResult.failed ? [] : runResult.activities, now: now, calendar: calendar
            ) {
             runningOption = RunningOption(goal: running, decision: decision, calendar: calendar, format: format)
