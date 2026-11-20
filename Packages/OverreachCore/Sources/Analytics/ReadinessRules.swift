@@ -109,15 +109,13 @@ public enum ReadinessRules {
         let window = cycle?.estimate(on: today, calendar: calendar)?.usableWindow
         let phase = cycle.flatMap { phaseDays(today: today, cycle: $0, settings: settings, calendar: calendar) }
 
+        let inputs = Inputs(
+            today: today, byDay: byDay, baselineDays: baselineDays, rollingDays: rollingDays, phase: phase,
+            window: window, settings: settings
+        )
         var signals = Signals()
-        let hrv = judgeHRV(
-            byDay: byDay, baselineDays: baselineDays, rollingDays: rollingDays, phase: phase, window: window,
-            tracksNaturalCycle: tracksNaturalCycle, settings: settings, into: &signals
-        )
-        judgeRestingHeartRate(
-            today: today, byDay: byDay, baselineDays: baselineDays, phase: phase, window: window, settings: settings,
-            into: &signals
-        )
+        let hrv = judgeHRV(inputs, tracksNaturalCycle: tracksNaturalCycle, into: &signals)
+        judgeRestingHeartRate(inputs, into: &signals)
         var reasons = signals.reasons
         let physiological = signals.physiological
         var evaluated = signals.evaluated
@@ -225,12 +223,10 @@ public enum ReadinessRules {
         let series = HRVMetric.allCases.compactMap {
             hrvSeries($0, byDay: byDay, baselineDays: baselineDays, rollingDays: rollingDays, settings: settings)
         }
-        let chosen: (coverage: HRVCoverage, baseline: [Double], recent: [Double])?
-        if let required {
-            chosen = series.first { $0.coverage.canCompare && $0.coverage.metric.map(required) == true }
+        let chosen = if let required {
+            series.first { $0.coverage.canCompare && $0.coverage.metric.map(required) == true }
         } else {
-            chosen = series.first { $0.coverage.canCompare }
-                ?? series.max { $0.coverage.latestDay < $1.coverage.latestDay }
+            series.first { $0.coverage.canCompare } ?? series.max { $0.coverage.latestDay < $1.coverage.latestDay }
         }
         guard let chosen else { return nil }
         guard chosen.coverage.canCompare else { return (chosen.coverage, nil) }
@@ -270,13 +266,26 @@ public enum ReadinessRules {
         var phaseCycles: [Int] = []
     }
 
+    /// What the HRV and resting-HR checks compare.
+    private struct Inputs {
+        var today: CalendarDay
+        var byDay: [CalendarDay: DailyMetrics]
+        var baselineDays: [CalendarDay]
+        var rollingDays: [CalendarDay]
+        /// Previous days in today's baseline window, with a high-confidence estimate.
+        var phase: PhaseDays?
+        /// Today's baseline window, with a high-confidence estimate.
+        var window: CycleBaselineWindow?
+        var settings: Settings
+    }
+
     /// HRV against the same window of previous cycles when there is enough, otherwise against the overall baseline.
     private static func judgeHRV(
-        byDay: [CalendarDay: DailyMetrics], baselineDays: [CalendarDay], rollingDays: [CalendarDay], phase: PhaseDays?,
-        window: CycleBaselineWindow?, tracksNaturalCycle: Bool, settings: Settings, into signals: inout Signals
+        _ inputs: Inputs, tracksNaturalCycle: Bool, into signals: inout Signals
     ) -> (coverage: HRVCoverage, lowNights: Int?)? {
+        let (byDay, rollingDays, settings) = (inputs.byDay, inputs.rollingDays, inputs.settings)
         var phaseHRV: (coverage: HRVCoverage, lowNights: Int?)?
-        if let phase {
+        if let phase = inputs.phase {
             let cycles = { (metric: HRVMetric) in phase.cycles { validHRV(byDay[$0]?.hrv(metric)) != nil } }
             phaseHRV = hrvCheck(
                 byDay: byDay, baselineDays: phase.days, rollingDays: rollingDays, settings: settings
@@ -287,13 +296,13 @@ public enum ReadinessRules {
         }
         // Garmin's own HRV range is whole-cycle; the rule compares with personal series only, so it stays context.
         let hrv = phaseHRV
-            ?? hrvCheck(byDay: byDay, baselineDays: baselineDays, rollingDays: rollingDays, settings: settings)
+            ?? hrvCheck(byDay: byDay, baselineDays: inputs.baselineDays, rollingDays: rollingDays, settings: settings)
         guard let hrv, hrv.coverage.canCompare else { return hrv }
         signals.evaluated = true
         guard let lowNights = hrv.lowNights else { return hrv }
         signals.reasons.append(.hrvBelowBaseline(nights: lowNights))
         // Against the same window of previous cycles, or in a confident follicular window, low HRV counts.
-        if phaseHRV == nil && tracksNaturalCycle && window != .follicular {
+        if phaseHRV == nil && tracksNaturalCycle && inputs.window != .follicular {
             signals.reasons.append(.hrvMayReflectCycle)
         } else {
             signals.physiological += 1
@@ -303,20 +312,18 @@ public enum ReadinessRules {
 
     /// Resting HR against the same window of previous cycles when there is enough; otherwise against the overall
     /// baseline, with a wider threshold in a confident luteal window.
-    private static func judgeRestingHeartRate(
-        today: CalendarDay, byDay: [CalendarDay: DailyMetrics], baselineDays: [CalendarDay], phase: PhaseDays?,
-        window: CycleBaselineWindow?, settings: Settings, into signals: inout Signals
-    ) {
-        guard let todayResting = byDay[today]?.restingHeartRate else { return }
+    private static func judgeRestingHeartRate(_ inputs: Inputs, into signals: inout Signals) {
+        let (byDay, phase, settings) = (inputs.byDay, inputs.phase, inputs.settings)
+        guard let todayResting = byDay[inputs.today]?.restingHeartRate else { return }
         let phaseResting = phase?.days.compactMap { byDay[$0]?.restingHeartRate } ?? []
         let phaseCycles = phase?.cycles { byDay[$0]?.restingHeartRate != nil } ?? 0
         let usesPhase = phaseResting.count >= settings.minimumBaselineNights
             && phaseCycles >= settings.minimumPhaseBaselineCycles
-        let baseline = usesPhase ? phaseResting : baselineDays.compactMap { byDay[$0]?.restingHeartRate }
+        let baseline = usesPhase ? phaseResting : inputs.baselineDays.compactMap { byDay[$0]?.restingHeartRate }
         guard baseline.count >= settings.minimumBaselineNights else { return }
         signals.evaluated = true
         if usesPhase { signals.phaseCycles.append(phaseCycles) }
-        let widened = !usesPhase && window == .luteal
+        let widened = !usesPhase && inputs.window == .luteal
         let threshold = widened ? settings.lutealRestingHeartRateRise : settings.restingHeartRateRise
         let rise = todayResting - mean(baseline)
         if rise >= threshold {
