@@ -186,6 +186,10 @@ public enum MarkdownReportRenderer {
             }
         case .hrvMayReflectCycle:
             "Low HRV may be the normal drop in the second half of the menstrual cycle (not counted towards red)"
+        case let .phaseBaseline(window, cycles):
+            "Compared with the \(window.rawValue) days of the last \(cycles) cycles (phase-aware baseline)"
+        case .possibleLutealShift:
+            "Resting HR slightly up; the threshold allows for the usual rise before a period (not counted)"
         case .restingHeartRateElevated(let bpm):
             "Resting HR \(format(bpm, decimals: 0)) bpm above baseline"
         case .shortSleep(let hours):

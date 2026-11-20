@@ -31,9 +31,12 @@ public struct RecoveryTrend: Hashable, Sendable {
     /// - Parameters:
     ///   - history: merged daily metrics covering at least the readiness baseline before the window (60 days).
     ///   - checkIns: check-ins of the window (others are ignored).
+    ///   - cycle: menstrual events and tracking mode. Each day is judged with its own phase estimate, so the deload
+    ///     signals use phase-aware baselines like the readiness light (`cycle-phase-baselines`).
     public static func assess(
         today: CalendarDay, history: [DailyMetrics], checkIns: [CheckIn],
-        settings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current
+        settings: ReadinessRules.Settings = ReadinessRules.Settings(), cycle: CycleContext? = nil,
+        calendar: Calendar = .current
     ) -> RecoveryTrend {
         let window = (0..<windowDays).map { today.adding(days: -$0, calendar: calendar) }
         var trend = RecoveryTrend()
@@ -43,11 +46,13 @@ public struct RecoveryTrend: Hashable, Sendable {
         for day in window {
             let reasons = ReadinessRules.readiness(
                 today: day, history: history.filter { $0.day <= day }, checkIn: nil, settings: settings,
-                calendar: calendar
+                cycle: cycle, calendar: calendar
             ).reasons
+            // Low HRV that the readiness light reads as the cycle (no phase baseline yet) is not counted either.
+            let explainedByCycle = reasons.contains(.hrvMayReflectCycle)
             for reason in reasons {
                 switch reason {
-                case .hrvBelowBaseline: trend.hrvLowDays += 1
+                case .hrvBelowBaseline: trend.hrvLowDays += explainedByCycle ? 0 : 1
                 case .restingHeartRateElevated: trend.restingHeartRateHighDays += 1
                 case .shortSleep: trend.shortSleepNights += 1
                 default: break

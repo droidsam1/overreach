@@ -20,6 +20,13 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "waveform.path.ecg", title: L10n.text("Cycle-aware recovery"),
+                    detail: L10n.text(
+                        "With a natural cycle logged in Apple Health, HRV and resting HR are compared with the same "
+                            + "phase of your previous cycles."
+                    )
+                ),
+                ReleaseHighlight(
                     symbol: "calendar.badge.plus", title: L10n.text("Hybrid calendar"),
                     detail: L10n.text("Schedule strength alongside running and compare an easier option on amber days.")
                 ),

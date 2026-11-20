@@ -20,12 +20,26 @@ public enum ReadinessReason: Hashable, Codable, Sendable {
     /// not make the light red on its own (`hrv-cycle-phase`).
     case hrvMayReflectCycle
     case restingHeartRateElevated(bpmAboveBaseline: Double)
+    /// HRV and/or resting HR were compared with the same window of previous cycles, not the whole-cycle baseline
+    /// (`cycle-phase-baselines`). Context, not a signal.
+    case phaseBaseline(window: CycleBaselineWindow, cycles: Int)
+    /// Luteal window without a phase baseline yet: resting HR rose above the usual threshold but within the widened
+    /// luteal one, so it is not counted (`cycle-phase-baselines`). Context, not a signal.
+    case possibleLutealShift
     case shortSleep(hours: Double)
     /// Check-in energy, 1 (exhausted) … 5 (great).
     case lowEnergy(score: Int)
     /// Check-in muscle soreness, 0 (none) … 3 (very sore).
     case highSoreness(score: Int)
     case missingData
+
+    /// Context that explains the comparison; never a signal for amber or red on its own.
+    public var isContext: Bool {
+        switch self {
+        case .hrvMayReflectCycle, .phaseBaseline, .possibleLutealShift: true
+        default: false
+        }
+    }
 }
 
 /// Coverage of the HRV series selected for readiness. Window lengths are calendar days.

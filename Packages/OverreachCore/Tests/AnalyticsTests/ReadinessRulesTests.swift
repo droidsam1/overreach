@@ -153,12 +153,14 @@ struct ReadinessRulesTests {
         let reasons: [ReadinessReason] = [
             .markedSick, .hrvBelowBaseline(nights: 3), .hrvMayReflectCycle, .restingHeartRateElevated(bpmAboveBaseline: 6),
             .shortSleep(hours: 5), .lowEnergy(score: 1), .highSoreness(score: 3), .missingData,
+            .phaseBaseline(window: .luteal, cycles: 2), .possibleLutealShift,
         ]
         let keys = reasons.map { ReadinessRules.evidence(for: $0).key }
 
         #expect(keys == [
             "illness-return", "readiness-hrv", "hrv-cycle-phase", "readiness-resting-hr", "readiness-sleep", "readiness-subjective",
             "readiness-subjective", "readiness-combination",
+            "cycle-phase-baselines", "cycle-phase-baselines",
         ])
     }
 

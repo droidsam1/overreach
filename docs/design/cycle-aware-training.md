@@ -114,6 +114,23 @@ comparison and still shown as the device's context (`composite-scores`).
 `RecoveryTrend` runs `readiness()` per day, so the deload signals (`hrvSuppressed`, `restingHeartRateElevated`)
 inherit phase baselines without change; the per-day call passes the estimate for that day.
 
+**Implementation (v0.2).** `CyclePhaseEstimator` and `CycleContext` (Analytics), `ReadinessRules.readiness(…, cycle:)`
+and `RecoveryTrend.assess(…, cycle:)`; `HealthKitMetricsSource` implements `CycleSource`. Details the spec left open:
+
+- The menstrual window is the logged flow days only; an unlogged day inside a period reads as follicular, which is
+  the same baseline window.
+- Past days are estimated with the events up to that day, and only confident estimates of previous cycles (not the
+  current one) enter a phase baseline. A cycle counts towards the 2-cycle minimum when it has at least one reading
+  of that series in the window.
+- `phaseBaseline(window, cycles)` is shown whenever HRV or resting HR used a phase baseline, even on a green day;
+  `possibleLutealShift` only when the widened threshold kept a 5–8 bpm rise from counting. Both are context and
+  never a signal.
+- The deload trend does not count a low-HRV day that the light reads as `hrvMayReflectCycle`.
+- Garmin's HRV range was already context only: readiness compares personal series, so nothing changes there.
+- Health asks for menstrual-flow access the first time Today reads it, and Today reads it only for a natural
+  cycle, so other users are never asked. Flow logged as "none" is ignored. A year of events is read (6 cycles plus
+  the estimates of past days); metrics history grows to 120 + 7 days for these users.
+
 **Texts.** Reasons name the window, never a diagnosis: *"Compared with your luteal days in the last 2 cycles"*,
 *"Resting HR often rises a few beats before a period; the threshold allows for it."* Nothing mentions ovulation.
 

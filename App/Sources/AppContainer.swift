@@ -40,6 +40,8 @@ final class AppContainer {
     let metricsSources: [any MetricsSource]
     /// Apple Health: steps for the History calendar.
     let healthSource: (any MetricsSource & ActivitySource)?
+    /// Apple Health: menstrual flow for phase-aware baselines (ADR-0009).
+    let cycleSource: (any CycleSource)?
     /// The person's Garmin account (ADR-0022). Also in `metricsSources`.
     let garmin: (any GarminAccount)?
     private let recordedStrength: (any RecordedStrengthSource)?
@@ -59,6 +61,7 @@ final class AppContainer {
         onboardingStatus: any OnboardingStatusStore = DefaultsOnboardingStatus(),
         metricsSources: [any MetricsSource],
         healthSource: (any MetricsSource & ActivitySource)? = nil,
+        cycleSource: (any CycleSource)? = nil,
         garmin: (any GarminAccount)? = nil,
         recordedStrength: (any RecordedStrengthSource)? = nil
     ) {
@@ -79,6 +82,7 @@ final class AppContainer {
         )
         self.metricsSources = metricsSources
         self.healthSource = healthSource
+        self.cycleSource = cycleSource
         self.garmin = garmin
         self.recordedStrength = recordedStrength
     }
@@ -97,14 +101,16 @@ final class AppContainer {
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store, workoutDraftStore: FileWorkoutDraftStore(),
-                metricsSources: sources, healthSource: healthKit, garmin: garmin, recordedStrength: recordedStrength
+                metricsSources: sources, healthSource: healthKit, cycleSource: healthKit, garmin: garmin,
+                recordedStrength: recordedStrength
             )
         } catch {
             let store = InMemoryStore(exercises: ExerciseCatalog.builtIn)
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store,
-                metricsSources: sources, healthSource: healthKit, garmin: garmin, recordedStrength: recordedStrength
+                metricsSources: sources, healthSource: healthKit, cycleSource: healthKit, garmin: garmin,
+                recordedStrength: recordedStrength
             )
         }
     }
@@ -142,7 +148,7 @@ final class AppContainer {
         TodayModel(
             sources: metricsSources, checkIns: checkIns, backup: backup, garmin: garmin, profiles: profiles,
             workouts: workouts, exercises: exercises, recordedStrength: recordedStrength, routines: routines,
-            progression: progression
+            progression: progression, cycle: cycleSource
         )
     }
 
