@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Built-in exercises show their Spanish name when the app is in Spanish or Galician; search finds exercises by
+  their English or Spanish names, and Strong imports and AI plans that use the Spanish names resolve to them.
 - Cycle-aware recovery: with a natural cycle and regular periods in Apple Health, Today compares HRV and resting
   heart rate with the same window (follicular or luteal) of your previous cycles, and the deload signals do the
   same. Until two cycles have data, a low luteal HRV is context and the resting-HR threshold allows for the usual

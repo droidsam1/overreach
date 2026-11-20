@@ -160,7 +160,7 @@ public final class HistoryModel {
         var failed = false
         do {
             catalog = try await exercises.allExercises()
-            exerciseNames = Dictionary(catalog.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+            exerciseNames = Exercise.displayNames(catalog)
             calendar.exerciseNames = exerciseNames
         } catch {
             failed = true

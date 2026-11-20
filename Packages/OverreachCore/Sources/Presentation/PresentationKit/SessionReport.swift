@@ -99,7 +99,7 @@ extension SessionReport {
             outcomeText = L10n.format("Done: {1}", done)
         }
         return Row(
-            id: review.exercise.id, name: review.exercise.name, outcome: outcome, outcomeText: outcomeText,
+            id: review.exercise.id, name: review.exercise.displayName, outcome: outcome, outcomeText: outcomeText,
             details: details(of: review, effortScale: effortScale, format: format)
         )
     }

@@ -40,7 +40,7 @@ public struct ExerciseMatcher: Sendable {
     }
 
     private mutating func register(_ exercise: Exercise) {
-        for candidate in [exercise.name] + exercise.aliases.sorted() {
+        for candidate in exercise.knownNames {
             let key = Self.normalize(candidate)
             if byKey[key] == nil {
                 byKey[key] = exercise

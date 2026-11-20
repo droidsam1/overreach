@@ -28,13 +28,13 @@ public enum ExerciseSuggestions {
 
     /// Up to `limit` mapped exercises from `catalog` that look like `exercise`, best first.
     public static func similar(to exercise: Exercise, in catalog: [Exercise], limit: Int = 3) -> [ExerciseSuggestion] {
-        let names = [exercise.name] + exercise.aliases.sorted()
+        let names = exercise.knownNames
         let ownWords = names.map(words).filter { !$0.isEmpty }
         guard !ownWords.isEmpty else { return [] }
 
         let suggestions = catalog.compactMap { candidate -> ExerciseSuggestion? in
             guard candidate.id != exercise.id, !candidate.needsMuscleMapping else { return nil }
-            let candidateWords = ([candidate.name] + candidate.aliases.sorted()).map(words).filter { !$0.isEmpty }
+            let candidateWords = candidate.knownNames.map(words).filter { !$0.isEmpty }
             var overlap = 0.0
             for own in ownWords {
                 for other in candidateWords {

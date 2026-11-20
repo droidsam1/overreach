@@ -20,6 +20,10 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "character.bubble.fill", title: L10n.text("Exercises in Spanish"),
+                    detail: L10n.text("Catalog exercises show their Spanish name; search works in English or Spanish.")
+                ),
+                ReleaseHighlight(
                     symbol: "waveform.path.ecg", title: L10n.text("Cycle-aware recovery"),
                     detail: L10n.text(
                         "With a natural cycle logged in Apple Health, HRV and resting HR are compared with the same "

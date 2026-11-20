@@ -1,6 +1,32 @@
 import Domain
+import Foundation
 
 // User-facing names of domain values, shared by every presentation module.
+
+extension Exercise {
+    /// The name shown to the user: the catalog's Spanish name of a built-in exercise when the app is in Spanish
+    /// or Galician (ADR-0031), otherwise the stored name. Custom and imported exercises keep their own name.
+    public var displayName: String { displayName(language: L10n.languageCode) }
+
+    public func displayName(language: String) -> String {
+        guard ["es", "gl"].contains(language), !isCustom, ExerciseCatalog.englishName(of: id) == name,
+              let spanish = ExerciseCatalog.spanishName(of: id) else { return name }
+        return spanish
+    }
+
+    /// `exercises` by displayed name, as lists show them.
+    public static func byDisplayName(_ exercises: [Exercise], language: String = L10n.languageCode) -> [Exercise] {
+        exercises
+            .map { (exercise: $0, name: $0.displayName(language: language)) }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+            .map(\.exercise)
+    }
+
+    /// Displayed names by exercise id, for screens that only know ids.
+    public static func displayNames(_ exercises: [Exercise]) -> [UUID: String] {
+        Dictionary(exercises.map { ($0.id, $0.displayName) }, uniquingKeysWith: { first, _ in first })
+    }
+}
 
 extension MuscleGroup {
     public var displayName: String {

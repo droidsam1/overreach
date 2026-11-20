@@ -21,7 +21,8 @@ extension Option where Value == SetKind {
     public static var setKinds: [Option] { SetKind.allCases.map { Option(value: $0, name: $0.displayName) } }
 }
 
-/// An exercise offered in an exercise picker: name plus the other names search should match.
+/// An exercise offered in an exercise picker: displayed name plus every name search should match (English,
+/// Spanish and aliases, whatever language the app is in).
 public struct ExerciseChoice: Identifiable, Hashable, Sendable {
     public let id: UUID
     public let name: String
@@ -29,7 +30,7 @@ public struct ExerciseChoice: Identifiable, Hashable, Sendable {
 
     public init(_ exercise: Exercise) {
         id = exercise.id
-        name = exercise.name
-        searchTerms = [exercise.name] + exercise.aliases.sorted()
+        name = exercise.displayName
+        searchTerms = exercise.knownNames
     }
 }

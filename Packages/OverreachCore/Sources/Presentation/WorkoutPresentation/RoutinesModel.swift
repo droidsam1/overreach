@@ -90,7 +90,7 @@ public final class RoutinesModel {
     public var showsEmptyHint: Bool { routines.isEmpty && errorMessage == nil }
 
     var exerciseNames: [UUID: String] {
-        Dictionary(catalog.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+        Exercise.displayNames(catalog)
     }
 
     public func newEditor() -> RoutineEditorModel {
@@ -250,7 +250,7 @@ public final class RoutineEditorModel: Identifiable {
     /// Exercises not in the routine yet.
     public var exerciseChoices: [ExerciseChoice] {
         let added = Set(exerciseIDs)
-        return list.catalog.filter { !added.contains($0.id) }.map(ExerciseChoice.init)
+        return Exercise.byDisplayName(list.catalog.filter { !added.contains($0.id) }).map(ExerciseChoice.init)
     }
 
     // MARK: Intents

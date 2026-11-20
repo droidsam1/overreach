@@ -1650,6 +1650,23 @@
         }
       }
     },
+    "Catalog exercises show their Spanish name; search works in English or Spanish.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los ejercicios del catálogo muestran su nombre en castellano; la búsqueda funciona en inglés o en castellano."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os exercicios do catálogo amosan o seu nome en castelán; a busca funciona en inglés ou en castelán."
+          }
+        }
+      }
+    },
     "Change folder…": {
       "extractionState": "manual",
       "localizations": {
@@ -4281,6 +4298,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Exercicios"
+          }
+        }
+      }
+    },
+    "Exercises in Spanish": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejercicios en castellano"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercicios en castelán"
           }
         }
       }

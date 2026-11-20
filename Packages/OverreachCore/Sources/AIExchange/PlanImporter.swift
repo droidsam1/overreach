@@ -30,7 +30,10 @@ public struct PlanImport: Hashable, Sendable {
         public let routine: Routine
         /// Replaces a routine that already exists (same id from an earlier import, or the same name).
         public let isUpdate: Bool
-        public let exerciseNames: [String]
+        /// The routine's exercises, in order.
+        public let exercises: [Exercise]
+
+        public var exerciseNames: [String] { exercises.map(\.name) }
     }
 
     public struct SettingsChange: Hashable, Sendable {
@@ -162,8 +165,8 @@ public enum PlanImporter {
             id: match?.id ?? stableID, name: name, focus: focus, exerciseIDs: resolved.map(\.id),
             prescriptions: prescriptions
         )
-        let orderedNames = routine.exerciseIDs.compactMap { id in resolved.first { $0.id == id }?.name }
-        return .init(routine: routine, isUpdate: match != nil, exerciseNames: orderedNames)
+        let ordered = routine.exerciseIDs.compactMap { id in resolved.first { $0.id == id } }
+        return .init(routine: routine, isUpdate: match != nil, exercises: ordered)
     }
 
     // MARK: - Exercise settings
@@ -461,7 +464,7 @@ struct ExerciseLookup {
     init(_ exercises: [Exercise]) {
         catalog = exercises
         for exercise in exercises {
-            for name in [exercise.name] + exercise.aliases.sorted() where byKey[Self.normalize(name)] == nil {
+            for name in exercise.knownNames where byKey[Self.normalize(name)] == nil {
                 byKey[Self.normalize(name)] = exercise
             }
         }

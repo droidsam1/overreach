@@ -90,7 +90,7 @@ public struct TargetSummary: Hashable, Sendable {
 }
 
 extension DraftExercise {
-    public var name: String { exercise.name }
+    public var name: String { exercise.displayName }
 
     /// Focus declared for this exercise (remembered in its progression settings); `nil` = follow the session.
     public var declaredFocus: TrainingFocus? { appliedSettings?.focus }
@@ -288,7 +288,7 @@ public final class WorkoutModel {
     }
 
     /// Exercises offered by the "Add exercise" picker.
-    public var exerciseChoices: [ExerciseChoice] { catalog.map(ExerciseChoice.init) }
+    public var exerciseChoices: [ExerciseChoice] { Exercise.byDisplayName(catalog).map(ExerciseChoice.init) }
 
     /// Focus values for the session focus picker ("Auto" = `nil` is added by the view).
     public let focusOptions: [Option<TrainingFocus>] = Option.trainingFocuses

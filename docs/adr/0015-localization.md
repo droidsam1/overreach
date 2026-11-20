@@ -20,7 +20,8 @@ which also build and test on Linux, where String Catalogs are not available.
 5. `scripts/check-localization.py` runs in CI. It fails on a missing, unused or incomplete string, or when a
    translation changes the values of its key.
 6. Exercise names stay as they are: built-in names match Strong exports, and search already finds them by their
-   Spanish aliases.
+   Spanish aliases. *Superseded by ADR-0031: built-in exercises are shown with a Spanish name in Spanish and
+   Galician; the stored name stays English.*
 
 ## Consequences
 
