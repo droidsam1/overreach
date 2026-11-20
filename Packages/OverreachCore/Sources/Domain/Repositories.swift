@@ -58,6 +58,11 @@ extension MetricsSource {
     public func requestAccess() async {}
 }
 
+/// Strength workouts recorded outside the app, available to match with logged sessions.
+public protocol RecordedStrengthSource: Sendable {
+    func strengthActivities(from start: Date, to end: Date) async -> [RecordedStrengthActivity]
+}
+
 public protocol ProfileRepository: Sendable {
     func profile() async throws -> AthleteProfile
     func save(_ profile: AthleteProfile) async throws

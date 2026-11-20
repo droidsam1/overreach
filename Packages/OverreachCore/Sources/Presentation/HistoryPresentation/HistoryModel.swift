@@ -50,6 +50,7 @@ public struct SessionDetail: Sendable {
     public let focus: String?
     public let notes: String?
     public let entries: [Entry]
+    public let recording: HistoryStrengthActivity?
 }
 
 /// Past strength sessions, newest first, plus the month calendar with runs and steps from Apple Health.
@@ -71,8 +72,11 @@ public final class HistoryModel {
     private let health: (any HealthWorkoutWriter)?
     private let profiles: (any ProfileRepository)?
     private let progression: (any ProgressionSettingsRepository)?
+    private let recordedStrength: (any RecordedStrengthSource)?
+    private let format: Format
     private let clock: @Sendable () -> Date
     private var effortScale = EffortScale.rpe
+    private var recordings: [RecordedStrengthActivity] = []
 
     /// How far back the list goes.
     static let window: TimeInterval = 365 * 86_400
@@ -87,6 +91,7 @@ public final class HistoryModel {
         progression: (any ProgressionSettingsRepository)? = nil,
         activity: (any ActivitySource)? = nil,
         runs: (any MetricsSource)? = nil,
+        recordedStrength: (any RecordedStrengthSource)? = nil,
         calendar: Calendar = .current,
         format: Format = Format(),
         clock: @escaping @Sendable () -> Date = { Date() }
@@ -98,6 +103,8 @@ public final class HistoryModel {
         self.health = health
         self.profiles = profiles
         self.progression = progression
+        self.recordedStrength = recordedStrength
+        self.format = format
         self.clock = clock
         self.calendar = HistoryCalendarModel(
             workouts: workouts, activity: activity, runs: runs, calendar: calendar, format: format, clock: clock
@@ -108,6 +115,7 @@ public final class HistoryModel {
     public let calendar: HistoryCalendarModel
 
     public func load() async {
+        guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
         do {
@@ -120,6 +128,9 @@ public final class HistoryModel {
             errorMessage = nil
             if let profile = try? await profiles?.profile() {
                 effortScale = profile.effortScale
+            }
+            if let recordedStrength {
+                recordings = await recordedStrength.strengthActivities(from: .distantPast, to: now)
             }
         } catch {
             errorMessage = L10n.text("Could not load your history.")
@@ -158,8 +169,19 @@ public final class HistoryModel {
 
     public func clearRoutineNotice() { routineNotice = nil }
 
-    /// "No sessions yet" is shown only when loading finished without sessions or errors.
-    public var showsEmptyState: Bool { summaries.isEmpty && !isLoading && errorMessage == nil }
+    /// Newest first, with watch workouts shown only when they have no matching logged session.
+    public var rows: [HistoryRow] {
+        let logged = summaries.map(HistoryRow.session)
+        guard !recordings.isEmpty else { return logged }
+        let start = clock().addingTimeInterval(-Self.window)
+        let watchOnly = strengthMatches.unmatched
+            .filter { $0.startedAt >= start }
+            .map { HistoryRow.recording(HistoryStrengthActivity($0, format: format)) }
+        return (logged + watchOnly).sorted { $0.date > $1.date }
+    }
+
+    /// "No sessions yet" is shown only when loading finished without rows or errors.
+    public var showsEmptyState: Bool { !isLoading && errorMessage == nil && summaries.isEmpty && rows.isEmpty }
 
     /// Deletes the sessions at `offsets` of `summaries` (swipe to delete).
     public func delete(at offsets: IndexSet) async {
@@ -194,7 +216,8 @@ public final class HistoryModel {
                     notes: entry.notes,
                     countsForProgression: entry.countsForProgression
                 )
-            }
+            },
+            recording: strengthMatches.activity(for: sessionID).map { HistoryStrengthActivity($0, format: format) }
         )
     }
 
@@ -259,5 +282,15 @@ public final class HistoryModel {
 
     private func summary(_ session: StrengthSession) -> SessionSummary {
         SessionSummary(session: session, names: exerciseNames)
+    }
+
+    private var strengthMatches: StrengthActivityMatches {
+        guard !recordings.isEmpty else { return StrengthActivityMatches() }
+        // A session may appear in both the list and the selected month, or only in an older month.
+        let sessions = Dictionary(
+            (summaries.map(\.session) + calendar.sessions).map { ($0.id, $0) },
+            uniquingKeysWith: { listed, _ in listed }
+        )
+        return StrengthActivityMatching.match(sessions: Array(sessions.values), activities: recordings)
     }
 }

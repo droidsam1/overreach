@@ -48,15 +48,28 @@ public struct HistoryView: View {
                 Label(message, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red)
             }
-            ForEach(model.summaries) { summary in
-                NavigationLink {
-                    SessionDetailView(model: model, sessionID: summary.id)
-                } label: {
-                    SessionRow(summary: summary)
+            ForEach(model.rows) { row in
+                switch row {
+                case let .session(summary):
+                    NavigationLink {
+                        SessionDetailView(model: model, sessionID: summary.id)
+                    } label: {
+                        SessionRow(summary: summary)
+                    }
+                    .swipeActions {
+                        Button(role: .destructive) {
+                            Task { await model.delete(summary.id) }
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                case let .recording(recording):
+                    NavigationLink {
+                        RecordedStrengthDetail(recording: recording)
+                    } label: {
+                        RecordedStrengthRow(recording: recording)
+                    }
                 }
-            }
-            .onDelete { offsets in
-                Task { await model.delete(at: offsets) }
             }
         }
         .overlay {
@@ -140,6 +153,9 @@ struct SessionDetailView: View {
     private func content(_ detail: SessionDetail) -> some View {
         List {
             SessionInfo(detail: detail)
+            if let recording = detail.recording {
+                RecordedStrengthMetrics(recording: recording)
+            }
             ForEach(detail.entries) { entry in
                 Section(entry.name) {
                     ForEach(entry.sets) { set in

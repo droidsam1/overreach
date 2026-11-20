@@ -8,6 +8,7 @@ actor FakeGarmin: GarminTransport {
     var requests: [GarminHTTPRequest] = []
     /// Responses to return before the normal ones, in order (e.g. a 429 then success).
     var queued: [GarminHTTPResponse] = []
+    private var activityPages: [Int: Data] = [:]
     var acceptedKey = "valid-key-0123456789"
     var offline = false
     var tokenExpiry = Date(timeIntervalSince1970: 1_790_086_400)
@@ -15,6 +16,8 @@ actor FakeGarmin: GarminTransport {
     func queue(_ responses: GarminHTTPResponse...) { queued += responses }
     func setOffline(_ value: Bool) { offline = value }
     func setAcceptedKey(_ key: String) { acceptedKey = key }
+
+    func setActivityPage(start: Int, body: Data) { activityPages[start] = body }
 
     func send(_ request: GarminHTTPRequest) throws -> GarminHTTPResponse {
         requests.append(request)
@@ -28,6 +31,10 @@ actor FakeGarmin: GarminTransport {
         }
         guard request.headers["Authorization"]?.hasPrefix("Bearer ") == true else {
             return GarminHTTPResponse(status: 403)
+        }
+        if request.path.hasPrefix("/activitylist-service"),
+            let page = activityPages.first(where: { request.path.contains("?start=\($0.key)&") }) {
+            return GarminHTTPResponse(status: 200, body: page.value)
         }
         let name: String? = switch request.path {
         case let path where path.hasPrefix("/hrv-service"): "hrv-daily-range"
@@ -261,6 +268,57 @@ struct GarminServiceTests {
         #expect(await service.strengthActivities(from: .distantPast, to: .distantFuture).count == 9)
         try await Task.sleep(nanoseconds: 50_000_000)
         #expect(await steps.last == GarminSyncProgress(completed: 6, total: 6))
+    }
+
+    @Test func overlappingActivityPagesImportEachIDOnce() async throws {
+        let garmin = FakeGarmin()
+        let pageSize = GarminEndpoint.activityPageSize
+        let firstPage = (1...pageSize).map { activity(id: $0, heartRate: 140) }
+        let secondPage = [activity(id: pageSize, heartRate: 145), activity(id: pageSize + 1, heartRate: 150)]
+        await garmin.setActivityPage(start: 0, body: try JSONSerialization.data(withJSONObject: firstPage))
+        await garmin.setActivityPage(start: pageSize, body: try JSONSerialization.data(withJSONObject: secondPage))
+        let service = makeService(garmin: garmin)
+        try await service.connect(key: "valid-key-0123456789", lifetime: .oneYear)
+
+        let summary = try await service.sync { _ in }
+        let runs = try await service.runs(from: .distantPast, to: .distantFuture)
+
+        #expect(summary.runs == pageSize + 1)
+        #expect(runs.count == pageSize + 1)
+        #expect(Set(runs.map(\.id)) == Set((1...(pageSize + 1)).map(String.init)))
+        #expect(runs.first { $0.id == String(pageSize) }?.averageHeartRate == 145)
+    }
+
+    private func activity(id: Int, heartRate: Int) -> [String: Any] {
+        [
+            "activityId": id,
+            "activityType": ["typeKey": "running"],
+            "startTimeGMT": "2026-01-08 08:00:00",
+            "duration": 1_800,
+            "averageHR": heartRate
+        ]
+    }
+
+    @Test func olderCachesReturnOneCopyOfEachActivityEvenWhenOffline() async throws {
+        let garmin = FakeGarmin()
+        let cache = MemoryCache()
+        let key = GarminStoredKey(value: "valid-key-0123456789", lifetime: .oneYear, savedAt: fixtureNow)
+        let service = makeService(garmin: garmin, secrets: MemorySecrets(key: key), cache: cache)
+        let olderRun = RunActivity(
+            id: "1", source: .garmin, startedAt: fixtureNow, durationSeconds: 1_800, distanceMeters: 5_000
+        )
+        var newerRun = olderRun
+        newerRun.averageHeartRate = 145
+        let olderStrength = RecordedStrengthActivity(
+            id: "2", source: .garmin, startedAt: fixtureNow, durationSeconds: 1_800
+        )
+        var newerStrength = olderStrength
+        newerStrength.trainingLoad = 42
+        await cache.save(GarminCache(runs: [olderRun, newerRun], strength: [olderStrength, newerStrength]))
+        await garmin.setOffline(true)
+
+        #expect(await service.strengthActivities(from: .distantPast, to: .distantFuture) == [newerStrength])
+        #expect(try await service.runs(from: .distantPast, to: .distantFuture) == [newerRun])
     }
 
     @Test func readingMetricsSyncsOnlyWhenTheLastSyncIsOld() async throws {
