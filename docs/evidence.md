@@ -102,6 +102,25 @@ A 1-week training break mid-programme slightly reduced lower-body strength gains
 hypertrophy. → Deloads are proposed from fatigue signals, not on a timer alone, and reduce training instead
 of stopping it. Refs: Coleman et al. 2024, PeerJ 12:e16777 (RCT). Reviewed 2026-11-16.
 
+### `deload-recovery-signals` — limited
+No single recovery marker identifies accumulated fatigue: the ECSS/ACSM consensus treats overtraining as a diagnosis
+of exclusion built on a sustained performance decrement plus mood and other signs. Resting HRV and resting HR are
+largely unchanged in functional overreaching in meta-analysis (Bellenger 2016); weekly-averaged vagal HRV can even
+rise (parasympathetic hyperactivity, Manresa-Rocamora 2021), so a low-HRV rule misses part of overreaching and is
+never decisive. Self-reported well-being tracks load more sensitively than objective markers (Saw 2016), and short
+sleep lowers performance (Craven 2022).
+→ Recovery signals only reinforce a deload that training already suggests: each adds 1 point, at most 2 in total,
+and a proposal still needs at least one performance signal (stalls, an e1RM drop or RPE creep). They count only when
+sustained over the last 7 days (HRV 7-day trend below the personal range on ≥ 5 days, judged within one HRV
+statistic, ADR-0024; resting HR ≥ 5 bpm above its baseline on ≥ 4 days; < 6 h sleep on ≥ 4 nights; low energy or
+high soreness in ≥ 3 check-ins). Being sick in the last 7 days replaces the deload with a return-to-training note
+(`illness-return`). Garmin stress and Body Battery are proprietary scores without validation for this and are not
+used. Phase-aware baselines (ADR-0009) are not applied yet. Refs: Meeusen et al. 2013, Eur J Sport Sci 13:1 and Med
+Sci Sports Exerc 45:186 (ECSS/ACSM joint consensus); Bellenger et al. 2016, Sports Med 46:1461 (systematic review
+and meta-analysis); Manresa-Rocamora et al. 2021, Scand J Med Sci Sports 31:1164 (meta-analysis); Saw, Main &
+Gastin 2016, Br J Sports Med 50:281 (systematic review); Craven et al. 2022, Sports Med 52:2669 (meta-analysis).
+Reviewed 2026-11-20.
+
 ### `stall-heuristics` — heuristic
 Stall = no e1RM gain > 1 % over the last 3 exposures vs the 6 before, with ≥ 2 missed targets. Linear reset
 −10 % after 3 misses; microload at half the increment when the miss was by 1 rep; variation swap 3–4 weeks.

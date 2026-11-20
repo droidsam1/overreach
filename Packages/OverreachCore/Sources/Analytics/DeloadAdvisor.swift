@@ -8,6 +8,11 @@ public enum DeloadSignal: Hashable, Sendable {
     case performanceDrop(lifts: Int)
     case weeksSinceDeload(Int)
     case acuteChronicRatio(Double)
+    /// Recovery over the last 7 days (`deload-recovery-signals`): they only reinforce training signals.
+    case hrvSuppressed(days: Int)
+    case restingHeartRateElevated(days: Int)
+    case shortSleep(nights: Int)
+    case poorWellbeing(checkIns: Int)
 
     public var evidence: EvidenceReference {
         switch self {
@@ -15,6 +20,16 @@ public enum DeloadSignal: Hashable, Sendable {
         case .rpeCreep: ProgressionEvidence.rpeCreep
         case .weeksSinceDeload: ProgressionEvidence.deloadCost
         case .acuteChronicRatio: ProgressionEvidence.acuteChronicRatio
+        case .hrvSuppressed, .restingHeartRateElevated, .shortSleep, .poorWellbeing:
+            ProgressionEvidence.deloadRecoverySignals
+        }
+    }
+
+    /// Stalls, an e1RM drop or RPE creep: evidence from training itself, which a proposal always needs.
+    public var isPerformanceSignal: Bool {
+        switch self {
+        case .liftsStalled, .performanceDrop, .rpeCreep: true
+        default: false
         }
     }
 }
@@ -45,11 +60,14 @@ public struct DeloadProposal: Hashable, Sendable {
     public var plan: DeloadPlan
 }
 
-/// Proposes a whole-programme deload from training signals (phase 1). Recovery signals join in phase 2.
+/// Proposes a whole-programme deload from training signals, reinforced by sustained recovery signals.
 ///
 /// Deloads are proposed from evidence of accumulated fatigue, not on a timer alone: the Delphi consensus defines
 /// them as reduced training stress to manage fatigue (Bell et al. 2023), and the only RCT found a cost to strength
-/// from a routine 1-week break (Coleman et al. 2024). Weights and threshold are heuristics and configurable.
+/// from a routine 1-week break (Coleman et al. 2024). No recovery marker is decisive on its own (Meeusen et al.
+/// 2013; Bellenger et al. 2016), so recovery adds at most `recoveryWeightCap` and a proposal always needs a
+/// performance signal. Being sick recently gives no proposal: return to training gradually instead
+/// (`illness-return`). Weights and thresholds are heuristics and configurable.
 public enum DeloadAdvisor {
     public struct Settings: Hashable, Sendable {
         public var plannedIntervalWeeks = 6
@@ -64,6 +82,14 @@ public enum DeloadAdvisor {
         public var performanceDropFraction = 0.03
         /// Window for RPE creep and performance drops.
         public var lookbackDays = 28
+        /// Points per sustained recovery signal, and the most they add together.
+        public var recoveryWeight = 1.0
+        public var recoveryWeightCap = 2.0
+        /// Days of the last 7 each recovery signal needs to count.
+        public var hrvLowDays = 5
+        public var restingHeartRateHighDays = 4
+        public var shortSleepNights = 4
+        public var poorWellbeingCheckIns = 3
         public var plan = DeloadPlan.standard
 
         public init() {}
@@ -83,9 +109,11 @@ public enum DeloadAdvisor {
         lifts: [Lift],
         lastDeload: Date?,
         acuteChronicRatio: Double? = nil,
+        recovery: RecoveryTrend? = nil,
         now: Date,
         settings: Settings = Settings()
     ) -> DeloadProposal? {
+        if recovery?.sickRecently == true { return nil }
         let mainLifts = lifts.filter(\.settings.isMainLift)
         let considered = mainLifts.isEmpty ? lifts : mainLifts
         var signals: [DeloadSignal] = []
@@ -128,7 +156,25 @@ public enum DeloadAdvisor {
             score += settings.acuteChronicWeight
         }
 
-        guard score >= settings.threshold else { return nil }
+        if let recovery {
+            var recoverySignals: [DeloadSignal] = []
+            if recovery.hrvLowDays >= settings.hrvLowDays {
+                recoverySignals.append(.hrvSuppressed(days: recovery.hrvLowDays))
+            }
+            if recovery.restingHeartRateHighDays >= settings.restingHeartRateHighDays {
+                recoverySignals.append(.restingHeartRateElevated(days: recovery.restingHeartRateHighDays))
+            }
+            if recovery.shortSleepNights >= settings.shortSleepNights {
+                recoverySignals.append(.shortSleep(nights: recovery.shortSleepNights))
+            }
+            if recovery.poorWellbeingCheckIns >= settings.poorWellbeingCheckIns {
+                recoverySignals.append(.poorWellbeing(checkIns: recovery.poorWellbeingCheckIns))
+            }
+            signals += recoverySignals
+            score += min(settings.recoveryWeightCap, Double(recoverySignals.count) * settings.recoveryWeight)
+        }
+
+        guard score >= settings.threshold, signals.contains(where: \.isPerformanceSignal) else { return nil }
         return DeloadProposal(signals: signals, score: score, plan: settings.plan)
     }
 
