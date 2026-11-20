@@ -6,13 +6,12 @@ This document answers four questions before any Garmin code is written: which Ga
 gives and lacks, how stable each one is, and how Overreach should use them without breaking its rules (no backend,
 data on device, every metric optional, explainable recommendations).
 
-> **Verification status (2026-11-20).** Section 2 was checked against Garmin's **official client**
-> [`garmin/connect-personal-api-python`](https://github.com/garmin/connect-personal-api-python) (Apache-2.0, v1.0.0,
-> last commit 2026-11-19), the official Personal API FAQ, and the typed models of
-> [`gcpapi-sync-python`](https://github.com/thomascamminady/gcpapi-sync-python), which are generated from Garmin's
-> OpenAPI document and corrected against the live API (unofficial). Garmin's Swagger page and the full text of the
-> key's terms could not be opened from this environment. What is still open is marked **[verify]** and needs a real
-> key (plan step 0).
+> **Verification status (2026-11-20).** Section 2 is checked against Garmin's primary sources: the **official
+> OpenAPI document** behind `developer.garmin.com/gc-developer-program/personal/swagger-docs/` ("Garmin Connect
+> Personal API" 1.0.0, 28 endpoints), the official Personal API FAQ and page, and the official client
+> [`garmin/connect-personal-api-python`](https://github.com/garmin/connect-personal-api-python) (Apache-2.0, last
+> commit 2026-11-19). Still open, needing a real key: the text of the Terms and Conditions accepted when the key is
+> created (behind the Garmin Connect login), rate limits, historical depth, and anonymised fixtures (plan step 0).
 
 ## 1. The landscape in November 2026
 
@@ -54,34 +53,41 @@ almost all of the data that the unofficial route has, without the login problems
   401, 429 or 5xx: every non-2xx is an `HttpError(status_code, method, url, response_text)`. Its README says
   an app "with its own secret store" can pass its own key, which is what the Keychain is for.
 
-### Endpoints (verified: official client `client.py`)
+### Endpoints (verified: official OpenAPI document)
 
-| Data | Path | Max range per request* |
+Servers: `https://personal.connectapi.garmin.com` (and `personal.connectapi.garmin.cn` for China). All `GET`; dates
+`yyyy-MM-dd`, ranges inclusive. Limits in quotes are from Garmin's own descriptions.
+
+| Data | Path | Range per request |
 |---|---|---|
-| Daily summary | `/usersummary-service/v2/dailysummaries?startDate&endDate` | 31 d (live API returns 500 over ~90) |
-| Sleep, one night | `/sleep-service/sleep/dailySleep?date` | — |
-| Sleep, range | `/sleep-service/sleep/dailySleepSummariesByDate?startDate&endDate` | 31 d |
-| HRV, one night (+ readings) | `/hrv-service/hrv/{date}` | — |
-| HRV, range | `/hrv-service/hrv/daily/{start}/{end}` | 365 d |
-| Body Battery | `/wellness-service/wellness/bodyBattery/reports/daily?startDate&endDate` | 31 d |
-| Stress | `/usersummary-service/stats/stress/daily/{start}/{end}` | 28 d |
-| Steps | `/usersummary-service/stats/steps/daily/{start}/{end}` | 28 d |
-| Heart rate, one day | `/wellness-service/wellness/dailyHeartRate?date` | — |
-| SpO2 | `/wellness-service/wellness/daily/spo2acclimation/{date}` | — |
-| VO2max | `/metrics-service/metrics/maxmet/daily/{start}/{end}[?sport=…]` | **[verify]** |
-| Fitness age | `/fitnessage-service/fitnessage/v2/{date}` | — |
+| Daily summaries (v2) | `/usersummary-service/v2/dailysummaries?startDate&endDate` | "up to a maximum of 1 year" |
+| Daily summary (v1, flat) | `/usersummary-service/usersummary/daily?calendarDate` | one day |
+| Sleep, one night | `/sleep-service/sleep/dailySleep?date` | one day |
+| Sleep, range | `/sleep-service/sleep/dailySleepSummariesByDate?startDate&endDate` | "up to a maximum of 31 days" |
+| HRV, one night (+ readings) | `/hrv-service/hrv/{calendarDate}` (204 = no data) | one day |
+| HRV, range | `/hrv-service/hrv/daily/{fromDate}/{toDate}` (204 = no data) | not stated (365 d reported) |
+| Body Battery | `/wellness-service/wellness/bodyBattery/reports/daily?startDate&endDate[&chunks]` | "up to a maximum of 31 days" |
+| Stress | `/usersummary-service/stats/stress/daily/{startDate}/{endDate}` | "up to a maximum of 28 days" |
+| Steps | `/usersummary-service/stats/steps/daily/{startDate}/{endDate}` | "up to a maximum of 28 days" |
+| Hydration | `/usersummary-service/stats/hydration/daily/{startDate}/{endDate}` | "up to a maximum of 31 days" |
+| Heart rate, one day | `/wellness-service/wellness/dailyHeartRate?date` | one day |
+| SpO2 | `/wellness-service/wellness/daily/spo2acclimation/{calendarDate}` | one day |
+| VO2max | `/metrics-service/metrics/maxmet/daily/{startDate}/{endDate}[?sport=RUNNING…]` | not stated |
+| Fitness age | `/fitnessage-service/fitnessage/v2/{calendarDate}` | — |
 | HR zones | `/biometric-service/heartRateZones/v2` | — |
-| Menstrual cycle | `/periodichealth-service/menstrualcycle/summary/{date}`, `…/dayview/{date}?todayDate` | — |
-| Weight | `/weight-service/weight/range/{start}/{end}?includeAll=true` | ~1 year |
-| Activities | `/activitylist-service/activities/search/activities?start&limit&startDate&endDate&activityType` | ~45 per page |
-| Activity detail | `/activity-service/activity/{id}` | — |
-| Original FIT file | `/download-service/files/activity/{id}` (ZIP) | — |
+| Menstrual cycle | `/periodichealth-service/menstrualcycle/summary/{calendarDate}`, `…/dayview/{calendarDate}?todayDate` | one day |
+| Weight | `/weight-service/weight/range/{startDate}/{endDate}`, `/weight-service/weight/all/…` | `all`: "up to a maximum of 364 days" |
+| Nutrition | `/nutrition-service/food/logs/{date}` | one day |
+| Activities | `/activitylist-service/activities/search/activities?start&limit&startDate&endDate&activityType…` | `limit` default 99 (500s reported above ~45) |
+| Activity detail / workouts | `/activity-service/activity/{activityId}`, `…/{activityId}/workouts` | — |
+| Wellness activities | `/wellnessactivity-service/activity/summary/range/{fromDate}/{untilDate}` | not stated |
+| Original FIT file | `/download-service/files/activity/{activityId}` (`application/x-zip-compressed`) | — |
+| Activity types, profile | `/activity-service/activity/activityTypes/simple`, `/userprofile-service/userprofile/settings` | — |
 
-\* Ranges come from `gcpapi-sync` (unofficial, measured against the live API); the official client leaves
-validation to the API. The same source reports **about 100 requests per minute**. Rate limits and historical depth
-are not documented by Garmin **[verify]**.
+Documented errors are 400, 401, 403, 404 and 500. The spec documents **no rate limit and no 429**; about 100
+requests per minute is reported unofficially (`gcpapi-sync`). Garmin says nothing about historical depth.
 
-### What it gives, mapped to `DailyMetrics` (field names from the OpenAPI-generated models)
+### What it gives, mapped to `DailyMetrics` (field names from the official OpenAPI schemas)
 
 | Overreach field | Garmin JSON | Notes |
 |---|---|---|
@@ -92,32 +98,34 @@ are not documented by Garmin **[verify]**.
 | `restingHeartRate` | Daily summary `heartRate.restingValue` | Also in Health. |
 | `steps` | `movement.steps.value` | Also in Health. |
 | `averageStress` | `stress.avgLevel` (0–100) | Garmin-only. |
-| `bodyBatteryHigh` / `Low` | `bodyBattery.maxValue` / `.minValue` (5–100) | Garmin-only, proprietary. Also `chargedValue`, `drainedValue`, `endOfDayValue`. |
+| `bodyBatteryHigh` / `Low` | `bodyBattery.maxValue` / `.minValue` (v2); `bodyBatteryHighestValue` / `LowestValue` (v1) | Garmin-only, proprietary. Also charged, drained, end-of-day, at wake time. |
 | `respirationRate` | `respiration.avgValue`, or sleep `averageRespirationValue` | |
 | `spo2Average` | `pulseOx.avgValue`, or sleep `averageSpO2Value` | |
 | `sleepSeconds` and stages | Sleep `sleepTimeSeconds`, `deepSleepSeconds`, `lightSleepSeconds`, `remSleepSeconds`, `awakeSleepSeconds` | Day = `calendarDate` (the morning the sleep ended). |
 | `sleepScore` | `sleepScores.overall.value` (0–100) | Health has no score. |
-| `vo2Max` | `maxmet` endpoint; also `vO2MaxValue` per activity | **Available** (official wrapper added 2026-11-12). Response shape **[verify]**. |
+| `vo2Max` | `maxmet`: `generic` / `cycling` / `rowing` → `{calendarDate, vo2MaxValue, vo2MaxPreciseValue}`; also `vO2MaxValue` per activity | **Available.** Running VO2max is `generic`. |
 | `RunActivity` | `activityId`, `startTimeGMT`, `duration`, `distance`, `averageHR`, `maxHR`, `elevationGain`, `averageRunningCadenceInStepsPerMinute`, `activityType.typeKey` | |
 | `RunActivity.trainingLoad` | `activityTrainingLoad` (per activity) | **Garmin load per activity is available.** |
 | `aerobic` / `anaerobicTrainingEffect` | `aerobicTrainingEffect`, `anaerobicTrainingEffect` | Per activity. |
 | Menstrual cycle | `periodichealth-service` | Optional extra source for ADR-0009. |
-| `trainingReadiness`, `trainingStatus`, `acuteLoad`, `recoveryTimeHours` | — | **Not available**: no endpoint in the official client or the OpenAPI models; DC Rainmaker reports 404. |
+| `trainingReadiness`, `trainingStatus`, `acuteLoad`, `recoveryTimeHours` | — | **Not available**: not among the 28 endpoints of the official spec. |
 
 So the only things missing are the aggregate proprietary scores. Acute and chronic load can be computed from the
 per-activity `activityTrainingLoad`, our own way and with reasons (ADR-0012).
 
-### Terms (verified in part)
+### Terms
 
-- Official FAQ: the Personal API is "intended for developers, hobbyists, data enthusiasts, and individuals who want
-  to build personal applications using their own Garmin data". The key is accepted with terms at creation.
-- The clause quoted by other projects ("may be used only by you in connection with applications, services, or tools
-  that you develop or operate for your own use", no sharing with third parties) could not be read in Garmin's own
-  text **[verify]**.
-- For Overreach: the key never leaves the device (Keychain, direct calls from the iPhone), and each user builds or
-  sideloads their own copy (ADR-0021). That fits "personal applications using their own data".
-- A future App Store or TestFlight distribution (phase 4) is a grey area. **Ask Garmin in writing before phase 4**,
-  or move to Starter (route C) with a backend.
+- Official FAQ, verbatim: the Personal API "allows Garmin customers to securely access their own Garmin Connect data
+  using an API. It is intended for developers, hobbyists, data enthusiasts, and individuals who want to build personal
+  applications using their own Garmin data." And: "It is **not intended for commercial applications serving multiple
+  end users.**" Organisations building for many users are pointed to the business program.
+- The key is created only after accepting Terms and Conditions in Garmin Connect. That text sits behind the login
+  and could not be read **[verify]**. Other projects quote it as "used only by you … for your own use", with no
+  sharing of the key.
+- For Overreach today, this fits: open source, non-commercial, each person builds or sideloads their own copy
+  (ADR-0021), uses their own key for their own data, and the key never leaves their iPhone (Keychain, direct calls).
+- It does **not** fit a public App Store or TestFlight app with many users (phase 4). That needs the business
+  program: Starter (route C) with a backend, or written permission from Garmin.
 
 ## 3. Route D — the unofficial Connect API: what happened in 2026
 
@@ -206,6 +214,9 @@ values win where both have them (HRV, sleep stages), and Health fills the rest.
   keys, accept numbers as int or double. A field that disappears degrades that metric, nothing else.
 - **Schema drift detection.** The decoder counts missing expected fields and failed items per sync. Settings shows
   "Garmin changed some data; some values are missing" instead of failing silently. Never crash, never block Today.
+- **Spec drift check.** Garmin publishes the OpenAPI document in the Swagger page. A script can extract it and
+  compare the paths and fields we decode against a committed list, so a removed or renamed field shows up in CI or
+  on demand, not on users' phones.
 - **Contract tests on real fixtures.** Record one anonymised response per endpoint (several watch models: e.g.
   Forerunner 255 and 265) into `Packages/OverreachCore/Sources/Fixtures`; mapping tests run on Linux in CI. When
   Garmin changes a payload, the fix is a new fixture plus a test.
@@ -228,7 +239,7 @@ values win where both have them (HRV, sleep stages), and Health fills the rest.
 
 | Step | Content | Where |
 |---|---|---|
-| 0 | Done in part (2026-11-20): auth, endpoints and field names checked against the official client and the OpenAPI-generated models. Still open, needing a real key: the terms text, rate limits, historical depth, the VO2max response shape, and recording anonymised fixtures. Then accept ADR-0022. | docs |
+| 0 | Done in part (2026-11-20): auth, endpoints, ranges and field names checked against Garmin's official OpenAPI document, FAQ and client. Still open, needing a real key: the key's Terms and Conditions text, rate limits, historical depth, and recording anonymised fixtures. Then accept ADR-0022. | docs |
 | 1 | `GarminImport`: DTOs + mapping for the HRV range, sleep range and daily summaries v2 (which carry resting HR, steps, stress, Body Battery, respiration and SpO2), with recorded fixtures and Swift Testing tests. | OverreachCore |
 | 2 | `GarminSource`: token provider, HTTP client, `MetricsSource` for daily metrics. Wire in `AppContainer`. | OverreachKit, App |
 | 3 | Settings: connect (paste key + expiry), status, last sync, disconnect; localized texts (en, es, gl). | SettingsPresentation, FeatureSettings |
@@ -245,8 +256,8 @@ Steps 1–4 are the shippable unit for phase 2 (v0.2). `ReleaseNotes.all` gets a
   Does `DailyMetrics` need a `hrvMetric` tag, or a separate field? (Decide in step 4, with evidence.)
 - Is Body Battery worth showing, given it is a proprietary score? It is cheap to store; it is shown as context and
   never used as a rule input unless evidence supports it.
-- Exact rate limits (about 100 per minute reported unofficially). Backfilling 60 days takes about 10 requests
-  (31-day windows), so it fits in one sync.
+- Exact rate limits (about 100 per minute reported unofficially). A 60-day backfill is about 6 requests: one daily
+  summaries call (up to a year), two sleep calls (31 days), one HRV range, two Body Battery calls, plus activity pages.
 - Daily summary v2 versus the separate stress, steps and Body Battery endpoints: v2 covers most fields in one call.
   Use it and fall back to the others only if a field is missing.
 
@@ -261,9 +272,10 @@ Steps 1–4 are the shippable unit for phase 2 (v0.2). `ReleaseNotes.all` gets a
 - `TokenCemetery/Grada` issue #115 (Personal API terms for published apps); `e2kd7n/ride-optimizer` issue #607.
 - Sahha and Momentum blogs on the 2026 tiers and fees; partner integrations (`fiddur/aurboda` #1782/#1784) for
   Health API data types and the Body Battery source.
-- **Primary:** Garmin, `garmin/connect-personal-api-python` (`README.md`, `src/garmin_personal_api/{auth,constants,client,errors}.py`,
-  `examples/`), and Garmin Connect Personal API FAQ (`developer.garmin.com/gc-developer-program/personal/personal-faq/`,
-  read through search results).
+- **Primary:** Garmin Connect Personal API OpenAPI 3.0.1 document, version 1.0.0 (embedded in
+  `developer.garmin.com/gc-developer-program/personal/swagger-docs/`, read 2026-11-20); Garmin Connect Personal API FAQ and
+  Personal API page; Garmin, `garmin/connect-personal-api-python` (`README.md`, `src/garmin_personal_api/{auth,constants,client,errors}.py`,
+  `examples/`).
 - `thomascamminady/gcpapi-sync-python`: models generated from Garmin's OpenAPI document (`models/_generated.py`),
   per-endpoint limits and CHANGELOG (unofficial).
-- Still to read with access: `…/personal/swagger-docs/` and the key's Terms and Conditions.
+- Still to read with a Garmin account: the Terms and Conditions shown when creating the key.

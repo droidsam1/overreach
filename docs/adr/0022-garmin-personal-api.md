@@ -13,7 +13,7 @@ official API was business-only. Since then:
   survive only by impersonating Garmin's app and its TLS stack.
 - On 2026-10-21 Garmin opened a free, self-service **Personal API key**: read-only REST pull on
   `personal.connectapi.garmin.com`, with the key exchanged for a 24 h bearer token. It serves the same Connect
-  service endpoints the Garmin app uses (checked against Garmin's official client): nightly HRV with status and
+  service endpoints the Garmin app uses (checked against Garmin's official OpenAPI document and client): nightly HRV with status and
   baseline, sleep with stages and score, daily summaries (resting HR, steps, stress, Body Battery, respiration,
   SpO2), VO2max, activities with per-activity training load and training effect, FIT files, and the menstrual cycle.
   Training readiness, training status, Garmin's aggregate acute/chronic load and recovery time are not included.
@@ -31,8 +31,9 @@ The analysis is in `docs/design/garmin-integration.md`.
    Linux against recorded fixtures. Networking and the Keychain stay in `GarminSource`.
 4. Apple Health remains the base source. Garmin values win where both exist, and the app works fully without
    Garmin.
-5. Auth, endpoints and field names have been checked against Garmin's official client. The status becomes Accepted
-   once the key's terms text and the rate limits are confirmed with a real key (step 0 of the design).
+5. Auth, endpoints, ranges and field names have been checked against Garmin's official OpenAPI document. The status
+   becomes Accepted once the key's Terms and Conditions and the rate limits are confirmed with a real key (step 0 of
+   the design).
 
 ## Consequences
 
@@ -40,7 +41,8 @@ The analysis is in `docs/design/garmin-integration.md`.
 - We lose Garmin's aggregate scores (readiness, status, acute load, recovery time). Readiness does not need them,
   and acute/chronic load can be computed, with reasons, from the per-activity load we do get.
 - Keys expire (30 days to 1 year): the app has to remind the user and handle reconnection.
-- Public distribution (phase 4) may not fit "for your own use" under the Personal terms. Ask Garmin, or move to the
-  Starter tier, which needs a backend and a new ADR.
+- Garmin's FAQ says the Personal API is "not intended for commercial applications serving multiple end users". That
+  fits self-built, non-commercial copies. Public distribution (phase 4) needs the business program (Starter, which
+  needs a backend and a new ADR) or written permission from Garmin.
 - If Garmin closes the Personal tier, the app falls back to Health and the check-in. A Connect IQ HRV app remains
   the plan B.
