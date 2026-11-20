@@ -24,10 +24,12 @@ diagnosis of exclusion, resting HRV and HR barely change in functional overreach
    **Start deload week** records a `DeloadRecord` in the profile (optional field, ADR-0018); it marks the week on
    Today and resets "weeks since the last deload". **Not now** hides the proposal for a week
    (`deloadPostponedUntil`), after which it returns if the signals persist.
+5. While a deload week covers today, the workout logger reduces each exercise's target with the plan and says so.
 
 ## Consequences
 
 - Deloads stay rare and explainable; a bad week of sleep alone does not interrupt progress.
-- Workout targets do not yet apply the deload reductions automatically during the deload week; Today states the
-  plan (next step).
+- During the deload week the logger applies the plan to every target (`DeloadPlan.applied`): half the working sets
+  (at least one), about 10 % less load rounded to the exercise's increment, RPE 7 at most, with the reason shown.
+  Progression resumes from the lighter sessions afterwards ("then build back up").
 - Phase-aware baselines for naturally cycling users (ADR-0009) are not applied yet.

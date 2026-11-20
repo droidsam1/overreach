@@ -125,3 +125,28 @@ struct DeloadRecoveryTests {
         #expect(trend.sickRecently)
     }
 }
+
+@Suite("Deload week targets")
+struct DeloadWeekTargetTests {
+    @Test func aDeloadHalvesTheSetsLightensTheLoadAndCapsTheEffort() {
+        let target = ExerciseTarget(
+            sets: Array(repeating: PlannedSet(weightKg: 102.5, reps: 5, targetRPE: 8), count: 3),
+            reasons: [.allRepsCompleted]
+        )
+
+        let deload = DeloadPlan.standard.applied(to: target, incrementKg: 2.5)
+
+        #expect(deload.sets == Array(repeating: PlannedSet(weightKg: 92.5, reps: 5, targetRPE: 7), count: 2))
+        #expect(deload.reasons.first == .deloadWeek(sets: 2, loadReduction: 0.1, maximumRPE: 7))
+        #expect(deload.reasons.last == .allRepsCompleted)
+        #expect(deload.reasons.first?.evidence.key == "deload-design")
+    }
+
+    @Test func aSingleSetStaysOneAndUnknownLoadsStayUnknown() {
+        let target = ExerciseTarget(sets: [PlannedSet(weightKg: nil, reps: 10, targetRPE: 6)], reasons: [.noHistory])
+
+        let deload = DeloadPlan.standard.applied(to: target, incrementKg: 2.5)
+
+        #expect(deload.sets == [PlannedSet(weightKg: nil, reps: 10, targetRPE: 6)])  // RPE already under the cap
+    }
+}

@@ -254,6 +254,12 @@ public final class WorkoutModel {
 
     /// How effort is logged and shown (Settings for the athlete; changed from the logging guide).
     public private(set) var effortScale = EffortScale.rpe
+    /// The plan of an accepted deload week covering today (ADR-0027): targets are reduced while it lasts.
+    public private(set) var deloadPlan: DeloadPlan?
+    /// "Deload week: targets have fewer sets and less load until Sunday 23 November."
+    public var deloadNotice: String? {
+        deloadPlan == nil ? nil : L10n.text("Deload week: today's targets have fewer sets, less load and easier efforts.")
+    }
     public var showsRepsInReserve: Bool { effortScale == .repsInReserve }
 
     /// Asks before finishing when some exercises are unfinished (see `unfinishedExplanation`).
@@ -335,6 +341,8 @@ public final class WorkoutModel {
     private func loadEffortScale() async {
         guard let profile = try? await profiles?.profile() else { return }
         applyEffortScale(profile.effortScale)
+        let today = CalendarDay(clock())
+        deloadPlan = profile.deloads.last?.contains(today) == true ? DeloadAdvisor.Settings().plan : nil
     }
 
     private func applyEffortScale(_ scale: EffortScale) {
@@ -490,7 +498,9 @@ public final class WorkoutModel {
             FocusClassifier.focus(of: history[index], previous: Array(history[..<index]))
         })
         let focus = declaredFocus ?? inferredFocus
-        let target = ProgressionTargets.next(history: history, settings: settings)
+        let progressed = ProgressionTargets.next(history: history, settings: settings)
+        // During an accepted deload week the same exercises are trained lighter (ADR-0027).
+        let target = deloadPlan.map { $0.applied(to: progressed, incrementKg: settings.incrementKg) } ?? progressed
         let status = StallDetection.status(history: history, settings: settings)
         let working = target.sets.map { planned in
             DraftSet(weightKg: planned.weightKg ?? history.last?.workingWeightKg, reps: planned.reps)

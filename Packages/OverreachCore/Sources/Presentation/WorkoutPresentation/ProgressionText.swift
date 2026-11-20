@@ -105,6 +105,12 @@ extension ProgressionReason {
             )
         case .noLoadIncrementAvailable:
             return L10n.text("To keep progressing, add external load or switch to a harder variation.")
+        case let .deloadWeek(sets, reduction, maximumRPE):
+            return L10n.format(
+                "Deload week: {1} working sets, about {2} less load and {3} at most, to shed fatigue.",
+                sets, format.number(reduction * 100, maxFractionDigits: 0) + " %",
+                context.effortScale.text(rpe: maximumRPE, format: format)
+            )
         }
     }
 }

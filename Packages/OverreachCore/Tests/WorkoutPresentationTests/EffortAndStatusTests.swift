@@ -151,4 +151,46 @@ struct EffortAndStatusTests {
         let json = #"{"id":"\#(UUID().uuidString)","exerciseID":"\#(UUID().uuidString)","sets":[]}"#
         #expect(try JSONDecoder().decode(ExerciseEntry.self, from: Data(json.utf8)).countsForProgression)
     }
+
+    // MARK: Deload week (ADR-0027)
+
+    @Test func duringADeloadWeekTargetsAreReduced() async throws {
+        let history = [session(daysAgo: 3, weight: 60, reps: [12, 12, 12])]
+        let (normal, store) = await makeModel(history: history)
+        await normal.add(exerciseID: bench.id)
+        let usual = try #require(normal.exercises.first).target
+        #expect(normal.deloadNotice == nil)
+
+        var profile = try await store.profile()
+        profile.deloads = [DeloadRecord(start: CalendarDay(now.addingTimeInterval(-86_400)), days: 7)]
+        try await store.save(profile)
+        let fixedNow = now
+        let deloading = WorkoutModel(
+            workouts: store, exercises: store, progression: store, profiles: store, clock: { fixedNow }
+        )
+        await deloading.load()
+        deloading.start()
+        await deloading.add(exerciseID: bench.id)
+
+        let reduced = try #require(deloading.exercises.first).target
+        #expect(deloading.deloadNotice != nil)
+        #expect(reduced.sets.count == max(1, Int((Double(usual.sets.count) * 0.5).rounded())))
+        #expect((reduced.sets.first?.weightKg ?? 0) < (usual.sets.first?.weightKg ?? 0))
+        #expect(reduced.sets.allSatisfy { $0.targetRPE <= 7 })
+        let line = try #require(deloading.exercises.first).summary(format: format)
+        #expect(line.reasons.first?.contains("Deload week") == true)
+    }
+
+    @Test func aDeloadThatEndedNoLongerReducesTargets() async throws {
+        let store = TestStore(exercises: [bench, row], sessions: [session(daysAgo: 3, weight: 60, reps: [12, 12, 12])])
+        var profile = AthleteProfile()
+        profile.deloads = [DeloadRecord(start: CalendarDay(now.addingTimeInterval(-10 * 86_400)), days: 7)]
+        try await store.save(profile)
+        let fixedNow = now
+        let model = WorkoutModel(workouts: store, exercises: store, progression: store, profiles: store, clock: { fixedNow })
+        await model.load()
+
+        #expect(model.deloadPlan == nil)
+    }
 }
+

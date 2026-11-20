@@ -47,6 +47,24 @@ public struct DeloadPlan: Hashable, Sendable {
 
     public static let standard = DeloadPlan(durationDays: 7, setMultiplier: 0.5, loadMultiplier: 0.9, maximumRPE: 7)
 
+    /// `target` reduced for a deload week: the same exercise with fewer sets (at least one), less load rounded to the
+    /// exercise's increment, and RPE capped. Rep targets stay. The deload reason comes first.
+    public func applied(to target: ExerciseTarget, incrementKg: Double) -> ExerciseTarget {
+        guard !target.sets.isEmpty else { return target }
+        let count = max(1, Int((Double(target.sets.count) * setMultiplier).rounded()))
+        let sets = target.sets.prefix(count).map { planned in
+            PlannedSet(
+                weightKg: planned.weightKg.map { LoadPrescription.round($0 * loadMultiplier, toIncrement: incrementKg) },
+                reps: planned.reps,
+                targetRPE: min(planned.targetRPE, maximumRPE)
+            )
+        }
+        let reason = ProgressionReason.deloadWeek(
+            sets: count, loadReduction: ((1 - loadMultiplier) * 1_000).rounded() / 1_000, maximumRPE: maximumRPE
+        )
+        return ExerciseTarget(sets: Array(sets), reasons: [reason] + target.reasons)
+    }
+
     public init(durationDays: Int, setMultiplier: Double, loadMultiplier: Double, maximumRPE: Double) {
         self.durationDays = durationDays
         self.setMultiplier = setMultiplier

@@ -13906,6 +13906,40 @@
           }
         }
       }
+    },
+    "Deload week: today's targets have fewer sets, less load and easier efforts.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana de descarga: los objetivos de hoy tienen menos series, menos carga y esfuerzos más suaves."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana de descarga: os obxectivos de hoxe teñen menos series, menos carga e esforzos máis suaves."
+          }
+        }
+      }
+    },
+    "Deload week: {1} working sets, about {2} less load and {3} at most, to shed fatigue.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana de descarga: {1} series efectivas, un {2} menos de carga y {3} como máximo, para soltar fatiga."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana de descarga: {1} series efectivas, un {2} menos de carga e {3} como máximo, para soltar fatiga."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -197,6 +197,10 @@ private struct SessionList: View {
                 Label(message, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red)
             }
+            if let deload = model.deloadNotice {
+                Label(deload, systemImage: "arrow.down.right.circle.fill")
+                    .foregroundStyle(.tint)
+            }
             ForEach($model.exercises) { $exercise in
                 Section {
                     TargetSummaryView(summary: exercise.summary)
