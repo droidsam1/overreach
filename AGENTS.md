@@ -96,11 +96,15 @@ Several agents work at once, each in its own branch or worktree.
 Before opening or updating a PR, run the compact local check: `python3 scripts/check-local.py`
 (Windows: `py -3 scripts/check-local.py`). It runs the repository rules, then picks translations, SwiftLint
 (no new warnings on changed lines) and the core tests from the diff against `origin/main` (`--base origin/<branch>`
-for another base), and prints a log path. CI runs the same rules plus the Apple packages and the simulator build.
+for another base), and prints a log path. CI runs the same rules plus the Apple packages and the simulator build;
+read its failures with `scripts/ci-failures.py`, not the raw logs.
 
 ```bash
+python3 scripts/check-local.py [--fix-eol]             # local check; --fix-eol rewrites CRLF working copies as LF
+python3 scripts/ci-failures.py [PR | run id | URL]     # errors of failed CI runs, by job (default: HEAD's runs)
 python3 scripts/check-repo.py                         # ADRs, frozen backup fixture, release notes, skills, links
 python3 scripts/check-localization.py [--fix]          # translations; --fix rewrites catalogs in canonical form
+python3 scripts/add-strings.py --template | <file> | --prune   # missing keys as JSON; add es+gl; drop unused
 swift test --package-path Packages/OverreachCore       # pure-Swift core (macOS and Linux)
 ./scripts/test-core.sh                                 # same in Docker (or scripts/test-core.ps1 on Windows)
 swift build --package-path Packages/OverreachKit       # Apple-framework modules (macOS)

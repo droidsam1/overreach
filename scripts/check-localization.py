@@ -135,6 +135,9 @@ def main():
     for catalog in catalogs:
         if catalog.read_text(encoding="utf-8").replace("\r\n", "\n") != xcstrings.dumps(xcstrings.load(catalog)):
             problems.append(f"Not in canonical form: {catalog.relative_to(ROOT)}. Run with --fix.")
+    if any(problem.startswith(("Not in the catalog", "No longer used")) for problem in problems):
+        problems.append("Add missing strings with scripts/add-strings.py --template, then scripts/add-strings.py "
+                        "<file>; remove unused ones with --prune.")
     print("\n".join(problems) or f"{len(strings)} strings translated into {', '.join(LANGUAGES)}.")
     return 1 if problems else 0
 

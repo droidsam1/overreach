@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Run local Overreach checks for the changes since a branch diverged."""
+"""Run local Overreach checks for the changes since a branch diverged.
+
+Also fails on CRLF working copies (fix with --fix-eol), warns when HEAD is far behind the base and stops early
+when Docker is needed but not running.
+"""
 import argparse
 import hashlib
 import os
@@ -14,6 +18,61 @@ ROOT = Path(__file__).resolve().parent.parent
 LINT_CONFIG = ".swiftlint.yml"
 LINT_IMAGE = "ghcr.io/realm/swiftlint:0.57.0"
 ERROR = re.compile(r"::error\b|\berror:|expectation failed|recorded an issue", re.I)
+BEHIND_LIMIT = 10
+_docker_ready = None
+
+
+def crlf_paths():
+    """Tracked text files whose working copy has CRLF although the repository stores LF (.gitattributes)."""
+    output = subprocess.run(["git", "ls-files", "--eol", "-z"], cwd=ROOT, capture_output=True, check=True).stdout
+    paths = []
+    for entry in output.split(b"\0"):
+        if b"\t" not in entry:
+            continue
+        info, path = entry.split(b"\t", 1)
+        fields = info.split()
+        if fields[:2] == [b"i/lf", b"w/crlf"] or (fields[:1] == [b"i/lf"] and b"w/mixed" in fields):
+            paths.append(os.fsdecode(path))
+    return paths
+
+
+def line_endings(fix):
+    """Older checkouts keep CRLF working copies after the switch to LF; edits and tests expect LF."""
+    paths = crlf_paths()
+    if not paths:
+        return 0
+    if fix:
+        for path in paths:
+            file = ROOT / path
+            file.write_bytes(file.read_bytes().replace(b"\r\n", b"\n"))
+        print(f"FIXED line endings - {len(paths)} files rewritten with LF", flush=True)
+        return 0
+    print(f"FAIL line-endings - {len(paths)} files have CRLF in this working copy (e.g. {paths[0]}). "
+          "Run again with --fix-eol to rewrite them with LF; the content does not change.", flush=True)
+    return 1
+
+
+def behind(base):
+    if base == "HEAD":
+        return
+    count = int(subprocess.check_output(["git", "rev-list", "--count", f"HEAD..{base}"], cwd=ROOT).decode())
+    if count > BEHIND_LIMIT:
+        print(f"WARN HEAD is {count} commits behind {base}. Rebase, or start new work from a fresh {base} "
+              "(git fetch first).", flush=True)
+
+
+def docker_ready(name):
+    global _docker_ready
+    if _docker_ready is None:
+        try:
+            result = subprocess.run(["docker", "info"], capture_output=True, timeout=30)
+            _docker_ready = result.returncode == 0
+        except (OSError, subprocess.TimeoutExpired):
+            _docker_ready = False
+    if not _docker_ready:
+        print(f"FAIL {name} - Docker is not running. Start Docker Desktop (or ask the user to) and run again; "
+              "the Docker installation itself needs no debugging.", flush=True)
+    return _docker_ready
 
 
 def git_paths(*args):
@@ -82,6 +141,8 @@ def lint(paths, logs, image, base):
         options = ["--quiet", "--no-cache", "--reporter", "github-actions-logging"]
         if shutil.which("swiftlint"):
             status = run_check("swiftlint", ["swiftlint", *options], logs, cwd=staging)
+        elif not docker_ready("swiftlint"):
+            return 1
         else:
             command = ["docker", "run", "--rm", "-v", f"{staging}:/src:ro", "-w", "/src", image, "swiftlint"]
             status = run_check("swiftlint", [*command, *options], logs)
@@ -93,6 +154,8 @@ def lint(paths, logs, image, base):
 def core_tests(logs):
     if shutil.which("swift"):
         return run_check("core", ["swift", "test", "--package-path", "Packages/OverreachCore"], logs)
+    if not docker_ready("core"):
+        return 1
 
     # Each checkout gets its own SwiftPM build products when using Docker.
     checkout = hashlib.sha256(os.fsencode(ROOT)).hexdigest()[:12]
@@ -116,6 +179,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base", help="Base ref to compare against (origin/main, or HEAD if unavailable)")
     parser.add_argument("--lint-image", default=LINT_IMAGE, help="Docker image to use when SwiftLint is unavailable locally")
+    parser.add_argument("--fix-eol", action="store_true", help="Rewrite CRLF working copies of tracked files with LF")
     args = parser.parse_args()
     configure_merge_drivers()
 
@@ -138,7 +202,8 @@ def main():
 
     logs = Path(tempfile.mkdtemp(prefix="overreach-check-"))
     print(f"Base: {base} | {len(paths)} changed paths | Logs: {logs}", flush=True)
-    statuses = [run_check("repository", [sys.executable, "scripts/check-repo.py"], logs)]
+    behind(base)
+    statuses = [line_endings(args.fix_eol), run_check("repository", [sys.executable, "scripts/check-repo.py"], logs)]
     if translation_check:
         statuses.append(run_check("localization", [sys.executable, "scripts/check-localization.py"], logs))
     if lint_paths:
