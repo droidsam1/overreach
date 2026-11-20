@@ -31,7 +31,7 @@ public enum RunDeduplication {
     }
 
     public static func combiningSources(_ runs: [RunActivity]) -> [CombinedRun] {
-        let ordered = runs.sorted { orderKey($0) < orderKey($1) }
+        let ordered = runs.sorted(by: preferredFirst)
         var seen: [DataSourceKind: Set<String>] = [:]
         var kept: [CombinedRun] = []
         for run in ordered {
@@ -56,8 +56,13 @@ public enum RunDeduplication {
         }
     }
 
-    private static func orderKey(_ run: RunActivity) -> (Int, Date, String, String) {
-        (rank(run.source), run.startedAt, run.id, run.source.rawValue)
+    private static func preferredFirst(_ lhs: RunActivity, _ rhs: RunActivity) -> Bool {
+        let leftRank = rank(lhs.source)
+        let rightRank = rank(rhs.source)
+        if leftRank != rightRank { return leftRank < rightRank }
+        if lhs.startedAt != rhs.startedAt { return lhs.startedAt < rhs.startedAt }
+        if lhs.id != rhs.id { return lhs.id < rhs.id }
+        return lhs.source.rawValue < rhs.source.rawValue
     }
 
     static func isSameRun(_ lhs: RunActivity, _ rhs: RunActivity) -> Bool {

@@ -43,6 +43,12 @@ public struct HistoryRunActivity: Identifiable, Hashable, Sendable {
 
 /// Reads available run sources in parallel. A failure in one source leaves the successful reads visible.
 struct HistoryRunReadings: Sendable {
+    private enum SourceResult: Sendable {
+        case unavailable
+        case success([RunActivity])
+        case failure(DataSourceKind)
+    }
+
     let runs: [RunDeduplication.CombinedRun]
     let didRead: Bool
     let failedSources: Set<DataSourceKind>
@@ -54,26 +60,30 @@ struct HistoryRunReadings: Sendable {
     }
 
     static func load(sources: [any MetricsSource], from start: Date, to end: Date) async -> Self {
-        await withTaskGroup(of: (DataSourceKind, [RunActivity]?, Bool).self) { group in
+        await withTaskGroup(of: SourceResult.self) { group in
             for source in sources {
                 group.addTask {
-                    guard await source.isAvailable() else { return (source.kind, nil, false) }
+                    guard await source.isAvailable() else { return .unavailable }
                     do {
-                        return (source.kind, try await source.runs(from: start, to: end), false)
+                        return .success(try await source.runs(from: start, to: end))
                     } catch {
-                        return (source.kind, nil, true)
+                        return .failure(source.kind)
                     }
                 }
             }
             var runs: [RunActivity] = []
             var didRead = false
             var failures: Set<DataSourceKind> = []
-            for await (source, result, failed) in group {
-                if let result {
+            for await result in group {
+                switch result {
+                case .unavailable:
+                    break
+                case let .success(activities):
                     didRead = true
-                    runs += result
+                    runs += activities
+                case let .failure(source):
+                    failures.insert(source)
                 }
-                if failed { failures.insert(source) }
             }
             return Self(runs: RunDeduplication.combiningSources(runs), didRead: didRead, failedSources: failures)
         }
