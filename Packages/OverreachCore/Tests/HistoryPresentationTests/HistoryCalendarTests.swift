@@ -150,7 +150,7 @@ struct HistoryCalendarTests {
         let model = await model(
             sessions: [session(on: day(2))],
             activity: StepsSource([DailyActivity(day: day(8), steps: 1_100)]),
-            runs: RunsSource([run(on: day(5), kilometres: 5, minutes: 28)])
+            runSources: [RunsSource([run(on: day(5), kilometres: 5, minutes: 28)])]
         )
         let calendar = model.calendar
 
