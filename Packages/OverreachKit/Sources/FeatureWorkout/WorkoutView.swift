@@ -23,11 +23,19 @@ public struct WorkoutView: View {
     public var body: some View {
         NavigationStack {
             Group {
-                if model.isSessionActive {
+                if model.isPreparingSession {
+                    ProgressView("Preparing workout…")
+                } else if model.isSavingSession && !model.isSessionActive {
+                    ProgressView("Saving workout…")
+                } else if model.isSessionActive {
                     SessionList(model: model, isPickingExercise: $isPickingExercise)
+                        .disabled(model.isSavingSession)
+                } else if model.needsDraftRecovery {
+                    WorkoutRecoveryView(model: model) { isConfirmingDiscard = true }
                 } else {
                     StartSessionView(
                         routines: routines,
+                        notice: model.draftNotice,
                         onStartEmpty: { model.start() },
                         onStart: { routine in Task { await model.start(routine) } },
                         onEdit: { routineEditor = routines.editor(for: $0) }
@@ -50,7 +58,9 @@ public struct WorkoutView: View {
             .sheet(item: $routineEditor) { editor in
                 RoutineEditorView(model: editor)
             }
-            .confirmationDialog("Discard this session?", isPresented: $isConfirmingDiscard) {
+            .confirmationDialog(
+                "Discard this session?", isPresented: $isConfirmingDiscard, titleVisibility: .visible
+            ) {
                 Button("Discard", role: .destructive) { model.discard() }
             }
             .confirmationDialog(
@@ -82,7 +92,7 @@ public struct WorkoutView: View {
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
-        if model.isSessionActive {
+        if model.isSessionActive && !model.isPreparingSession {
             ToolbarItem(placement: .cancellationAction) {
                 Menu {
                     Button("Discard", systemImage: "trash", role: .destructive) { isConfirmingDiscard = true }
@@ -90,13 +100,64 @@ public struct WorkoutView: View {
                     Label("Session options", systemImage: "ellipsis.circle")
                         .labelStyle(.iconOnly)
                 }
+                .disabled(model.isSavingSession)
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Finish") { Task { await model.requestFinish() } }
+                if model.isSavingSession {
+                    ProgressView()
+                        .accessibilityLabel("Saving workout…")
+                } else {
+                    Button("Finish") { Task { await model.requestFinish() } }
+                }
             }
-        } else {
+        } else if !model.needsDraftRecovery && !model.isPreparingSession && !model.isSavingSession {
             ToolbarItem(placement: .primaryAction) {
                 Button("New routine", systemImage: "plus") { routineEditor = routines.newEditor() }
+            }
+        }
+    }
+}
+
+private struct WorkoutRecoveryView: View {
+    let model: WorkoutModel
+    let onDiscard: () -> Void
+
+    var body: some View {
+        List {
+            Section {
+                if let name = model.recoverableWorkoutName, let start = model.recoverableWorkoutStart {
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        Text(name).font(.title2.weight(.semibold))
+                        Label {
+                            Text(start, format: .dateTime.day().month().year().hour().minute())
+                        } icon: {
+                            Image(systemName: "clock")
+                                .accessibilityHidden(true)
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+                if let message = model.draftErrorMessage {
+                    StatusLabel(title: message, tone: .caution)
+                }
+                if model.isRecoveringDraft {
+                    ProgressView()
+                } else if model.canResumeWorkout {
+                    Button("Resume workout", systemImage: "play.fill") {
+                        Task { await model.resumeSavedWorkout() }
+                    }
+                    .buttonStyle(BrandButtonStyle())
+                } else {
+                    Button("Try again", systemImage: "arrow.clockwise") { model.retryDraftAccess() }
+                }
+            } header: {
+                Text("Saved workout draft")
+            }
+            Section {
+                Button("Discard saved workout", role: .destructive, action: onDiscard)
+                    .disabled(model.isRecoveringDraft)
             }
         }
     }
@@ -127,6 +188,10 @@ private struct SessionList: View {
                 ForEach(model.focusOptions) { option in
                     Text(option.name).tag(TrainingFocus?.some(option.value))
                 }
+            }
+            if let message = model.draftErrorMessage {
+                StatusLabel(title: message, tone: .caution)
+                Button("Retry saving draft", systemImage: "arrow.clockwise") { model.retryDraftAccess() }
             }
             if let message = model.errorMessage {
                 Label(message, systemImage: "exclamationmark.triangle")

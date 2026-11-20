@@ -9,15 +9,28 @@ public protocol WorkoutRepository: Sendable {
     /// Saves many sessions in one go (import, restore), replacing sessions with the same id.
     func save(_ sessions: [StrengthSession]) async throws
     func deleteSession(id: UUID) async throws
+    func containsSession(id: UUID) async throws -> Bool
 }
 
 extension WorkoutRepository {
+    public func containsSession(id: UUID) async throws -> Bool {
+        try await sessions(from: .distantPast, to: .distantFuture).contains { $0.id == id }
+    }
+
     /// Default: one save per session. Stores override it to write a batch at once.
     public func save(_ sessions: [StrengthSession]) async throws {
         for session in sessions {
             try await save(session)
         }
     }
+}
+
+/// One device-local workout draft. The feature owns the versioned payload.
+@MainActor
+public protocol WorkoutDraftStore: Sendable {
+    func readDraft() throws -> Data?
+    /// Replaces the draft atomically, or removes it when data is nil.
+    func writeDraft(_ data: Data?) throws
 }
 
 public protocol ExerciseRepository: Sendable {

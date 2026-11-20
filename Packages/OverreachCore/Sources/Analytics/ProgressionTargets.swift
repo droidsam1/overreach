@@ -2,7 +2,7 @@ import Domain
 import Foundation
 
 /// One planned set. `weightKg` is `nil` when there is no history to base it on.
-public struct PlannedSet: Hashable, Sendable {
+public struct PlannedSet: Hashable, Codable, Sendable {
     public var weightKg: Double?
     public var reps: Int
     public var targetRPE: Double
@@ -15,7 +15,7 @@ public struct PlannedSet: Hashable, Sendable {
 }
 
 /// Why a target is what it is. Each reason carries its evidence (ADR-0012).
-public enum ProgressionReason: Hashable, Sendable {
+public enum ProgressionReason: Hashable, Codable, Sendable {
     case noHistory
     case topOfRangeReached(reps: Int)
     case addRepsBeforeLoad
@@ -40,7 +40,7 @@ public enum ProgressionReason: Hashable, Sendable {
 }
 
 /// The next session for one exercise.
-public struct ExerciseTarget: Hashable, Sendable {
+public struct ExerciseTarget: Hashable, Codable, Sendable {
     public var sets: [PlannedSet]
     public var reasons: [ProgressionReason]
 

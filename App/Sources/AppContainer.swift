@@ -25,6 +25,7 @@ import WorkoutPresentation
 @Observable
 final class AppContainer {
     let workouts: any WorkoutRepository
+    private let workoutDraftStore: (any WorkoutDraftStore)?
     let exercises: any ExerciseRepository
     let checkIns: any CheckInRepository
     let progression: any ProgressionSettingsRepository
@@ -52,6 +53,7 @@ final class AppContainer {
         routines: any RoutineRepository,
         importer: any TrainingHistoryImporter = StrongHistoryImporter(),
         backupDestination: any BackupDestination = FolderBackupDestination(),
+        workoutDraftStore: (any WorkoutDraftStore)? = nil,
         restAlerts: any RestAlertScheduler = LocalRestAlerts(),
         health: any HealthWorkoutWriter = HealthKitWorkoutWriter(),
         onboardingStatus: any OnboardingStatusStore = DefaultsOnboardingStatus(),
@@ -61,6 +63,7 @@ final class AppContainer {
         recordedStrength: (any RecordedStrengthSource)? = nil
     ) {
         self.workouts = workouts
+        self.workoutDraftStore = workoutDraftStore
         self.exercises = exercises
         self.checkIns = checkIns
         self.progression = progression
@@ -90,7 +93,7 @@ final class AppContainer {
             let store = SwiftDataStore.make(container: try PersistenceContainer.make())
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
-                routines: store,
+                routines: store, workoutDraftStore: FileWorkoutDraftStore(),
                 metricsSources: sources, healthSource: healthKit, garmin: garmin, recordedStrength: garmin
             )
         } catch {
@@ -140,7 +143,7 @@ final class AppContainer {
     func makeWorkoutModel() -> WorkoutModel {
         WorkoutModel(
             workouts: workouts, exercises: exercises, progression: progression, backup: backup, health: health,
-            restAlerts: restAlerts, profiles: profiles
+            restAlerts: restAlerts, profiles: profiles, draftStore: workoutDraftStore
         )
     }
 

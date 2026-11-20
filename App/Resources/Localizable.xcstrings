@@ -1667,6 +1667,23 @@
         }
       }
     },
+    "Could not check the saved workout. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo comprobar el entrenamiento guardado. Inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido comprobar o adestramento gardado. Téntao de novo."
+          }
+        }
+      }
+    },
     "Could not delete the routine.": {
       "extractionState": "manual",
       "localizations": {
@@ -1922,6 +1939,23 @@
         }
       }
     },
+    "Could not open the saved workout.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo abrir el entrenamiento guardado."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido abrir o adestramento gardado."
+          }
+        }
+      }
+    },
     "Could not prepare your data. Try again.": {
       "extractionState": "manual",
       "localizations": {
@@ -2007,6 +2041,23 @@
         }
       }
     },
+    "Could not remove the saved workout draft. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo eliminar el borrador del entrenamiento. Inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido eliminar o borrador do adestramento. Téntao de novo."
+          }
+        }
+      }
+    },
     "Could not save everything. Import the answer again to finish.": {
       "extractionState": "manual",
       "localizations": {
@@ -2020,6 +2071,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non se puido gardar todo. Importa a resposta outra vez para rematar."
+          }
+        }
+      }
+    },
+    "Could not save the draft. Keep the app open and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo guardar el borrador. Mantén la app abierta e inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido gardar o borrador. Mantén a app aberta e téntao de novo."
           }
         }
       }
@@ -2513,6 +2581,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Descartar cambios"
+          }
+        }
+      }
+    },
+    "Discard saved workout": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descartar el entrenamiento guardado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descartar o adestramento gardado"
           }
         }
       }
@@ -5934,6 +6019,23 @@
         }
       }
     },
+    "Pick up an interrupted workout with your sets, notes and rest timer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retoma un entrenamiento interrumpido con tus series, notas y temporizador de descanso."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retoma un adestramento interrompido coas túas series, notas e temporizador de descanso."
+          }
+        }
+      }
+    },
     "Plan": {
       "extractionState": "manual",
       "localizations": {
@@ -6083,6 +6185,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Preparar o informe"
+          }
+        }
+      }
+    },
+    "Preparing workout…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparando entrenamiento…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparando adestramento…"
           }
         }
       }
@@ -6988,6 +7107,40 @@
         }
       }
     },
+    "Resume workout": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reanudar entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retomar adestramento"
+          }
+        }
+      }
+    },
+    "Retry saving draft": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volver a guardar el borrador"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volver gardar o borrador"
+          }
+        }
+      }
+    },
     "Review my routines": {
       "extractionState": "manual",
       "localizations": {
@@ -7277,6 +7430,23 @@
         }
       }
     },
+    "Saved workout draft": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrador de entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrador de adestramento"
+          }
+        }
+      }
+    },
     "Saved “{1}” to your routines.": {
       "extractionState": "manual",
       "localizations": {
@@ -7290,6 +7460,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "“{1}” gardouse nas túas rutinas."
+          }
+        }
+      }
+    },
+    "Saving workout…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardando entrenamiento…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gardando adestramento…"
           }
         }
       }
@@ -12237,6 +12424,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Estrés"
+          }
+        }
+      }
+    },
+    "This workout is already saved in History.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este entrenamiento ya está guardado en Historial."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este adestramento xa está gardado no Historial."
           }
         }
       }

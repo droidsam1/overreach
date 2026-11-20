@@ -8,6 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 - Today explains gaps in HRV coverage and shows how many comparable readings were low when the trend drops.
+- Resume an interrupted workout with its routine, sets, notes and rest timer. Overreach saves the draft on
+  the device and opens Train on relaunch so you can resume or discard it.
 - History shows Garmin heart rate, training load and training effect on matched strength sessions. Watch-only
   strength workouts appear in the same list with their own read-only details.
 - Plan check (#34, ADR-0019). Train shows this week's planned and completed sessions. When sessions keep being
