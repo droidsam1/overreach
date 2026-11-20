@@ -50,6 +50,9 @@ public final class TodayModel {
     private let sources: [any MetricsSource]
     private let garmin: (any GarminAccount)?
     private let profiles: (any ProfileRepository)?
+    private let cycleSource: (any CycleSource)?
+    /// Menstrual events and tracking mode of the last load, for phase-aware baselines (`cycle-phase-baselines`).
+    private var cycleContext: CycleContext?
     private let checkIns: (any CheckInRepository)?
     private let backup: (any BackupService)?
     private let workouts: (any WorkoutRepository)?
@@ -260,16 +263,18 @@ public final class TodayModel {
     /// - Parameter sources: metric sources in priority order. When two sources report the same value,
     ///   the first one wins (e.g. `[garmin, appleHealth]`).
     /// - Parameter checkIns: today's check-in adds how the user feels (and "sick") to the readiness light.
+    /// - Parameter cycle: menstrual flow from Apple Health, read only for a natural cycle (ADR-0009).
     public init(
         sources: [any MetricsSource], checkIns: (any CheckInRepository)? = nil, backup: (any BackupService)? = nil,
         garmin: (any GarminAccount)? = nil, profiles: (any ProfileRepository)? = nil,
         workouts: (any WorkoutRepository)? = nil, exercises: (any ExerciseRepository)? = nil,
         recordedStrength: (any RecordedStrengthSource)? = nil, routines: (any RoutineRepository)? = nil,
-        progression: (any ProgressionSettingsRepository)? = nil,
+        progression: (any ProgressionSettingsRepository)? = nil, cycle: (any CycleSource)? = nil,
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
         self.sources = sources
+        self.cycleSource = cycle
         self.garmin = garmin
         self.profiles = profiles
         self.checkIns = checkIns
@@ -300,8 +305,13 @@ public final class TodayModel {
         }
 
         let today = CalendarDay(now, calendar: calendar)
-        // The readiness baselines need weeks of history; the screen shows the last 7 days.
-        let historyDays = max(6, readinessSettings.baselineDays)
+        let profile = try? await profiles?.profile()
+        let cycle = await readCycle(profile: profile, today: today)
+        // The readiness baselines need weeks of history (months for phase baselines, plus the 7 days the deload
+        // signals judge); the screen shows the last 7 days.
+        let historyDays = cycle == nil
+            ? max(6, readinessSettings.baselineDays)
+            : max(6, readinessSettings.maximumPhaseBaselineDays) + RecoveryTrend.windowDays
         let range = today.adding(days: -historyDays, calendar: calendar)...today
         let weekStart = today.adding(days: -6, calendar: calendar)
         var byDay: [CalendarDay: DailyMetrics] = [:]
@@ -324,8 +334,8 @@ public final class TodayModel {
 
         let checkIn = (try? await checkIns?.checkIn(for: today)).flatMap { $0.day == today ? $0 : nil }
         let garminConnected = await garmin?.connection() != nil
-        let profile = try? await profiles?.profile()
         guard activeLoad == loadID else { return }
+        cycleContext = cycle
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         hasRunningGoal = goal?.running.map { $0.distanceMeters > 0 } ?? false
         loadedDay = today
@@ -339,7 +349,7 @@ public final class TodayModel {
         wearsGarmin = profile?.wearables.contains(.garmin) ?? false
         readiness = ReadinessRules.readiness(
             today: today, history: history, checkIn: checkIn, settings: readinessSettings,
-            tracksNaturalCycle: profile?.usesCyclePhase ?? false, calendar: calendar
+            tracksNaturalCycle: profile?.usesCyclePhase ?? false, cycle: cycle, calendar: calendar
         )
         await loadRecentTraining(in: weekStart...today, now: now, sources: availableSources, profile: profile,
                                  loadID: loadID, metricsHistory: history)
@@ -463,18 +473,30 @@ public final class TodayModel {
         let calendar = calendar
         let format = format
         let readinessSettings = readinessSettings
+        let cycle = cycleContext
         let advice = await Task.detached(priority: .userInitiated) {
             DeloadAdvice.make(
                 today: today, now: now, sessions: completed, exercises: training.catalog, settings: settings ?? [:],
                 profile: profile, history: history, checkIns: recentCheckIns ?? [],
                 runs: training.runs, runReadFailed: training.runReadFailed, routines: routines ?? [],
-                recordings: training.recordings,
+                recordings: training.recordings, cycle: cycle,
                 readinessSettings: readinessSettings, calendar: calendar, format: format
             )
         }.value
         guard activeLoad == loadID else { return }
         deloadAdvice = advice
     }
+
+    /// Menstrual events of the last year (enough for 6 cycles and the estimates of past days), only for a natural
+    /// cycle. A failed read leaves the overall baselines in place.
+    private func readCycle(profile: AthleteProfile?, today: CalendarDay) async -> CycleContext? {
+        guard let profile, profile.usesCyclePhase, let cycleSource else { return nil }
+        let range = today.adding(days: -Self.cycleHistoryDays, calendar: calendar)...today
+        let events = (try? await cycleSource.menstrualEvents(in: range)) ?? []
+        return CycleContext(mode: profile.cycleTracking, events: events)
+    }
+
+    static let cycleHistoryDays = 365
 
     private func hasStrengthToday(sessions: [StrengthSession], recordings: [RecordedStrengthActivity], now: Date) -> Bool {
         let start = calendar.startOfDay(for: now)
@@ -557,6 +579,12 @@ public final class TodayModel {
             }
         case .hrvMayReflectCycle:
             L10n.text("HRV is normally lower in the second half of the menstrual cycle, so this alone does not make the light red.")
+        case .phaseBaseline(.follicular, let cycles):
+            L10n.format("Compared with your follicular days in the last {1} cycles.", cycles)
+        case .phaseBaseline(.luteal, let cycles):
+            L10n.format("Compared with your luteal days in the last {1} cycles.", cycles)
+        case .possibleLutealShift:
+            L10n.text("Resting HR often rises a few beats before a period; the threshold allows for it.")
         case .restingHeartRateElevated(let bpm):
             L10n.format("Resting HR {1} bpm above your usual.", format.number(bpm, maxFractionDigits: 0))
         case .shortSleep(let hours):

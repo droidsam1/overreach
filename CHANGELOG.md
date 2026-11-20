@@ -7,6 +7,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Cycle-aware recovery: with a natural cycle and regular periods in Apple Health, Today compares HRV and resting
+  heart rate with the same window (follicular or luteal) of your previous cycles, and the deload signals do the
+  same. Until two cycles have data, a low luteal HRV is context and the resting-HR threshold allows for the usual
+  rise before a period. Hormonal contraception and menopause keep the overall baseline. The app never estimates
+  ovulation or fertility (ADR-0009).
 - Assign a routine or strength rest day alongside running in the hybrid calendar.
   On amber days, Today can compare the scheduled routine with a lighter option.
 - The hybrid running calendar supports several dated runs, races and rest days, with optional links to recorded runs.

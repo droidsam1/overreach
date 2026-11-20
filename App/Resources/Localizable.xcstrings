@@ -1990,6 +1990,40 @@
         }
       }
     },
+    "Compared with your follicular days in the last {1} cycles.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparado con tus días de fase folicular de los últimos {1} ciclos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparado cos teus días de fase folicular dos últimos {1} ciclos."
+          }
+        }
+      }
+    },
+    "Compared with your luteal days in the last {1} cycles.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparado con tus días de fase lútea de los últimos {1} ciclos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparado cos teus días de fase lútea dos últimos {1} ciclos."
+          }
+        }
+      }
+    },
     "Completed": {
       "extractionState": "manual",
       "localizations": {
@@ -3108,6 +3142,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seguimento do ciclo"
+          }
+        }
+      }
+    },
+    "Cycle-aware recovery": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recuperación según el ciclo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recuperación segundo o ciclo"
           }
         }
       }
@@ -9555,6 +9606,23 @@
         }
       }
     },
+    "Resting HR often rises a few beats before a period; the threshold allows for it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La FC en reposo suele subir unas pulsaciones antes de la regla; el umbral lo tiene en cuenta."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A FC en repouso adoita subir unhas pulsacións antes da regra; o limiar téeno en conta."
+          }
+        }
+      }
+    },
     "Resting HR {1} bpm above your usual.": {
       "extractionState": "manual",
       "localizations": {
@@ -14277,6 +14345,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Coa liña base de Garmin: o sinal chave para o semáforo."
+          }
+        }
+      }
+    },
+    "With a natural cycle logged in Apple Health, HRV and resting HR are compared with the same phase of your previous cycles.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si registras un ciclo natural en Apple Salud, la VFC y la FC en reposo se comparan con la misma fase de tus ciclos anteriores."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se rexistras un ciclo natural en Apple Saúde, a VFC e a FC en repouso compáranse coa mesma fase dos teus ciclos anteriores."
           }
         }
       }

@@ -201,6 +201,7 @@ public enum FurtherReading {
         "warm-up-general": [strengthBasics],
         "readiness-hrv": [hrvIntro, hrvGuided],
         "hrv-cycle-phase": [schmalenberger],
+        "cycle-phase-baselines": [schmalenberger],
         "readiness-sleep": [sleep],
         "readiness-subjective": [soreness, saw],
         "walking-active-recovery": [walking],

@@ -26,11 +26,12 @@ public struct DeloadAdvice: Hashable, Sendable {
     ///   - sessions: logged sessions (a year is enough for stalls and drops).
     ///   - history: merged daily metrics covering the readiness baseline (60 days before the last 7).
     ///   - checkIns: check-ins of the last 7 days.
+    ///   - cycle: menstrual events and tracking mode, for phase-aware recovery baselines.
     public static func make(
         today: CalendarDay, now: Date, sessions: [StrengthSession], exercises: [Exercise],
         settings: [UUID: ProgressionSettings], profile: AthleteProfile, history: [DailyMetrics], checkIns: [CheckIn],
         runs: [RunActivity] = [], runReadFailed: Bool = false, routines: [Routine] = [],
-        recordings: [RecordedStrengthActivity] = [],
+        recordings: [RecordedStrengthActivity] = [], cycle: CycleContext? = nil,
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(),
         advisorSettings: DeloadAdvisor.Settings = DeloadAdvisor.Settings(),
         calendar: Calendar = .current, format: Format = Format()
@@ -57,7 +58,8 @@ public struct DeloadAdvice: Hashable, Sendable {
             return DeloadAdvisor.Lift(history: history, settings: settings[id] ?? ProgressionSettings(for: exercise))
         }
         let recovery = RecoveryTrend.assess(
-            today: today, history: history, checkIns: checkIns, settings: readinessSettings, calendar: calendar
+            today: today, history: history, checkIns: checkIns, settings: readinessSettings, cycle: cycle,
+            calendar: calendar
         )
         let detected = DeloadDetection.periods(
             sessions: sessions, runs: runs, profile: profile, routines: routines, exercises: byID,

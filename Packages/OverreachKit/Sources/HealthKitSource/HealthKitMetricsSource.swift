@@ -9,7 +9,7 @@ import Foundation
 /// VO2max and runs; Garmin Connect writes steps, resting heart rate, sleep and activities, but no HRV (that comes
 /// from `GarminSource`); an iPhone alone gives steps. HealthKit does not say whether reading was allowed: denied
 /// types simply return nothing.
-public struct HealthKitMetricsSource: MetricsSource, ActivitySource {
+public struct HealthKitMetricsSource: MetricsSource, ActivitySource, CycleSource {
     public let kind: DataSourceKind = .appleHealth
     private let store = HKHealthStore()
     private let calendar: Calendar
@@ -91,6 +91,41 @@ public struct HealthKitMetricsSource: MetricsSource, ActivitySource {
                     maxHeartRate: heartRate?.maximumQuantity()?.doubleValue(for: bpm)
                 )
             }
+    }
+
+    /// Menstrual flow days (ADR-0009). Read only for people who track a natural cycle, so access is asked here, on
+    /// first use, instead of in everyone's Health sheet. Days logged as "no flow" are left out.
+    public func menstrualEvents(in range: ClosedRange<CalendarDay>) async throws -> [MenstrualEvent] {
+        guard HKHealthStore.isHealthDataAvailable() else { return [] }
+        let type = HKCategoryType(.menstrualFlow)
+        try await store.requestAuthorization(toShare: [], read: [type])
+        let start = range.lowerBound.startDate(in: calendar)
+        let end = range.upperBound.adding(days: 1, calendar: calendar).startDate(in: calendar)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end)
+        let query = HKSampleQueryDescriptor(
+            predicates: [.categorySample(type: type, predicate: predicate)],
+            sortDescriptors: [SortDescriptor(\.startDate)]
+        )
+        return try await query.result(for: store).compactMap { sample in
+            guard let flow = Self.flow(of: sample.value) else { return nil }
+            let isStart = (sample.metadata?[HKMetadataKeyMenstrualCycleStart] as? NSNumber)?.boolValue ?? false
+            return MenstrualEvent(
+                day: CalendarDay(sample.startDate, calendar: calendar), flow: flow, isCycleStart: isStart,
+                source: .appleHealth
+            )
+        }
+    }
+
+    /// Health's flow value, or `nil` for "no flow".
+    static func flow(of value: Int) -> MenstrualFlow? {
+        guard let bleeding = HKCategoryValueVaginalBleeding(rawValue: value) else { return .unspecified }
+        return switch bleeding {
+        case .light: .light
+        case .medium: .medium
+        case .heavy: .heavy
+        case .none: nil
+        default: .unspecified
+        }
     }
 
     // MARK: - Queries
