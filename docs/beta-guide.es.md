@@ -15,6 +15,27 @@ Necesitas un iPhone con iOS 18 o posterior, un cable, un ordenador con Windows o
 4. En el iPhone, ve a **Ajustes → General → VPN y gestión de dispositivos** y confía en tu Apple ID.
 5. Si iOS lo pide, activa **Ajustes → Privacidad y seguridad → Modo de desarrollador** y reinicia.
 
+### Con Apple Salud: instalar desde un Mac
+
+Sideloadly instala la app, pero al firmarla con tu Apple ID **quita el permiso de Apple Salud**: al pulsar
+«Conectar Apple Salud» aparece *Missing com.apple.developer.healthkit entitlement*. Para tener Salud, instálala
+desde un Mac con Xcode:
+
+1. En el Mac, instala Xcode desde la App Store y ábrelo una vez.
+2. En Xcode, ve a **Xcode → Settings → Accounts → + → Apple ID** y añade tu Apple ID personal (en un Mac del
+   trabajo, no uses la cuenta de la empresa).
+3. Conecta el iPhone por cable y desbloquéalo.
+4. Abre **Terminal**, pega esta línea y pulsa Intro:
+
+   ```
+   curl -fsSL https://raw.githubusercontent.com/droidsam1/overreach/main/scripts/install-from-mac.command | bash
+   ```
+
+El script descarga el código y XcodeGen a una carpeta temporal, compila, firma con tu Apple ID, instala la app y
+borra la carpeta al terminar. No instala nada más en el Mac. Al final dice si la firma incluye el permiso de
+Salud. La app instalada así es distinta de la de Sideloadly: haz una copia de seguridad en la vieja y restáurala
+al abrir la nueva. Para renovarla cada 7 días, vuelve a pegar la misma línea (conserva tus datos).
+
 ## 2. Volver a firmar cada 7 días
 
 Con un Apple ID gratuito, la app deja de abrirse a los 7 días. Para renovarla:

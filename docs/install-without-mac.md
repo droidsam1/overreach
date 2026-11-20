@@ -36,9 +36,26 @@ Then, on the iPhone: **Settings → General → VPN & Device Management →** tr
 - The app stops opening after **7 days** and must be refreshed (AltStore can automate it).
 - At most 3 sideloaded apps at a time.
 - iCloud/CloudKit and TestFlight are not available (ADR-0004).
-- **To verify early:** whether HealthKit access survives free-account sideloading. The workflow embeds the
-  HealthKit entitlement in the signature so the tool can carry it over; if Health permissions never appear
-  in the app, the fallback is the paid Apple Developer account and TestFlight (phase 4, moved earlier).
+- **Apple Health does not work.** Verified with Sideloadly on Windows: the app shows "Missing
+  com.apple.developer.healthkit entitlement". The IPA carries the entitlement, but the provisioning profile the
+  tool gets from Apple does not enable HealthKit, so the re-signed app loses it (ADR-0021). Everything else
+  works. For Health, install from a Mac (below) or use the paid account.
+
+## With Apple Health: install from a Mac
+
+`scripts/install-from-mac.command` builds the app with Xcode and signs it with your own Apple ID, so Xcode asks
+Apple for a HealthKit-enabled App ID. It needs only Xcode, opened once, with your Apple ID added in
+**Settings → Accounts**, and the iPhone on a cable. In Terminal:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/droidsam1/overreach/main/scripts/install-from-mac.command | bash
+```
+
+(or double-click the file in a clone). It downloads the source and a pinned XcodeGen into a temporary folder,
+picks your personal team (it asks if Xcode has several accounts, e.g. a work one), builds with a bundle id tied to
+that team, reports whether the signature kept HealthKit, installs with `devicectl` and deletes the folder. Run it
+again within 7 days to renew; the bundle id is the same, so data is kept. Apps installed this way and with
+Sideloadly are different apps: move data with a backup.
 
 ## With a paid Apple Developer account (later)
 
