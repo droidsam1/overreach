@@ -10,6 +10,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - On an amber day, Today can show an optional light strength example alongside the next routine or recent session.
 - Today explains low HRV in plain language, puts it alongside measured recovery and recent training, and links to the research.
 - Today can offer one optional check-in question about symptoms or unusual stress when HRV stays below your range.
+- History lists logged strength sessions, watch-only strength and runs together, with activity and source
+  filters. Open any run to see its pace, heart rate and available training metrics.
+- Garmin sync revisits the last seven days of activities to pick up workouts uploaded by the watch days later.
 - Today shows seven days of completed runs, strength sessions and recovery readings together by local date.
 - Today explains gaps in HRV coverage and shows how many comparable readings were low when the trend drops.
 - Resume an interrupted workout with its routine, sets, notes and rest timer. Overreach saves the draft on

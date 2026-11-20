@@ -64,6 +64,8 @@ public enum GarminSyncPlan {
     public static let firstSyncDays = 60
     /// Recent days fetched again on every sync: the watch syncs late, and Garmin finalises a day after it ends.
     public static let refetchDays = 2
+    /// A watch can upload a workout days after it was recorded. Always revisit the last week of activities.
+    public static let activityRefetchDays = 7
 
     /// The days to fetch now, from the last day synced before (nil on the first sync) up to `today`.
     public static func range(
@@ -96,15 +98,23 @@ public enum GarminSyncPlan {
         for range: ClosedRange<CalendarDay>, calendar: Calendar = .current
     ) -> [GarminEndpoint] {
         GarminEndpoint.Kind.allCases.flatMap { kind in
-            windows(range, maximumDays: GarminEndpoint.maximumDays(for: kind), calendar: calendar).map { window in
-                switch kind {
-                case .hrv: GarminEndpoint.hrv(window)
-                case .sleep: GarminEndpoint.sleep(window)
-                case .dailySummaries: GarminEndpoint.dailySummaries(window)
-                case .vo2Max: GarminEndpoint.vo2Max(window)
-                case .activities: GarminEndpoint.activities(window, start: 0, limit: GarminEndpoint.activityPageSize)
+            let windowRange = kind == .activities ? activityRange(including: range, calendar: calendar) : range
+            return windows(windowRange, maximumDays: GarminEndpoint.maximumDays(for: kind), calendar: calendar)
+                .map { window in
+                    switch kind {
+                    case .hrv: GarminEndpoint.hrv(window)
+                    case .sleep: GarminEndpoint.sleep(window)
+                    case .dailySummaries: GarminEndpoint.dailySummaries(window)
+                    case .vo2Max: GarminEndpoint.vo2Max(window)
+                    case .activities: GarminEndpoint.activities(window, start: 0, limit: GarminEndpoint.activityPageSize)
+                    }
                 }
-            }
         }
+    }
+
+    private static func activityRange(including range: ClosedRange<CalendarDay>, calendar: Calendar)
+        -> ClosedRange<CalendarDay> {
+        let earliest = range.upperBound.adding(days: -(activityRefetchDays - 1), calendar: calendar)
+        return min(earliest, range.lowerBound)...range.upperBound
     }
 }

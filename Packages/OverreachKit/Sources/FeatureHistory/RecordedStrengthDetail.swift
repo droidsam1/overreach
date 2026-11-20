@@ -6,15 +6,19 @@ struct RecordedStrengthRow: View {
     let recording: HistoryStrengthActivity
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.xSmall) {
-            AdaptiveStack {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.small) {
+            Image(systemName: "dumbbell.fill")
+                .foregroundStyle(ActivityColor.strength)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: Spacing.xSmall) {
                 Text(recording.title).font(.headline)
-                Spacer()
                 Text(recording.startedAt, format: .dateTime.day().month().year())
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                Text(recording.subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            Text(recording.subtitle).font(.subheadline).foregroundStyle(.secondary)
         }
         .accessibilityElement(children: .combine)
     }

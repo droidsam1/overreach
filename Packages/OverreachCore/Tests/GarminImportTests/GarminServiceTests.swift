@@ -1,5 +1,7 @@
 import Domain
+import Fixtures
 import Foundation
+import HistoryPresentation
 @testable import GarminImport
 import Testing
 
@@ -116,6 +118,79 @@ private func makeService(
         transport: garmin, secrets: secrets, cache: cache, clock: { clock.now }, calendar: utcCalendar,
         sleep: { _ in }
     )
+}
+
+@MainActor
+@Suite("Garmin runs in History")
+struct GarminRunHistoryTests {
+    @Test func aRunUploadedLateThisWeekAppearsInTheTimelineAndCalendar() async throws {
+        let garmin = FakeGarmin()
+        let service = makeService(garmin: garmin)
+        await garmin.setActivityPage(start: 0, body: Data("[]".utf8))
+        try await service.connect(key: "valid-key-0123456789", lifetime: .recommended)
+        #expect(try await service.sync { _ in }.runs == 0)
+        let priorRequests = await garmin.requests.count
+
+        // The watch finished uploading a Jan 4 treadmill run after the first sync on Jan 8.
+        let payload = """
+        [{
+          "activityId": 901,
+          "activityName": "Treadmill 5K",
+          "startTimeGMT": "2026-01-04 08:00:00",
+          "activityType": {"typeKey": "treadmill_running"},
+          "duration": 1500,
+          "distance": 5000,
+          "averageHR": 140,
+          "activityTrainingLoad": 65
+        }]
+        """
+        await garmin.setActivityPage(start: 0, body: Data(payload.utf8))
+        let imported = try await service.sync { _ in }
+        #expect(imported.runs == 1)
+        let syncRequests = await garmin.requests.dropFirst(priorRequests)
+        #expect(syncRequests.contains {
+            $0.path.hasPrefix("/activitylist-service") && $0.path.contains("startDate=2026-01-02&endDate=2026-01-08")
+        })
+        #expect(syncRequests.contains {
+            $0.path == "/hrv-service/hrv/daily/2026-01-07/2026-01-08"
+        })
+
+        let store = TestStore()
+        let history = HistoryModel(
+            workouts: store, exercises: store, routines: store, runSources: [service],
+            calendar: utcCalendar, clock: { fixtureNow }
+        )
+        await history.load()
+        #expect(history.rows.map(\.id) == [.run("garmin:901")])
+        history.activityFilter = .running
+        history.sourceFilter = .garmin
+        let row = try #require(history.rows.first)
+        guard case let .run(run) = row else {
+            Issue.record("Expected a Garmin run in History")
+            return
+        }
+        #expect(run.title == "Treadmill 5K")
+        #expect(run.sources == [.garmin])
+        #expect(run.trainingMetrics.map(\.value) == ["65"])
+
+        await history.calendar.load()
+        history.calendar.select(CalendarDay(year: 2026, month: 1, day: 4))
+        #expect(history.calendar.selectedDetail?.runs.map(\.id) == ["garmin:901"])
+        _ = try await service.sync { _ in }
+        await history.load()
+        #expect(history.rows.map(\.id) == [.run("garmin:901")])
+    }
+
+    @Test func anOfflineSyncWithNoCachedRunsSurfacesAnError() async throws {
+        let garmin = FakeGarmin()
+        let service = makeService(garmin: garmin)
+        try await service.connect(key: "valid-key-0123456789", lifetime: .recommended)
+        await garmin.setOffline(true)
+
+        await #expect(throws: GarminAccountError.offline) {
+            try await service.runs(from: .distantPast, to: fixtureNow)
+        }
+    }
 }
 
 @Suite("Garmin client")
