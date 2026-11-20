@@ -11,7 +11,7 @@ public enum FocusEvidence {
     public static let restStrength = EvidenceReference(key: "rest-strength", level: .moderate)
     /// Periodised training beats non-periodised for 1RM, not for hypertrophy; undulating ≥ linear for strength in
     /// trained lifters (Moesgaard et al. 2022); linear vs daily undulating similar for hypertrophy (Grgic et al. 2017).
-    public static let periodization = EvidenceReference(key: "periodization", level: .strong)
+    public static let periodization = EvidenceReference(key: "periodization", level: .moderate)
     /// Rep/intensity thresholds that classify a set's focus, and block lengths: coaching heuristics.
     public static let focusHeuristics = EvidenceReference(key: "focus-heuristics", level: .heuristic)
 }

@@ -77,7 +77,7 @@ public struct DeloadAdvice: Hashable, Sendable {
             L10n.format("The same weights feel harder on {1} lifts (RPE up).", lifts)
         case let .weeksSinceDeload(weeks):
             L10n.format("{1} weeks since your last deload.", weeks)
-        case let .acuteChronicRatio(ratio):
+        case let .weeklyLoadSpike(ratio):
             L10n.format("Training load rose fast this week ({1}× your usual).", format.number(ratio, maxFractionDigits: 1))
         case let .hrvSuppressed(days):
             L10n.format("HRV below your usual range on {1} of the last 7 days.", days)

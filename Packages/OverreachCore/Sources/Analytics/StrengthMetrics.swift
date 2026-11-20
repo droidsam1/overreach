@@ -34,13 +34,15 @@ public enum StrengthMetrics {
 
     /// Effective sets per muscle group in a session.
     ///
-    /// A working set counts if its RPE is at least `minimumRPE`, or if it has no RPE recorded.
+    /// A working set counts if its RPE is at least `minimumRPE` (default 6, about 4 reps in reserve), or if it has no
+    /// RPE recorded. Hypertrophy falls gradually with distance from failure rather than at a cliff, and strength
+    /// barely depends on it, so only clearly easy sets are left out (`ProgressionEvidence.effectiveSetThreshold`).
     /// It adds 1 to each primary muscle and 0.5 to each secondary muscle of the exercise.
     /// Exercises missing from `exercises` are skipped.
     public static func effectiveSets(
         in session: StrengthSession,
         exercises: [UUID: Exercise],
-        minimumRPE: Double = 7
+        minimumRPE: Double = 6
     ) -> [MuscleGroup: Double] {
         var result: [MuscleGroup: Double] = [:]
         for entry in session.entries {

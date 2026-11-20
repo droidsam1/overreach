@@ -26,6 +26,12 @@ public struct ReleaseNotes: Hashable, Sendable {
                     )
                 ),
                 ReleaseHighlight(
+                    symbol: "book", title: L10n.text("Learn more"),
+                    detail: L10n.text(
+                        "Advice now links to the studies behind it and to plain-language reading, such as Fitness Revolucionario."
+                    )
+                ),
+                ReleaseHighlight(
                     symbol: "plus.circle.fill", title: L10n.text("Log watch workouts"),
                     detail: L10n.text(
                         "Strength recorded on your watch but not in the app? Log it from History with the watch's times."

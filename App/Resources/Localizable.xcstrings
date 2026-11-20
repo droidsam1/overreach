@@ -3095,23 +3095,6 @@
         }
       }
     },
-    "Deep {1} h · REM {2} h": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Profundo {1} h · REM {2} h"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Profundo {1} h · REM {2} h"
-          }
-        }
-      }
-    },
     "Default:": {
       "extractionState": "manual",
       "localizations": {
@@ -7515,23 +7498,6 @@
         }
       }
     },
-    "Rest or go for a walk today.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hoy descansa o sal a caminar."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hoxe descansa ou sae camiñar."
-          }
-        }
-      }
-    },
     "Rest over": {
       "extractionState": "manual",
       "localizations": {
@@ -11102,23 +11068,6 @@
         }
       }
     },
-    "You did about {1} a week lately. With the same weekly sets, fewer sessions build about the same strength and muscle.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Últimamente hiciste unas {1} por semana. Con las mismas series semanales, menos sesiones dan casi la misma fuerza y músculo."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ultimamente fixeches unhas {1} por semana. Coas mesmas series semanais, menos sesións dan case a mesma forza e músculo."
-          }
-        }
-      }
-    },
     "You logged being ill. Rest until the symptoms ease, then come back gradually.": {
       "extractionState": "manual",
       "localizations": {
@@ -13461,6 +13410,210 @@
           "stringUnit": {
             "state": "translated",
             "value": "Forza gravada no reloxo pero non na app? Rexístraa desde Historial coas horas do reloxo."
+          }
+        }
+      }
+    },
+    "HRV is normally lower in the second half of the menstrual cycle, so this alone does not make the light red.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La VFC suele bajar en la segunda mitad del ciclo menstrual, así que esto por sí solo no pone el semáforo en rojo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A VFC adoita baixar na segunda metade do ciclo menstrual, así que isto por si só non pon o semáforo en vermello."
+          }
+        }
+      }
+    },
+    "Make it a recovery day: a walk or a very easy session. If you lift, keep it light (RPE 6 or less).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy, día de recuperación: un paseo o una sesión muy suave. Si levantas, que sea ligero (RPE 6 o menos)."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe, día de recuperación: un paseo ou unha sesión moi suave. Se levantas, que sexa lixeiro (RPE 6 ou menos)."
+          }
+        }
+      }
+    },
+    "You did about {1} a week lately. With the same weekly sets, fewer sessions build about the same muscle and nearly the same strength.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimamente hiciste unas {1} por semana. Con las mismas series semanales, menos sesiones dan casi el mismo músculo y casi la misma fuerza."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultimamente fixeches unhas {1} por semana. Coas mesmas series semanais, menos sesións dan case o mesmo músculo e case a mesma forza."
+          }
+        }
+      }
+    },
+    "Deep {1} h · REM {2} h (watch estimate)": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profundo {1} h · REM {2} h (estimación del reloj)"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profundo {1} h · REM {2} h (estimación do reloxo)"
+          }
+        }
+      }
+    },
+    "Garmin's estimate": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimación de Garmin"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimación de Garmin"
+          }
+        }
+      }
+    },
+    "Watch estimate, follow the trend": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimación del reloj: mira la tendencia"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimación do reloxo: mira a tendencia"
+          }
+        }
+      }
+    },
+    "Learn more": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para saber más"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para saber máis"
+          }
+        }
+      }
+    },
+    "Opens in the browser": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se abre en el navegador"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ábrese no navegador"
+          }
+        }
+      }
+    },
+    "in Spanish": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "en español"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "en castelán"
+          }
+        }
+      }
+    },
+    "in English": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "en inglés"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "en inglés"
+          }
+        }
+      }
+    },
+    "An older introduction. Overreach compares your 7-day average with your own usual range, not a single morning.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una introducción más antigua. Overreach compara tu media de 7 días con tu propio rango habitual, no una sola mañana."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unha introdución máis antiga. Overreach compara a túa media de 7 días co teu propio rango habitual, non unha soa mañá."
+          }
+        }
+      }
+    },
+    "Advice now links to the studies behind it and to plain-language reading, such as Fitness Revolucionario.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los consejos enlazan ahora a los estudios en los que se basan y a lecturas divulgativas, como Fitness Revolucionario."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os consellos ligan agora aos estudos nos que se basean e a lecturas divulgativas, como Fitness Revolucionario."
           }
         }
       }

@@ -216,6 +216,9 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var date: String
         public var source: String
         public var hrvMs: Double?
+        /// The statistic behind `hrvMs`: `rmssd` (Garmin) or `sdnn` (Apple Watch). They are on different scales and
+        /// must not be compared (ADR-0024).
+        public var hrvMetric: String?
         public var hrvBaselineLowMs: Double?
         public var hrvBaselineHighMs: Double?
         public var restingHeartRate: Double?

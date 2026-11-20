@@ -1,5 +1,6 @@
 import DesignSystem
 import Domain
+import PresentationKit
 import SwiftUI
 import TodayPresentation
 
@@ -164,6 +165,7 @@ public struct TodayView: View {
                                     Text(line.evidence).font(.caption).foregroundStyle(.secondary)
                                     Link("Research source", destination: source).font(.caption)
                                 }
+                                ReadingLinks(items: line.readings.map(ReadingLinkItem.init))
                             }
                         }
                         ForEach(model.readinessContext, id: \.self) { text in
@@ -267,13 +269,15 @@ public struct TodayView: View {
                     MetricTile(title: "Steps", value: model.steps, unit: "", caption: model.stepsCaption)
                 }
                 if model.showsBodyBattery {
-                    MetricTile(title: "Body Battery", value: model.bodyBattery, unit: "")
+                    MetricTile(title: "Body Battery", value: model.bodyBattery, unit: "",
+                               caption: model.bodyBatteryCaption)
                 }
                 if model.showsStress {
-                    MetricTile(title: "Stress", value: model.stress, unit: "")
+                    MetricTile(title: "Stress", value: model.stress, unit: "", caption: model.stressCaption)
                 }
                 if model.showsVO2Max {
-                    MetricTile(title: "VO2max", value: model.vo2Max, unit: "", fractionDigits: 1)
+                    MetricTile(title: "VO2max", value: model.vo2Max, unit: "", fractionDigits: 1,
+                               caption: model.vo2MaxCaption)
                 }
             }
 
@@ -335,3 +339,10 @@ struct PreviewMetricsSource: MetricsSource {
         .preferredColorScheme(.dark)
 }
 #endif
+
+extension ReadingLinkItem {
+    /// The display values of a curated reading (ADR-0027).
+    init(_ reading: Reading) {
+        self.init(url: reading.url, title: reading.title, detail: reading.detail(), note: reading.note)
+    }
+}

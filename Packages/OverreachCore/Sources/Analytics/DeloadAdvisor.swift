@@ -7,7 +7,8 @@ public enum DeloadSignal: Hashable, Sendable {
     case rpeCreep(lifts: Int)
     case performanceDrop(lifts: Int)
     case weeksSinceDeload(Int)
-    case acuteChronicRatio(Double)
+    /// Last 7 days' load as a multiple of the usual week (e.g. 1.6 = 60 % above).
+    case weeklyLoadSpike(ratio: Double)
     /// Recovery over the last 7 days (`deload-recovery-signals`): they only reinforce training signals.
     case hrvSuppressed(days: Int)
     case restingHeartRateElevated(days: Int)
@@ -18,8 +19,8 @@ public enum DeloadSignal: Hashable, Sendable {
         switch self {
         case .liftsStalled, .performanceDrop: ProgressionEvidence.deloadDesign
         case .rpeCreep: ProgressionEvidence.rpeCreep
-        case .weeksSinceDeload: ProgressionEvidence.deloadCost
-        case .acuteChronicRatio: ProgressionEvidence.acuteChronicRatio
+        case .weeksSinceDeload: ProgressionEvidence.deloadPractice
+        case .weeklyLoadSpike: ProgressionEvidence.weeklyLoadChange
         case .hrvSuppressed, .restingHeartRateElevated, .shortSleep, .poorWellbeing:
             ProgressionEvidence.deloadRecoverySignals
         }
@@ -76,8 +77,10 @@ public enum DeloadAdvisor {
         public var performanceDropWeight = 2.0
         public var rpeCreepWeight = 1.0
         public var intervalWeight = 1.0
-        public var acuteChronicWeight = 1.0
-        public var acuteChronicLimit = 1.5
+        /// A weak signal: the evidence does not support load ratios as injury or fatigue predictors.
+        public var loadSpikeWeight = 1.0
+        /// Last week above this multiple of the usual week counts as a spike.
+        public var loadSpikeLimit = 1.5
         /// e1RM below the recent best by more than this counts as a drop.
         public var performanceDropFraction = 0.03
         /// Window for RPE creep and performance drops.
@@ -108,7 +111,7 @@ public enum DeloadAdvisor {
     public static func proposal(
         lifts: [Lift],
         lastDeload: Date?,
-        acuteChronicRatio: Double? = nil,
+        weeklyLoad: WeeklyLoadChange? = nil,
         recovery: RecoveryTrend? = nil,
         now: Date,
         settings: Settings = Settings()
@@ -151,9 +154,9 @@ public enum DeloadAdvisor {
             }
         }
 
-        if let acuteChronicRatio, acuteChronicRatio > settings.acuteChronicLimit {
-            signals.append(.acuteChronicRatio(acuteChronicRatio))
-            score += settings.acuteChronicWeight
+        if let weeklyLoad, weeklyLoad.ratio > settings.loadSpikeLimit {
+            signals.append(.weeklyLoadSpike(ratio: weeklyLoad.ratio))
+            score += settings.loadSpikeWeight
         }
 
         if let recovery {

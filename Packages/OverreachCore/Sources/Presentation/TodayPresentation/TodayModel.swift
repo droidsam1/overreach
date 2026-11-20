@@ -9,6 +9,8 @@ public struct ReadinessLine: Hashable, Sendable {
     public let text: String
     public let evidence: String
     public let source: URL?
+    /// "Learn more" for this reason (ADR-0027); often empty.
+    public let readings: [Reading]
 }
 
 /// State and actions of the Today screen (ADR-0003, ADR-0014): dependencies come in as `Domain` protocols, the
@@ -68,7 +70,7 @@ public final class TodayModel {
         return switch readiness.level {
         case .green: L10n.text("Train as planned.")
         case .amber: L10n.text("Keep it easy today. Run at a pace you can talk at, or lift with light effort.")
-        case .red: L10n.text("Rest or go for a walk today.")
+        case .red: L10n.text("Make it a recovery day: a walk or a very easy session. If you lift, keep it light (RPE 6 or less).")
         case .unknown: L10n.text("Not enough data yet to judge today.")
         }
     }
@@ -76,9 +78,12 @@ public final class TodayModel {
     /// Why the light has its colour, each reason with its evidence level.
     public var readinessLines: [ReadinessLine] {
         readiness.reasons.map { reason in
-            ReadinessLine(
-                text: text(for: reason), evidence: ReadinessRules.evidence(for: reason).level.displayName,
-                source: ReadinessRules.evidenceURL(for: reason)
+            let evidence = ReadinessRules.evidence(for: reason)
+            let source = ReadinessRules.evidenceURL(for: reason)
+            return ReadinessLine(
+                text: text(for: reason), evidence: evidence.level.displayName, source: source,
+                // The research source already has its own link.
+                readings: FurtherReading.readings(for: evidence).filter { $0.url != source }
             )
         }
     }
@@ -190,11 +195,17 @@ public final class TodayModel {
         garmin != nil && !isGarminConnected && !isLoading && (wearsGarmin || !showsMetrics)
     }
 
-    /// "Deep 1.2 h · REM 1.6 h".
+    // Every number says what kind it is (evidence review 2026-11, §5): measured by the devices, estimated by them, or
+    // computed by Overreach. Sleep stages, Garmin's scores and VO2max are the watch's estimates and never feed a rule.
+
+    /// "Deep 1.2 h · REM 1.6 h (watch estimate)": consumer sleep staging agrees only fairly to moderately with a
+    /// sleep lab (`wearable-sleep-stages`).
     public var sleepCaption: String? {
         guard let metrics, metrics.deepSleepSeconds != nil || metrics.remSleepSeconds != nil else { return nil }
         let hours = { (seconds: Double?) in self.format.number((seconds ?? 0) / 3_600, maxFractionDigits: 1) }
-        return L10n.format("Deep {1} h · REM {2} h", hours(metrics.deepSleepSeconds), hours(metrics.remSleepSeconds))
+        return L10n.format(
+            "Deep {1} h · REM {2} h (watch estimate)", hours(metrics.deepSleepSeconds), hours(metrics.remSleepSeconds)
+        )
     }
 
     /// "7-day avg 42 ms", from the days that have a value of the same statistic as the latest (RMSSD and SDNN are not
@@ -205,6 +216,12 @@ public final class TodayModel {
         return average { $0.hrvMetric == latest.hrvMetric ? $0.hrvNightlyAverageMs : nil }
             .map { weekly(format.number($0, maxFractionDigits: 0) + " ms") }
     }
+
+    /// Body Battery and stress are Garmin's own scores, not validated independently (`composite-scores`).
+    public var bodyBatteryCaption: String { L10n.text("Garmin's estimate") }
+    public var stressCaption: String { L10n.text("Garmin's estimate") }
+    /// Watch VO2max estimates have a wide individual error: useful as a long-term trend (`wearable-vo2max`).
+    public var vo2MaxCaption: String { L10n.text("Watch estimate, follow the trend") }
     public var restingHeartRateCaption: String? {
         average(\.restingHeartRate).map { weekly(format.number($0, maxFractionDigits: 0) + " bpm") }
     }
@@ -309,7 +326,8 @@ public final class TodayModel {
         isGarminConnected = garminConnected
         wearsGarmin = profile?.wearables.contains(.garmin) ?? false
         readiness = ReadinessRules.readiness(
-            today: today, history: history, checkIn: checkIn, settings: readinessSettings, calendar: calendar
+            today: today, history: history, checkIn: checkIn, settings: readinessSettings,
+            tracksNaturalCycle: profile?.usesCyclePhase ?? false, calendar: calendar
         )
         await loadDeloadAdvice(today: today, now: now, history: history, profile: profile, loadID: loadID)
         await loadRecentTraining(in: weekStart...today, now: now, sources: availableSources, profile: profile,
@@ -460,6 +478,8 @@ public final class TodayModel {
             } else {
                 L10n.text("HRV below your usual range.")
             }
+        case .hrvMayReflectCycle:
+            L10n.text("HRV is normally lower in the second half of the menstrual cycle, so this alone does not make the light red.")
         case .restingHeartRateElevated(let bpm):
             L10n.format("Resting HR {1} bpm above your usual.", format.number(bpm, maxFractionDigits: 0))
         case .shortSleep(let hours):

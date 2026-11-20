@@ -50,7 +50,7 @@ struct DeloadRecoveryTests {
     @Test func recoveryNeverProposesADeloadWithoutAPerformanceSignal() {
         // Overdue and with every recovery signal, but lifting keeps progressing: no deload.
         let proposal = DeloadAdvisor.proposal(
-            lifts: [progressing, progressing], lastDeload: at(-70), acuteChronicRatio: 1.7, recovery: poorRecovery,
+            lifts: [progressing, progressing], lastDeload: at(-70), weeklyLoad: WeeklyLoadChange(lastWeek: 1.7, usualWeek: 1), recovery: poorRecovery,
             now: now
         )
         #expect(proposal == nil)

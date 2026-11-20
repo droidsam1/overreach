@@ -53,7 +53,7 @@ public protocol ActivitySource: Sendable {
 - Baseline: 28-day median of steps and walking minutes (and walks per day).
 - `walkingLoad(day)` = load of walking *above* baseline only. With HR: TRIMP of the bouts minus baseline
   share. Without HR: minutes above baseline × a low intensity factor, × 1.3 if elevation gain is high.
-- That load goes into the acute:chronic ratio (with a configurable weight, default low) and into the
+- That load goes into the weekly load comparison (with a configurable weight, default low) and into the
   lower-limb fatigue model (quads, calves, glutes), so a 2-hour hilly walk the day before squats is visible.
 - Signals: `stepsFarBelowBaseline(days:)`, `walkingSpike(percentAboveBaseline:)`.
 
