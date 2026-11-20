@@ -62,7 +62,7 @@ the diff. Rules a tool can decide are listed at the end and are not repeated her
 | Rule | Check |
 | --- | --- |
 | UI imports no `Analytics`; views don't `.filter`/`.sorted` data | SwiftLint custom rules (`.swiftlint.yml`) |
-| Changed Swift files have no lint warnings | `check-local.py`, CI strict lint on PRs |
+| Lines a branch changes add no lint warnings | `new-lint-warnings.py` via `check-local.py` and CI |
 | Strings are in the catalog, translated, with matching placeholders; catalogs sorted | `check-localization.py` |
 | Unique ADR numbers, `# NNNN — Title` headings | `check-repo.py` |
 | Frozen v1 backup fixture unchanged | `check-repo.py` |

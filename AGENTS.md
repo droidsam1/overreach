@@ -94,8 +94,8 @@ Several agents work at once, each in its own branch or worktree.
 ## Commands
 
 Before opening or updating a PR, run the compact local check: `python3 scripts/check-local.py`
-(Windows: `py -3 scripts/check-local.py`). It runs the repository rules, then picks translations, a strict
-SwiftLint of the changed files and the core tests from the diff against `origin/main` (`--base origin/<branch>`
+(Windows: `py -3 scripts/check-local.py`). It runs the repository rules, then picks translations, SwiftLint
+(no new warnings on changed lines) and the core tests from the diff against `origin/main` (`--base origin/<branch>`
 for another base), and prints a log path. CI runs the same rules plus the Apple packages and the simulator build.
 
 ```bash

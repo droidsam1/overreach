@@ -35,20 +35,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # the strict lint compares with the PR base
+          fetch-depth: 0  # new lint warnings are found against the PR base
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.4.app || sudo xcode-select -s /Applications/Xcode.app
       - name: Install tools
         run: brew install xcodegen swiftlint
       - name: Lint
-        # Existing warnings are reported; files changed by a pull request must have none.
-        run: swiftlint
-      - name: Lint changed files strictly
+        shell: bash  # pipefail: a SwiftLint error still fails the step
+        run: swiftlint --reporter github-actions-logging | tee swiftlint.log
+      - name: No new lint warnings on changed lines
         if: github.event_name == 'pull_request'
-        run: |
-          git diff --name-only --diff-filter=d "origin/${{ github.base_ref }}...HEAD" -- \
-            'Packages/*.swift' 'App/Sources/*.swift' > changed-swift.txt
-          if [ -s changed-swift.txt ]; then xargs swiftlint lint --strict --quiet --force-exclude < changed-swift.txt; fi
+        run: python3 scripts/new-lint-warnings.py --base "origin/${{ github.base_ref }}" swiftlint.log
       - name: Test OverreachCore
         run: swift test --package-path Packages/OverreachCore
       - name: Test OverreachKit

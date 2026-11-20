@@ -54,7 +54,7 @@ def run_check(name, command, logs, *, cwd=ROOT, env=None):
             status = 127
     lines = log.read_text(encoding="utf-8", errors="replace").splitlines()
     if status == 0:
-        markers = ("tests passed", "strings translated", "rules hold")
+        markers = ("tests passed", "strings translated", "rules hold", "new lint warnings")
         summary = next((line for line in reversed(lines) if any(marker in line for marker in markers)), "")
         if "Test run with" in summary:
             summary = summary[summary.index("Test run with"):]
@@ -70,7 +70,7 @@ def run_check(name, command, logs, *, cwd=ROOT, env=None):
     return status if status >= 0 else 128 - status
 
 
-def lint(paths, logs, image):
+def lint(paths, logs, image, base):
     with tempfile.TemporaryDirectory(prefix="lint-", dir=logs) as directory:
         staging = Path(directory)
         configuration = [LINT_CONFIG] if (ROOT / LINT_CONFIG).is_file() else []
@@ -79,12 +79,15 @@ def lint(paths, logs, image):
             destination.parent.mkdir(parents=True, exist_ok=True)
             # SwiftLint reads LF files in CI. Normalize working copies without touching the checkout.
             destination.write_text((ROOT / path).read_text(encoding="utf-8-sig"), encoding="utf-8", newline="\n")
-        # Changed files must be warning-free: the whole codebase is not yet (see the CI workflow).
-        options = ["--strict", "--quiet", "--no-cache", "--reporter", "github-actions-logging"]
+        options = ["--quiet", "--no-cache", "--reporter", "github-actions-logging"]
         if shutil.which("swiftlint"):
-            return run_check("swiftlint", ["swiftlint", *options], logs, cwd=staging)
-        command = ["docker", "run", "--rm", "-v", f"{staging}:/src:ro", "-w", "/src", image, "swiftlint"]
-        return run_check("swiftlint", [*command, *options], logs)
+            status = run_check("swiftlint", ["swiftlint", *options], logs, cwd=staging)
+        else:
+            command = ["docker", "run", "--rm", "-v", f"{staging}:/src:ro", "-w", "/src", image, "swiftlint"]
+            status = run_check("swiftlint", [*command, *options], logs)
+    # Lines this branch changed must not add warnings; older warnings are only counted.
+    script = [sys.executable, "scripts/new-lint-warnings.py", "--base", base, str(logs / "swiftlint.log")]
+    return status or run_check("new-lint-warnings", script, logs)
 
 
 def core_tests(logs):
@@ -139,7 +142,7 @@ def main():
     if translation_check:
         statuses.append(run_check("localization", [sys.executable, "scripts/check-localization.py"], logs))
     if lint_paths:
-        statuses.append(lint(lint_paths, logs, args.lint_image))
+        statuses.append(lint(lint_paths, logs, args.lint_image, base))
     if core_check:
         statuses.append(core_tests(logs))
     if apple_check:
