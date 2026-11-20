@@ -19,19 +19,45 @@ public enum RunDeduplication {
         }
     }
 
+    /// The canonical record and the sources that contributed to it, preferred source first.
+    public struct CombinedRun: Hashable, Sendable {
+        public fileprivate(set) var activity: RunActivity
+        public fileprivate(set) var sources: [DataSourceKind]
+    }
+
     /// One record per run, oldest first.
     public static func removingDuplicates(_ runs: [RunActivity]) -> [RunActivity] {
-        // Best source first, so the first copy of a run that is kept is the one to keep.
-        let ordered = runs.sorted { (rank($0.source), $0.startedAt, $0.id) < (rank($1.source), $1.startedAt, $1.id) }
-        var kept: [RunActivity] = []
+        combiningSources(runs).map(\.activity)
+    }
+
+    public static func combiningSources(_ runs: [RunActivity]) -> [CombinedRun] {
+        let ordered = runs.sorted { orderKey($0) < orderKey($1) }
+        var seen: [DataSourceKind: Set<String>] = [:]
+        var kept: [CombinedRun] = []
         for run in ordered {
-            if let index = kept.firstIndex(where: { $0.source != run.source && isSameRun($0, run) }) {
-                kept[index] = filling(kept[index], from: run)
+            guard seen[run.source, default: []].insert(run.id).inserted else { continue }
+            // Pair at most one recording from each source. Two overlapping runs from one source remain separate.
+            let match = kept.indices.lazy.filter { index in
+                !kept[index].sources.contains(run.source) && isSameRun(kept[index].activity, run)
+            }.min { lhs, rhs in
+                abs(kept[lhs].activity.startedAt.timeIntervalSince(run.startedAt))
+                    < abs(kept[rhs].activity.startedAt.timeIntervalSince(run.startedAt))
+            }
+            if let match {
+                kept[match].activity = filling(kept[match].activity, from: run)
+                kept[match].sources.append(run.source)
             } else {
-                kept.append(run)
+                kept.append(CombinedRun(activity: run, sources: [run.source]))
             }
         }
-        return kept.sorted { ($0.startedAt, $0.id) < ($1.startedAt, $1.id) }
+        return kept.sorted {
+            ($0.activity.startedAt, $0.activity.id, $0.activity.source.rawValue)
+                < ($1.activity.startedAt, $1.activity.id, $1.activity.source.rawValue)
+        }
+    }
+
+    private static func orderKey(_ run: RunActivity) -> (Int, Date, String, String) {
+        (rank(run.source), run.startedAt, run.id, run.source.rawValue)
     }
 
     static func isSameRun(_ lhs: RunActivity, _ rhs: RunActivity) -> Bool {

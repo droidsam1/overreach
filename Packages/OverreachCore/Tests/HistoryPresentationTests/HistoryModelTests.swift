@@ -21,12 +21,13 @@ struct HistoryModelTests {
     }
 
     private func model(
-        _ sessions: [StrengthSession], recordings: [RecordedStrengthActivity] = []
+        _ sessions: [StrengthSession], recordings: [RecordedStrengthActivity] = [],
+        runSources: [any MetricsSource] = []
     ) async -> (HistoryModel, TestStore) {
         let store = TestStore(exercises: [squat], sessions: sessions)
         let fixedNow = now
         let model = HistoryModel(
-            workouts: store, exercises: store, routines: store,
+            workouts: store, exercises: store, routines: store, runSources: runSources,
             recordedStrength: recordings.isEmpty ? nil : StrengthRecordings(activities: recordings),
             format: format, clock: { fixedNow }
         )
@@ -102,6 +103,65 @@ struct HistoryModelTests {
         #expect(model.rows.map(\.id) == [.recording(recording.id)])
     }
 
+    @Test func filtersRetainOneRowForAMultiSourceRunOrStrengthSession() async throws {
+        let logged = session("Lower", daysAgo: 2, sets: [])
+        let matched = RecordedStrengthActivity(
+            id: "paired", source: .garmin, startedAt: logged.startedAt, durationSeconds: 3_600
+        )
+        let start = now.addingTimeInterval(-86_400)
+        let garmin = RunActivity(
+            id: "g1", source: .garmin, startedAt: start, durationSeconds: 1_800, distanceMeters: 5_000,
+            trainingLoad: 55
+        )
+        let health = RunActivity(
+            id: "h1", source: .appleHealth, startedAt: start.addingTimeInterval(60), durationSeconds: 1_740,
+            distanceMeters: 5_000, averageHeartRate: 147
+        )
+        let (model, _) = await model([logged], recordings: [matched], runSources: [
+            TimelineRuns(kind: .appleHealth, activities: [health]),
+            TimelineRuns(kind: .garmin, activities: [garmin]),
+        ])
+
+        #expect(model.rows.map(\.id) == [.run("garmin:g1"), .session(logged.id)])
+        #expect(model.sourceOptions.map(\.value) == [.app, .appleHealth, .garmin])
+        #expect(model.detail(for: logged.id)?.sourceText == "Overreach · Garmin")
+
+        model.activityFilter = .running
+        model.sourceFilter = .appleHealth // The Apple Health copy contributes even though Garmin is preferred.
+        let row = try #require(model.rows.first)
+        guard case let .run(run) = row else {
+            Issue.record("Expected a run in History")
+            return
+        }
+        #expect(run.sources == [.garmin, .appleHealth])
+        #expect(run.heartRate == "147 bpm")
+        #expect(run.trainingMetrics.map(\.value) == ["55"])
+        #expect(model.rows.count == 1)
+
+        model.activityFilter = .strength
+        #expect(model.showsFilteredEmptyState)
+        model.sourceFilter = .garmin
+        #expect(model.rows.map(\.id) == [.session(logged.id)])
+        model.clearFilters()
+        #expect(!model.hasFilters)
+        #expect(model.rows.count == 2)
+    }
+
+    @Test func aFailedRunSourceLeavesOtherActivitiesVisibleAndShowsAWarning() async {
+        let strength = session("Strength", daysAgo: 3, sets: [])
+        let run = RunActivity(
+            id: "watch", source: .garmin, startedAt: now.addingTimeInterval(-60), durationSeconds: 10, distanceMeters: 20
+        )
+        let (model, _) = await model([strength], runSources: [
+            TimelineRuns(kind: .appleHealth, activities: [], fails: true),
+            TimelineRuns(kind: .garmin, activities: [run]),
+        ])
+
+        #expect(model.rows.map(\.id) == [.run("garmin:watch"), .session(strength.id)])
+        #expect(model.runWarning?.contains("Apple Health") == true)
+        #expect(!model.showsEmptyState)
+    }
+
     @Test func detailDescribesSetsAndEstimatesOneRepMaxForWorkingSets() async throws {
         let squatSession = session("Lower", daysAgo: 1, sets: [
             WorkoutSet(kind: .warmup, weightKg: 60, reps: 5),
@@ -140,6 +200,20 @@ struct HistoryModelTests {
         #expect(model.makeEditor(forSessionID: listed.id)?.draft == listed)
         #expect(model.makeEditor(forSessionID: UUID()) == nil)
         #expect(model.detail(for: UUID()) == nil)
+    }
+}
+
+private struct TimelineRuns: MetricsSource {
+    enum Failure: Error { case unavailable }
+    let kind: DataSourceKind
+    let activities: [RunActivity]
+    var fails = false
+
+    func isAvailable() async -> Bool { true }
+    func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics] { [] }
+    func runs(from start: Date, to end: Date) async throws -> [RunActivity] {
+        if fails { throw Failure.unavailable }
+        return activities.filter { (start...end).contains($0.startedAt) }
     }
 }
 

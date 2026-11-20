@@ -2,20 +2,37 @@ import Domain
 import Foundation
 import PresentationKit
 
-/// A logged session or an unmatched workout from a watch, in the same timeline.
+/// The activity filter used by the unified list.
+public enum HistoryActivityFilter: String, CaseIterable, Identifiable, Sendable {
+    case all, strength, running
+
+    public var id: Self { self }
+    public var title: String {
+        switch self {
+        case .all: L10n.text("All activities")
+        case .strength: L10n.text("Strength")
+        case .running: L10n.text("Runs")
+        }
+    }
+}
+
+/// A logged session, watch-only strength workout or run, in the same timeline.
 public enum HistoryRow: Identifiable, Sendable {
     public enum Identifier: Hashable, Sendable {
         case session(UUID)
         case recording(String)
+        case run(String)
     }
 
     case session(SessionSummary)
     case recording(HistoryStrengthActivity)
+    case run(HistoryRunActivity)
 
     public var id: Identifier {
         switch self {
         case let .session(summary): .session(summary.id)
         case let .recording(activity): .recording(activity.id)
+        case let .run(activity): .run(activity.id)
         }
     }
 
@@ -23,6 +40,30 @@ public enum HistoryRow: Identifiable, Sendable {
         switch self {
         case let .session(summary): summary.date
         case let .recording(activity): activity.startedAt
+        case let .run(activity): activity.startedAt
+        }
+    }
+
+    var activityFilter: HistoryActivityFilter {
+        switch self {
+        case .session, .recording: .strength
+        case .run: .running
+        }
+    }
+
+    var sources: [DataSourceKind] {
+        switch self {
+        case let .session(summary): summary.sources
+        case let .recording(activity): [activity.sourceKind]
+        case let .run(activity): activity.sources
+        }
+    }
+
+    var sortID: String {
+        switch id {
+        case let .session(id): "session:" + id.uuidString
+        case let .recording(id): "recording:" + id
+        case let .run(id): "run:" + id
         }
     }
 }
@@ -51,7 +92,8 @@ public struct HistoryMetric: Identifiable, Hashable, Sendable {
 /// Read-only display values from a watch, also shown alongside the matched session's logged sets.
 public struct HistoryStrengthActivity: Identifiable, Sendable {
     public let id: String
-    public let source: String
+    let sourceKind: DataSourceKind
+    public var source: String { sourceKind.displayName }
     public let startedAt: Date
     public let durationSeconds: Double
     public let metrics: [HistoryMetric]
@@ -61,7 +103,7 @@ public struct HistoryStrengthActivity: Identifiable, Sendable {
 
     init(_ activity: RecordedStrengthActivity, format: Format) {
         id = activity.id
-        source = activity.source.displayName
+        sourceKind = activity.source
         startedAt = activity.startedAt
         durationSeconds = activity.durationSeconds
         metrics = [

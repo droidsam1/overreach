@@ -182,8 +182,10 @@ public actor GarminService: GarminAccount, MetricsSource, RecordedStrengthSource
     }
 
     public func runs(from start: Date, to end: Date) async throws -> [RunActivity] {
-        await syncIfDue()
-        return await loadCache().runs.filter { $0.startedAt >= start && $0.startedAt <= end }
+        let failure = await syncIfDue()
+        let runs = await loadCache().runs.filter { $0.startedAt >= start && $0.startedAt <= end }
+        if runs.isEmpty, let failure { throw failure }
+        return runs
     }
 
     /// Strength workouts recorded on the watch, to pair with logged sessions (`StrengthActivityMatching`).
@@ -194,10 +196,20 @@ public actor GarminService: GarminAccount, MetricsSource, RecordedStrengthSource
 
     // MARK: Sync
 
-    private func syncIfDue() async {
-        guard await secrets.loadKey() != nil else { return }
-        if let last = await loadCache().lastSync, clock().timeIntervalSince(last) < Self.autoSyncInterval { return }
-        _ = try? await sync { _ in }
+    @discardableResult
+    private func syncIfDue() async -> GarminAccountError? {
+        guard await secrets.loadKey() != nil else { return nil }
+        let lastSync = await loadCache().lastSync
+        do {
+            if let running {
+                _ = try await syncResult(running)
+            } else if lastSync.map({ clock().timeIntervalSince($0) < Self.autoSyncInterval }) != true {
+                _ = try await sync { _ in }
+            }
+            return nil
+        } catch {
+            return error
+        }
     }
 
     private func performSync(
