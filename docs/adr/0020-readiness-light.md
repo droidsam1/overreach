@@ -30,3 +30,5 @@ explain itself (ADR-0012).
 - The check-in sheet on Today (energy, soreness, sick, note) feeds the subjective signals.
 - Not yet: phase-aware baselines (ADR-0009), a personal sleep baseline, Garmin HRV, and
   settings to change the thresholds. Each slots into `ReadinessRules.Settings` or its inputs.
+- Amended 2026-11-20 (evidence review): HRV baselines use one measure only (`HRVMeasure`), and for people who
+  track a natural cycle a low HRV is context, not a signal for red, until phase-aware baselines exist.

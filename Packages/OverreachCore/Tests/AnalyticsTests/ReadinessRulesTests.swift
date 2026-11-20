@@ -109,14 +109,99 @@ struct ReadinessRulesTests {
 
     @Test func everyReasonCitesItsEvidence() {
         let reasons: [ReadinessReason] = [
-            .markedSick, .hrvBelowBaseline(nights: 3), .restingHeartRateElevated(bpmAboveBaseline: 6),
+            .markedSick, .hrvBelowBaseline(nights: 3), .hrvMayReflectCycle, .restingHeartRateElevated(bpmAboveBaseline: 6),
             .shortSleep(hours: 5), .lowEnergy(score: 1), .highSoreness(score: 3), .missingData,
         ]
         let keys = reasons.map { ReadinessRules.evidence(for: $0).key }
 
         #expect(keys == [
-            "illness-return", "readiness-hrv", "readiness-resting-hr", "readiness-sleep", "readiness-subjective",
+            "illness-return", "readiness-hrv", "hrv-cycle-phase", "readiness-resting-hr", "readiness-sleep", "readiness-subjective",
             "readiness-subjective", "readiness-combination",
         ])
+    }
+
+    // MARK: - One HRV measure per baseline
+
+    @Test func valuesOfAnotherMeasureNeverJoinTheBaseline() {
+        // Garmin RMSSD around 55 ms on most nights; the Apple Watch filled the last week with SDNN around 35 ms.
+        // Mixed, the week would look far below the baseline; kept apart, there is too little SDNN to judge and
+        // the Garmin nights of the week are missing, so HRV is skipped rather than misread.
+        let days = history().map { day -> DailyMetrics in
+            var day = day
+            let isRecent = day.day > today.adding(days: -7, calendar: calendar)
+            day.hrvNightlyAverageMs = isRecent ? 35 : day.hrvNightlyAverageMs
+            day.hrvMeasure = isRecent ? .sleepSDNN : .overnightRMSSD
+            return day
+        }
+
+        let result = readiness(days)
+
+        #expect(result.level == .green)
+        #expect(!result.reasons.contains { if case .hrvBelowBaseline = $0 { true } else { false } })
+    }
+
+    @Test func theMeasureWithMoreNightsIsTheOneUsed() {
+        // SDNN every night with a low week; a few stray Garmin nights at a different scale are ignored.
+        let days = history(recentHRV: [44, 46, 43, 47, 45, 52, 48]).enumerated().map { index, day -> DailyMetrics in
+            var day = day
+            day.hrvMeasure = .sleepSDNN
+            if index > 20, index.isMultiple(of: 9) {
+                day.hrvNightlyAverageMs = 120
+                day.hrvMeasure = .overnightRMSSD
+            }
+            return day
+        }
+
+        #expect(readiness(days).reasons == [.hrvBelowBaseline(nights: 7)])
+    }
+
+    @Test func oldGarminDataIsRecognisedByItsBaselineFields() {
+        var day = DailyMetrics(day: today)
+        day.hrvNightlyAverageMs = 60
+        day.hrvStatus = "BALANCED"
+        #expect(day.resolvedHRVMeasure == .overnightRMSSD)
+
+        day.hrvStatus = nil
+        #expect(day.resolvedHRVMeasure == nil)
+        day.hrvMeasure = .daytimeSDNN
+        #expect(day.resolvedHRVMeasure == .daytimeSDNN)
+    }
+
+    @Test func mergingKeepsTheMeasureWithItsValue() {
+        var garmin = DailyMetrics(day: today, sources: [.garmin])
+        garmin.restingHeartRate = 48
+        var health = DailyMetrics(day: today, sources: [.appleHealth])
+        health.hrvNightlyAverageMs = 40
+        health.hrvMeasure = .sleepSDNN
+
+        let merged = garmin.merging(health)
+
+        #expect(merged.hrvNightlyAverageMs == 40)
+        #expect(merged.hrvMeasure == .sleepSDNN)
+    }
+
+    // MARK: - Natural cycle
+
+    @Test func lowHRVInANaturalCycleIsContextNotRed() {
+        let days = history(recentHRV: [42, 44, 43, 45, 44, 46, 45], todayResting: 58)
+
+        let result = ReadinessRules.readiness(
+            today: today, history: days, checkIn: nil, tracksNaturalCycle: true, calendar: calendar
+        )
+
+        #expect(result.level == .amber)
+        #expect(result.reasons.contains(.hrvMayReflectCycle))
+        #expect(result.reasons.contains(.hrvBelowBaseline(nights: 7)))
+    }
+
+    @Test func aNaturalCycleDoesNotHideOtherPhysiologicalSignals() {
+        let days = history(recentHRV: [42, 44, 43, 45, 44, 46, 45], todayResting: 58, todaySleepHours: 5)
+
+        let result = ReadinessRules.readiness(
+            today: today, history: days, checkIn: nil, tracksNaturalCycle: true, calendar: calendar
+        )
+
+        // Resting HR + short sleep are two signals with one physiological: still red.
+        #expect(result.level == .red)
     }
 }

@@ -25,6 +25,7 @@ public enum GarminMapping {
                 $0.hrvBaselineLowMs = night.baselineBalancedLow
                 $0.hrvBaselineHighMs = night.baselineBalancedUpper
                 $0.hrvStatus = night.status
+                $0.hrvMeasure = night.lastNightAverage != nil ? .overnightRMSSD : nil
             }
         }
         for night in sleep where night.sleepSeconds != nil {

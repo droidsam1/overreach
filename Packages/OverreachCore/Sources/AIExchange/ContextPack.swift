@@ -191,6 +191,9 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var date: String
         public var source: String
         public var hrvMs: Double?
+        /// What `hrvMs` measures: `overnightRMSSD` (Garmin), `sleepSDNN` or `daytimeSDNN` (Apple Watch). Values of
+        /// different measures are on different scales and must not be compared.
+        public var hrvMeasure: String?
         public var hrvBaselineLowMs: Double?
         public var hrvBaselineHighMs: Double?
         public var restingHeartRate: Double?

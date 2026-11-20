@@ -210,9 +210,11 @@ public final class TodayModel {
         let checkIn = try? await checkIns?.checkIn(for: today)
         self.checkIn = checkIn
         isGarminConnected = await garmin?.connection() != nil
-        wearsGarmin = (try? await profiles?.profile())?.wearables.contains(.garmin) ?? false
+        let profile = try? await profiles?.profile()
+        wearsGarmin = profile?.wearables.contains(.garmin) ?? false
         readiness = ReadinessRules.readiness(
-            today: today, history: history, checkIn: checkIn, settings: readinessSettings, calendar: calendar
+            today: today, history: history, checkIn: checkIn, settings: readinessSettings,
+            tracksNaturalCycle: profile?.usesCyclePhase ?? false, calendar: calendar
         )
     }
 
@@ -237,6 +239,8 @@ public final class TodayModel {
             L10n.text("Marked as sick in today's check-in. Rest until the symptoms ease.")
         case .hrvBelowBaseline(let nights):
             L10n.format("HRV below your usual range ({1} of the last 7 nights low).", String(nights))
+        case .hrvMayReflectCycle:
+            L10n.text("HRV is normally lower in the second half of the menstrual cycle, so this alone does not make the light red.")
         case .restingHeartRateElevated(let bpm):
             L10n.format("Resting HR {1} bpm above your usual.", format.number(bpm, maxFractionDigits: 0))
         case .shortSleep(let hours):

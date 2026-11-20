@@ -153,6 +153,8 @@ public enum MarkdownReportRenderer {
             "Marked as sick in today's check-in"
         case .hrvBelowBaseline(let nights):
             "HRV below its normal range for \(nights) night\(nights == 1 ? "" : "s")"
+        case .hrvMayReflectCycle:
+            "Low HRV may be the normal drop in the second half of the menstrual cycle (not counted towards red)"
         case .restingHeartRateElevated(let bpm):
             "Resting HR \(format(bpm, decimals: 0)) bpm above baseline"
         case .shortSleep(let hours):

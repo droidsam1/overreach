@@ -11,6 +11,8 @@ public enum ReadinessEvidence {
     public static let sleep = EvidenceReference(key: "readiness-sleep", level: .moderate)
     /// Self-reported well-being tracks training load better than common objective markers (Saw et al. 2016).
     public static let subjective = EvidenceReference(key: "readiness-subjective", level: .moderate)
+    /// Vagally mediated HRV is lower in the luteal than the follicular phase (Schmalenberger et al. 2019).
+    public static let cyclePhase = EvidenceReference(key: "hrv-cycle-phase", level: .moderate)
     /// How signals combine into green, amber and red: coaching defaults.
     public static let combination = EvidenceReference(key: "readiness-combination", level: .heuristic)
 }
@@ -62,9 +64,12 @@ public enum ReadinessRules {
     /// - Parameters:
     ///   - history: merged daily metrics, in any order. Days after `today` are ignored.
     ///   - checkIn: today's check-in, if the user filled it in.
+    ///   - tracksNaturalCycle: the person tracks a natural menstrual cycle. Until phase-aware baselines exist
+    ///     (ADR-0009), low HRV is then reported with the cycle as a possible cause and is not a physiological
+    ///     signal for red.
     public static func readiness(
         today: CalendarDay, history: [DailyMetrics], checkIn: CheckIn?, settings: Settings = Settings(),
-        calendar: Calendar = .current
+        tracksNaturalCycle: Bool = false, calendar: Calendar = .current
     ) -> Readiness {
         if checkIn?.isSick == true {
             return Readiness(level: .red, reasons: [.markedSick])
@@ -82,7 +87,11 @@ public enum ReadinessRules {
             evaluated = true
             if let lowNights = hrv {
                 reasons.append(.hrvBelowBaseline(nights: lowNights))
-                physiological += 1
+                if tracksNaturalCycle {
+                    reasons.append(.hrvMayReflectCycle)
+                } else {
+                    physiological += 1
+                }
             }
         }
 
@@ -116,7 +125,14 @@ public enum ReadinessRules {
 
         guard evaluated else { return Readiness(level: .unknown, reasons: [.missingData]) }
         if reasons.isEmpty { return Readiness(level: .green) }
-        if reasons.count >= settings.redSignals && physiological > 0 {
+        // With a natural cycle, low HRV is context: neither it nor its note counts as a signal for red.
+        let cycleContext = reasons.contains(.hrvMayReflectCycle)
+        let signals = reasons.filter { reason in
+            if reason == .hrvMayReflectCycle { return false }
+            if case .hrvBelowBaseline = reason { return !cycleContext }
+            return true
+        }.count
+        if signals >= settings.redSignals && physiological > 0 {
             return Readiness(level: .red, reasons: reasons)
         }
         return Readiness(level: .amber, reasons: reasons)
@@ -127,6 +143,7 @@ public enum ReadinessRules {
         switch reason {
         case .markedSick: PlanEvidence.illness
         case .hrvBelowBaseline: ReadinessEvidence.hrv
+        case .hrvMayReflectCycle: ReadinessEvidence.cyclePhase
         case .restingHeartRateElevated: ReadinessEvidence.restingHeartRate
         case .shortSleep: ReadinessEvidence.sleep
         case .lowEnergy, .highSoreness: ReadinessEvidence.subjective
@@ -136,11 +153,32 @@ public enum ReadinessRules {
 
     /// `nil` when HRV cannot be judged; `.some(nil)` when it is in range; `.some(n)` when the rolling average is
     /// below the normal range, with `n` the low nights in the window.
+    ///
+    /// Only one measure is used (`HRVMeasure`): the one with the most values in the baseline window. Values of
+    /// other measures (e.g. Apple Watch SDNN on nights a Garmin missed) are left out, never mixed in.
     static func hrvCheck(
         byDay: [CalendarDay: DailyMetrics], baselineDays: [CalendarDay], rollingDays: [CalendarDay], settings: Settings
     ) -> Int?? {
+        let measured = { (day: CalendarDay) -> (measure: HRVMeasure?, value: Double)? in
+            guard let metrics = byDay[day], let value = metrics.hrvNightlyAverageMs, value > 0 else { return nil }
+            return (metrics.resolvedHRVMeasure, value)
+        }
+        var counts: [HRVMeasure?: Int] = [:]
+        for day in baselineDays {
+            if let entry = measured(day) { counts[entry.measure, default: 0] += 1 }
+        }
+        // Most values wins; ties go to the steadier measure (overnight before sleep before daytime, unknown last).
+        let rank = { (measure: HRVMeasure?) -> Int in
+            measure.flatMap { HRVMeasure.allCases.firstIndex(of: $0) } ?? HRVMeasure.allCases.count
+        }
+        // The chosen measure can itself be unknown (`nil`), so unwrap the entry, not the key.
+        guard let winner = counts.max(by: { lhs, rhs in
+            lhs.value != rhs.value ? lhs.value < rhs.value : rank(lhs.key) > rank(rhs.key)
+        }) else { return nil }
+        let chosen = winner.key
+
         let logHRV = { (days: [CalendarDay]) -> [Double] in
-            days.compactMap { byDay[$0]?.hrvNightlyAverageMs }.filter { $0 > 0 }.map { log($0) }
+            days.compactMap(measured).filter { $0.measure == chosen }.map { log($0.value) }
         }
         let baseline = logHRV(baselineDays)
         let recent = logHRV(rollingDays)

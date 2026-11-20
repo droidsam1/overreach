@@ -62,7 +62,8 @@ public struct HealthSamples: Sendable {
 public enum HealthAggregation {
     /// - Sleep belongs to the day it ends ("last night" is today's). Overlapping intervals from several sources
     ///   (a watch and the phone) are merged, so nothing is counted twice; "in bed" alone is not sleep.
-    /// - HRV is the mean of the samples taken during that night's sleep, or of the day's samples without sleep.
+    /// - HRV is the mean of the samples taken during that night's sleep, or of the day's samples without sleep;
+    ///   `hrvMeasure` says which, so the two never share a baseline.
     /// - Resting heart rate is the day's latest value; VO2max, respiration and SpO2 are the day's mean.
     public static func dailyMetrics(
         from samples: HealthSamples, in range: ClosedRange<CalendarDay>, source: DataSourceKind,
@@ -83,7 +84,13 @@ public enum HealthAggregation {
             }
             let hrvToday = values(samples.hrv, on: day, calendar: calendar)
             let hrvAsleep = night.map { window in hrvToday.filter { window.window.contains($0.date) } } ?? []
-            metrics.hrvNightlyAverageMs = mean(hrvAsleep.isEmpty ? hrvToday : hrvAsleep)
+            if let asleep = mean(hrvAsleep) {
+                metrics.hrvNightlyAverageMs = asleep
+                metrics.hrvMeasure = .sleepSDNN
+            } else if let daytime = mean(hrvToday) {
+                metrics.hrvNightlyAverageMs = daytime
+                metrics.hrvMeasure = .daytimeSDNN
+            }
             metrics.restingHeartRate = values(samples.restingHeartRate, on: day, calendar: calendar)
                 .max { $0.date < $1.date }?.value
             metrics.vo2Max = mean(values(samples.vo2Max, on: day, calendar: calendar))

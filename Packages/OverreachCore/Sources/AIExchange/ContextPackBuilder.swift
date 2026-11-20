@@ -209,6 +209,7 @@ public enum ContextPackBuilder {
             date: day.day.description,
             source: day.sources.map(\.rawValue).sorted().joined(separator: ","),
             hrvMs: rounded(day.hrvNightlyAverageMs),
+            hrvMeasure: day.resolvedHRVMeasure?.rawValue,
             hrvBaselineLowMs: rounded(day.hrvBaselineLowMs),
             hrvBaselineHighMs: rounded(day.hrvBaselineHighMs),
             restingHeartRate: rounded(day.restingHeartRate),

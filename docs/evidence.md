@@ -247,6 +247,18 @@ Health 17:7999 (meta-analysis); Vesterinen et al. 2016, Med Sci Sports Exerc 48:
 et al. 2012, Eur J Appl Physiol 112:3729 (7-day rolling average); Front Physiol 2024, 15:1472702 (RCT,
 HRV-guided resistance training, n = 21); Sensors 2024, 24:6220 (Apple Watch HRV validity). Reviewed 2026-11-19.
 
+**One measure per baseline.** Garmin reports overnight RMSSD; Apple Watch reports SDNN from short PPG readings,
+which is a different signal from ECG HRV, not a noisy copy of it (Dewig et al. 2024, Sports Med, simulation). Each
+value is tagged with its measure (`HRVMeasure`: overnight RMSSD, SDNN during sleep, daytime SDNN). The baseline
+and the 7-day average use only the measure with the most values in the baseline window; values of other measures
+are left out, never mixed in. Reviewed 2026-11-20.
+
+### `hrv-cycle-phase` — moderate
+Vagally mediated HRV falls from the follicular to the luteal phase (d = −0.39, 37 studies), and within-person
+studies tie it to higher progesterone. → Until phase-aware baselines exist (ADR-0009), for people who track a
+natural cycle a low HRV is shown with the cycle as a possible cause and does not count towards red; other signals
+still do. Refs: Schmalenberger et al. 2019, J Clin Med 8:1946 (meta-analysis). Reviewed 2026-11-20.
+
 ### `readiness-resting-hr` — limited
 Short-term overload raises resting HR moderately, longer overload does not, and changes must be read together with
 other signs; daily resting measures are most useful next to training logs and questionnaires.

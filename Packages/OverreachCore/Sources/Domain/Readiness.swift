@@ -15,6 +15,9 @@ public enum ReadinessLevel: String, Codable, Sendable {
 public enum ReadinessReason: Hashable, Codable, Sendable {
     case markedSick
     case hrvBelowBaseline(nights: Int)
+    /// The person tracks a natural cycle: low HRV may be the normal luteal-phase drop, so it is context and does
+    /// not make the light red on its own (`hrv-cycle-phase`).
+    case hrvMayReflectCycle
     case restingHeartRateElevated(bpmAboveBaseline: Double)
     case shortSleep(hours: Double)
     /// Check-in energy, 1 (exhausted) … 5 (great).

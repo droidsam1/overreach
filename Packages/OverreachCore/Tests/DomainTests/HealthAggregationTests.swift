@@ -54,6 +54,7 @@ struct HealthAggregationTests {
             HealthAggregation.dailyMetrics(from: samples, in: range, source: .appleHealth, calendar: calendar).last
         )
         #expect(day.hrvNightlyAverageMs == 45)
+        #expect(day.hrvMeasure == .sleepSDNN)
         #expect(day.restingHeartRate == 52)
         #expect(day.spo2Average == 97)
         #expect(day.steps == 8_412)
@@ -65,6 +66,7 @@ struct HealthAggregationTests {
             HealthAggregation.dailyMetrics(from: samples, in: range, source: .appleHealth, calendar: calendar).first
         )
         #expect(day.hrvNightlyAverageMs == 40)
+        #expect(day.hrvMeasure == .daytimeSDNN)
         #expect(day.sleepSeconds == nil)
     }
 

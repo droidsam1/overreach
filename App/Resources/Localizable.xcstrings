@@ -12070,6 +12070,23 @@
           }
         }
       }
+    },
+    "HRV is normally lower in the second half of the menstrual cycle, so this alone does not make the light red.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La VFC suele bajar en la segunda mitad del ciclo menstrual, así que esto por sí solo no pone el semáforo en rojo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A VFC adoita baixar na segunda metade do ciclo menstrual, así que isto por si só non pon o semáforo en vermello."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
