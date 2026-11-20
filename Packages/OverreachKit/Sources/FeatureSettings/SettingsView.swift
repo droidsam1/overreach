@@ -4,7 +4,7 @@ import SettingsPresentation
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Settings. Phase 1: backup and import from Strong. Later: connections (Health, Garmin), readiness
+/// Settings: Garmin connection, backup and import from Strong. Later: Health, readiness
 /// thresholds, report template, and in phase 4 the AI provider, model and API key.
 ///
 /// `Library` holds rows the App injects for other features (e.g. the exercise list), since a feature never
@@ -25,6 +25,8 @@ public struct SettingsView<Library: View>: View {
 
     @State private var importModel: ImportModel
     @State private var backupModel: BackupModel
+    @State private var garminModel: GarminSetupModel
+    @State private var isConfirmingDisconnect = false
     @State private var isPickingFile = false
     @State private var filePick: FilePick = .strongCSV
     @State private var exportURL: URL?
@@ -32,9 +34,13 @@ public struct SettingsView<Library: View>: View {
 
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.system
 
-    public init(importModel: ImportModel, backupModel: BackupModel, @ViewBuilder library: () -> Library) {
+    public init(
+        importModel: ImportModel, backupModel: BackupModel, garminModel: GarminSetupModel,
+        @ViewBuilder library: () -> Library
+    ) {
         _importModel = State(initialValue: importModel)
         _backupModel = State(initialValue: backupModel)
+        _garminModel = State(initialValue: garminModel)
         self.library = library()
     }
 
@@ -42,6 +48,7 @@ public struct SettingsView<Library: View>: View {
         NavigationStack {
             Form {
                 Section("Library") { library }
+                garminSection
                 Section("Appearance") {
                     Picker("Appearance", selection: $appearance) {
                         ForEach(AppAppearance.allCases) { option in
@@ -83,6 +90,18 @@ public struct SettingsView<Library: View>: View {
                 }
             }
             .task { await backupModel.load() }
+            .task { await garminModel.load() }
+            .sheet(isPresented: $garminModel.isPresented) {
+                GarminSetupView(model: garminModel)
+            }
+            .confirmationDialog(
+                "Disconnect Garmin?", isPresented: $isConfirmingDisconnect, titleVisibility: .visible
+            ) {
+                Button("Disconnect", role: .destructive) { Task { await garminModel.disconnect() } }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("The key is removed from this iPhone and your iCloud Keychain. What was imported stays.")
+            }
             // Asked from the first-run setup ("Restore from a backup"); runs when Settings first appears too.
             .task(id: backupModel.isRequestingFolderChoice) {
                 guard backupModel.isRequestingFolderChoice else { return }
@@ -125,6 +144,58 @@ public struct SettingsView<Library: View>: View {
         case .strongCSV: importModel.fileCouldNotBeOpened()
         case .backupFile: backupModel.fileCouldNotBeOpened()
         case .backupFolder: backupModel.folderCouldNotBeOpened()
+        }
+    }
+
+    @ViewBuilder
+    private var garminSection: some View {
+        Section {
+            if garminModel.isConnected {
+                Label("Connected", systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+                if let lastSync = garminModel.lastSyncText {
+                    Text(lastSync).font(.footnote).foregroundStyle(.secondary)
+                }
+                if let expiry = garminModel.expiryText {
+                    Text(expiry).font(.footnote).foregroundStyle(.secondary)
+                }
+                if let warning = garminModel.expiryWarning {
+                    Label(warning, systemImage: "exclamationmark.triangle").font(.footnote).foregroundStyle(.orange)
+                }
+                if garminModel.isSyncing {
+                    ProgressView(value: garminModel.progress?.fraction ?? 0) {
+                        Text("Syncing…")
+                    }
+                } else {
+                    Button("Sync now", systemImage: "arrow.triangle.2.circlepath") {
+                        Task { await garminModel.sync() }
+                    }
+                }
+                if let summary = garminModel.summaryText {
+                    Text(summary).font(.footnote).foregroundStyle(.secondary)
+                }
+                if let error = garminModel.errorMessage, !garminModel.isPresented {
+                    Label(error, systemImage: "exclamationmark.circle").font(.footnote).foregroundStyle(.red)
+                }
+                Button("Renew key", systemImage: "key.horizontal") { garminModel.start() }
+                Button("Disconnect", systemImage: "xmark.circle", role: .destructive) {
+                    isConfirmingDisconnect = true
+                }
+            } else {
+                Button {
+                    garminModel.start()
+                } label: {
+                    FeatureHighlightRow(
+                        symbol: "applewatch.radiowaves.left.and.right", title: Text("Connect Garmin"),
+                        detail: Text("Nightly HRV, sleep score, Body Battery and more. Three steps.")
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        } header: {
+            Text("Garmin")
+        } footer: {
+            Text("Uses Garmin's official Personal API with your own key. Not affiliated with Garmin.")
         }
     }
 

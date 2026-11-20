@@ -20,6 +20,13 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "applewatch.radiowaves.left.and.right", title: L10n.text("Garmin connection"),
+                    detail: L10n.text(
+                        "Nightly HRV, sleep score, Body Battery and runs from your Garmin, with your own key. "
+                            + "Settings → Garmin: three steps."
+                    )
+                ),
+                ReleaseHighlight(
                     symbol: "face.smiling", title: L10n.text("Daily check-in"),
                     detail: L10n.text("Ten seconds on Today: energy, soreness or sick. The readiness light takes it into account.")
                 ),

@@ -25,7 +25,7 @@ public final class OnboardingModel {
 
     /// The tour shown before the data steps on a first launch.
     public enum TourPage: Int, CaseIterable, Hashable, Sendable {
-        case welcome, logging, coaching, assistant, safety
+        case welcome, logging, coaching, assistant, recovery, safety
     }
 
     public var isPresented = false

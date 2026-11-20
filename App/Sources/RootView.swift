@@ -30,6 +30,7 @@ struct RootView: View {
     @State private var planModel: PlanModel
     @State private var importModel: ImportModel
     @State private var backupModel: BackupModel
+    @State private var garminModel: GarminSetupModel
     @State private var exercisesModel: ExercisesModel
     @State private var onboardingModel: OnboardingModel
     @State private var whatsNewModel: WhatsNewModel
@@ -49,6 +50,7 @@ struct RootView: View {
         _planModel = State(initialValue: container.makePlanModel())
         _importModel = State(initialValue: container.makeImportModel())
         _backupModel = State(initialValue: container.makeBackupModel())
+        _garminModel = State(initialValue: container.makeGarminSetupModel())
         _exercisesModel = State(initialValue: container.makeExercisesModel())
         _onboardingModel = State(initialValue: container.makeOnboardingModel())
         _whatsNewModel = State(initialValue: container.makeWhatsNewModel())
@@ -77,7 +79,7 @@ struct RootView: View {
                 }
             }
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
-                SettingsView(importModel: importModel, backupModel: backupModel) {
+                SettingsView(importModel: importModel, backupModel: backupModel, garminModel: garminModel) {
                     NavigationLink {
                         ExercisesView(model: exercisesModel)
                     } label: {
@@ -91,11 +93,12 @@ struct RootView: View {
                     }
                 }
             }
-            .badge(exercisesModel.needsMappingCount + backupModel.badgeCount)
+            .badge(exercisesModel.needsMappingCount + backupModel.badgeCount + garminModel.badgeCount)
         }
         .preferredColorScheme(appearance.colorScheme)
         .task {
             await backupModel.load()
+            await garminModel.load()
             await backupModel.checkRestoreOffer()
             await exercisesModel.load()
             // With a backup on offer, the setup waits for the answer: a restore makes it unnecessary.

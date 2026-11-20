@@ -10812,6 +10812,1230 @@
           }
         }
       }
+    },
+    "1 year": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 año"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 ano"
+          }
+        }
+      }
+    },
+    "180 days": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "180 días"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "180 días"
+          }
+        }
+      }
+    },
+    "30 days": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 días"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 días"
+          }
+        }
+      }
+    },
+    "90 days": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "90 días"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "90 días"
+          }
+        }
+      }
+    },
+    "Apple Health and Garmin feed the readiness light: train hard, easy or rest, with the reasons.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Salud y Garmin alimentan el semáforo: entrenar fuerte, suave o descansar, con los motivos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Saúde e Garmin alimentan o semáforo: adestrar forte, suave ou descansar, cos motivos."
+          }
+        }
+      }
+    },
+    "Bring in what Apple Health doesn't get from your watch, so Today can judge your recovery better.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trae lo que Apple Salud no recibe de tu reloj, para que Hoy valore mejor tu recuperación."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trae o que Apple Saúde non recibe do teu reloxo, para que Hoxe valore mellor a túa recuperación."
+          }
+        }
+      }
+    },
+    "Checking with Garmin…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobando con Garmin…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobando con Garmin…"
+          }
+        }
+      }
+    },
+    "Choose **1 year** as the expiry: one less thing to renew.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige **1 año** como caducidad: una cosa menos que renovar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolle **1 ano** como caducidade: unha cousa menos que renovar."
+          }
+        }
+      }
+    },
+    "Close": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerrar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pechar"
+          }
+        }
+      }
+    },
+    "Connect": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar"
+          }
+        }
+      }
+    },
+    "Connect Garmin": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar Garmin"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectar Garmin"
+          }
+        }
+      }
+    },
+    "Connect your Garmin account first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta primero tu cuenta de Garmin."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta primeiro a túa conta de Garmin."
+          }
+        }
+      }
+    },
+    "Connected": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectado"
+          }
+        }
+      }
+    },
+    "Create your key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea tu clave"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea a túa clave"
+          }
+        }
+      }
+    },
+    "Disconnect": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconectar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconectar"
+          }
+        }
+      }
+    },
+    "Disconnect Garmin?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Desconectar Garmin?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconectar Garmin?"
+          }
+        }
+      }
+    },
+    "Every time you open the app. You can also sync from Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada vez que abres la app. También puedes sincronizar desde Ajustes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cada vez que abres a app. Tamén podes sincronizar desde Axustes."
+          }
+        }
+      }
+    },
+    "Expiry you chose": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caducidad que elegiste"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caducidade que escolliches"
+          }
+        }
+      }
+    },
+    "Garmin asks to wait a little. Try again in a few minutes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin pide esperar un poco. Vuelve a intentarlo en unos minutos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin pide agardar un pouco. Téntao de novo nuns minutos."
+          }
+        }
+      }
+    },
+    "Garmin connected": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin conectado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin conectado"
+          }
+        }
+      }
+    },
+    "Garmin connection": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conexión con Garmin"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conexión con Garmin"
+          }
+        }
+      }
+    },
+    "Garmin didn't accept this key. It may be incomplete, deleted or expired: create a new one and paste it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin no ha aceptado esta clave. Puede estar incompleta, borrada o caducada: crea otra y pégala."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin non aceptou esta clave. Pode estar incompleta, borrada ou caducada: crea outra e pégaa."
+          }
+        }
+      }
+    },
+    "Garmin gives each person a personal key to their own data. It takes a minute in Garmin Connect.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin da a cada persona una clave personal para sus propios datos. Se tarda un minuto en Garmin Connect."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin dálle a cada persoa unha clave persoal para os seus propios datos. Lévase un minuto en Garmin Connect."
+          }
+        }
+      }
+    },
+    "Garmin in three steps, with your own key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin en tres pasos, con tu propia clave"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin en tres pasos, coa túa propia clave"
+          }
+        }
+      }
+    },
+    "Garmin isn't answering right now. Try again later; nothing was lost.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin no responde ahora mismo. Vuelve a intentarlo más tarde; no se ha perdido nada."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Garmin non responde agora mesmo. Téntao de novo máis tarde; non se perdeu nada."
+          }
+        }
+      }
+    },
+    "Garmin load and training effect, matched with the sessions you log here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga y training effect de Garmin, emparejados con las sesiones que registras aquí."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga e training effect de Garmin, emparellados coas sesións que rexistras aquí."
+          }
+        }
+      }
+    },
+    "I already have a key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya tengo una clave"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xa teño unha clave"
+          }
+        }
+      }
+    },
+    "Imported {1} days: {2} nights of HRV, {3} nights of sleep, {4} runs and {5} strength workouts.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importados {1} días: {2} noches de HRV, {3} noches de sueño, {4} carreras y {5} entrenamientos de fuerza."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importados {1} días: {2} noites de HRV, {3} noites de sono, {4} carreiras e {5} adestramentos de forza."
+          }
+        }
+      }
+    },
+    "Importing your last 60 days…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importando tus últimos 60 días…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importando os teus últimos 60 días…"
+          }
+        }
+      }
+    },
+    "Importing your last 60 days… {1} of {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importando tus últimos 60 días… {1} de {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importando os teus últimos 60 días… {1} de {2}"
+          }
+        }
+      }
+    },
+    "It takes a few seconds. You can keep this screen open.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tarda unos segundos. Puedes dejar esta pantalla abierta."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leva uns segundos. Podes deixar esta pantalla aberta."
+          }
+        }
+      }
+    },
+    "Key saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave guardada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave gardada"
+          }
+        }
+      }
+    },
+    "Key valid until {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave válida hasta el {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave válida ata o {1}"
+          }
+        }
+      }
+    },
+    "Last sync: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última sincronización: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última sincronización: {1}"
+          }
+        }
+      }
+    },
+    "Nightly HRV": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HRV nocturna"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HRV nocturna"
+          }
+        }
+      }
+    },
+    "Nightly HRV against your own baseline": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HRV nocturna frente a tu propia línea base"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HRV nocturna fronte á túa propia liña base"
+          }
+        }
+      }
+    },
+    "Nightly HRV, sleep score, Body Battery and more. Three steps.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HRV nocturna, puntuación de sueño, Body Battery y más. Tres pasos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HRV nocturna, puntuación de sono, Body Battery e máis. Tres pasos."
+          }
+        }
+      }
+    },
+    "Nightly HRV, sleep score, Body Battery and runs from your Garmin, with your own key. Settings → Garmin: three steps.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HRV nocturna, puntuación de sueño, Body Battery y carreras de tu Garmin, con tu propia clave. Ajustes → Garmin: tres pasos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HRV nocturna, puntuación de sono, Body Battery e carreiras do teu Garmin, coa túa propia clave. Axustes → Garmin: tres pasos."
+          }
+        }
+      }
+    },
+    "No internet connection. Check it and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin conexión a internet. Compruébala y vuelve a intentarlo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen conexión a internet. Compróbaa e téntao de novo."
+          }
+        }
+      }
+    },
+    "Not synced yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún sin sincronizar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda sen sincronizar"
+          }
+        }
+      }
+    },
+    "Open Garmin Connect": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Garmin Connect"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Garmin Connect"
+          }
+        }
+      }
+    },
+    "Open Garmin Connect again": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Garmin Connect otra vez"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Garmin Connect outra vez"
+          }
+        }
+      }
+    },
+    "Or type it here": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O escríbela aquí"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ou escríbea aquí"
+          }
+        }
+      }
+    },
+    "Paste your key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pega tu clave"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pega a túa clave"
+          }
+        }
+      }
+    },
+    "Plus Body Battery, stress, SpO2 and respiration.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Además Body Battery, estrés, SpO2 y respiración."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ademais Body Battery, estrés, SpO2 e respiración."
+          }
+        }
+      }
+    },
+    "Recovery from your watch": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La recuperación de tu reloj"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A recuperación do teu reloxo"
+          }
+        }
+      }
+    },
+    "Reminder before it expires": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aviso antes de que caduque"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aviso antes de que caduque"
+          }
+        }
+      }
+    },
+    "Renew key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renovar clave"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renovar clave"
+          }
+        }
+      }
+    },
+    "Runs and strength from the watch": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreras y fuerza del reloj"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreiras e forza do reloxo"
+          }
+        }
+      }
+    },
+    "Settings tells you two weeks before; renewing takes the same three steps.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes te avisa dos semanas antes; renovarla son los mismos tres pasos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Axustes avísate dúas semanas antes; renovala son os mesmos tres pasos."
+          }
+        }
+      }
+    },
+    "Sign in to Garmin Connect if it asks.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicia sesión en Garmin Connect si te lo pide."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicia sesión en Garmin Connect se cho pide."
+          }
+        }
+      }
+    },
+    "Sleep stages and score": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fases y puntuación del sueño"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fases e puntuación do sono"
+          }
+        }
+      }
+    },
+    "Sync now": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizar ahora"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizar agora"
+          }
+        }
+      }
+    },
+    "Syncing…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizando…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizando…"
+          }
+        }
+      }
+    },
+    "Syncs on its own": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se sincroniza sola"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronízase soa"
+          }
+        }
+      }
+    },
+    "Tap **Copy**, then **Done** to come back here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca **Copy** y luego **Done** para volver aquí."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca **Copy** e logo **Done** para volver aquí."
+          }
+        }
+      }
+    },
+    "Tap **Create Key** and accept the terms.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca **Create Key** y acepta los términos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca **Create Key** e acepta os termos."
+          }
+        }
+      }
+    },
+    "That doesn't look like a key. In Garmin Connect, copy the key itself, then paste it here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eso no parece una clave. En Garmin Connect, copia la clave en sí y pégala aquí."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iso non parece unha clave. En Garmin Connect, copia a clave en si e pégaa aquí."
+          }
+        }
+      }
+    },
+    "The app checks it with Garmin, saves it in your Keychain and imports your last 60 days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La app la comprueba con Garmin, la guarda en tu Llavero e importa tus últimos 60 días."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A app compróbaa con Garmin, gárdaa no teu Chaveiro e importa os teus últimos 60 días."
+          }
+        }
+      }
+    },
+    "The key couldn't be saved securely on this iPhone. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se ha podido guardar la clave de forma segura en este iPhone. Vuelve a intentarlo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido gardar a clave de forma segura neste iPhone. Téntao de novo."
+          }
+        }
+      }
+    },
+    "The key is removed from this iPhone and your iCloud Keychain. What was imported stays.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave se borra de este iPhone y de tu Llavero de iCloud. Lo importado se queda."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A clave bórrase deste iPhone e do teu Chaveiro de iCloud. O importado quédase."
+          }
+        }
+      }
+    },
+    "The key is shown only once. Copy it before closing the page.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La clave solo se muestra una vez. Cópiala antes de cerrar la página."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A clave só se amosa unha vez. Cópiaa antes de pechar a páxina."
+          }
+        }
+      }
+    },
+    "Try again": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reintentar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tentar de novo"
+          }
+        }
+      }
+    },
+    "Used only to remind you before the key expires.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo se usa para avisarte antes de que caduque la clave."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Só se usa para avisarte antes de que caduque a clave."
+          }
+        }
+      }
+    },
+    "Uses Garmin's official Personal API with your own key. Not affiliated with Garmin.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa la Personal API oficial de Garmin con tu propia clave. Sin relación con Garmin."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa a Personal API oficial de Garmin coa túa propia clave. Sen relación con Garmin."
+          }
+        }
+      }
+    },
+    "Watch workouts never counted twice": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los entrenos del reloj nunca cuentan dos veces"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os adestramentos do reloxo nunca contan dúas veces"
+          }
+        }
+      }
+    },
+    "With Garmin's baseline: the key signal for the readiness light.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con la línea base de Garmin: la señal clave para el semáforo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coa liña base de Garmin: o sinal clave para o semáforo."
+          }
+        }
+      }
+    },
+    "Your Garmin key expires in {1} days. Create a new one to keep importing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu clave de Garmin caduca en {1} días. Crea otra para seguir importando."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa clave de Garmin caduca en {1} días. Crea outra para seguir importando."
+          }
+        }
+      }
+    },
+    "Your Garmin key expires today. Create a new one to keep importing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu clave de Garmin caduca hoy. Crea otra para seguir importando."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa clave de Garmin caduca hoxe. Crea outra para seguir importando."
+          }
+        }
+      }
+    },
+    "Your Garmin key has expired. Create a new one to keep importing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu clave de Garmin ha caducado. Crea otra para seguir importando."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa clave de Garmin caducou. Crea outra para seguir importando."
+          }
+        }
+      }
+    },
+    "Your key stays on your iPhone, in the Keychain, and only syncs through your own iCloud Keychain.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu clave se queda en tu iPhone, en el Llavero, y solo se sincroniza con tu propio Llavero de iCloud."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa clave quédase no teu iPhone, no Chaveiro, e só se sincroniza co teu propio Chaveiro de iCloud."
+          }
+        }
+      }
+    },
+    "{1} records from Garmin could not be read. Garmin may have changed something; the rest was imported.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se han podido leer {1} registros de Garmin. Puede que Garmin haya cambiado algo; el resto se ha importado."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puideron ler {1} rexistros de Garmin. Pode que Garmin cambiase algo; o resto importouse."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

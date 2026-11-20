@@ -53,6 +53,16 @@ struct TourContent {
                     ("arrow.triangle.2.circlepath", "Corrections the AI understands"),
                 ]
             )
+        case .recovery:
+            TourContent(
+                symbol: "applewatch.radiowaves.left.and.right", title: "Recovery from your watch",
+                body: "Apple Health and Garmin feed the readiness light: train hard, easy or rest, with the reasons.",
+                highlights: [
+                    ("waveform.path.ecg", "Nightly HRV against your own baseline"),
+                    ("key.horizontal.fill", "Garmin in three steps, with your own key"),
+                    ("figure.run", "Watch workouts never counted twice"),
+                ]
+            )
         case .safety:
             TourContent(
                 symbol: "lock.icloud.fill", title: "Your data, safe",
