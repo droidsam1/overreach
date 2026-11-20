@@ -74,6 +74,20 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var kind: String
         public var targetDate: String?
         public var priorityLifts: [String]
+        public var running: RunningObjective?
+        public var nextRun: NextRun?
+    }
+
+    public struct RunningObjective: Codable, Hashable, Sendable {
+        public var distanceMeters: Int
+        public var targetSeconds: Int?
+        public var aimsForPainFree: Bool
+    }
+
+    public struct NextRun: Codable, Hashable, Sendable {
+        public var day: String
+        public var purpose: String
+        public var durationMinutes: Int?
     }
 
     public struct Block: Codable, Hashable, Sendable {

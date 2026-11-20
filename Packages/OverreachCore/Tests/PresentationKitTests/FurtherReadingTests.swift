@@ -11,7 +11,7 @@ struct FurtherReadingTests {
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             .deletingLastPathComponent().deletingLastPathComponent()
         let text = try String(contentsOf: root.appendingPathComponent("docs/evidence.md"), encoding: .utf8)
-        let headings = text.split(separator: "\n").filter { $0.hasPrefix("### `") }
+        let headings = text.split(whereSeparator: \.isNewline).filter { $0.hasPrefix("### `") }
         return Set(headings.compactMap { $0.split(separator: "`").dropFirst().first.map(String.init) })
     }
 

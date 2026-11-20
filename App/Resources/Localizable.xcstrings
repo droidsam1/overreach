@@ -1,6 +1,584 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Easy run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rodaje suave"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira suave"
+          }
+        }
+      }
+    },
+    "Intervals": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series"
+          }
+        }
+      }
+    },
+    "Tempo run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera a ritmo sostenido"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira a ritmo sostido"
+          }
+        }
+      }
+    },
+    "Long run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tirada larga"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tirada longa"
+          }
+        }
+      }
+    },
+    "Race": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición"
+          }
+        }
+      }
+    },
+    "Rest day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día de descanso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día de descanso"
+          }
+        }
+      }
+    },
+    "Run {1} km in {2} without pain": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correr {1} km en {2} sin dolor"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correr {1} km en {2} sen dor"
+          }
+        }
+      }
+    },
+    "Run {1} km in {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correr {1} km en {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correr {1} km en {2}"
+          }
+        }
+      }
+    },
+    "Run {1} km without pain": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correr {1} km sin dolor"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correr {1} km sen dor"
+          }
+        }
+      }
+    },
+    "Finish {1} km": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completar {1} km"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completar {1} km"
+          }
+        }
+      }
+    },
+    "Running goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetivo de carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obxectivo de carreira"
+          }
+        }
+      }
+    },
+    "Set a running goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Definir un objetivo de carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Definir un obxectivo de carreira"
+          }
+        }
+      }
+    },
+    "Distance in km": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distancia en km"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distancia en km"
+          }
+        }
+      }
+    },
+    "Aim to run without pain": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetivo de correr sin dolor"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obxectivo de correr sen dor"
+          }
+        }
+      }
+    },
+    "Set a target time": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fijar un tiempo objetivo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fixar un tempo obxectivo"
+          }
+        }
+      }
+    },
+    "Target minutes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minutos del objetivo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minutos do obxectivo"
+          }
+        }
+      }
+    },
+    "Target seconds": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segundos del objetivo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segundos do obxectivo"
+          }
+        }
+      }
+    },
+    "Goal pace {1} per km": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ritmo objetivo de {1} por km"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ritmo obxectivo de {1} por km"
+          }
+        }
+      }
+    },
+    "Next planned run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próxima sesión de carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próxima sesión de carreira"
+          }
+        }
+      }
+    },
+    "Add a planned day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir un día al plan"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Engadir un día ao plan"
+          }
+        }
+      }
+    },
+    "Session type": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo de sesión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo de sesión"
+          }
+        }
+      }
+    },
+    "Planned minutes (0 if unknown)": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minutos previstos (0 si no se conocen)"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minutos previstos (0 se non se coñecen)"
+          }
+        }
+      }
+    },
+    "Keep it easy today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrena suave hoy."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestra suave hoxe."
+          }
+        }
+      }
+    },
+    "Keep your planned running rest day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén el día de descanso de carrera previsto."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén o día de descanso de carreira previsto."
+          }
+        }
+      }
+    },
+    "Your race or target date is today or tomorrow. Leave the extra run for another day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu competición o fecha objetivo es hoy o mañana. Deja la carrera extra para otro día."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa competición ou data obxectivo é hoxe ou mañá. Deixa a carreira extra para outro día."
+          }
+        }
+      }
+    },
+    "Today's running plan · {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera prevista hoy · {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira prevista hoxe · {1}"
+          }
+        }
+      }
+    },
+    "Next planned running day · {1} · {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximo día de carrera · {1} · {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximo día de carreira · {1} · {2}"
+          }
+        }
+      }
+    },
+    "Keep today's run easy. Try {1} min at a conversational pace.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén el rodaje de hoy suave. Prueba {1} min a un ritmo que te permita hablar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén o rodaxe de hoxe suave. Proba {1} min a un ritmo que che permita falar."
+          }
+        }
+      }
+    },
+    "Try {1} min at a conversational pace in place of the planned session.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambia la sesión prevista por {1} min a un ritmo que te permita hablar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambia a sesión prevista por {1} min a un ritmo que che permita falar."
+          }
+        }
+      }
+    },
+    "If you want to run today, try {1} min at a conversational pace.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si quieres correr hoy, prueba {1} min a un ritmo que te permita hablar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se queres correr hoxe, proba {1} min a un ritmo que che permita falar."
+          }
+        }
+      }
+    },
+    "Duration based on {1} recent runs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreras recientes usadas para calcular la duración: {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreiras recentes usadas para calcular a duración: {1}."
+          }
+        }
+      }
+    },
+    "For your pain-free goal, stop if you notice pain.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para tu objetivo sin dolor, para si notas dolor."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para o teu obxectivo sen dor, para se notas dor."
+          }
+        }
+      }
+    },
+    "Why this running option?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Por qué esta opción de carrera?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por que esta opción de carreira?"
+          }
+        }
+      }
+    },
+    "A conversational pace keeps the effort easy. The duration is a coaching estimate.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un ritmo que te permita hablar mantiene el esfuerzo suave. La duración es una estimación práctica."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un ritmo que che permita falar mantén o esforzo suave. A duración é unha estimación práctica."
+          }
+        }
+      }
+    },
     "If you want to lift today": {
       "extractionState": "manual",
       "localizations": {

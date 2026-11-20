@@ -84,8 +84,7 @@ struct DeloadRecoveryTests {
         let wobble: [Double] = [0, 4, -3, 6, -5, 2, -1, 5, -4, 3]
         return (0...66).map { offset in
             var metrics = DailyMetrics(day: day(-offset), sources: [.appleHealth])
-            metrics.hrvNightlyAverageMs = 55 + wobble[offset % wobble.count]
-            metrics.hrvMetric = .sdnn
+            metrics.hrvSDNNMs = 55 + wobble[offset % wobble.count]
             metrics.restingHeartRate = 50 + wobble[offset % wobble.count] / 5
             metrics.sleepSeconds = 7.5 * 3_600
             if offset < 7 { recent(offset, &metrics) }
@@ -100,7 +99,7 @@ struct DeloadRecoveryTests {
 
     @Test func aHardWeekIsCountedDayByDay() {
         let hard = history { offset, metrics in
-            metrics.hrvNightlyAverageMs = 42
+            metrics.hrvSDNNMs = 42
             metrics.restingHeartRate = 57
             if offset < 5 { metrics.sleepSeconds = 5.5 * 3_600 }
         }

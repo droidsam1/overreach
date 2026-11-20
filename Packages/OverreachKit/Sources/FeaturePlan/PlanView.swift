@@ -86,6 +86,18 @@ public struct PlanView<Assistant: View>: View {
                     PriorityLiftsView(model: model)
                 }
             }
+            if model.showsRunningPlan {
+                NavigationLink {
+                    RunningPlanView(model: model)
+                } label: {
+                    VStack(alignment: .leading) {
+                        Text("Running goal")
+                        if let summary = model.runningGoalSummary {
+                            Text(summary).font(.footnote).foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
         }
     }
 

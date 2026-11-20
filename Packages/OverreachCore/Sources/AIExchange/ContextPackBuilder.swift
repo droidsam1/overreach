@@ -118,8 +118,17 @@ public enum ContextPackBuilder {
             restingHeartRate: rounded(profile.restingHeartRate),
             cycleTracking: profile.cycleTracking == .off ? nil : profile.cycleTracking.rawValue,
             goal: profile.goal.map { goal in
-                .init(kind: goal.kind.rawValue, targetDate: goal.targetDate?.description,
-                      priorityLifts: goal.priorityLifts.map(name))
+                .init(
+                    kind: goal.kind.rawValue, targetDate: goal.targetDate?.description,
+                    priorityLifts: goal.priorityLifts.map(name),
+                    running: goal.kind == .hybrid ? goal.running.map {
+                        .init(distanceMeters: $0.distanceMeters, targetSeconds: $0.targetSeconds,
+                              aimsForPainFree: $0.aimsForPainFree)
+                    } : nil,
+                    nextRun: goal.kind == .hybrid ? goal.nextRun.map {
+                        .init(day: $0.day.description, purpose: $0.purpose.rawValue, durationMinutes: $0.durationMinutes)
+                    } : nil
+                )
             },
             declaredBlocks: profile.declaredBlocks.map { block in
                 let names = block.routineIDs.compactMap { routineNames[$0] }

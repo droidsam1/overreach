@@ -33,6 +33,8 @@ public final class TodayModel {
     public private(set) var checkIn: CheckIn?
     public private(set) var recentTrainingDays: [RecentTrainingDay] = []
     public private(set) var strengthOption: StrengthOption?
+    public private(set) var runningOption: RunningOption?
+    private var hasRunningGoal = false
     /// A deload proposal (training reinforced by recovery, `deload-recovery-signals`) or the deload week in progress.
     public private(set) var deloadAdvice: DeloadAdvice?
     private var trainingReadFailed = false
@@ -69,7 +71,8 @@ public final class TodayModel {
         }
         return switch readiness.level {
         case .green: L10n.text("Train as planned.")
-        case .amber: L10n.text("Keep it easy today. Run at a pace you can talk at, or lift with light effort.")
+        case .amber: hasRunningGoal ? L10n.text("Keep it easy today.")
+            : L10n.text("Keep it easy today. Run at a pace you can talk at, or lift with light effort.")
         case .red: L10n.text("Make it a recovery day: a walk or a very easy session. If you lift, keep it light (RPE 6 or less).")
         case .unknown: L10n.text("Not enough data yet to judge today.")
         }
@@ -284,6 +287,7 @@ public final class TodayModel {
         activeLoad = loadID
         isLoading = true
         strengthOption = nil
+        runningOption = nil
         defer {
             if activeLoad == loadID {
                 isLoading = false
@@ -318,6 +322,8 @@ public final class TodayModel {
         let garminConnected = await garmin?.connection() != nil
         let profile = try? await profiles?.profile()
         guard activeLoad == loadID else { return }
+        let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
+        hasRunningGoal = goal?.running.map { $0.distanceMeters > 0 } ?? false
         loadedDay = today
         let history = byDay.values.filter { !$0.sources.isEmpty }.sorted { $0.day < $1.day }
         week = history.filter { $0.day >= weekStart }
@@ -342,11 +348,14 @@ public final class TodayModel {
     ) async {
         // Include the previous day so copies across midnight can match before filtering to the visible week.
         let start = range.lowerBound.adding(days: -1, calendar: calendar).startDate(in: calendar)
+        let runningStart = hasRunningGoal && (readiness.level == .amber || readiness.level == .green)
+            ? range.upperBound.adding(days: -EasyRunAdvisor.historyDays, calendar: calendar).startDate(in: calendar)
+            : start
         async let logged = try? workouts?.sessions(from: start, to: now)
         async let catalog = try? exercises?.allExercises()
         async let watch = recordedStrength?.strengthActivities(from: start, to: now)
         async let checkInHistory = try? checkIns?.checkIns(in: range)
-        async let runs = Self.readRecentRuns(sources: sources, from: start, to: now)
+        async let runs = Self.readRecentRuns(sources: sources, from: runningStart, to: now)
         let (sessions, allExercises, recordings, previousCheckIns, runResult) = await (
             logged, catalog, watch, checkInHistory, runs
         )
@@ -357,6 +366,13 @@ public final class TodayModel {
             in: range, through: now, metrics: week, checkIns: currentCheckIn + (previousCheckIns ?? []),
             runs: runResult.activities, sessions: sessions ?? [], recordings: recordings ?? [], exercises: allExercises ?? []
         )
+        if hasRunningGoal, let goal = profile?.goal, let running = goal.running,
+           let decision = EasyRunAdvisor.advise(
+               goal: running, targetDay: goal.targetDate, planned: goal.nextRun, readiness: readiness, metrics: metrics,
+               runs: runResult.failed ? [] : runResult.activities, now: now, calendar: calendar
+           ) {
+            runningOption = RunningOption(goal: running, decision: decision, calendar: calendar, format: format)
+        }
         guard readiness.level == .amber, let sessions,
               !hasStrengthToday(sessions: sessions, recordings: recordings ?? [], now: now) else { return }
         await loadStrengthOption(today: range.upperBound, now: now, profile: profile, catalog: allExercises ?? [],

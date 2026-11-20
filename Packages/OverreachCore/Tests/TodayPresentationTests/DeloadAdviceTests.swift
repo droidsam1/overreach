@@ -45,8 +45,7 @@ struct DeloadAdviceTests {
         let wobble: [Double] = [0, 4, -3, 6, -5, 2, -1, 5, -4, 3]
         return (0...66).map { offset in
             var day = DailyMetrics(day: today.adding(days: -offset, calendar: calendar), sources: [.appleHealth])
-            day.hrvNightlyAverageMs = offset < 7 && poorWeek ? 40 : 55 + wobble[offset % wobble.count]
-            day.hrvMetric = .sdnn
+            day.hrvSDNNMs = offset < 7 && poorWeek ? 40 : 55 + wobble[offset % wobble.count]
             day.sleepSeconds = (offset < 7 && poorWeek ? 5.5 : 7.5) * 3_600
             return day
         }
