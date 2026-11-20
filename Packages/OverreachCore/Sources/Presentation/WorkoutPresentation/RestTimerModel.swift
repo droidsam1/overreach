@@ -25,17 +25,17 @@ public struct RestTimerState: Hashable, Sendable {
 @Observable
 public final class RestTimerModel {
     private struct Running {
-        let setID: DraftSet.ID
-        let exerciseID: DraftExercise.ID
+        var draft: RestTimerDraft
         let exerciseName: String
         let suggestion: String
-        var endsAt: Date
-        var durationSeconds: Int
     }
 
     private static let stepSeconds = 15
 
-    private var running: Running?
+    private var running: Running? {
+        didSet { onChange?() }
+    }
+    @ObservationIgnored var onChange: (() -> Void)?
     @ObservationIgnored private var alertTask: Task<Void, Never>?
 
     private let alerts: (any RestAlertScheduler)?
@@ -51,14 +51,16 @@ public final class RestTimerModel {
 
     public var isActive: Bool { running != nil }
 
+    var draft: RestTimerDraft? { running?.draft }
+
     public func state(at date: Date) -> RestTimerState? {
         guard let running else { return nil }
-        let seconds = max(0, Int(running.endsAt.timeIntervalSince(date).rounded(.up)))
+        let seconds = max(0, Int(running.draft.endsAt.timeIntervalSince(date).rounded(.up)))
         let isFinished = seconds == 0
         return RestTimerState(
             exerciseName: running.exerciseName,
             remaining: format.minutesAndSeconds(seconds),
-            progress: 1 - min(1, Double(seconds) / Double(max(1, running.durationSeconds))),
+            progress: 1 - min(1, Double(seconds) / Double(max(1, running.draft.durationSeconds))),
             isFinished: isFinished,
             title: isFinished ? L10n.text("Rest over") : L10n.text("Rest"),
             dismissTitle: isFinished ? L10n.text("Dismiss") : L10n.text("Skip"),
@@ -81,34 +83,41 @@ public final class RestTimerModel {
 
     /// Starts the suggested rest for the exercise's focus, replacing any rest in progress.
     func start(after setID: DraftSet.ID, of exercise: DraftExercise) {
+        let duration = FocusPrescription.for(exercise.focus ?? .hypertrophy).defaultRestSeconds
+        let draft = RestTimerDraft(
+            setID: setID, exerciseID: exercise.id, endsAt: clock().addingTimeInterval(TimeInterval(duration)),
+            durationSeconds: duration
+        )
+        restore(draft, for: exercise)
+    }
+
+    func restore(_ draft: RestTimerDraft, for exercise: DraftExercise) {
         let prescription = FocusPrescription.for(exercise.focus ?? .hypertrophy)
-        let duration = prescription.defaultRestSeconds
         let range = prescription.restSeconds
         let evidence = prescription.restEvidence
         let suggestion = L10n.format(
             "Suggested {1}–{2} · {3} ({4})", format.minutesAndSeconds(range.lowerBound),
             format.minutesAndSeconds(range.upperBound), evidence.level.displayName, evidence.key
         )
-        running = Running(
-            setID: setID, exerciseID: exercise.id, exerciseName: exercise.name, suggestion: suggestion,
-            endsAt: clock().addingTimeInterval(TimeInterval(duration)), durationSeconds: duration
-        )
-        scheduleAlert()
+        running = Running(draft: draft, exerciseName: exercise.name, suggestion: suggestion)
+        if draft.endsAt > clock() {
+            scheduleAlert()
+        }
     }
 
-    func stop() {
-        guard running != nil else { return }
+    func stop(cancelPendingAlert: Bool = false) {
+        guard running != nil || cancelPendingAlert else { return }
         running = nil
         enqueueAlert { await $0.cancelRestEnd() }
     }
 
     /// Stops the rest started by this set, if any.
     func stop(setID: DraftSet.ID) {
-        if running?.setID == setID { stop() }
+        if running?.draft.setID == setID { stop() }
     }
 
     func stop(exerciseID: DraftExercise.ID) {
-        if running?.exerciseID == exerciseID { stop() }
+        if running?.draft.exerciseID == exerciseID { stop() }
     }
 
     // MARK: Helpers
@@ -116,20 +125,20 @@ public final class RestTimerModel {
     private func adjust(by seconds: Int) {
         guard var current = running else { return }
         let now = clock()
-        let remaining = max(0, current.endsAt.timeIntervalSince(now)) + TimeInterval(seconds)
+        let remaining = max(0, current.draft.endsAt.timeIntervalSince(now)) + TimeInterval(seconds)
         guard remaining > 0 else {
             stop()
             return
         }
-        current.endsAt = now.addingTimeInterval(remaining)
-        current.durationSeconds = max(current.durationSeconds, Int(remaining.rounded(.up)))
+        current.draft.endsAt = now.addingTimeInterval(remaining)
+        current.draft.durationSeconds = max(current.draft.durationSeconds, Int(remaining.rounded(.up)))
         running = current
         scheduleAlert()
     }
 
     private func scheduleAlert() {
         guard let running else { return }
-        let date = running.endsAt
+        let date = running.draft.endsAt
         let title = L10n.text("Rest over")
         let body = L10n.format("Next set: {1}", running.exerciseName)
         enqueueAlert { await $0.scheduleRestEnd(at: date, title: title, body: body) }

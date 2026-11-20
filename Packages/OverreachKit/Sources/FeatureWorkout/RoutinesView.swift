@@ -9,12 +9,16 @@ import WorkoutPresentation
 /// What the Train tab shows when no session is open: start an empty session or one from a routine.
 struct StartSessionView: View {
     let routines: RoutinesModel
+    let notice: String?
     let onStartEmpty: () -> Void
     let onStart: (Routine) -> Void
     let onEdit: (UUID) -> Void
 
     var body: some View {
         List {
+            if let notice {
+                StatusLabel(title: notice, tone: .positive)
+            }
             if let message = routines.errorMessage {
                 Label(message, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red)

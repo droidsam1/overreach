@@ -36,7 +36,7 @@ struct RootView: View {
     @State private var whatsNewModel: WhatsNewModel
     @State private var askAIModel: AskAIModel
     @State private var planImportModel: PlanImportModel
-    @State private var selectedTab = AppTab.today
+    @State private var selectedTab: AppTab
     @State private var onboardingDestination: OnboardingDestination?
     @State private var showsStrongImport = false
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.system
@@ -60,7 +60,9 @@ struct RootView: View {
     init(container: AppContainer) {
         self.container = container
         _todayModel = State(initialValue: container.makeTodayModel())
-        _workoutModel = State(initialValue: container.makeWorkoutModel())
+        let workout = container.makeWorkoutModel()
+        _workoutModel = State(initialValue: workout)
+        _selectedTab = State(initialValue: workout.needsDraftRecovery ? .train : .today)
         _routinesModel = State(initialValue: container.makeRoutinesModel())
         _historyModel = State(initialValue: container.makeHistoryModel())
         _planModel = State(initialValue: container.makePlanModel())
@@ -162,6 +164,7 @@ struct RootView: View {
         }
         .onChange(of: scenePhase) {
             if scenePhase == .background {
+                workoutModel.retryDraftAccess()
                 Task { await backupModel.backUpIfConfigured() }
             } else if scenePhase == .active {
                 // The watch's workout may have reached Health since the session was saved.

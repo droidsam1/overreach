@@ -2,7 +2,7 @@ import Domain
 import Foundation
 
 /// Ways to get a stalled exercise moving again, in order of preference.
-public enum StallSuggestion: Hashable, Sendable {
+public enum StallSuggestion: Hashable, Codable, Sendable {
     /// The last miss was by one rep: use a smaller load jump.
     case microload(incrementKg: Double)
     /// Linear load stopped working: switch to double progression (rep progression works as well; Plotkin 2022).
@@ -28,7 +28,7 @@ public enum StallSuggestion: Hashable, Sendable {
     }
 }
 
-public enum ExerciseStatus: Hashable, Sendable {
+public enum ExerciseStatus: Hashable, Codable, Sendable {
     case notEnoughData
     case progressing
     case holding
@@ -141,7 +141,7 @@ public enum StallDetection {
 
 /// What the stall status is based on (`stall-heuristics`): best estimated 1RM of the recent sessions against the
 /// ones before, and how many recent sessions missed their target.
-public struct StallFacts: Hashable, Sendable {
+public struct StallFacts: Hashable, Codable, Sendable {
     public let recentBestKg: Double
     public let previousBestKg: Double
     public let recentSessions: Int

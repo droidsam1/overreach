@@ -155,6 +155,10 @@ public actor SwiftDataStore: WorkoutRepository, ExerciseRepository, CheckInRepos
         try modelContext.save()
     }
 
+    public func containsSession(id: UUID) throws -> Bool {
+        try modelContext.fetchCount(FetchDescriptor<SessionRecord>(predicate: #Predicate { $0.id == id })) > 0
+    }
+
     public func deleteSession(id: UUID) throws {
         try modelContext.delete(model: SessionRecord.self, where: #Predicate { $0.id == id })
         try modelContext.save()
