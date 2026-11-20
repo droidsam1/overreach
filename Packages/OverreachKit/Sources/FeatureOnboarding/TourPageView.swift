@@ -86,7 +86,6 @@ struct TourPageView: View {
     let canGoBack: Bool
     let onNext: () -> Void
     let onBack: () -> Void
-    let onSkipTour: () -> Void
     let onSkipSetup: () -> Void
 
     @State private var appeared = false
@@ -108,7 +107,7 @@ struct TourPageView: View {
                         .font(.system(size: 84, weight: .semibold))
                         .symbolRenderingMode(.hierarchical)
                         .foregroundStyle(.tint)
-                        .symbolEffect(.bounce, options: .nonRepeating, value: appeared)
+                        .symbolEffect(.bounce, options: .nonRepeating, value: appeared && !reduceMotion)
                         .scaleEffect(appeared || reduceMotion ? 1 : 0.6)
                         .padding(.top, Spacing.large)
                         .accessibilityHidden(true)
@@ -133,22 +132,14 @@ struct TourPageView: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             PageDots(count: count, index: index)
-            HStack {
-                if !isLast {
-                    Button("Skip tour", action: onSkipTour)
-                        .buttonStyle(.bordered)
+            Button(action: onNext) {
+                if isLast {
+                    Text("Set up")
+                } else {
+                    Text("Continue")
                 }
-                Spacer()
-                Button(action: onNext) {
-                    if isLast {
-                        Text("Set up")
-                    } else {
-                        Text("Continue")
-                    }
-                }
-                .buttonStyle(.borderedProminent)
             }
-            .controlSize(.large)
+            .buttonStyle(BrandButtonStyle())
         }
         .padding(Spacing.medium)
         .contentShape(Rectangle())
@@ -157,7 +148,7 @@ struct TourPageView: View {
             if value.translation.width > 60, canGoBack { onBack() }
         })
         .onAppear {
-            withAnimation(.spring(duration: 0.6, bounce: 0.4)) { appeared = true }
+            withAnimation(reduceMotion ? nil : .spring(duration: 0.6, bounce: 0.4)) { appeared = true }
         }
     }
 }

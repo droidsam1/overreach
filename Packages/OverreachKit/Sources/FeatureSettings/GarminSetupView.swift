@@ -326,10 +326,8 @@ public struct GarminSetupView: View {
                     Text(title)
                 }
             }
-            .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
+        .buttonStyle(BrandButtonStyle())
     }
 }
 

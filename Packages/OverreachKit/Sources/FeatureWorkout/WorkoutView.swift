@@ -34,7 +34,7 @@ public struct WorkoutView: View {
                     )
                 }
             }
-            .navigationTitle(model.isSessionActive ? model.sessionName : String(localized: "Train"))
+            .navigationTitle("Train")
             .inlineTitle(model.isSessionActive)
             .toolbar { toolbar }
             .sheet(isPresented: $isPickingExercise) {
@@ -83,16 +83,13 @@ public struct WorkoutView: View {
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         if model.isSessionActive {
-            // Long routine names wrap instead of being cut between the Discard and Finish buttons.
-            ToolbarItem(placement: .principal) {
-                Text(model.sessionName)
-                    .font(.headline)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.8)
-            }
             ToolbarItem(placement: .cancellationAction) {
-                Button("Discard", role: .destructive) { isConfirmingDiscard = true }
+                Menu {
+                    Button("Discard", systemImage: "trash", role: .destructive) { isConfirmingDiscard = true }
+                } label: {
+                    Label("Session options", systemImage: "ellipsis.circle")
+                        .labelStyle(.iconOnly)
+                }
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Finish") { Task { await model.requestFinish() } }
@@ -113,6 +110,9 @@ private struct SessionList: View {
 
     var body: some View {
         List {
+            Text(model.sessionName)
+                .font(.title2.weight(.semibold))
+                .accessibilityAddTraits(.isHeader)
             Button("How to log sets", systemImage: "questionmark.circle") { isShowingGuide = true }
             if let tip = model.generalWarmUpTip {
                 Label(tip, systemImage: "figure.walk")
@@ -173,6 +173,8 @@ private struct SessionList: View {
                             }
                         } label: {
                             Image(systemName: "ellipsis.circle")
+                                .frame(minWidth: 44, minHeight: 44)
+                                .contentShape(Rectangle())
                         }
                         .accessibilityLabel("Exercise options")
                     }
@@ -194,6 +196,7 @@ private struct SessionList: View {
                 set: { showsRIR in Task { await model.setEffortScale(showsRIR ? .repsInReserve : .rpe) } }
             ))
         }
+        .scrollDismissesKeyboard(.interactively)
         .keyboardDoneButton()
         .safeAreaInset(edge: .bottom) {
             if model.rest.isActive {
@@ -225,11 +228,15 @@ private struct TargetSummaryView: View {
             VStack(alignment: .leading, spacing: Spacing.xSmall) {
                 AdaptiveStack {
                     Text(summary.targetLine).font(.subheadline.monospacedDigit())
-                    Spacer()
                     if let status = summary.status {
-                        Text(status)
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(summary.isStalled ? .orange : .secondary)
+                        if summary.isStalled {
+                            StatusLabel(title: status, tone: .caution)
+                                .font(.caption.weight(.semibold))
+                        } else {
+                            Text(status)
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
                 Text(summary.focusLine)
@@ -239,7 +246,7 @@ private struct TargetSummaryView: View {
                 if summary.isStalled, let explanation = summary.statusExplanation {
                     Text(explanation)
                         .font(.caption)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -253,23 +260,25 @@ private struct SetRow: View {
     let onDoneChange: (Bool) -> Void
 
     var body: some View {
-        AdaptiveStack(spacing: Spacing.small) {
-            SetNumberLabel(number, isWarmUp: set.isWarmUp)
+        SetEntryRow(number: SetNumberLabel(number, isWarmUp: set.isWarmUp)) {
             SetValueFields(
                 weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe, showsRepsInReserve: showsRepsInReserve
             )
+        } action: {
             Toggle(isOn: Binding(get: { set.isDone }, set: onDoneChange)) {
-                Image(systemName: set.isDone ? "checkmark.circle.fill" : "circle")
+                Label("Set \(number) done", systemImage: set.isDone ? "checkmark.circle.fill" : "circle")
+                    .labelStyle(.iconOnly)
+                    .font(.title3)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
             }
             .toggleStyle(.button)
-            .accessibilityLabel("Set \(number) done")
         }
-        .opacity(set.isDone ? 0.6 : 1)
     }
 }
 
 extension View {
-    /// Inline title on iOS while `isInline`, so the session name sits between the toolbar buttons.
+    /// Leave more vertical room for logging when the session is active.
     @ViewBuilder
     fileprivate func inlineTitle(_ isInline: Bool) -> some View {
         #if os(iOS)

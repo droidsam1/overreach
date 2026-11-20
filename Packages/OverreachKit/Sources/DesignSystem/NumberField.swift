@@ -15,6 +15,7 @@ struct NumberField: View {
     let allowsDecimals: Bool
     @Binding var value: Double?
 
+    @ScaledMetric(relativeTo: .body) private var valueWidth: CGFloat = 52
     @State private var text = ""
     @State private var selection: TextSelection?
     @FocusState private var isFocused: Bool
@@ -25,6 +26,7 @@ struct NumberField: View {
                 .focused($isFocused)
                 .numericKeyboard(decimal: allowsDecimals)
                 .multilineTextAlignment(.trailing)
+                .frame(minWidth: valueWidth, idealWidth: valueWidth)
                 .accessibilityLabel(accessibilityLabel)
             Text(unit).foregroundStyle(.secondary).accessibilityHidden(true)
         }

@@ -24,7 +24,7 @@ public struct WhatsNewView: View {
                             .font(.system(size: 72, weight: .semibold))
                             .symbolRenderingMode(.hierarchical)
                             .foregroundStyle(.tint)
-                            .symbolEffect(.bounce, options: .nonRepeating, value: appeared)
+                            .symbolEffect(.bounce, options: .nonRepeating, value: appeared && !reduceMotion)
                             .padding(.top, Spacing.large)
                             .accessibilityHidden(true)
                         Text(model.title)
@@ -48,10 +48,9 @@ public struct WhatsNewView: View {
                 Button {
                     Task { await model.dismiss() }
                 } label: {
-                    Text("Continue").frame(maxWidth: .infinity)
+                    Text("Continue")
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .buttonStyle(BrandButtonStyle())
                 .padding(Spacing.medium)
             }
         }

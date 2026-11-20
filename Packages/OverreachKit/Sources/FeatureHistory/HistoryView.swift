@@ -12,6 +12,7 @@ private enum HistoryLayout: String {
 
 /// Past strength sessions with their detail, as a list or as a month calendar with runs and steps.
 public struct HistoryView: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var model: HistoryModel
     @AppStorage("history.layout") private var layout = HistoryLayout.list
 
@@ -28,17 +29,29 @@ public struct HistoryView: View {
                 }
             }
             .safeAreaInset(edge: .top, spacing: 0) {
-                Picker("Show as", selection: $layout) {
-                    Text("List").tag(HistoryLayout.list)
-                    Text("Calendar").tag(HistoryLayout.calendar)
+                Group {
+                    if typeSize.isAccessibilitySize {
+                        layoutPicker
+                            .pickerStyle(.menu)
+                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    } else {
+                        layoutPicker
+                            .pickerStyle(.segmented)
+                    }
                 }
-                .pickerStyle(.segmented)
                 .padding(.horizontal, Spacing.medium)
                 .padding(.vertical, Spacing.small)
                 .background(.bar)
             }
             .navigationTitle("History")
             .task { await model.load() }
+        }
+    }
+
+    private var layoutPicker: some View {
+        Picker("Show as", selection: $layout) {
+            Text("List").tag(HistoryLayout.list)
+            Text("Calendar").tag(HistoryLayout.calendar)
         }
     }
 

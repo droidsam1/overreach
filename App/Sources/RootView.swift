@@ -37,6 +37,8 @@ struct RootView: View {
     @State private var askAIModel: AskAIModel
     @State private var planImportModel: PlanImportModel
     @State private var selectedTab = AppTab.today
+    @State private var onboardingDestination: OnboardingDestination?
+    @State private var showsStrongImport = false
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.system
     @Environment(\.scenePhase) private var scenePhase
     private let container: AppContainer
@@ -93,7 +95,10 @@ struct RootView: View {
                 }
             }
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
-                SettingsView(importModel: importModel, backupModel: backupModel, garminModel: garminModel) {
+                SettingsView(
+                    importModel: importModel, backupModel: backupModel, garminModel: garminModel,
+                    showsStrongImport: $showsStrongImport
+                ) {
                     NavigationLink {
                         ExercisesView(model: exercisesModel)
                     } label: {
@@ -131,22 +136,14 @@ struct RootView: View {
         }) {
             WhatsNewView(model: whatsNewModel)
         }
-        .fullScreenCover(isPresented: $onboardingModel.isPresented) {
+        .fullScreenCover(isPresented: $onboardingModel.isPresented, onDismiss: openOnboardingDestination) {
             OnboardingView(
                 model: onboardingModel,
                 isGarminConnected: garminModel.isConnected,
                 onConnectHealth: { Task { await todayModel.connectHealth() } },
                 onConnectGarmin: { garminModel.start() }
             ) { destination in
-                switch destination {
-                case .train:
-                    selectedTab = .train
-                case .importHistory:
-                    selectedTab = .settings
-                case .restoreBackup:
-                    selectedTab = .settings
-                    backupModel.requestFolderChoice()
-                }
+                onboardingDestination = destination
             }
             // The Garmin setup over the first-run setup (the devices step opens it).
             .sheet(isPresented: garminSetupInSetup) { GarminSetupView(model: garminModel) }
@@ -186,6 +183,21 @@ struct RootView: View {
             if let message = backupModel.restoreOfferMessage {
                 Text(message)
             }
+        }
+    }
+
+    private func openOnboardingDestination() {
+        guard let destination = onboardingDestination else { return }
+        onboardingDestination = nil
+        switch destination {
+        case .train:
+            selectedTab = .train
+        case .importHistory:
+            selectedTab = .settings
+            showsStrongImport = true
+        case .restoreBackup:
+            selectedTab = .settings
+            backupModel.requestFolderChoice()
         }
     }
 }

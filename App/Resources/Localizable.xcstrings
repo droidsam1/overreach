@@ -409,6 +409,23 @@
         }
       }
     },
+    "About Apple Health data": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca de los datos de Apple Salud"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre os datos de Apple Saúde"
+          }
+        }
+      }
+    },
     "About you": {
       "extractionState": "manual",
       "localizations": {
@@ -439,6 +456,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Por riba do obxectivo: {1} fronte a {2}"
+          }
+        }
+      }
+    },
+    "Activity by day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actividad por día"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actividade por día"
           }
         }
       }
@@ -1072,23 +1106,6 @@
         }
       }
     },
-    "Block": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bloque"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bloque"
-          }
-        }
-      }
-    },
     "Body Battery": {
       "extractionState": "manual",
       "localizations": {
@@ -1136,23 +1153,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ambas significan o mesmo: RPE = 10 − repeticións en reserva. O teu historial e os teus obxectivos non cambian."
-          }
-        }
-      }
-    },
-    "Bring the answer back": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Traer la respuesta"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Traer a resposta"
           }
         }
       }
@@ -1531,23 +1531,6 @@
         }
       }
     },
-    "Copy": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Copiar"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Copiar"
-          }
-        }
-      }
-    },
     "Copy fills in the muscles below. Merge moves this exercise's history to the other one.": {
       "extractionState": "manual",
       "localizations": {
@@ -1578,6 +1561,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Copiar músculos"
+          }
+        }
+      }
+    },
+    "Copy report": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar informe"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar informe"
           }
         }
       }
@@ -2364,23 +2364,6 @@
         }
       }
     },
-    "Data": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Datos"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Datos"
-          }
-        }
-      }
-    },
     "Date": {
       "extractionState": "manual",
       "localizations": {
@@ -3146,19 +3129,19 @@
         }
       }
     },
-    "Export…": {
+    "Export backup…": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Exportar…"
+            "value": "Exportar copia de seguridad…"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Exportar…"
+            "value": "Exportar copia de seguranza…"
           }
         }
       }
@@ -4013,6 +3996,23 @@
         }
       }
     },
+    "Import reply file…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar archivo de respuesta…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar ficheiro de resposta…"
+          }
+        }
+      }
+    },
     "Import stopped. Already imported sessions are kept; importing again is safe.": {
       "extractionState": "manual",
       "localizations": {
@@ -4026,6 +4026,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "A importación detívose. As sesións xa importadas consérvanse e podes volver importar sen risco."
+          }
+        }
+      }
+    },
+    "Import the reply": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar la respuesta"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar a resposta"
           }
         }
       }
@@ -5271,6 +5288,23 @@
         }
       }
     },
+    "No RIR": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin RIR"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen RIR"
+          }
+        }
+      }
+    },
     "No RPE": {
       "extractionState": "manual",
       "localizations": {
@@ -5301,6 +5335,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen conta, funciona sen conexión"
+          }
+        }
+      }
+    },
+    "No activity recorded this month.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay actividad registrada este mes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai actividade rexistrada este mes."
           }
         }
       }
@@ -5696,19 +5747,19 @@
         }
       }
     },
-    "Open a file…": {
+    "Opens rest timer details": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abrir un archivo…"
+            "value": "Abre los detalles del descanso"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abrir un ficheiro…"
+            "value": "Abre os detalles do descanso"
           }
         }
       }
@@ -6002,6 +6053,23 @@
         }
       }
     },
+    "Prepare your report": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparar el informe"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparar o informe"
+          }
+        }
+      }
+    },
     "Previous month": {
       "extractionState": "manual",
       "localizations": {
@@ -6185,6 +6253,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cuádriceps"
+          }
+        }
+      }
+    },
+    "RIR": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RIR"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RIR"
           }
         }
       }
@@ -6648,6 +6733,23 @@
         }
       }
     },
+    "Rest timer": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporizador de descanso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporizador de descanso"
+          }
+        }
+      }
+    },
     "Rest timer after every set": {
       "extractionState": "manual",
       "localizations": {
@@ -6733,6 +6835,23 @@
         }
       }
     },
+    "Restore backup…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar copia de seguridad…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar copia de seguranza…"
+          }
+        }
+      }
+    },
     "Restore failed.": {
       "extractionState": "manual",
       "localizations": {
@@ -6780,23 +6899,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Restaurar desde unha copia"
-          }
-        }
-      }
-    },
-    "Restore from file…": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Restaurar desde archivo…"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Restaurar desde ficheiro…"
           }
         }
       }
@@ -7311,6 +7413,23 @@
         }
       }
     },
+    "Session options": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opciones de la sesión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opcións da sesión"
+          }
+        }
+      }
+    },
     "Session summary": {
       "extractionState": "manual",
       "localizations": {
@@ -7481,6 +7600,23 @@
         }
       }
     },
+    "Setup options": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opciones de configuración"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opcións de configuración"
+          }
+        }
+      }
+    },
     "Sex": {
       "extractionState": "manual",
       "localizations": {
@@ -7549,6 +7685,23 @@
         }
       }
     },
+    "Share with an assistant": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir con un asistente"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir cun asistente"
+          }
+        }
+      }
+    },
     "Share your data with ChatGPT or Claude and bring routines back.": {
       "extractionState": "manual",
       "localizations": {
@@ -7579,23 +7732,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Comparte o teu adestramento como datos con ChatGPT ou Claude, coméntao e trae rutinas de volta."
-          }
-        }
-      }
-    },
-    "Share your training as data: sessions with notes, exercise settings, trends and health metrics. Then ask ChatGPT, Claude or another assistant whatever you need.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Comparte tu entrenamiento como datos: sesiones con notas, ajustes de ejercicios, tendencias y métricas de salud. Después pregunta a ChatGPT, Claude u otro asistente lo que necesites."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Comparte o teu adestramento como datos: sesións con notas, axustes de exercicios, tendencias e métricas de saúde. Despois pregunta a ChatGPT, Claude ou outro asistente o que precises."
           }
         }
       }
@@ -7736,6 +7872,23 @@
         }
       }
     },
+    "Skip rest": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitir descanso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitir descanso"
+          }
+        }
+      }
+    },
     "Skip setup": {
       "extractionState": "manual",
       "localizations": {
@@ -7753,19 +7906,19 @@
         }
       }
     },
-    "Skip tour": {
+    "Skip this step": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saltar presentación"
+            "value": "Omitir este paso"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saltar presentación"
+            "value": "Omitir este paso"
           }
         }
       }
@@ -8990,6 +9143,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hoxe dite se adestrar forte, suave ou descansar, segundo a túa VFC, FC en repouso, sono e rexistro diario, cos motivos."
+          }
+        }
+      }
+    },
+    "Today's metrics": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Métricas de hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Métricas de hoxe"
           }
         }
       }
@@ -11727,6 +11897,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Os adestramentos do reloxo nunca contan dúas veces"
+          }
+        }
+      }
+    },
+    "Why this recommendation?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Por qué esta recomendación?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por que esta recomendación?"
           }
         }
       }

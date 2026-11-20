@@ -7,27 +7,41 @@ import SwiftUI
 /// History as a month calendar: strength days, runs and steps, with the selected day below.
 struct HistoryCalendarView: View {
     @Bindable var history: HistoryModel
+    @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var fitsGrid = true
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
 
     private var calendar: HistoryCalendarModel { history.calendar }
+
+    private var showsAgenda: Bool { typeSize.isAccessibilitySize || !fitsGrid }
 
     var body: some View {
         List {
             Section {
                 header
-                grid
-                legend
+                if !showsAgenda {
+                    grid
+                    legend
+                }
+            }
+            if !showsAgenda, let detail = calendar.selectedDetail {
+                Section(detail.title) {
+                    DayDetailRows(history: history, detail: detail)
+                }
+            }
+            if showsAgenda {
+                agenda
             }
             Section {
                 totals
             } footer: {
                 notices
             }
-            if let detail = calendar.selectedDetail {
-                DayDetailSection(history: history, detail: detail)
-            }
         }
-        .animation(.snappy, value: calendar.selectedDay)
+        // Seven 44-pt cells plus the grouped list's outer margins.
+        .onGeometryChange(for: Bool.self) { $0.size.width >= 352 } action: { fitsGrid = $0 }
+        .animation(reduceMotion ? nil : .snappy, value: calendar.selectedDay)
         .toolbar {
             Button("Today") {
                 Task { await calendar.showToday() }
@@ -53,40 +67,70 @@ struct HistoryCalendarView: View {
         }
         .id(calendar.month)
         .transition(.opacity)
-        .animation(.easeInOut(duration: 0.2), value: calendar.month)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: calendar.month)
+        .listRowInsets(EdgeInsets(top: Spacing.small, leading: 0, bottom: Spacing.small, trailing: 0))
         .listRowSeparator(.hidden)
     }
 
     private var header: some View {
-        HStack {
-            Button("Previous month", systemImage: "chevron.left") {
-                Task { await calendar.showPreviousMonth() }
+        ViewThatFits(in: .horizontal) {
+            HStack {
+                previousMonth
+                Spacer(minLength: 0)
+                monthTitle
+                Spacer(minLength: 0)
+                nextMonth
             }
-            Spacer()
-            Text(calendar.monthTitle)
-                .font(.title3.weight(.semibold))
-                .accessibilityAddTraits(.isHeader)
-            Spacer()
-            Button("Next month", systemImage: "chevron.right") {
-                Task { await calendar.showNextMonth() }
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                monthTitle
+                HStack {
+                    previousMonth
+                    nextMonth
+                }
             }
-            .disabled(!calendar.canShowNextMonth)
         }
-        .labelStyle(.iconOnly)
         .buttonStyle(.borderless)
-        .font(.body.weight(.semibold))
         .listRowSeparator(.hidden)
     }
 
+    private var monthTitle: some View {
+        Text(calendar.monthTitle)
+            .font(.title3.weight(.semibold))
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    private var previousMonth: some View {
+        Button {
+            Task { await calendar.showPreviousMonth() }
+        } label: {
+            Label("Previous month", systemImage: "chevron.left")
+                .labelStyle(.iconOnly)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
+        }
+    }
+
+    private var nextMonth: some View {
+        Button {
+            Task { await calendar.showNextMonth() }
+        } label: {
+            Label("Next month", systemImage: "chevron.right")
+                .labelStyle(.iconOnly)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        .disabled(!calendar.canShowNextMonth)
+    }
+
     private var legend: some View {
-        ViewThatFits {
+        ViewThatFits(in: .horizontal) {
             HStack(spacing: Spacing.medium) { legendItems }
             VStack(alignment: .leading, spacing: Spacing.xSmall) { legendItems }
         }
     }
 
     @ViewBuilder private var legendItems: some View {
-        CalendarLegendItem("Strength", marker: .dot(ActivityColor.strength))
+        CalendarLegendItem("Strength", marker: .square(ActivityColor.strength))
         CalendarLegendItem("Run", marker: .dot(ActivityColor.run))
         CalendarLegendItem("Steps vs your average", marker: .ring(ActivityColor.steps))
     }
@@ -95,6 +139,38 @@ struct HistoryCalendarView: View {
         AdaptiveStack(spacing: Spacing.small) {
             ForEach(calendar.totals) { total in
                 CompactStat(value: total.value, label: total.label)
+            }
+        }
+    }
+
+    private var agenda: some View {
+        Section("Activity by day") {
+            let days = calendar.agendaDays
+            if days.isEmpty {
+                Text("No activity recorded this month.")
+                    .foregroundStyle(.secondary)
+            }
+            ForEach(days) { cell in
+                Button {
+                    calendar.select(cell.day)
+                } label: {
+                    HStack(alignment: .firstTextBaseline, spacing: Spacing.small) {
+                        Text(cell.accessibilityLabel)
+                            .foregroundStyle(.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Image(systemName: cell.isSelected ? "chevron.up" : "chevron.down")
+                            .font(.footnote.weight(.semibold))
+                            .accessibilityHidden(true)
+                    }
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(cell.isSelected ? .isSelected : [])
+
+                if cell.isSelected, let detail = calendar.selectedDetail {
+                    DayDetailRows(history: history, detail: detail)
+                }
             }
         }
     }
@@ -135,38 +211,34 @@ private struct DayCellButton: View {
 }
 
 /// The selected day: sessions (linking to their detail), runs and steps.
-private struct DayDetailSection: View {
+private struct DayDetailRows: View {
     @Bindable var history: HistoryModel
     let detail: CalendarDayDetail
 
     var body: some View {
-        Section {
-            if detail.isEmpty {
-                Text(detail.emptyText)
-                    .foregroundStyle(.secondary)
-            }
-            ForEach(detail.sessions) { summary in
-                NavigationLink {
-                    SessionDetailView(model: history, sessionID: summary.id)
-                } label: {
-                    HStack(alignment: .firstTextBaseline, spacing: Spacing.small) {
-                        Image(systemName: "dumbbell.fill")
-                            .foregroundStyle(ActivityColor.strength)
-                            .accessibilityHidden(true)
-                        SessionRow(summary: summary)
-                    }
+        if detail.isEmpty {
+            Text(detail.emptyText)
+                .foregroundStyle(.secondary)
+        }
+        ForEach(detail.sessions) { summary in
+            NavigationLink {
+                SessionDetailView(model: history, sessionID: summary.id)
+            } label: {
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.small) {
+                    Image(systemName: "dumbbell.fill")
+                        .foregroundStyle(ActivityColor.strength)
+                        .accessibilityHidden(true)
+                    SessionRow(summary: summary)
                 }
             }
-            ForEach(detail.runs) { run in
-                RunRow(run: run)
-            }
-            if let steps = detail.steps {
-                Label(steps, systemImage: "shoeprints.fill")
-                    .monospacedDigit()
-                    .labelStyle(TintedIconLabelStyle(tint: ActivityColor.steps))
-            }
-        } header: {
-            Text(detail.title)
+        }
+        ForEach(detail.runs) { run in
+            RunRow(run: run)
+        }
+        if let steps = detail.steps {
+            Label(steps, systemImage: "shoeprints.fill")
+                .monospacedDigit()
+                .labelStyle(TintedIconLabelStyle(tint: ActivityColor.steps))
         }
     }
 }

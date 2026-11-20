@@ -58,6 +58,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   stalls or the working weight.
 
 ### Changed
+- Training and history editing adapt set controls to narrow screens and large text. The rest countdown stays
+  compact, with time adjustments available on demand.
+- History switches to a daily agenda when the monthly grid needs more room. Today prioritizes available
+  recovery data and the Apple Health connection, and gives large metrics a single column.
+- Plan leads with what to do next, the AI screen shows the report and reply steps in order, and first-run
+  setup can open the Strong import screen directly.
 - Easier weight and reps fields while logging. The whole field, unit included, is the tap target. Tapping selects
   the value so typing replaces it. A "Done" button above the keyboard and scrolling hide the keyboard. Values save
   as you type, so marking a set right after typing keeps them.

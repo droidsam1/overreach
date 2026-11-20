@@ -54,6 +54,11 @@ struct StartSessionView: View {
                     Text("Up next in your plan")
                 }
             }
+            Section {
+                Button("Start empty session", systemImage: "plus.circle.fill", action: onStartEmpty)
+            } footer: {
+                Text("Targets come from your history.")
+            }
             if !routines.planChecks.isEmpty {
                 Section("Plan check") {
                     ForEach(routines.planChecks) { check in
@@ -62,11 +67,6 @@ struct StartSessionView: View {
                         }
                     }
                 }
-            }
-            Section {
-                Button("Start empty session", systemImage: "plus.circle.fill", action: onStartEmpty)
-            } footer: {
-                Text("Targets come from your history.")
             }
             Section {
                 ForEach(routines.rows) { row in
@@ -109,6 +109,8 @@ struct StartSessionView: View {
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
             .accessibilityLabel("Routine options")
@@ -190,8 +192,7 @@ private struct PlanCheckView: View {
                 .foregroundStyle(.secondary)
             if let action = check.actionTitle {
                 Button(action, action: onAccept)
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
+                    .buttonStyle(BrandButtonStyle())
             }
         }
         .padding(.vertical, Spacing.xSmall)
