@@ -273,8 +273,7 @@ struct PreviewMetricsSource: MetricsSource {
         return (0...25).map { offset in
             let day = range.upperBound.adding(days: -offset, calendar: calendar)
             var metrics = DailyMetrics(day: day, sources: [.garmin])
-            metrics.hrvNightlyAverageMs = offset < 4 ? 34 : 43
-            metrics.hrvMetric = .rmssd
+            metrics.hrvRMSSDMs = offset < 4 ? 34 : 43
             metrics.restingHeartRate = offset == 0 ? 60 : 59
             if offset == 0 {
                 metrics.sleepSeconds = 7.6 * 3_600

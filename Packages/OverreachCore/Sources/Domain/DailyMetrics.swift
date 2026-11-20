@@ -1,9 +1,19 @@
 import Foundation
 
 /// Which heart rate variability statistic a source reports. They are not interchangeable (ADR-0024): Garmin reports
-/// nightly RMSSD, Apple Watch reports SDNN from short readings. A baseline only ever compares nights of one kind.
+/// nightly RMSSD, Apple Watch reports SDNN from short readings. A baseline only ever compares nights of one kind
+/// (ADR-0025).
 public enum HRVMetric: String, Codable, Sendable, CaseIterable {
     case rmssd, sdnn
+
+    /// Where readings of this statistic come from today: Garmin's Personal API reports nightly RMSSD, Apple Health
+    /// stores SDNN. A second source of the same statistic would need its own series (ADR-0025).
+    public var source: DataSourceKind {
+        switch self {
+        case .rmssd: .garmin
+        case .sdnn: .appleHealth
+        }
+    }
 }
 
 /// Everything known about one day of recovery. Every field is optional: what is available depends on the
@@ -12,9 +22,11 @@ public struct DailyMetrics: Hashable, Codable, Sendable {
     public var day: CalendarDay
 
     // MARK: Recovery
-    public var hrvNightlyAverageMs: Double?
-    /// The statistic behind the HRV values of this day. `nil` for data stored before it was recorded.
-    public var hrvMetric: HRVMetric?
+    /// Nightly RMSSD (Garmin's whole-night average), in ms.
+    public var hrvRMSSDMs: Double?
+    /// Nightly SDNN (mean of Apple Watch readings during sleep), in ms.
+    public var hrvSDNNMs: Double?
+    /// Garmin's highest 5-minute RMSSD of the night. Context only.
     public var hrvNightlyHighMs: Double?
     public var hrvBaselineLowMs: Double?
     public var hrvBaselineHighMs: Double?
@@ -52,13 +64,39 @@ public struct DailyMetrics: Hashable, Codable, Sendable {
         self.sources = sources
     }
 
+    /// The night's value of one HRV statistic. RMSSD and SDNN are separate series and never stand in for each
+    /// other (ADR-0025).
+    public func hrv(_ metric: HRVMetric) -> Double? {
+        switch metric {
+        case .rmssd: hrvRMSSDMs
+        case .sdnn: hrvSDNNMs
+        }
+    }
+
+    public mutating func setHRV(_ value: Double?, _ metric: HRVMetric) {
+        switch metric {
+        case .rmssd: hrvRMSSDMs = value
+        case .sdnn: hrvSDNNMs = value
+        }
+    }
+
+    /// The statistic shown for this night when one value is displayed: RMSSD when both exist.
+    public var hrvMetric: HRVMetric? {
+        HRVMetric.allCases.first { hrv($0) != nil }
+    }
+
+    /// The night's HRV for display, reports and AI context, always next to `hrvMetric`. Rules use `hrv(_:)`.
+    public var hrvNightlyAverageMs: Double? {
+        hrvMetric.flatMap(hrv)
+    }
+
     /// Returns a copy where every missing value is filled from `other`. Values already present win, so merge
     /// sources in priority order: `garmin.merging(health)` keeps Garmin's values when both have them.
     public func merging(_ other: DailyMetrics) -> DailyMetrics {
         var merged = self
-        merged.hrvNightlyAverageMs = hrvNightlyAverageMs ?? other.hrvNightlyAverageMs
-        // The statistic travels with the value it describes, never mixed across sources.
-        merged.hrvMetric = hrvNightlyAverageMs != nil ? hrvMetric : other.hrvMetric
+        // Each statistic is its own series, so a night can keep Garmin's RMSSD and Apple's SDNN.
+        merged.hrvRMSSDMs = hrvRMSSDMs ?? other.hrvRMSSDMs
+        merged.hrvSDNNMs = hrvSDNNMs ?? other.hrvSDNNMs
         merged.hrvNightlyHighMs = hrvNightlyHighMs ?? other.hrvNightlyHighMs
         merged.hrvBaselineLowMs = hrvBaselineLowMs ?? other.hrvBaselineLowMs
         merged.hrvBaselineHighMs = hrvBaselineHighMs ?? other.hrvBaselineHighMs

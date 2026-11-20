@@ -148,3 +148,11 @@ extension DataSourceKind {
         }
     }
 }
+
+extension HRVMetric {
+    /// "RMSSD, Garmin": the statistic and where it comes from, so a reason always says which series it judged
+    /// (ADR-0025). Statistic names are the same in every language.
+    public var seriesLabel: String {
+        rawValue.uppercased() + ", " + source.displayName
+    }
+}

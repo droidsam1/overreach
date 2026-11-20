@@ -464,6 +464,25 @@ actor ProgressRecorder {
 struct GarminKeyContainmentTests {
     private let key = "valid-key-0123456789"
 
+    @Test func aCacheSavedBeforeSeparateHRVSeriesKeepsItsRMSSD() throws {
+        // Before ADR-0025 each night held one value in `hrvNightlyAverageMs`, labelled since ADR-0024.
+        let json = """
+            {"lastSyncedDay":{"year":2026,"month":11,"day":19},"runs":[],"strength":[],"metrics":[
+              {"day":{"year":2026,"month":11,"day":18},"sources":["garmin"],"hrvNightlyAverageMs":41},
+              {"day":{"year":2026,"month":11,"day":19},"sources":["garmin"],"hrvNightlyAverageMs":38,"hrvMetric":"rmssd",
+               "restingHeartRate":52}
+            ]}
+            """
+        let cache = try JSONDecoder().decode(GarminCache.self, from: Data(json.utf8))
+
+        #expect(cache.metrics.map { $0.hrv(.rmssd) } == [41, 38])
+        #expect(cache.metrics.allSatisfy { $0.hrv(.sdnn) == nil })
+        #expect(cache.metrics.last?.restingHeartRate == 52)
+
+        let reloaded = try JSONDecoder().decode(GarminCache.self, from: JSONEncoder().encode(cache))
+        #expect(reloaded == cache)
+    }
+
     @Test func theCacheHoldsNeitherTheKeyNorTheToken() async throws {
         let garmin = FakeGarmin()
         let secrets = MemorySecrets()

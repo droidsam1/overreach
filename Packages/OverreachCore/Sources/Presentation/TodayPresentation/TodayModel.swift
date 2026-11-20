@@ -88,15 +88,16 @@ public final class TodayModel {
 
     public var hrvCoverageNote: String? {
         guard let coverage = readiness.hrvCoverage, !coverage.canCompare else { return nil }
+        let series = coverage.metric?.seriesLabel ?? L10n.text("HRV")
         if coverage.baselineReadings < coverage.minimumBaselineReadings {
             return L10n.format(
-                "Still building your usual HRV range ({1} of {2} comparable readings needed).",
-                String(coverage.baselineReadings), String(coverage.minimumBaselineReadings)
+                "Still building your usual HRV range ({1}: {2} of {3} comparable readings needed).",
+                series, String(coverage.baselineReadings), String(coverage.minimumBaselineReadings)
             )
         }
         return L10n.format(
-            "Too few comparable HRV readings in the last {1} days ({2} available, {3} needed).",
-            String(coverage.recentDays), String(coverage.recentReadings), String(coverage.minimumRecentReadings)
+            "Too few comparable HRV readings ({1}) in the last {2} days ({3} available, {4} needed).",
+            series, String(coverage.recentDays), String(coverage.recentReadings), String(coverage.minimumRecentReadings)
         )
     }
 
@@ -206,13 +207,14 @@ public final class TodayModel {
         )
     }
 
-    /// "7-day avg 42 ms", from the days that have a value of the same statistic as the latest (RMSSD and SDNN are not
-    /// averaged together, ADR-0024).
+    /// "RMSSD · 7-day avg 42 ms": the statistic shown for the latest night, and its weekly average. RMSSD and SDNN are
+    /// separate series and never averaged together (ADR-0025).
     public var hrvCaption: String? {
-        let latest = ([metrics].compactMap { $0 } + week.reversed()).first { $0.hrvNightlyAverageMs != nil }
+        let latest = ([metrics].compactMap { $0 } + week.reversed()).lazy.compactMap(\.hrvMetric).first
         guard let latest else { return nil }
-        return average { $0.hrvMetric == latest.hrvMetric ? $0.hrvNightlyAverageMs : nil }
-            .map { weekly(format.number($0, maxFractionDigits: 0) + " ms") }
+        let statistic = latest.rawValue.uppercased()
+        guard let weekly = average({ $0.hrv(latest) }) else { return statistic }
+        return statistic + " · " + self.weekly(format.number(weekly, maxFractionDigits: 0) + " ms")
     }
 
     /// Body Battery and stress are Garmin's own scores, not validated independently (`composite-scores`).
@@ -425,10 +427,10 @@ public final class TodayModel {
         case .symptomsLimitTraining:
             L10n.text("You reported symptoms that make you feel too unwell to train.")
         case .hrvBelowBaseline(let nights):
-            if let coverage = readiness.hrvCoverage {
+            if let coverage = readiness.hrvCoverage, let metric = coverage.metric {
                 L10n.format(
-                    "HRV below your usual range ({1} of {2} comparable readings low in the last {3} days).",
-                    String(nights), String(coverage.recentReadings), String(coverage.recentDays)
+                    "HRV ({1}) below your usual range ({2} of {3} comparable readings low in the last {4} days).",
+                    metric.seriesLabel, String(nights), String(coverage.recentReadings), String(coverage.recentDays)
                 )
             } else {
                 L10n.text("HRV below your usual range.")

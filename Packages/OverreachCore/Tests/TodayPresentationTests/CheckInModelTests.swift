@@ -61,8 +61,7 @@ private struct LowHRVMetrics: MetricsSource {
         (0...25).map { offset in
             let day = today.adding(days: -offset, calendar: calendar)
             var metrics = DailyMetrics(day: day, sources: [.garmin])
-            metrics.hrvMetric = .rmssd
-            metrics.hrvNightlyAverageMs = offset < 7 ? 35 : 55
+            metrics.hrvRMSSDMs = offset < 7 ? 35 : 55
             metrics.restingHeartRate = offset == 0 && elevatedPulse ? 59 : 50
             return metrics
         }.filter { range.contains($0.day) }

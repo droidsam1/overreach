@@ -1,6 +1,6 @@
 # 0025 — HRV: one series per metric, never a mixed baseline
 
-- **Status:** Proposed
+- **Status:** Accepted (implemented 2026-11-20; refines 0024)
 - **Date:** 2026-11-20
 
 ## Context
@@ -24,8 +24,13 @@ sources: `docs/design/hrv-sources.md`; evidence keys `hrv-metric-type`, `wearabl
    context, always shown with its metric.
 2. `ReadinessRules` judges one series: the one with a baseline (≥ 14 of the last 60 nights) and ≥ 3 of the last 7;
    RMSSD when both qualify. Series are never mixed or converted. The reason names the metric and source.
-3. A new source builds its own baseline. Today shows how many nights it still needs. The HRV signal is skipped
-   when neither series qualifies.
+3. A new source builds its own baseline. While it does, the other series keeps being judged if it still
+   qualifies. When neither does, the HRV signal is skipped and Today shows how many nights the series read most
+   recently (the watch being worn) still needs.
+5. Implementation: `DailyMetrics.hrv(_:)`/`setHRV(_:_:)`; `hrvMetric` and `hrvNightlyAverageMs` are computed
+   (RMSSD first). `GarminCache` decoding moves the single value of older caches (`hrvNightlyAverageMs`, labelled
+   `rmssd` or unlabelled, as only Garmin filled it) into `hrvRMSSDMs`, so no re-sync is needed. Today's HRV caption,
+   coverage note and reason, and the Markdown report, name the statistic (and source for the rule).
 4. Garmin's HRV baseline and status and Body Battery are context only, labelled as Garmin's.
 
 ## Consequences

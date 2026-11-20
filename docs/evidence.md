@@ -288,9 +288,9 @@ RMSSD and SDNN are different statistics: RMSSD reflects beat-to-beat (vagal) var
 over the recording, and both depend on recording length. Their values and norms differ, so a baseline built with one
 cannot judge the other. Garmin reports nightly RMSSD (Personal API `lastNightAvg`); Apple Health stores
 `heartRateVariabilitySDNN` from short Apple Watch readings. Athlete monitoring is usually built on ln RMSSD.
-→ Every HRV value carries its statistic (`HRVMetric`); readiness baselines and Today's 7-day average only use nights
-of the same statistic as the latest night. Switching watches starts a new baseline (14 nights) instead of a false
-drop or rise (ADR-0024). Refs: Task Force of the ESC and NASPE 1996, Circulation 93:1043 (standards); Shaffer &
+→ Each statistic is its own series (`hrvRMSSDMs`, `hrvSDNNMs`); readiness judges one series and Today's 7-day
+average uses one statistic, never mixing or converting them. A new watch builds its own baseline (14 nights) instead
+of causing a false drop or rise (ADR-0024, ADR-0025). Refs: Task Force of the ESC and NASPE 1996, Circulation 93:1043 (standards); Shaffer &
 Ginsberg 2017, Front Public Health 5:258 (review of HRV metrics and norms); Plews et al. 2013, Sports Med 43:773
 (ln RMSSD for athlete monitoring). Reviewed 2026-11-20.
 
@@ -298,8 +298,8 @@ Ginsberg 2017, Front Public Health 5:258 (review of HRV metrics and norms); Plew
 SDNN and RMSSD measure different things (overall vs beat-to-beat variability; short-term SDNN tracks LF power,
 r = 0.90–0.94), RMSSD is the more robust metric in short recordings, and no conversion between them exists.
 Wearable HRV is comparable only within one device and one metric.
-→ Apple Watch SDNN and Garmin RMSSD use separate baselines (`hrv-metrics`). The [research note](design/hrv-sources.md)
-compares the two inputs and motivates preserving both values when they are available for the same night.
+→ Apple Watch SDNN and Garmin RMSSD are separate series, both kept when a night has both; when both can be compared
+the rule uses RMSSD, the better-supported input (ADR-0025, [research note](design/hrv-sources.md)).
 Refs: Esco 2026, J Funct Morphol Kinesiol 11:304 (narrative review); Shaffer & Ginsberg 2017, Front Public Health
 5:258 (review); Munoz et al. 2015, PLoS One 10:e0138921 (n = 3,387); Doherty et al. 2025, Transl Exerc Biomed
 (review of 14 composite scores). Reviewed 2026-11-20.

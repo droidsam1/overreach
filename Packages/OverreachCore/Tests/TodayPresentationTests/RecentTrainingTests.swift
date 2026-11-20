@@ -22,13 +22,11 @@ struct RecentTrainingTests {
         let now = start.addingTimeInterval(14 * 3_600)
         let yesterday = today.adding(days: -1, calendar: calendar)
         var metrics = DailyMetrics(day: today, sources: [.garmin])
-        metrics.hrvNightlyAverageMs = 34
-        metrics.hrvMetric = .rmssd
+        metrics.hrvRMSSDMs = 34
         metrics.restingHeartRate = 60
         metrics.sleepSeconds = 7.5 * 3_600
         var priorMetrics = DailyMetrics(day: yesterday, sources: [.garmin])
-        priorMetrics.hrvNightlyAverageMs = 43
-        priorMetrics.hrvMetric = .rmssd
+        priorMetrics.hrvRMSSDMs = 43
 
         // The two copies begin on opposite sides of local midnight. The preferred record determines the day.
         let garminRun = RunActivity(

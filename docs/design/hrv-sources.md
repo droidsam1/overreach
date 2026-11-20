@@ -2,7 +2,7 @@
 
 Research completed 2026-11-20 for step 4 of the [Garmin integration](garmin-integration.md).
 [ADR-0024](../adr/0024-hrv-baselines-per-statistic.md) records the implemented rule.
-[ADR-0025](../adr/0025-hrv-one-series-per-metric.md) proposes retaining both readings on the same night.
+[ADR-0025](../adr/0025-hrv-one-series-per-metric.md) keeps both readings of a night as separate series (implemented).
 Evidence keys: `hrv-metric-type`, `wearable-hrv-validity`, `hrv-nocturnal`, `composite-scores` (`docs/evidence.md`).
 
 ## 1. The question
@@ -107,7 +107,7 @@ ADR-0022 decision 2).
 `GarminCache` persists `DailyMetrics`. Option C needs to preserve or rebuild existing cached readings when the
 optional fields are introduced.
 
-## 4. Follow-up proposal (ADR-0025)
+## 4. Decision (ADR-0025, implemented)
 
 1. **One series = one metric from one source.** `DailyMetrics` gets `hrvRMSSDMs` and `hrvSDNNMs`;
    `GarminMapping` fills RMSSD, `HealthSamples` fills SDNN. `hrvNightlyAverageMs` becomes a computed property
@@ -115,10 +115,11 @@ optional fields are introduced.
    which metric it is. Supporting a second RMSSD source would require a separate field or a source tag.
 2. **The rule judges one series and never mixes.** `ReadinessRules` picks the series that qualifies (≥ 14 nights
    in the 60-day baseline and ≥ 3 in the last 7); if both qualify it uses RMSSD (better-supported metric and whole
-   night). If none qualifies the HRV signal is skipped, as today. The reason says which metric it used
+   night). If none qualifies the HRV signal is skipped, as before. The reason says which metric it used
    ("HRV (RMSSD, Garmin) below your normal range").
-3. **A source change restarts the baseline.** Because series are separate, a new watch simply has no baseline yet;
-   Today says "HRV baseline: 6 of 14 nights" instead of comparing across devices. The switch-over is short: Garmin
+3. **A source change restarts the baseline.** Because series are separate, a new watch simply has no baseline yet.
+   While it builds one, the old series is still judged if it qualifies; otherwise Today says how many nights the new
+   series needs ("Still building your usual HRV range (RMSSD, Garmin: 6 of 14 …)") instead of comparing devices. The switch-over is short: Garmin
    history backfills 60 days on connection (`GarminSyncPlan`), so a Garmin user who connects is usually ready at once.
 4. **Evidence levels per series.** RMSSD (Garmin) keeps `readiness-hrv` at moderate. SDNN (Apple) carries the same
    rule but the reason shows the `hrv-metric-type` caveat; the level stays moderate for the rule and the
@@ -131,8 +132,9 @@ optional fields are introduced.
 ### Tests (realistic fixtures)
 - A Garmin user who also wears an Apple Watch some nights: the rule uses RMSSD only; the SDNN nights do not move
   the baseline.
-- Apple Watch → Garmin switch on day 30: RMSSD baseline ready after the 60-day backfill; without backfill, HRV is
-  skipped until 14 RMSSD nights.
+- Apple Watch → Garmin switch: without backfill the SDNN series keeps being judged while RMSSD builds; if SDNN no
+  longer qualifies, the coverage note follows the watch read most recently.
+- An older Garmin cache keeps its RMSSD nights after the update.
 - Apple Watch only: unchanged behaviour, reason names SDNN.
 - Display: `hrvNightlyAverageMs` returns RMSSD when both exist.
 

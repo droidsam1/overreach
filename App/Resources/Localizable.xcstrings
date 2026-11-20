@@ -4336,19 +4336,19 @@
         }
       }
     },
-    "HRV below your usual range ({1} of {2} comparable readings low in the last {3} days).": {
+    "HRV ({1}) below your usual range ({2} of {3} comparable readings low in the last {4} days).": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "VFC por debajo de tu rango habitual ({1} de {2} mediciones comparables fueron bajas en los últimos {3} días)."
+            "value": "VFC ({1}) por debajo de tu rango habitual ({2} de {3} mediciones comparables fueron bajas en los últimos {4} días)."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "VFC por debaixo do teu rango habitual ({1} de {2} medicións comparables foron baixas nos últimos {3} días)."
+            "value": "VFC ({1}) por debaixo do teu rango habitual ({2} de {3} medicións comparables foron baixas nos últimos {4} días)."
           }
         }
       }
@@ -9198,19 +9198,19 @@
         }
       }
     },
-    "Still building your usual HRV range ({1} of {2} comparable readings needed).": {
+    "Still building your usual HRV range ({1}: {2} of {3} comparable readings needed).": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aún estamos calculando tu rango habitual de VFC (tenemos {1} de las {2} mediciones comparables necesarias)."
+            "value": "Aún estamos calculando tu rango habitual de VFC ({1}: tenemos {2} de las {3} mediciones comparables necesarias)."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aínda estamos calculando o teu rango habitual de VFC (temos {1} das {2} medicións comparables necesarias)."
+            "value": "Aínda estamos calculando o teu rango habitual de VFC ({1}: temos {2} das {3} medicións comparables necesarias)."
           }
         }
       }
@@ -10184,19 +10184,19 @@
         }
       }
     },
-    "Too few comparable HRV readings in the last {1} days ({2} available, {3} needed).": {
+    "Too few comparable HRV readings ({1}) in the last {2} days ({3} available, {4} needed).": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Faltan mediciones comparables de VFC en los últimos {1} días (hay {2} y hacen falta {3})."
+            "value": "Faltan mediciones comparables de VFC ({1}) en los últimos {2} días (hay {3} y hacen falta {4})."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Faltan medicións comparables de VFC nos últimos {1} días (hai {2} e fan falta {3})."
+            "value": "Faltan medicións comparables de VFC ({1}) nos últimos {2} días (hai {3} e fan falta {4})."
           }
         }
       }

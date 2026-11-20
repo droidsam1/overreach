@@ -46,6 +46,34 @@ public struct GarminCache: Codable, Hashable, Sendable {
     /// Days older than this are dropped: enough for the readiness baselines and a year of trends.
     public static let retentionDays = 400
 
+    private enum CodingKeys: String, CodingKey {
+        case lastSync, lastSyncedDay, metrics, runs, strength
+    }
+
+    /// The HRV fields of a cache written before ADR-0025, which kept one value per night in `hrvNightlyAverageMs`,
+    /// labelled `hrvMetric` since ADR-0024 and unlabelled before it.
+    private struct LegacyHRV: Decodable {
+        var hrvNightlyAverageMs: Double?
+        var hrvMetric: HRVMetric?
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        lastSync = try container.decodeIfPresent(Date.self, forKey: .lastSync)
+        lastSyncedDay = try container.decodeIfPresent(CalendarDay.self, forKey: .lastSyncedDay)
+        runs = try container.decodeIfPresent([RunActivity].self, forKey: .runs) ?? []
+        strength = try container.decodeIfPresent([RecordedStrengthActivity].self, forKey: .strength) ?? []
+        var metrics = try container.decodeIfPresent([DailyMetrics].self, forKey: .metrics) ?? []
+        let legacy = (try? container.decodeIfPresent([LegacyHRV].self, forKey: .metrics)) ?? []
+        // Only Garmin fills this cache, and Garmin only ever reported RMSSD, labelled or not.
+        for index in metrics.indices where index < legacy.count && metrics[index].hrv(.rmssd) == nil {
+            guard let value = legacy[index].hrvNightlyAverageMs, (legacy[index].hrvMetric ?? .rmssd) == .rmssd
+            else { continue }
+            metrics[index].setHRV(value, .rmssd)
+        }
+        self.metrics = metrics
+    }
+
     /// The cache with `range` replaced by a fresh sync. Activities are merged by id, the fresh copy winning.
     func merging(
         _ metrics: [DailyMetrics], runs: [RunActivity], strength: [RecordedStrengthActivity],
