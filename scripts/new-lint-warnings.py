@@ -17,7 +17,10 @@ SOURCE_ROOTS = ("Packages/", "App/Sources/")
 
 
 def git(*args):
-    return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=True).stdout
+    # UTF-8 explicitly: Windows would decode with its ANSI code page and fail on the translated strings.
+    command = ["git", "-c", "core.quotepath=false", *args]
+    return subprocess.run(command, cwd=ROOT, capture_output=True, encoding="utf-8", errors="replace",
+                          check=True).stdout
 
 
 def changed_lines(base):
