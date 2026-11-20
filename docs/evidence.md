@@ -13,7 +13,53 @@ Latest full review: `docs/evidence-review-2026-11.md` (2026-11-20), with open fi
 No influence of cycle phase on acute strength or resistance-training adaptations shown by current evidence;
 performance possibly trivially lower in the early follicular phase, low-quality evidence; individual approach
 recommended. → Cycle used only as context (ADR-0009).
-Refs: Colenso-Semple et al. 2023 (umbrella review); McNulty et al. 2020 (meta-analysis). Reviewed 2026-11-16.
+Newer work agrees: no day of the cycle disadvantages eumenorrheic women in strength or power (Blagrove et al.
+2020), a 2025 NSCA review finds the case for phase-based periodization lacking, and a phase-periodized pilot gave
+no advantage over usual training (Vargas-Molina et al. 2022). Oral contraceptive users show trivially lower
+performance than naturally cycling women (Elliott-Sale et al. 2020), not a reason to change loads.
+Refs: Colenso-Semple et al. 2023, Front Sports Act Living 5:1054542 (umbrella review); McNulty et al. 2020, Sports
+Med 50:1813 (meta-analysis); Blagrove et al. 2020, J Sci Med Sport 23:1220 (meta-analysis); Elliott-Sale et al.
+2020, Sports Med 50:1785 (meta-analysis); Vargas-Molina et al. 2022, J Strength Cond Res (pilot RCT).
+Reviewed 2026-11-20.
+
+### `cycle-phase-baselines` — moderate (heuristic windows)
+Within a natural cycle, wearable signals shift with phase: nocturnal resting HR and skin temperature rise in the
+mid and late luteal phase (about +2 to +5 bpm vs the early follicular phase), and time-domain HRV (RMSSD/SDNN) is
+3–9 % lower late vs early in the cycle, up to ~16 % RMSSD in the late luteal phase. Sleep metrics do not shift
+consistently. A whole-cycle baseline therefore makes normal luteal values look like poor recovery.
+→ For people who track a natural cycle and have a confident phase estimate, the HRV and resting-HR signals compare
+today with the same phase window (follicular vs luteal) of previous cycles once ≥ 2 cycles have data in that
+window; until then a low HRV keeps `hrvMayReflectCycle` and the resting-HR threshold widens by 3 bpm in the luteal
+window. Window sizes, the 2-cycle minimum and the 3 bpm widening are labelled heuristics.
+Refs: living systematic review of wearable HRV across the cycle, Sports Med 2025, doi 10.1007/s40279-025-02388-y;
+Schmalenberger et al. 2019, J Clin Med 8:1946 (meta-analysis); Alzueta et al. 2022, Int J Womens Health 14:491,
+doi 10.2147/IJWH.S341917; Goodale et al. 2019, J Med Internet Res 21:e13404. Reviewed 2026-11-20.
+
+### `cycle-phase-estimation` — moderate (limits)
+Real-world cycles vary: in 612,613 tracked cycles the mean length was 29.3 days, the follicular phase averaged 16.9
+days and the luteal 12.4 days, but the luteal phase still ranged 7–19 days, so "start − 14" is an approximation. Counting days from
+the period start cannot verify phase: research best practice needs urinary LH and serum progesterone, and
+calendar-only studies are judged low validity.
+→ The app estimates only coarse windows from period starts in Health (menstrual, follicular, luteal, late luteal),
+never ovulation or fertility, with a confidence that drops with few cycles, a cycle-length spread > 7 days, cycles
+outside 21–35 days or an overdue period. Low confidence → no phase is used. Refs: Bull et al. 2019, npj Digit Med
+2:83; Elliott-Sale et al. 2021, Sports Med 51:843 (methodological recommendations); 2025 audit in J Sports Sci,
+doi 10.1080/02640414.2025.2583013. Reviewed 2026-11-20.
+
+### `cycle-symptoms` — moderate
+Most athletes report cycle symptoms (~74 % negative symptoms, ~32 % dysmenorrhoea; ~4 % miss training), but which
+phase and how much varies widely between people and studies; few athletes plan training around the cycle.
+→ Symptoms logged in the check-in drive autoregulation (RPE-based targets) on the day, for any phase; the reason
+names the symptom, never the phase. Refs: Taim et al. 2023, Sports Med 53:1963 (systematic review, 60 studies,
+6,380 athletes); McNamara et al. 2022, Front Physiol 13:964238 (survey, 1,086 athletes); JSAMS 2024 scoping review.
+Reviewed 2026-11-20.
+
+### `cycle-hormonal-contraception` — limited
+Combined oral contraceptives suppress the natural hormone cycle; in the active-pill phase resting HR is higher and
+RMSSD lower than in the pill-free week, mostly explained by HR. Users also show lower HRV than naturally cycling
+women. → With hormonal contraception or menopause no phase is estimated and the overall baseline is used; the
+pill-week effect is too small and inconsistent for a rule. Refs: Stone et al. 2026, Physiol Rep,
+doi 10.14814/phy2.71175; wearable HRV living review (Sports Med 2025). Reviewed 2026-11-20.
 
 ### `cycle-luteal-nutrition` — moderate
 Meet carbohydrate needs in all phases; protein 1.4–2.2 g/kg/day, upper end in the luteal phase; energy
@@ -384,7 +430,7 @@ doi 10.1515/teb-2025-0001; Garmin HRV status documentation. Reviewed 2026-11-20.
 Vagally mediated HRV falls from the follicular to the luteal phase (d = −0.39, 37 studies), and within-person
 studies tie it to higher progesterone. → Until phase-aware baselines exist (ADR-0009), for people who track a
 natural cycle a low HRV is shown with the cycle as a possible cause (`hrvMayReflectCycle`) and does not count
-towards red; other signals still do. Refs: Schmalenberger et al. 2019, J Clin Med 8:1946 (meta-analysis).
+towards red; other signals still do. Superseded for confident phase estimates by `cycle-phase-baselines`. Refs: Schmalenberger et al. 2019, J Clin Med 8:1946 (meta-analysis).
 Reviewed 2026-11-20.
 
 ### `readiness-resting-hr` — limited
