@@ -184,7 +184,7 @@ public final class PlanImportModel {
     private func makePreview(_ planned: PlanImport) -> Preview {
         Preview(
             routines: planned.routines.map { change in
-                let names = change.exerciseNames.joined(separator: ", ")
+                let names = change.exercises.map(\.displayName).joined(separator: ", ")
                 return RoutineRow(
                     id: change.routine.id,
                     name: change.routine.name,
@@ -193,7 +193,7 @@ public final class PlanImportModel {
                 )
             },
             settings: planned.settings.map { change in
-                SettingsRow(id: change.exercise.id, exercise: change.exercise.name,
+                SettingsRow(id: change.exercise.id, exercise: change.exercise.displayName,
                             detail: detail(of: change.settings), isUpdate: change.isUpdate)
             },
             blocks: planned.blocks.enumerated().map { index, block in

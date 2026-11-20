@@ -58,9 +58,9 @@ public final class ExercisesModel {
         return needsMapping.map(row)
     }
 
-    /// Every exercise, filtered by the search text.
+    /// Every exercise by displayed name, filtered by the search text (English or Spanish names and aliases).
     public var allRows: [ExerciseRow] {
-        SearchText.filter(exercises, by: searchText).map(row)
+        Exercise.byDisplayName(SearchText.filter(exercises, by: searchText)).map(row)
     }
 
     public var needsMappingCount: Int { exercises.count(where: \.needsMuscleMapping) }
@@ -196,7 +196,7 @@ public final class ExercisesModel {
     func exercise(answeringTo key: String, excluding excludedID: UUID) -> Exercise? {
         exercises.first { candidate in
             candidate.id != excludedID
-                && ([candidate.name] + candidate.aliases).contains { SearchText.normalize($0) == key }
+                && candidate.knownNames.contains { SearchText.normalize($0) == key }
         }
     }
 
@@ -207,7 +207,7 @@ public final class ExercisesModel {
     func row(_ exercise: Exercise) -> ExerciseRow {
         ExerciseRow(
             id: exercise.id,
-            name: exercise.name,
+            name: exercise.displayName,
             muscles: MuscleGroup.displayList(exercise.primaryMuscles),
             needsMuscles: exercise.needsMuscleMapping,
             sessionCount: sessionCount(of: exercise.id)

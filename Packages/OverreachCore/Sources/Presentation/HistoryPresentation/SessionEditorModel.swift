@@ -37,7 +37,7 @@ public final class SessionEditorModel: Identifiable {
         self.draft = session
         self.original = session
         self.catalog = catalog
-        self.exerciseNames = Dictionary(catalog.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+        self.exerciseNames = Exercise.displayNames(catalog)
         self.workouts = workouts
         self.backup = backup
         self.health = health
@@ -51,7 +51,7 @@ public final class SessionEditorModel: Identifiable {
     /// Why the draft can't be saved yet, in plain language.
     public var issueMessages: [String] { issues.map(\.message) }
 
-    public var exerciseChoices: [ExerciseChoice] { catalog.map(ExerciseChoice.init) }
+    public var exerciseChoices: [ExerciseChoice] { Exercise.byDisplayName(catalog).map(ExerciseChoice.init) }
     public let focusOptions: [Option<TrainingFocus>] = Option.trainingFocuses
     public let setKindOptions: [Option<SetKind>] = Option.setKinds
 

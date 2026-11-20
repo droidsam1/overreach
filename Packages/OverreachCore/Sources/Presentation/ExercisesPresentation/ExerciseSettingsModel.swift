@@ -92,7 +92,7 @@ public final class ExerciseSettingsModel {
 
     // MARK: Screen state
 
-    public var title: String { exercise.name }
+    public var title: String { exercise.displayName }
     public var showsRepRange: Bool { schemeKind == .doubleProgression }
     public var showsReps: Bool { schemeKind == .linearLoad || schemeKind == .rpeBased }
     public var showsRepBlocks: Bool { schemeKind == .repCycle }

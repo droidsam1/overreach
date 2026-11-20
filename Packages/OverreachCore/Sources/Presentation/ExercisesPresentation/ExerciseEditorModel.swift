@@ -116,7 +116,7 @@ public final class ExerciseEditorModel {
     /// False once the exercise was merged away or deleted.
     public var exists: Bool { isNew || exercise != nil }
 
-    public var title: String { exercise?.name ?? (isNew ? L10n.text("New exercise") : "") }
+    public var title: String { exercise?.displayName ?? (isNew ? L10n.text("New exercise") : "") }
 
     /// Built-in exercises keep their names; new, created and imported ones can change them.
     public var canEditNames: Bool { isNew || exercise?.isCustom == true }
@@ -131,7 +131,7 @@ public final class ExerciseEditorModel {
             let key = SearchText.normalize(candidate)
             guard !key.isEmpty, !ownKeys.contains(key),
                   let other = list.exercise(answeringTo: key, excluding: exerciseID) else { continue }
-            return L10n.format("“{1}” is already used by {2}.", candidate, other.name)
+            return L10n.format("“{1}” is already used by {2}.", candidate, other.displayName)
         }
         return nil
     }
@@ -146,7 +146,10 @@ public final class ExerciseEditorModel {
     public var suggestions: [SuggestionRow] {
         guard let subject = exercise ?? newExercisePreview else { return [] }
         return list.suggestions(for: subject).map {
-            SuggestionRow(id: $0.exercise.id, name: $0.exercise.name, muscles: MuscleGroup.displayList($0.exercise.primaryMuscles))
+            SuggestionRow(
+                id: $0.exercise.id, name: $0.exercise.displayName,
+                muscles: MuscleGroup.displayList($0.exercise.primaryMuscles)
+            )
         }
     }
 
@@ -206,11 +209,11 @@ public final class ExerciseEditorModel {
         let sessions = list.sessionCount(of: exerciseID)
         pendingMerge = MergeConfirmation(
             targetID: targetID,
-            confirmLabel: L10n.format("Merge into {1}", target.name),
+            confirmLabel: L10n.format("Merge into {1}", target.displayName),
             message: L10n.format(
                 "{1} sessions with {2} will use {3}. {2} is removed and its name is kept as an alias, so importing "
                     + "it again maps to {3}.",
-                sessions, exercise.name, target.name
+                sessions, exercise.displayName, target.displayName
             )
         )
     }

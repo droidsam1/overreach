@@ -99,7 +99,7 @@ private struct StrengthOptionContext {
         let reference = fromPlan ? L10n.format("Usual target · {1} × {2}", count, reps)
             : L10n.format("Last session · {1} × {2}", count, reps)
         return StrengthOption.ExerciseRow(
-            id: exercise.id, title: exercise.name, reference: reference,
+            id: exercise.id, title: exercise.displayName, reference: reference,
             suggestion: L10n.format("Easy option · {1} × {2}, with at least {3} reps left",
                                     String(adjustment.sets), String(adjustment.reps), String(adjustment.repsInReserve))
         )

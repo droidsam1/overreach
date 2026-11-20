@@ -143,8 +143,8 @@ public final class PlanModel {
 
     public var priorityLiftRows: [PriorityLiftRow] {
         let selected = Set(profile.goal?.priorityLifts ?? [])
-        return SearchText.filter(catalog, by: priorityLiftSearch).map {
-            PriorityLiftRow(id: $0.id, name: $0.name, isSelected: selected.contains($0.id))
+        return Exercise.byDisplayName(SearchText.filter(catalog, by: priorityLiftSearch)).map {
+            PriorityLiftRow(id: $0.id, name: $0.displayName, isSelected: selected.contains($0.id))
         }
     }
 
@@ -223,7 +223,7 @@ public final class PlanModel {
             hasTargetDate = profile.goal?.targetDate != nil
             if let day = profile.goal?.targetDate { targetDate = day.startDate(in: calendar) }
             catalog = try await exercises.allExercises()
-            exerciseNames = Dictionary(catalog.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+            exerciseNames = Exercise.displayNames(catalog)
             let now = clock()
             let start = CalendarDay(now, calendar: calendar).adding(days: -DeloadDetection.historyDays, calendar: calendar)
                 .startDate(in: calendar)

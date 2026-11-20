@@ -17,8 +17,9 @@ public enum SearchText {
         return names.contains { normalize($0).contains(needle) }
     }
 
-    /// Exercises whose name or aliases contain `query`, in their original order.
+    /// Exercises whose English or Spanish name or aliases contain `query`, in their original order, whatever
+    /// language the app is in.
     public static func filter(_ exercises: [Exercise], by query: String) -> [Exercise] {
-        exercises.filter { matches(query, [$0.name] + $0.aliases.sorted()) }
+        exercises.filter { matches(query, $0.knownNames) }
     }
 }
