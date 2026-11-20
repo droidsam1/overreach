@@ -19,31 +19,49 @@ public enum Workload {
         max(0, rpe) * max(0, durationMinutes)
     }
 
-    /// Acute:chronic workload ratio on `day`, using rolling sums.
+    /// This week's load against the person's usual week (`weekly-load-change` in `docs/evidence.md`).
     ///
-    /// - Acute: total load of the 7 days ending on `day` (inclusive).
-    /// - Chronic: average weekly load over the 28 days ending on `day` (total / 4).
+    /// - Last week: total load of the 7 days ending on `day` (inclusive).
+    /// - Usual week: average weekly load of the 3 weeks before that (days −27…−7). The last week is not part of
+    ///   it: the coupled acute:chronic ratio, which includes it, inflates the correlation between the two
+    ///   (Lolli et al. 2019).
     ///
-    /// Returns `nil` when there is no chronic load yet. This is the coupled ratio (the acute week is inside the
-    /// chronic window), which inflates the acute–chronic correlation; a high value only says this week is above the
-    /// recent average. It is not an injury-risk measure (`acwr` in `docs/evidence.md`).
-    public static func acuteChronicRatio(
+    /// Returns `nil` when there is no load in the usual weeks. A high ratio only says this week is well above the
+    /// usual one; it is not an injury-risk measure (Impellizzeri et al. 2020, 2021).
+    public static func weeklyLoadChange(
         loads: [DailyLoad],
         on day: CalendarDay,
         calendar: Calendar = .current
-    ) -> Double? {
-        let acuteStart = day.adding(days: -6, calendar: calendar)
-        let chronicStart = day.adding(days: -27, calendar: calendar)
+    ) -> WeeklyLoadChange? {
+        let lastWeekStart = day.adding(days: -6, calendar: calendar)
+        let usualStart = day.adding(days: -27, calendar: calendar)
 
-        var acute = 0.0
-        var chronicTotal = 0.0
-        for entry in loads where entry.day <= day {
-            if entry.day >= chronicStart { chronicTotal += entry.load }
-            if entry.day >= acuteStart { acute += entry.load }
+        var lastWeek = 0.0
+        var usualTotal = 0.0
+        for entry in loads where entry.day <= day && entry.day >= usualStart {
+            if entry.day >= lastWeekStart {
+                lastWeek += entry.load
+            } else {
+                usualTotal += entry.load
+            }
         }
 
-        let chronicWeekly = chronicTotal / 4
-        guard chronicWeekly > 0 else { return nil }
-        return acute / chronicWeekly
+        let usualWeek = usualTotal / 3
+        guard usualWeek > 0 else { return nil }
+        return WeeklyLoadChange(lastWeek: lastWeek, usualWeek: usualWeek)
     }
+}
+
+/// The load of the last 7 days next to the person's usual week (the 3 weeks before it).
+public struct WeeklyLoadChange: Hashable, Sendable {
+    public let lastWeek: Double
+    public let usualWeek: Double
+
+    public init(lastWeek: Double, usualWeek: Double) {
+        self.lastWeek = lastWeek
+        self.usualWeek = usualWeek
+    }
+
+    /// Last week divided by the usual week (1 = as usual).
+    public var ratio: Double { usualWeek > 0 ? lastWeek / usualWeek : 0 }
 }

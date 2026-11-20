@@ -111,14 +111,19 @@ All configurable. Reviewed 2026-11-16.
 Same load and reps over 3 exposures with RPE up ≥ 1 point → accumulated fatigue signal (weight 1).
 Reviewed 2026-11-16.
 
-### `acwr` — heuristic
-Acute:chronic workload ratio > 1.5 as a weak signal only; its injury-prediction validity is disputed. The coupled
-form (acute week inside the chronic window, as `Workload.acuteChronicRatio` computes it today) creates a spurious
-acute–chronic correlation, and the association with injury has been argued to be largely an artefact of the ratio.
-Never shown as injury risk. Replacement with an uncoupled "this week vs your usual week" comparison is recommended
-before the ratio is wired into deload proposals (`docs/evidence-review-2026-11.md`, §3.1).
-Refs: Lolli et al. 2019, Br J Sports Med 53:921; Impellizzeri et al. 2020, Int J Sports Physiol Perform;
-Impellizzeri et al. 2021, Sports Med 51:581. Reviewed 2026-11-20.
+### `weekly-load-change` — heuristic
+The last 7 days' load against the usual week (mean of the 3 weeks before it, uncoupled). Above 1.5× it adds a weak
+deload signal (weight 1, never enough on its own). It replaced the acute:chronic workload ratio (ACWR): the coupled
+ratio (acute week inside the chronic window) creates a spurious acute–chronic correlation, the injury association
+has been argued to be largely an artefact of the ratio, and window lengths are arbitrary. Never shown as injury
+risk. Refs: Lolli et al. 2019, Br J Sports Med 53:921; Impellizzeri et al. 2020, Int J Sports Physiol Perform
+15:907; Impellizzeri et al. 2021, Sports Med 51:581. Reviewed 2026-11-20.
+
+### `deload-practice` — limited
+Competitive strength and physique athletes deload for about 6 days every 5–6 weeks, mainly to manage fatigue,
+reducing volume and load and raising RIR while keeping frequency and exercises (cross-sectional survey, n = 246).
+→ The planned interval (default 6 weeks) adds one point to a deload proposal; it never triggers one alone.
+Refs: Rogerson et al. 2024, Sports Med Open 10:22. Reviewed 2026-11-20.
 
 ## Warm-up
 

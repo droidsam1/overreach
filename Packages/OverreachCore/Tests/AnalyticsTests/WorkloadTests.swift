@@ -25,33 +25,40 @@ struct WorkloadTests {
         let today = CalendarDay(year: 2026, month: 11, day: 16)
         let loads = constantLoads(days: 28, load: 100, endingOn: today, calendar: calendar)
 
-        let ratio = try #require(Workload.acuteChronicRatio(loads: loads, on: today, calendar: calendar))
-        #expect(abs(ratio - 1) < 0.0001)
+        let change = try #require(Workload.weeklyLoadChange(loads: loads, on: today, calendar: calendar))
+        #expect(abs(change.ratio - 1) < 0.0001)
+        #expect(abs(change.lastWeek - 700) < 0.0001)
+        #expect(abs(change.usualWeek - 700) < 0.0001)
     }
 
-    @Test func loadSpikeRaisesTheRatio() throws {
+    @Test func lastWeekIsNotPartOfTheUsualWeek() throws {
         let calendar = try utcCalendar()
         let today = CalendarDay(year: 2026, month: 11, day: 16)
         var loads = constantLoads(days: 28, load: 100, endingOn: today, calendar: calendar)
         loads += constantLoads(days: 7, load: 100, endingOn: today, calendar: calendar)  // last week doubled
 
-        let ratio = try #require(Workload.acuteChronicRatio(loads: loads, on: today, calendar: calendar))
-        #expect(ratio > 1.5)
+        let change = try #require(Workload.weeklyLoadChange(loads: loads, on: today, calendar: calendar))
+        // Uncoupled: exactly 2×. The coupled ratio would give 1400 / 875 = 1.6.
+        #expect(abs(change.ratio - 2) < 0.0001)
     }
 
-    @Test func ignoresLoadsAfterTheDay() throws {
+    @Test func ignoresLoadsAfterTheDayAndBeforeTheWindow() throws {
         let calendar = try utcCalendar()
         let today = CalendarDay(year: 2026, month: 11, day: 16)
         var loads = constantLoads(days: 28, load: 100, endingOn: today, calendar: calendar)
         loads.append(DailyLoad(day: today.adding(days: 1, calendar: calendar), load: 10_000))
+        loads.append(DailyLoad(day: today.adding(days: -28, calendar: calendar), load: 10_000))
 
-        let ratio = try #require(Workload.acuteChronicRatio(loads: loads, on: today, calendar: calendar))
-        #expect(abs(ratio - 1) < 0.0001)
+        let change = try #require(Workload.weeklyLoadChange(loads: loads, on: today, calendar: calendar))
+        #expect(abs(change.ratio - 1) < 0.0001)
     }
 
-    @Test func noChronicLoadReturnsNil() throws {
+    @Test func noUsualLoadReturnsNil() throws {
         let calendar = try utcCalendar()
         let today = CalendarDay(year: 2026, month: 11, day: 16)
-        #expect(Workload.acuteChronicRatio(loads: [], on: today, calendar: calendar) == nil)
+        #expect(Workload.weeklyLoadChange(loads: [], on: today, calendar: calendar) == nil)
+        // Only this week's load: nothing to compare with.
+        let thisWeek = constantLoads(days: 7, load: 100, endingOn: today, calendar: calendar)
+        #expect(Workload.weeklyLoadChange(loads: thisWeek, on: today, calendar: calendar) == nil)
     }
 }

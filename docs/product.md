@@ -31,7 +31,8 @@ Non-goals: medical diagnosis, App Store publication (for now), sharing data betw
 
 - Effective sets per muscle group per week (RPE ≥ 7; primary muscle 1, secondary 0.5).
 - Tonnage, estimated 1RM (Epley), relative intensity.
-- Session load (sRPE), run load (TRIMP or Garmin load), acute:chronic workload ratio.
+- Session load (sRPE), run load (TRIMP or Garmin load), this week's load against the usual week (not the
+  acute:chronic ratio: `weekly-load-change` in `docs/evidence.md`).
 - Per-muscle fatigue with recovery decay (48–72 h legs/back, 24–48 h shoulders/arms).
 - Progressive-overload detection (double progression, load progression, rep cycles, deloads), stall alerts.
 - Run/lift interference and "what if I run X km today?" simulation.

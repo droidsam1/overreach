@@ -252,7 +252,8 @@ struct DeloadAdvisorTests {
         let progressing = (0..<5).map { exposure(day: $0 * 3, weight: 100 + Double($0) * 2.5, reps: [5, 5, 5]) }
         let lifts = [DeloadAdvisor.Lift(history: progressing, settings: main)]
         let proposal = DeloadAdvisor.proposal(
-            lifts: lifts, lastDeload: date(day: -70), acuteChronicRatio: 1.7, now: date(day: 14)
+            lifts: lifts, lastDeload: date(day: -70), weeklyLoad: WeeklyLoadChange(lastWeek: 170, usualWeek: 100),
+            now: date(day: 14)
         )
         #expect(proposal == nil)
     }

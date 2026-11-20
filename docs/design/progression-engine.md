@@ -29,7 +29,8 @@ Increments are configurable per equipment (e.g. barbell 2.5 kg, dumbbell 2 kg, m
 - Performance at a matched load: reps achieved and RPE reported for the same weight over time.
 - **RPE creep:** same load and reps, rising RPE across sessions → accumulated fatigue.
 - Target hit/miss record per exercise (consecutive misses).
-- Weekly effective sets per muscle group and acute:chronic ratio (`StrengthMetrics`, `Workload`).
+- Weekly effective sets per muscle group and this week's load against the usual week (`StrengthMetrics`,
+  `Workload`).
 - Weeks since the last deload.
 
 ## Stall detection
@@ -56,7 +57,7 @@ Proposed when the score of these signals crosses a threshold (weights and thresh
 | RPE creep on several lifts over the last 2 weeks | v0.1 |
 | Performance drop: e1RM down > 3–5 % on several lifts | v0.1 |
 | Weeks since last deload ≥ planned interval (default 6) | v0.1 |
-| Acute:chronic ratio > 1.5 | v0.1 (strength), v0.2 (with running and walking above baseline) |
+| Last week's load > 1.5× the usual week (uncoupled) | v0.1 (strength), v0.2 (with running and walking above baseline) |
 | HRV 7-day average below the normal range for ≥ 5 days | v0.2 |
 | Resting HR ≥ 5 bpm above baseline for several days | v0.2 |
 | Short sleep (< 6 h) on most nights of the week | v0.2 |

@@ -22,6 +22,8 @@ public enum ProgressionEvidence {
     public static let stallHeuristics = EvidenceReference(key: "stall-heuristics", level: .heuristic)
     /// Rising RPE at the same load and reps as a fatigue signal.
     public static let rpeCreep = EvidenceReference(key: "rpe-creep", level: .heuristic)
-    /// Acute:chronic workload ratio; contested in the literature, used only as a weak signal.
-    public static let acuteChronicRatio = EvidenceReference(key: "acwr", level: .heuristic)
+    /// Last week's load against the usual week (uncoupled); a weak signal, never an injury-risk measure.
+    public static let weeklyLoadChange = EvidenceReference(key: "weekly-load-change", level: .heuristic)
+    /// Trained lifters deload about every 5–6 weeks, reducing volume and load (Rogerson et al. 2024, survey).
+    public static let deloadPractice = EvidenceReference(key: "deload-practice", level: .limited)
 }
