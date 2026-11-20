@@ -99,6 +99,15 @@ final class AppContainer {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
     }
 
+    /// Removes the app's Health copy of recent sessions that a watch app (e.g. Garmin Connect) also wrote there, once
+    /// it has synced (ADR-0023). Best effort; runs at launch and when the app comes back to the foreground.
+    func reconcileHealthWorkouts() async {
+        let end = Date()
+        let start = end.addingTimeInterval(-14 * 86_400)
+        guard let sessions = try? await workouts.sessions(from: start, to: end) else { return }
+        await health.reconcile(sessions)
+    }
+
     // MARK: Feature factories
 
     func makePlanImportModel() -> PlanImportModel {

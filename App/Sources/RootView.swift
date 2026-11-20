@@ -38,8 +38,10 @@ struct RootView: View {
     @State private var selectedTab = AppTab.today
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.system
     @Environment(\.scenePhase) private var scenePhase
+    private let container: AppContainer
 
     init(container: AppContainer) {
+        self.container = container
         _todayModel = State(initialValue: container.makeTodayModel())
         _workoutModel = State(initialValue: container.makeWorkoutModel())
         _routinesModel = State(initialValue: container.makeRoutinesModel())
@@ -134,6 +136,9 @@ struct RootView: View {
         .onChange(of: scenePhase) {
             if scenePhase == .background {
                 Task { await backupModel.backUpIfConfigured() }
+            } else if scenePhase == .active {
+                // The watch's workout may have reached Health since the session was saved.
+                Task { await container.reconcileHealthWorkouts() }
             }
         }
         .alert("Restore your data?", isPresented: $backupModel.isOfferingRestore) {

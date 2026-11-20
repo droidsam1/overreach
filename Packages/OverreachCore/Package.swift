@@ -84,7 +84,7 @@ let package = Package(
         // Generated test data shared by test targets in both packages.
         .target(name: "Fixtures", dependencies: ["Domain"]),
 
-        .testTarget(name: "DomainTests", dependencies: ["Domain"]),
+        .testTarget(name: "DomainTests", dependencies: ["Domain", "Fixtures"]),
         .testTarget(name: "AnalyticsTests", dependencies: ["Analytics", "Domain"]),
         .testTarget(name: "ReportsTests", dependencies: ["Reports", "Domain"]),
         .testTarget(name: "AIExchangeTests", dependencies: ["AIExchange", "Analytics", "Domain", "Fixtures"]),
