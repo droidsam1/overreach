@@ -7124,19 +7124,19 @@
         }
       }
     },
-    "Runs and steps appear here once Apple Health is connected (from Today).": {
+    "Connect Apple Health or Garmin from Today to see runs. Steps come from Apple Health.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Las carreras y los pasos aparecen aquí cuando conectas Apple Salud (desde Hoy)."
+            "value": "Conecta Apple Salud o Garmin desde Hoy para ver tus carreras. Los pasos vienen de Apple Salud."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "As carreiras e os pasos aparecen aquí cando conectas Apple Saúde (desde Hoxe)."
+            "value": "Conecta Apple Saúde ou Garmin desde Hoxe para ver as túas carreiras. Os pasos veñen de Apple Saúde."
           }
         }
       }

@@ -253,6 +253,7 @@ private struct RunRow: View {
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: Spacing.xSmall) {
                 Text(run.title).font(.headline)
+                Text(run.source).font(.caption).foregroundStyle(.secondary)
                 AdaptiveStack(spacing: Spacing.medium) {
                     Text(run.distance)
                     Text(run.duration)
@@ -266,6 +267,10 @@ private struct RunRow: View {
                 }
                 .font(.subheadline.monospacedDigit())
                 .foregroundStyle(.secondary)
+                ForEach(run.trainingMetrics) { metric in
+                    LabeledContent(metric.label, value: metric.value)
+                        .font(.subheadline.monospacedDigit())
+                }
             }
         }
         .accessibilityElement(children: .combine)

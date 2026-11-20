@@ -22,8 +22,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - History → Calendar: a month calendar (Monday first) with strength days, runs and a steps ring per day that
   fills against the month's average. It has a legend, month totals (sessions, runs, km run, steps per day) and,
   for a tapped day, its sessions (opening their detail), runs (distance, duration, pace, heart rate) and steps.
-  Runs and steps are read live from Apple Health for the shown month (Garmin runs arrive through Health). Without
-  Health access it still shows sessions, with a hint to connect from Today. List or calendar is remembered.
+  Runs from Garmin and Apple Health are combined and counted once, with training load and training effect shown
+  when available. Steps come from Apple Health. The calendar still shows sessions and available runs if one source
+  fails. List or calendar is remembered.
 - Today reads Apple Health. It shows last night's sleep with deep and REM, HRV, resting heart rate, steps and
   VO2max, each with its 7-day average and where it came from, plus a "Connect Apple Health" button. Runs from
   Health are read too (shown in a later change). Sleep from several sources is merged without counting it twice
