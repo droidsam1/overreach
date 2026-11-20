@@ -67,6 +67,8 @@ public final class PlanModel {
     public let newBlockWeeksRange = 1...16
     /// Text typed in the priority-lift search.
     public var priorityLiftSearch = ""
+    public var runningDraft: RunningPlanDraft
+    public private(set) var isSavingRunningPlan = false
 
     private let profiles: any ProfileRepository
     private let workouts: any WorkoutRepository
@@ -90,6 +92,7 @@ public final class PlanModel {
         self.clock = clock
         self.calendar = calendar
         targetDate = clock().addingTimeInterval(Self.defaultTargetWeeks * 7 * 86_400)
+        runningDraft = RunningPlanDraft(goal: nil, now: clock(), calendar: calendar)
     }
 
     /// Default distance of a new target date.
@@ -103,6 +106,14 @@ public final class PlanModel {
         Option(value: $0, name: $0.displayName)
     }
     public let focusOptions: [Option<TrainingFocus>] = Option.trainingFocuses
+    public let runningSessionOptions = PlannedRun.Purpose.allCases.map { Option(value: $0, name: $0.displayName) }
+    public var showsRunningPlan: Bool { goalKind == .hybrid }
+    public var runningGoalSummary: String? { profile.goal?.running?.displayName() }
+    public var runningGoalPace: String? {
+        guard let pace = runningDraft.goal?.targetPaceSecondsPerKm else { return nil }
+        return L10n.format("Goal pace {1} per km", Format().minutesAndSeconds(Int(pace.rounded())))
+    }
+    public var canSaveRunningPlan: Bool { runningDraft.isValid && !isSavingRunningPlan && showsRunningPlan }
 
     /// Priority lifts only matter for a strength goal.
     public var showsPriorityLifts: Bool { goalKind == .strength }
@@ -155,6 +166,7 @@ public final class PlanModel {
     public func load() async {
         do {
             profile = try await profiles.profile()
+            resetRunningPlanEditor()
             hasTargetDate = profile.goal?.targetDate != nil
             if let day = profile.goal?.targetDate { targetDate = day.startDate(in: calendar) }
             catalog = try await exercises.allExercises()
@@ -169,6 +181,21 @@ public final class PlanModel {
     }
 
     // MARK: Actions
+
+    public func resetRunningPlanEditor() {
+        runningDraft = RunningPlanDraft(goal: profile.goal, now: clock(), calendar: calendar)
+    }
+
+    @discardableResult
+    public func saveRunningPlan() async -> Bool {
+        guard canSaveRunningPlan, var goal = profile.goal else { return false }
+        isSavingRunningPlan = true
+        defer { isSavingRunningPlan = false }
+        goal.running = runningDraft.goal
+        goal.nextRun = runningDraft.nextRun(calendar: calendar)
+        await save(goal: goal)
+        return profile.goal == goal
+    }
 
     public func setGoal(kind: TrainingGoal.Kind) async {
         guard kind != goalKind else { return }

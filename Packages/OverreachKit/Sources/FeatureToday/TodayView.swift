@@ -31,6 +31,9 @@ public struct TodayView: View {
                     if model.showsReadinessCard {
                         readiness
                     }
+                    if let option = model.runningOption {
+                        easyRun(option)
+                    }
                     if let advice = model.deloadAdvice {
                         deload(advice)
                     }
@@ -185,6 +188,25 @@ public struct TodayView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, Spacing.small)
+                }
+            }
+        }
+    }
+
+    private func easyRun(_ option: RunningOption) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+            Text(option.goal).font(.subheadline.weight(.semibold))
+            if let plan = option.plan { Text(plan).font(.subheadline).foregroundStyle(.secondary) }
+            Text(option.advice).font(.subheadline)
+            if let context = option.context { Text(context).font(.caption).foregroundStyle(.secondary) }
+            if let evidence = option.evidence, let source = option.source {
+                DisclosureGroup("Why this running option?") {
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        Text("A conversational pace keeps the effort easy. The duration is a coaching estimate.")
+                        Text(evidence).foregroundStyle(.secondary)
+                        Link("Research source", destination: source)
+                    }
+                    .font(.caption)
                 }
             }
         }

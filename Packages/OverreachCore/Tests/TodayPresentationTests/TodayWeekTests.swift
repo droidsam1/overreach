@@ -319,4 +319,25 @@ struct TodayWeekTests {
         #expect(option.exerciseRows.isEmpty)
         #expect(option.guidance.contains("at least four reps left"))
     }
+
+    @Test func comparesTheConcreteEasyRunWithTodaysHybridPlan() async throws {
+        let today = CalendarDay(now, calendar: calendar)
+        let store = TestStore()
+        let goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000, targetSeconds: 900),
+                                nextRun: PlannedRun(day: today, purpose: .intervals, durationMinutes: 40))
+        try await store.save(AthleteProfile(goal: goal))
+        let source = WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)], activities: [RunActivity(
+            id: "past-run", source: .appleHealth, startedAt: now.addingTimeInterval(-12 * 86_400),
+            durationSeconds: 2_400, distanceMeters: 6_000
+        )])
+        let model = TodayModel(sources: [source], profiles: store, calendar: calendar)
+
+        await model.load(now: now)
+
+        #expect(model.readinessLevel == .amber)
+        #expect(model.runningOption?.goal == "Run 5 km in 15:00")
+        #expect(model.runningOption?.plan == "Today's running plan · Intervals · 40 min")
+        #expect(model.runningOption?.advice == "Try 30 min at a conversational pace in place of the planned session.")
+        #expect(try await store.profile().goal == goal)
+    }
 }

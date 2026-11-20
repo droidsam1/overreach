@@ -156,6 +156,9 @@ struct RootView: View {
             // New Garmin data: Today shows it at once.
             Task { await todayModel.load() }
         }
+        .onChange(of: planModel.profile.goal) {
+            Task { await todayModel.load() }
+        }
         .onChange(of: importModel.state) {
             // New exercises from an import need muscles: refresh the badge.
             if case .done = importModel.state {

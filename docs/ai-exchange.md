@@ -34,6 +34,10 @@ Shared from **Plan → Ask AI**. It is raw data with no instructions. Its top-le
 
 ### Values
 
+- **Hybrid running goal:** `athlete.goal.running` has `distanceMeters`, optional `targetSeconds` and `aimsForPainFree`.
+  Optional `athlete.goal.nextRun` contains a local `day`, `purpose` (`easy`, `intervals`, `tempo`, `long`, `race`,
+  `rest`) and optional `durationMinutes`. Both fields reflect the user's saved choices.
+
 - **Set:** `weightKg`, `reps`, `rpe`, `durationSeconds`, `distanceMeters`. `kind` is absent for working sets,
   otherwise `warmup`, `dropSet` or `failure`.
 - **RPE:** on the reps-in-reserve scale, so RPE 8 means about 2 reps were left. It is absent when not logged.

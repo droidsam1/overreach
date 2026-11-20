@@ -30,11 +30,18 @@ public struct TrainingGoal: Hashable, Codable, Sendable {
     public var targetDate: CalendarDay?
     /// Lifts whose 1RM matters most (e.g. squat, bench, deadlift).
     public var priorityLifts: [UUID]
+    public var running: RunningGoal?
+    public var nextRun: PlannedRun?
 
-    public init(kind: Kind, targetDate: CalendarDay? = nil, priorityLifts: [UUID] = []) {
+    public init(
+        kind: Kind, targetDate: CalendarDay? = nil, priorityLifts: [UUID] = [],
+        running: RunningGoal? = nil, nextRun: PlannedRun? = nil
+    ) {
         self.kind = kind
         self.targetDate = targetDate
         self.priorityLifts = priorityLifts
+        self.running = running
+        self.nextRun = nextRun
     }
 }
 

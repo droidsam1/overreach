@@ -70,6 +70,31 @@ struct PlanModelTests {
         #expect(try await store.profile().goal?.targetDate == CalendarDay(chosen, calendar: calendar))
     }
 
+    @Test func aHybridRunningGoalAndDatedSessionSurviveBackupAndReload() async throws {
+        let (model, store) = await model()
+        #expect(!model.showsRunningPlan)
+        await model.setGoal(kind: .hybrid)
+        #expect(model.showsRunningPlan)
+
+        model.runningDraft.enabled = true
+        model.runningDraft.aimsForPainFree = true
+        model.runningDraft.hasTargetTime = true
+        model.runningDraft.targetMinutes = 15
+        model.runningDraft.hasNextRun = true
+        model.runningDraft.purpose = .intervals
+        model.runningDraft.plannedMinutes = 35
+        #expect(model.runningGoalPace == "Goal pace 3:00 per km")
+        #expect(await model.saveRunningPlan())
+
+        let profile = try await store.profile()
+        let backup = BackupDocument(createdAt: now, profile: profile)
+        #expect(try BackupCodec.decode(BackupCodec.encode(backup)).profile == profile)
+        await model.load()
+        #expect(model.runningGoalSummary == "Run 5 km in 15:00 without pain")
+        #expect(model.runningDraft.purpose == .intervals)
+        #expect(model.runningDraft.plannedMinutes == 35)
+    }
+
     @Test func newBlockIsDeclaredAndClampedToTheAllowedLength() async throws {
         let (model, store) = await model(history: sessions())
         model.newBlockFocus = .strength

@@ -63,6 +63,17 @@ struct ContextPackTests {
         #expect(pack.units.weight == "kg")
     }
 
+    @Test func optionalRunningChoicesAreMappedInTheHybridContext() {
+        let next = PlannedRun(day: period.upperBound, purpose: .rest)
+        let goal = TrainingGoal(kind: .hybrid, running: .init(distanceMeters: 5_000, aimsForPainFree: true), nextRun: next)
+        let input = ContextInput(sessions: [], profile: AthleteProfile(goal: goal), appVersion: "0.1.0")
+        let pack = ContextPackBuilder.build(input, period: period, now: now, calendar: calendar)
+        #expect(pack.athlete.goal?.running?.distanceMeters == 5_000)
+        #expect(pack.athlete.goal?.running?.aimsForPainFree == true)
+        #expect(pack.athlete.goal?.nextRun?.purpose == "rest")
+        #expect(pack.athlete.goal?.nextRun?.day == next.day.description)
+    }
+
     @Test func sessionsAreRawDataWithNotesAndExerciseNames() throws {
         let pack = pack()
         #expect(pack.sessions.map(\.notes) == [nil, "Slept badly"])  // oldest first
