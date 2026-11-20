@@ -236,6 +236,9 @@ women), so HRV only moderates intensity here and never decides the strength plan
 (≥ 3 nights) is below that range. Apple Watch reports SDNN, not RMSSD, and wearable HRV agrees only loosely
 with chest-strap references: the same personal-range rule is applied to whatever the source reports, which is a
 heuristic transfer, and only ever within one statistic (`hrv-metrics`).
+→ Readiness reports the number of comparable daily readings actually used in the rolling window and indicates
+when either window has insufficient coverage. Missing, non-positive and non-finite values are excluded. The
+calendar windows retain their existing overlap, and the displayed count does not change the decision threshold.
 Refs: Düking et al. 2021, J Sci Med Sport 24:1180 (meta-analysis, wearables); Manresa-Rocamora et al. 2021, Int
 J Environ Res Public Health 18:10299 (meta-analysis); Granero-Gallegos et al. 2020, Int J Environ Res Public
 Health 17:7999 (meta-analysis); Vesterinen et al. 2016, Med Sci Sports Exerc 48:1347 (RCT, SWC protocol); Plews

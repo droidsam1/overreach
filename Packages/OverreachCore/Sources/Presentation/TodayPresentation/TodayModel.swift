@@ -66,6 +66,22 @@ public final class TodayModel {
         }
     }
 
+    public var hrvCoverageNote: String? {
+        guard let coverage = readiness.hrvCoverage, !coverage.canCompare else { return nil }
+        if coverage.baselineReadings < coverage.minimumBaselineReadings {
+            return L10n.format(
+                "Still building your usual HRV range ({1} of {2} comparable readings needed).",
+                String(coverage.baselineReadings), String(coverage.minimumBaselineReadings)
+            )
+        }
+        return L10n.format(
+            "Too few comparable HRV readings in the last {1} days ({2} available, {3} needed).",
+            String(coverage.recentDays), String(coverage.recentReadings), String(coverage.minimumRecentReadings)
+        )
+    }
+
+    public var showsReadinessDetails: Bool { !readiness.reasons.isEmpty || hrvCoverageNote != nil }
+
     /// The check-in button only shows when check-ins can be stored.
     public var showsCheckIn: Bool { checkIns != nil }
     public var checkInButtonTitle: String {
@@ -242,7 +258,14 @@ public final class TodayModel {
         case .markedSick:
             L10n.text("Marked as sick in today's check-in. Rest until the symptoms ease.")
         case .hrvBelowBaseline(let nights):
-            L10n.format("HRV below your usual range ({1} of the last 7 nights low).", String(nights))
+            if let coverage = readiness.hrvCoverage {
+                L10n.format(
+                    "HRV below your usual range ({1} of {2} comparable readings low in the last {3} days).",
+                    String(nights), String(coverage.recentReadings), String(coverage.recentDays)
+                )
+            } else {
+                L10n.text("HRV below your usual range.")
+            }
         case .restingHeartRateElevated(let bpm):
             L10n.format("Resting HR {1} bpm above your usual.", format.number(bpm, maxFractionDigits: 0))
         case .shortSleep(let hours):

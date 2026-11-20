@@ -3588,19 +3588,36 @@
         }
       }
     },
-    "HRV below your usual range ({1} of the last 7 nights low).": {
+    "HRV below your usual range ({1} of {2} comparable readings low in the last {3} days).": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "VFC por debajo de tu rango habitual ({1} de las últimas 7 noches bajas)."
+            "value": "VFC por debajo de tu rango habitual ({1} de {2} mediciones comparables fueron bajas en los últimos {3} días)."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "VFC por debaixo do teu rango habitual ({1} das últimas 7 noites baixas)."
+            "value": "VFC por debaixo do teu rango habitual ({1} de {2} medicións comparables foron baixas nos últimos {3} días)."
+          }
+        }
+      }
+    },
+    "HRV below your usual range.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC por debajo de tu rango habitual."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC por debaixo do teu rango habitual."
           }
         }
       }
@@ -8314,6 +8331,23 @@
         }
       }
     },
+    "Still building your usual HRV range ({1} of {2} comparable readings needed).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún estamos calculando tu rango habitual de VFC (tenemos {1} de las {2} mediciones comparables necesarias)."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda estamos calculando o teu rango habitual de VFC (temos {1} das {2} medicións comparables necesarias)."
+          }
+        }
+      }
+    },
     "Stop sets a rep or two earlier than usual for a week. Strength lost in a break comes back quickly.": {
       "extractionState": "manual",
       "localizations": {
@@ -9296,6 +9330,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hoxe: {1}, o {2} do teu máximo estimado ({3}), para {4} repeticións a {5}."
+          }
+        }
+      }
+    },
+    "Too few comparable HRV readings in the last {1} days ({2} available, {3} needed).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan mediciones comparables de VFC en los últimos {1} días (hay {2} y hacen falta {3})."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan medicións comparables de VFC nos últimos {1} días (hai {2} e fan falta {3})."
           }
         }
       }

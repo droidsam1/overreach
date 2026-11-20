@@ -106,7 +106,7 @@ public struct TodayView: View {
         VStack(alignment: .leading, spacing: Spacing.small) {
             StatusBadge(title: model.readinessTitle, tone: model.readinessLevel.tone)
             Text(model.readinessAdvice).font(.headline)
-            if !model.readinessLines.isEmpty {
+            if model.showsReadinessDetails {
                 DisclosureGroup("Why this recommendation?") {
                     VStack(alignment: .leading, spacing: Spacing.small) {
                         ForEach(model.readinessLines, id: \.self) { line in
@@ -114,6 +114,9 @@ public struct TodayView: View {
                                 Text(line.text).font(.subheadline)
                                 Text(line.evidence).font(.caption).foregroundStyle(.secondary)
                             }
+                        }
+                        if let note = model.hrvCoverageNote {
+                            Text(note).font(.subheadline).foregroundStyle(.secondary)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)

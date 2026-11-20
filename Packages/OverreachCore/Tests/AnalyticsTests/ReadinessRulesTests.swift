@@ -33,7 +33,10 @@ struct ReadinessRulesTests {
     }
 
     @Test func aNormalDayIsGreen() {
-        #expect(readiness(history()) == Readiness(level: .green))
+        let result = readiness(history())
+        #expect(result.level == .green)
+        #expect(result.reasons.isEmpty)
+        #expect(result.hrvCoverage?.canCompare == true)
     }
 
     @Test func noDataIsUnknown() {
@@ -51,6 +54,7 @@ struct ReadinessRulesTests {
 
         #expect(result.level == .amber)
         #expect(result.reasons == [.hrvBelowBaseline(nights: 7)])
+        #expect(result.hrvCoverage?.recentReadings == 7)
     }
 
     @Test func oneLowNightInsideANormalWeekStaysGreen() {
@@ -61,7 +65,30 @@ struct ReadinessRulesTests {
         var days = history(recentHRV: [40, 41])
         for index in days.indices where (2..<7).contains(index) { days[index].hrvNightlyAverageMs = nil }
 
-        #expect(readiness(days).level == .green)
+        let result = readiness(days)
+        #expect(result.level == .green)
+        #expect(result.hrvCoverage?.recentReadings == 2)
+        #expect(result.hrvCoverage?.canCompare == false)
+    }
+
+    @Test func invalidAndDifferentStatisticReadingsDoNotCountTowardCoverage() {
+        var days = switchedToGarmin(garminNights: 30)
+        days[0].hrvNightlyAverageMs = .infinity
+        days[1].hrvNightlyAverageMs = 24
+        days[2].hrvNightlyAverageMs = 24
+        days[3].hrvNightlyAverageMs = nil
+        days[4].hrvNightlyAverageMs = 0
+        days[5].hrvNightlyAverageMs = 24
+        days[6].hrvMetric = .sdnn
+
+        let result = readiness(days)
+        #expect(result.reasons == [.hrvBelowBaseline(nights: 3)])
+        #expect(result.hrvCoverage?.metric == .rmssd)
+        #expect(result.hrvCoverage?.latestDay == days[1].day)
+        #expect(result.hrvCoverage?.recentDays == 7)
+        #expect(result.hrvCoverage?.recentReadings == 3)
+        #expect(result.hrvCoverage?.baselineDays == 60)
+        #expect(result.hrvCoverage?.baselineReadings == 26)
     }
 
     @Test func elevatedRestingHeartRateTurnsAmber() {
@@ -85,7 +112,8 @@ struct ReadinessRulesTests {
     @Test func shortSleepAloneIsAmber() {
         let result = readiness(history(todaySleepHours: 5))
 
-        #expect(result == Readiness(level: .amber, reasons: [.shortSleep(hours: 5)]))
+        #expect(result.level == .amber)
+        #expect(result.reasons == [.shortSleep(hours: 5)])
     }
 
     @Test func subjectiveSignalsWithoutPhysiologyStayAmber() {
@@ -148,6 +176,8 @@ struct ReadinessRulesTests {
 
         #expect(!result.reasons.contains { if case .hrvBelowBaseline = $0 { true } else { false } })
         #expect(result.level == .unknown)  // no RMSSD baseline yet, nothing else to judge
+        #expect(result.hrvCoverage?.baselineReadings == 6)
+        #expect(result.hrvCoverage?.minimumBaselineReadings == 14)
     }
 
     @Test func onceTheNewWatchHasABaselineItIsJudgedAgainstItsOwnNights() {

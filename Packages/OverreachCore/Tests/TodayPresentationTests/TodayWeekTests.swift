@@ -59,6 +59,37 @@ struct TodayWeekTests {
         #expect(model.sourcesText == "From Apple Health")
         #expect(!model.showsBodyBattery)
         #expect(!model.showsConnectHealth)
+        #expect(model.hrvCoverageNote == "Still building your usual HRV range (2 of 14 comparable readings needed).")
+        #expect(model.showsReadinessDetails)
+    }
+
+    @Test func lowHRVShowsTheMeasuredDenominatorAndConfiguredWindow() async {
+        let baseline = (6...25).map { day(-$0, sleepHours: nil, hrv: 55, steps: nil) }
+        let recent = [0, -1, -3].map { day($0, sleepHours: nil, hrv: 35, steps: nil) }
+        let model = TodayModel(
+            sources: [WeekSource(days: baseline + recent)],
+            readinessSettings: .init(rollingDays: 5), calendar: calendar
+        )
+
+        await model.load(now: now)
+
+        #expect(model.readinessLevel == .amber)
+        #expect(model.readinessLines.map(\.text) == [
+            "HRV below your usual range (3 of 3 comparable readings low in the last 5 days)."
+        ])
+        #expect(model.hrvCoverageNote == nil)
+    }
+
+    @Test func aMissingRecentReadingShowsWhyHRVWasSkipped() async {
+        let baseline = (7...25).map { day(-$0, sleepHours: nil, hrv: 55, steps: nil) }
+        let model = TodayModel(
+            sources: [WeekSource(days: baseline + [day(-1, sleepHours: nil, hrv: 35, steps: nil)])], calendar: calendar
+        )
+
+        await model.load(now: now)
+
+        #expect(model.readinessLevel == .unknown)
+        #expect(model.hrvCoverageNote == "Too few comparable HRV readings in the last 7 days (1 available, 3 needed).")
     }
 
     @Test func connectingAsksForAccessAndReloads() async {

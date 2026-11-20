@@ -80,9 +80,10 @@ public enum ReadinessRules {
         var physiological = 0
         var evaluated = false
 
-        if let hrv = hrvCheck(byDay: byDay, baselineDays: baselineDays, rollingDays: rollingDays, settings: settings) {
+        let hrv = hrvCheck(byDay: byDay, baselineDays: baselineDays, rollingDays: rollingDays, settings: settings)
+        if let hrv, hrv.coverage.canCompare {
             evaluated = true
-            if let lowNights = hrv {
+            if let lowNights = hrv.lowNights {
                 reasons.append(.hrvBelowBaseline(nights: lowNights))
                 physiological += 1
             }
@@ -116,12 +117,14 @@ public enum ReadinessRules {
             }
         }
 
-        guard evaluated else { return Readiness(level: .unknown, reasons: [.missingData]) }
-        if reasons.isEmpty { return Readiness(level: .green) }
-        if reasons.count >= settings.redSignals && physiological > 0 {
-            return Readiness(level: .red, reasons: reasons)
+        guard evaluated else {
+            return Readiness(level: .unknown, reasons: [.missingData], hrvCoverage: hrv?.coverage)
         }
-        return Readiness(level: .amber, reasons: reasons)
+        if reasons.isEmpty { return Readiness(level: .green, hrvCoverage: hrv?.coverage) }
+        if reasons.count >= settings.redSignals && physiological > 0 {
+            return Readiness(level: .red, reasons: reasons, hrvCoverage: hrv?.coverage)
+        }
+        return Readiness(level: .amber, reasons: reasons, hrvCoverage: hrv?.coverage)
     }
 
     /// The evidence behind one reason, to show next to it.
@@ -136,31 +139,38 @@ public enum ReadinessRules {
         }
     }
 
-    /// `nil` when HRV cannot be judged; `.some(nil)` when it is in range; `.some(n)` when the rolling average is
-    /// below the normal range, with `n` the low nights in the window.
-    ///
     /// Only nights of the same statistic as the latest night are compared (RMSSD and SDNN are not interchangeable,
     /// `hrv-metrics`, ADR-0024): someone who moves from an Apple Watch to a Garmin builds a new baseline instead of
     /// being judged against the old one.
-    static func hrvCheck(
+    private static func hrvCheck(
         byDay: [CalendarDay: DailyMetrics], baselineDays: [CalendarDay], rollingDays: [CalendarDay], settings: Settings
-    ) -> Int?? {
-        let latest = rollingDays.lazy.compactMap { byDay[$0] }.first { ($0.hrvNightlyAverageMs ?? 0) > 0 }
+    ) -> (coverage: HRVCoverage, lowNights: Int?)? {
+        let latest = rollingDays.lazy.compactMap { byDay[$0] }.first { validHRV($0.hrvNightlyAverageMs) != nil }
         guard let latest else { return nil }
         let metric = latest.hrvMetric
         let logHRV = { (days: [CalendarDay]) -> [Double] in
             days.compactMap { byDay[$0] }
                 .filter { $0.hrvMetric == metric }
-                .compactMap(\.hrvNightlyAverageMs).filter { $0 > 0 }.map { log($0) }
+                .compactMap { validHRV($0.hrvNightlyAverageMs) }.map { log($0) }
         }
         let baseline = logHRV(baselineDays)
         let recent = logHRV(rollingDays)
-        guard baseline.count >= settings.minimumBaselineNights, recent.count >= settings.minimumRollingNights else {
-            return nil
-        }
+        let coverage = HRVCoverage(
+            metric: metric, latestDay: latest.day,
+            recentDays: rollingDays.count, recentReadings: recent.count,
+            minimumRecentReadings: max(settings.minimumRollingNights, 1),
+            baselineDays: baselineDays.count, baselineReadings: baseline.count,
+            minimumBaselineReadings: max(settings.minimumBaselineNights, 1)
+        )
+        guard coverage.canCompare else { return (coverage, nil) }
         let lowerBound = mean(baseline) - settings.hrvBandStandardDeviations * standardDeviation(baseline)
-        guard mean(recent) < lowerBound else { return .some(nil) }
-        return .some(recent.filter { $0 < lowerBound }.count)
+        guard mean(recent) < lowerBound else { return (coverage, nil) }
+        return (coverage, recent.filter { $0 < lowerBound }.count)
+    }
+
+    private static func validHRV(_ value: Double?) -> Double? {
+        guard let value, value.isFinite, value > 0 else { return nil }
+        return value
     }
 
     private static func mean(_ values: [Double]) -> Double {

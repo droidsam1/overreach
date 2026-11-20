@@ -49,6 +49,18 @@ struct MarkdownReportRendererTests {
         #expect(MarkdownReportRenderer.format(37.4, decimals: 0) == "37")
     }
 
+    @Test func readinessReportUsesComparableHRVReadings() {
+        let coverage = HRVCoverage(
+            metric: .rmssd, latestDay: CalendarDay(year: 2026, month: 11, day: 16),
+            recentDays: 7, recentReadings: 5, minimumRecentReadings: 3,
+            baselineDays: 60, baselineReadings: 24, minimumBaselineReadings: 14
+        )
+        let readiness = Readiness(level: .amber, reasons: [.hrvBelowBaseline(nights: 4)], hrvCoverage: coverage)
+        let markdown = MarkdownReportRenderer.render(TrainingReport(generatedAt: .now, readiness: readiness))
+
+        #expect(markdown.contains("4 of 5 comparable readings low in the last 7 days"))
+    }
+
     @Test func formatsPaceAsMinutesAndSeconds() {
         #expect(MarkdownReportRenderer.formatPace(305) == "5:05 /km")
         #expect(MarkdownReportRenderer.formatPace(nil) == "–")
