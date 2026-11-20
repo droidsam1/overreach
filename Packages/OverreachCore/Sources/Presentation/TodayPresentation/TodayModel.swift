@@ -8,6 +8,7 @@ import PresentationKit
 public struct ReadinessLine: Hashable, Sendable {
     public let text: String
     public let evidence: String
+    public let source: URL?
 }
 
 /// State and actions of the Today screen (ADR-0003, ADR-0014): dependencies come in as `Domain` protocols, the
@@ -61,7 +62,7 @@ public final class TodayModel {
         }
         return switch readiness.level {
         case .green: L10n.text("Train as planned.")
-        case .amber: L10n.text("Keep it easy: an easy run (zone 1–2) or light strength.")
+        case .amber: L10n.text("Keep it easy today. Run at a pace you can talk at, or lift with light effort.")
         case .red: L10n.text("Rest or go for a walk today.")
         case .unknown: L10n.text("Not enough data yet to judge today.")
         }
@@ -71,7 +72,8 @@ public final class TodayModel {
     public var readinessLines: [ReadinessLine] {
         readiness.reasons.map { reason in
             ReadinessLine(
-                text: text(for: reason), evidence: ReadinessRules.evidence(for: reason).level.displayName
+                text: text(for: reason), evidence: ReadinessRules.evidence(for: reason).level.displayName,
+                source: ReadinessRules.evidenceURL(for: reason)
             )
         }
     }
@@ -91,6 +93,19 @@ public final class TodayModel {
     }
 
     public var showsReadinessDetails: Bool { !readiness.reasons.isEmpty || hrvCoverageNote != nil }
+    public var showsReadinessCard: Bool { loadedDay != nil && (readinessLevel != .unknown || hrvCoverageNote != nil) }
+
+    public var readinessSummary: String? {
+        if let summary = explanation.summary { return summary }
+        return readiness.reasons.first.flatMap { $0 == .missingData ? nil : text(for: $0) }
+    }
+    public var readinessContext: [String] { explanation.context }
+    public var readinessTrainingContext: ReadinessTrainingContext? { isLoading ? nil : explanation.trainingContext }
+
+    private var explanation: ReadinessExplanation {
+        ReadinessExplanation(readiness: readiness, today: metrics, week: week, training: recentTrainingDays,
+                             calendar: calendar, format: format)
+    }
 
     public var trainingTimelineNote: String? {
         if trainingReadFailed { return L10n.text("Some recent workouts could not be loaded.") }

@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today explains low HRV in plain language, puts it alongside measured recovery and recent training, and links to the research.
 - Today can offer one optional check-in question about symptoms or unusual stress when HRV stays below your range.
 - Today shows seven days of completed runs, strength sessions and recovery readings together by local date.
 - Today explains gaps in HRV coverage and shows how many comparable readings were low when the trend drops.

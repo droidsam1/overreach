@@ -1,6 +1,210 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Keep it easy today. Run at a pace you can talk at, or lift with light effort.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrena suave hoy. Corre a un ritmo que te permita hablar o haz fuerza con poco esfuerzo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestra suave hoxe. Corre a un ritmo que che permita falar ou fai forza con pouco esforzo."
+          }
+        }
+      }
+    },
+    "Research source": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuente científica"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fonte científica"
+          }
+        }
+      }
+    },
+    "Your HRV is trending below your usual range and your resting heart rate is higher than usual.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu VFC lleva varios días por debajo de tu rango habitual y tu pulso en reposo está más alto de lo normal."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa VFC leva varios días por debaixo do teu rango habitual e o pulso en repouso está máis alto do normal."
+          }
+        }
+      }
+    },
+    "Your HRV is trending below your usual range.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu VFC lleva varios días por debajo de tu rango habitual."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa VFC leva varios días por debaixo do teu rango habitual."
+          }
+        }
+      }
+    },
+    "Your usual range uses {1} comparable readings from the previous {2} days. The latest reading was on {3}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu rango habitual se calcula con {1} mediciones comparables de los {2} días anteriores. La última medición comparable es del {3}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teu rango habitual calcúlase con {1} medicións comparables dos {2} días anteriores. A última medición comparable é do {3}."
+          }
+        }
+      }
+    },
+    "Sleep last night was {1} h.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anoche dormiste {1} h."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Onte á noite durmiches {1} h."
+          }
+        }
+      }
+    },
+    "Sleep data for last night is unavailable.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan los datos de sueño de anoche."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan os datos de sono de onte á noite."
+          }
+        }
+      }
+    },
+    "HRV measures how much the time between heartbeats varies. A sustained drop can inform training effort. Its cause is uncertain.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La VFC mide cuánto varía el tiempo entre latidos. Si baja durante varios días, sirve de referencia para ajustar el esfuerzo. La causa sigue siendo incierta."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A VFC mide canto varía o tempo entre latexos. Se baixa durante varios días, serve de referencia para axustar o esforzo. A causa segue a ser incerta."
+          }
+        }
+      }
+    },
+    "Resting heart rate is unavailable for today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan los datos de pulso en reposo de hoy."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan os datos de pulso en repouso de hoxe."
+          }
+        }
+      }
+    },
+    "Resting heart rate today is {1} bpm.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy tu pulso en reposo es de {1} lpm."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe o teu pulso en repouso é de {1} lpm."
+          }
+        }
+      }
+    },
+    "Resting heart rate today is {1} bpm. The average over {2} measured days in the last week is {3} bpm.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy tu pulso en reposo es de {1} lpm. La media de los {2} días con datos de la última semana es de {3} lpm."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe o teu pulso en repouso é de {1} lpm. A media dos {2} días con datos da última semana é de {3} lpm."
+          }
+        }
+      }
+    },
+    "Workouts recorded on {1}, the day before your latest comparable HRV reading.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamientos registrados el {1}, el día anterior a tu última medición comparable de VFC."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramentos rexistrados o {1}, o día anterior á túa última medición comparable de VFC."
+          }
+        }
+      }
+    },
     "Do new symptoms make you feel too unwell to train today?": {
       "extractionState": "manual",
       "localizations": {
@@ -4587,23 +4791,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Os elementos combínanse por identificador: non se duplica nada."
-          }
-        }
-      }
-    },
-    "Keep it easy: an easy run (zone 1–2) or light strength.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hoy suave: carrera fácil (zona 1–2) o fuerza ligera."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hoxe suave: carreira doada (zona 1–2) ou forza lixeira."
           }
         }
       }

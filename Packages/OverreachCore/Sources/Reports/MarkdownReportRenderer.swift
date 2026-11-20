@@ -1,3 +1,4 @@
+import Analytics
 import Domain
 import Foundation
 
@@ -44,7 +45,10 @@ public enum MarkdownReportRenderer {
         var lines = ["## Today", ""]
         if let readiness = report.readiness {
             lines.append("- Readiness: **\(readiness.level.rawValue)**")
-            lines += readiness.reasons.map { "  - \(describe($0, hrvCoverage: readiness.hrvCoverage))" }
+            for reason in readiness.reasons {
+                let source = ReadinessRules.evidenceURL(for: reason).map { " ([research source](\($0.absoluteString)))" } ?? ""
+                lines.append("  - \(describe(reason, hrvCoverage: readiness.hrvCoverage))\(source)")
+            }
             if let coverage = readiness.hrvCoverage, !coverage.canCompare {
                 lines.append("  - HRV comparison skipped. "
                     + "Recent readings available: \(coverage.recentReadings) (minimum \(coverage.minimumRecentReadings)). "
@@ -53,7 +57,7 @@ public enum MarkdownReportRenderer {
         }
         if let today = report.today {
             lines.append("- HRV last night: \(format(today.hrvNightlyAverageMs, decimals: 0)) ms "
-                + "(normal range \(format(today.hrvBaselineLowMs, decimals: 0))–"
+                + "(watch-reported range \(format(today.hrvBaselineLowMs, decimals: 0))–"
                 + "\(format(today.hrvBaselineHighMs, decimals: 0)) ms)")
             lines.append("- Resting HR: \(format(today.restingHeartRate, decimals: 0)) bpm")
             lines.append("- Sleep: \(format(today.sleepSeconds.map { $0 / 3600 }, decimals: 1)) h")

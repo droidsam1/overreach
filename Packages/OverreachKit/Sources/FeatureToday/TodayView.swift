@@ -27,7 +27,7 @@ public struct TodayView: View {
                     if model.showsConnectHealth {
                         connectHealth
                     }
-                    if model.readinessLevel != .unknown {
+                    if model.showsReadinessCard {
                         readiness
                     }
                     if model.showsCheckIn {
@@ -109,13 +109,30 @@ public struct TodayView: View {
         VStack(alignment: .leading, spacing: Spacing.small) {
             StatusBadge(title: model.readinessTitle, tone: model.readinessLevel.tone)
             Text(model.readinessAdvice).font(.headline)
+            if let summary = model.readinessSummary {
+                Text(summary).font(.subheadline)
+            }
             if model.showsReadinessDetails {
                 DisclosureGroup("Why this recommendation?") {
                     VStack(alignment: .leading, spacing: Spacing.small) {
                         ForEach(model.readinessLines, id: \.self) { line in
                             VStack(alignment: .leading, spacing: Spacing.xSmall) {
                                 Text(line.text).font(.subheadline)
-                                Text(line.evidence).font(.caption).foregroundStyle(.secondary)
+                                if let source = line.source {
+                                    Text(line.evidence).font(.caption).foregroundStyle(.secondary)
+                                    Link("Research source", destination: source).font(.caption)
+                                }
+                            }
+                        }
+                        ForEach(model.readinessContext, id: \.self) { text in
+                            Text(text).font(.subheadline)
+                        }
+                        if let context = model.readinessTrainingContext {
+                            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                                Text(context.heading).font(.subheadline.weight(.medium))
+                                ForEach(context.workouts.indices, id: \.self) { index in
+                                    Text(context.workouts[index]).font(.subheadline)
+                                }
                             }
                         }
                         if let note = model.hrvCoverageNote {
@@ -223,12 +240,19 @@ struct PreviewMetricsSource: MetricsSource {
     func isAvailable() async -> Bool { true }
 
     func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics] {
-        var metrics = DailyMetrics(day: range.upperBound, sources: [.garmin])
-        metrics.hrvNightlyAverageMs = 37
-        metrics.restingHeartRate = 54
-        metrics.sleepSeconds = 6.4 * 3600
-        metrics.bodyBatteryHigh = 58
-        return [metrics]
+        let calendar = Calendar.current
+        return (0...25).map { offset in
+            let day = range.upperBound.adding(days: -offset, calendar: calendar)
+            var metrics = DailyMetrics(day: day, sources: [.garmin])
+            metrics.hrvNightlyAverageMs = offset < 4 ? 34 : 43
+            metrics.hrvMetric = .rmssd
+            metrics.restingHeartRate = offset == 0 ? 60 : 59
+            if offset == 0 {
+                metrics.sleepSeconds = 7.6 * 3_600
+                metrics.bodyBatteryHigh = 64
+            }
+            return metrics
+        }.filter { range.contains($0.day) }
     }
 
     func runs(from start: Date, to end: Date) async throws -> [RunActivity] {
