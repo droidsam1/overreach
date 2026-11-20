@@ -40,30 +40,13 @@ public struct CalendarTotal: Identifiable, Hashable, Sendable {
     public let label: String
 }
 
-/// A run in the day detail.
-public struct CalendarRunLine: Identifiable, Hashable, Sendable {
-    public let id: String
-    /// The imported name, or "Run".
-    public let title: String
-    public let source: String
-    /// "5.2 km"
-    public let distance: String
-    /// "28:30" or "1:05:20"
-    public let duration: String
-    /// "5:29 /km"; `nil` without distance.
-    public let pace: String?
-    /// "152 bpm"; `nil` when the watch gave none.
-    public let heartRate: String?
-    public let trainingMetrics: [HistoryMetric]
-}
-
 /// What happened on the selected day.
 public struct CalendarDayDetail: Hashable, Sendable {
     public let day: CalendarDay
     /// "Thursday, 19 November"
     public let title: String
     public let sessions: [SessionSummary]
-    public let runs: [CalendarRunLine]
+    public let runs: [HistoryRunActivity]
     /// "8,412 steps"; `nil` without step data.
     public let steps: String?
 
@@ -82,11 +65,13 @@ public final class HistoryCalendarModel {
     public private(set) var selectedDay: CalendarDay?
     public private(set) var isLoading = false
     public private(set) var sessions: [StrengthSession] = []
-    public private(set) var runs: [RunActivity] = []
+    private var runRecords: [RunDeduplication.CombinedRun] = []
+    public var runs: [RunActivity] { runRecords.map(\.activity) }
     public private(set) var steps: [CalendarDay: Int] = [:]
     /// Whether reading Apple Health failed for the shown month.
     public private(set) var activityFailed = false
     public private(set) var sessionsFailed = false
+    public private(set) var runWarning: String?
     private var didReadRuns = false
     @ObservationIgnored private var activeLoad: UUID?
 
@@ -221,7 +206,7 @@ public final class HistoryCalendarModel {
     /// Shown under the grid while runs and steps are missing: Health is not connected, or could not be read.
     public var healthHint: String? {
         if activityFailed { return L10n.text("Could not read Apple Health. Your sessions are still shown.") }
-        guard steps.isEmpty, runs.isEmpty, !isLoading else { return nil }
+        guard steps.isEmpty, runs.isEmpty, runWarning == nil, !isLoading else { return nil }
         return L10n.text("Connect Apple Health or Garmin from Today to see runs. Steps come from Apple Health.")
     }
 
@@ -239,9 +224,9 @@ public final class HistoryCalendarModel {
             sessions: sessions
                 .filter { CalendarDay($0.startedAt, calendar: calendar) == day }
                 .map { SessionSummary(session: $0, names: exerciseNames) },
-            runs: runs
-                .filter { CalendarDay($0.startedAt, calendar: calendar) == day }
-                .map(runLine),
+            runs: runRecords
+                .filter { CalendarDay($0.activity.startedAt, calendar: calendar) == day }
+                .map { HistoryRunActivity($0, format: format) },
             steps: steps[day].map { L10n.format("{1} steps", format.number(Double($0), maxFractionDigits: 0)) }
         )
     }
@@ -312,7 +297,7 @@ public final class HistoryCalendarModel {
         // Match copies on opposite sides of midnight before filtering by the preferred record's start.
         let runStart = requested.adding(days: -1, calendar: calendar).startDate(in: calendar)
         let runEnd = next.adding(days: 1, calendar: calendar).startDate(in: calendar)
-        async let loadedRuns = readRuns(from: runStart, to: runEnd)
+        async let loadedRuns = HistoryRunReadings.load(sources: runSources, from: runStart, to: runEnd)
 
         let loadedSessions: [StrengthSession]?
         do {
@@ -337,40 +322,10 @@ public final class HistoryCalendarModel {
         sessions = loadedSessions ?? []
         sessionsFailed = loadedSessions == nil
         steps = loadedSteps
-        runs = RunDeduplication.removingDuplicates(runResults.runs)
-            .filter { $0.startedAt >= start && $0.startedAt < end }
+        runRecords = runResults.runs.filter { $0.activity.startedAt >= start && $0.activity.startedAt < end }
         didReadRuns = runResults.didRead
-        activityFailed = failed || runResults.healthFailed
-    }
-
-    private struct RunReadings {
-        var runs: [RunActivity] = []
-        var didRead = false
-        var healthFailed = false
-    }
-
-    private func readRuns(from start: Date, to end: Date) async -> RunReadings {
-        await withTaskGroup(of: ([RunActivity]?, Bool).self) { group in
-            for source in runSources {
-                group.addTask {
-                    guard await source.isAvailable() else { return (nil, false) }
-                    do {
-                        return (try await source.runs(from: start, to: end), false)
-                    } catch {
-                        return (nil, source.kind == .appleHealth)
-                    }
-                }
-            }
-            var readings = RunReadings()
-            for await (result, failed) in group {
-                if let result {
-                    readings.didRead = true
-                    readings.runs += result
-                }
-                readings.healthFailed = readings.healthFailed || failed
-            }
-            return readings
-        }
+        runWarning = runResults.warning(excluding: [.appleHealth])
+        activityFailed = failed || runResults.failedSources.contains(.appleHealth)
     }
 
     // MARK: Helpers
@@ -394,30 +349,6 @@ public final class HistoryCalendarModel {
     static func fraction(steps: Int, average: Double?) -> Double {
         guard let average, average > 0 else { return 0 }
         return min(1, Double(steps) / average)
-    }
-
-    private func runLine(_ run: RunActivity) -> CalendarRunLine {
-        CalendarRunLine(
-            id: "\(run.source.rawValue):\(run.id)",
-            title: run.name ?? L10n.text("Run"),
-            source: run.source.displayName,
-            distance: format.number(run.distanceMeters / 1_000, maxFractionDigits: 2) + " km",
-            duration: Self.clockText(seconds: Int(run.durationSeconds.rounded())),
-            pace: run.paceSecondsPerKm.map { format.minutesAndSeconds(Int($0.rounded())) + " /km" },
-            heartRate: run.averageHeartRate.map { format.number($0, maxFractionDigits: 0) + " bpm" },
-            trainingMetrics: HistoryMetric.training(
-                load: run.trainingLoad, aerobic: run.aerobicTrainingEffect,
-                anaerobic: run.anaerobicTrainingEffect, format: format
-            )
-        )
-    }
-
-    /// "28:30" or "1:05:20".
-    static func clockText(seconds: Int) -> String {
-        let hours = seconds / 3_600
-        guard hours > 0 else { return Format().minutesAndSeconds(seconds) }
-        let rest = Format().minutesAndSeconds(seconds % 3_600)
-        return "\(hours):\(rest.count < 5 ? "0" : "")\(rest)"
     }
 
     private func accessibilityLabel(day: CalendarDay, strength: Int, runs: Int, steps: Int?) -> String {

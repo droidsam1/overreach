@@ -280,8 +280,9 @@ values win where both have them (HRV, sleep stages), and Health fills the rest.
   Garmin changes a payload, the fix is a new fixture plus a test.
 - **Units at the edge.** Garmin mixes seconds and milliseconds, and local versus GMT timestamps. Convert once in
   `Mapping` to SI and `CalendarDay` (the day the sleep *ended*, in the user's calendar), with tests around DST.
-- **Idempotent, incremental sync.** Store the last synced day; on each foreground fetch re-pull today and yesterday
-  (late watch syncs) and any gap, up to a window (e.g. 60 days on first connect, enough for the ADR-0020 baselines).
+- **Idempotent, incremental sync.** Store the last synced day. Revisit today and yesterday for daily metrics,
+  and the last seven days for activities so a workout uploaded late in the week still arrives. Include any gap
+  since the prior sync, up to the initial 60-day window.
   Upserting a day twice gives the same result.
 - **Key lifecycle.** Store the key's expiry date the user picks; a local notification (`LocalAlerts`) and a Settings
   banner 7 days before. On 401 with a fresh token: the key was revoked, so show "Reconnect Garmin".
@@ -327,8 +328,8 @@ logged in Overreach. Rules, so nothing is counted twice and the two never disagr
    sRPE load: the two are different units and must not be added together in ACWR without an evidence-based
    conversion (step 5).
 6. **Runs follow the same rule against Apple Health:** a Garmin run and the copy Garmin Connect writes to Health are
-   the same run. Keep the Garmin one, since it has load, training effect and the FIT file. The History calendar and
-   the AI report both use `RunDeduplication`. The calendar reads one day on each side of the month so copies around
+   the same run. Keep the Garmin one, since it has load, training effect and the FIT file. The History list, calendar and
+   AI report use `RunDeduplication`. The calendar reads one day on each side of the month so copies around
    midnight can be matched before the run count and distance are assigned to the preferred record's month.
 
 Apple Health can still show both workouts if Overreach writes the session (ADR-0016) and Garmin Connect writes its

@@ -42,6 +42,17 @@ struct RunDeduplicationTests {
         #expect(RunDeduplication.removingDuplicates([first, second]).count == 2)
     }
 
+    @Test func aGarminRunDoesNotSwallowTwoOverlappingHealthRuns() {
+        let garmin = run("g1", .garmin)
+        let copy = run("h1", .appleHealth)
+        let second = run("h2", .appleHealth, offsetMinutes: 5)
+
+        let activities = RunDeduplication.combiningSources([second, copy, garmin, copy])
+
+        #expect(activities.map(\.activity.id) == ["g1", "h2"])
+        #expect(activities.map(\.sources) == [[.garmin, .appleHealth], [.appleHealth]])
+    }
+
     @Test func aSmallOverlapIsTwoRuns() {
         let first = run("g1", .garmin, minutes: 40)
         let next = run("h1", .appleHealth, offsetMinutes: 35, minutes: 40)

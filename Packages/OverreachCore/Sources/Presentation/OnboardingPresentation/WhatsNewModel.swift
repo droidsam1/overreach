@@ -45,8 +45,8 @@ public struct ReleaseNotes: Hashable, Sendable {
                     detail: L10n.text("Import a multi-week plan from your AI. Train shows the next session.")
                 ),
                 ReleaseHighlight(
-                    symbol: "calendar", title: L10n.text("History calendar"),
-                    detail: L10n.text("Strength days, runs and steps month by month, with each day's details.")
+                    symbol: "calendar", title: L10n.text("Unified history"),
+                    detail: L10n.text("Find strength workouts and runs together, with filters for type and source.")
                 ),
                 ReleaseHighlight(
                     symbol: "list.bullet.clipboard.fill", title: L10n.text("Session summary"),

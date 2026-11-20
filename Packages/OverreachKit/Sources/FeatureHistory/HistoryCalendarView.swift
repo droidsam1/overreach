@@ -180,6 +180,9 @@ struct HistoryCalendarView: View {
             Label(message, systemImage: "exclamationmark.triangle")
                 .foregroundStyle(.red)
         }
+        if let warning = calendar.runWarning {
+            StatusLabel(title: warning, tone: .caution)
+        }
         if let hint = calendar.healthHint {
             Label(hint, systemImage: "heart.text.square")
         }
@@ -233,47 +236,17 @@ private struct DayDetailRows: View {
             }
         }
         ForEach(detail.runs) { run in
-            RunRow(run: run)
+            NavigationLink {
+                HistoryRunDetail(run: run)
+            } label: {
+                HistoryRunRow(run: run, showsDate: false)
+            }
         }
         if let steps = detail.steps {
             Label(steps, systemImage: "shoeprints.fill")
                 .monospacedDigit()
                 .labelStyle(TintedIconLabelStyle(tint: ActivityColor.steps))
         }
-    }
-}
-
-private struct RunRow: View {
-    let run: CalendarRunLine
-
-    var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: Spacing.small) {
-            Image(systemName: "figure.run")
-                .foregroundStyle(ActivityColor.run)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                Text(run.title).font(.headline)
-                Text(run.source).font(.caption).foregroundStyle(.secondary)
-                AdaptiveStack(spacing: Spacing.medium) {
-                    Text(run.distance)
-                    Text(run.duration)
-                    if let pace = run.pace {
-                        Text(pace)
-                    }
-                    if let heartRate = run.heartRate {
-                        Label(heartRate, systemImage: "heart.fill")
-                            .labelStyle(TintedIconLabelStyle(tint: .red))
-                    }
-                }
-                .font(.subheadline.monospacedDigit())
-                .foregroundStyle(.secondary)
-                ForEach(run.trainingMetrics) { metric in
-                    LabeledContent(metric.label, value: metric.value)
-                        .font(.subheadline.monospacedDigit())
-                }
-            }
-        }
-        .accessibilityElement(children: .combine)
     }
 }
 

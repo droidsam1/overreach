@@ -902,6 +902,23 @@
         }
       }
     },
+    "Activity type": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo de actividad"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo de actividade"
+          }
+        }
+      }
+    },
     "Add 15 seconds": {
       "extractionState": "manual",
       "localizations": {
@@ -1136,6 +1153,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tras cada sesión: axuste ao plan, récords e próximos obxectivos. Volve abrilo desde Historial."
+          }
+        }
+      }
+    },
+    "All activities": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todas las actividades"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todas as actividades"
           }
         }
       }
@@ -1820,6 +1854,23 @@
         }
       }
     },
+    "Clear filters": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar filtros"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpar filtros"
+          }
+        }
+      }
+    },
     "Clearer advice": {
       "extractionState": "manual",
       "localizations": {
@@ -2173,6 +2224,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non se puideron cargar os exercicios."
+          }
+        }
+      }
+    },
+    "Could not load runs from {1}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudieron cargar las carreras de {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puideron cargar as carreiras de {1}."
           }
         }
       }
@@ -3095,6 +3163,23 @@
         }
       }
     },
+    "Distance": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distancia"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distancia"
+          }
+        }
+      }
+    },
     "Don't use": {
       "extractionState": "manual",
       "localizations": {
@@ -3724,6 +3809,40 @@
         }
       }
     },
+    "Filters": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtros"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtros"
+          }
+        }
+      }
+    },
+    "Find strength workouts and runs together, with filters for type and source.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encuentra sesiones de fuerza y carreras juntas, con filtros por tipo y origen."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atopa sesións de forza e carreiras xuntas, con filtros por tipo e fonte."
+          }
+        }
+      }
+    },
     "Finish": {
       "extractionState": "manual",
       "localizations": {
@@ -3741,19 +3860,19 @@
         }
       }
     },
-    "Finished sessions appear here.": {
+    "Finished workouts and runs from connected sources appear here.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aquí aparecen las sesiones terminadas."
+            "value": "Aquí aparecen los entrenamientos terminados y las carreras de los orígenes conectados."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aquí aparecen as sesións rematadas."
+            "value": "Aquí aparecen os adestramentos rematados e as carreiras das fontes conectadas."
           }
         }
       }
@@ -4213,23 +4332,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Historial"
-          }
-        }
-      }
-    },
-    "History calendar": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Calendario en el historial"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Calendario no historial"
           }
         }
       }
@@ -5849,6 +5951,23 @@
         }
       }
     },
+    "No activities yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no hay actividades"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda non hai actividades"
+          }
+        }
+      }
+    },
     "No activity recorded this month.": {
       "extractionState": "manual",
       "localizations": {
@@ -5917,6 +6036,23 @@
         }
       }
     },
+    "No matching activities": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay actividades con estos filtros"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai actividades con estes filtros"
+          }
+        }
+      }
+    },
     "No muscles assigned": {
       "extractionState": "manual",
       "localizations": {
@@ -5981,23 +6117,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non hai ningunha copia recente neste cartafol. Comproba que siga dispoñible e fai unha copia agora."
-          }
-        }
-      }
-    },
-    "No sessions yet": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aún no hay sesiones"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aínda non hai sesións"
           }
         }
       }
@@ -6355,6 +6474,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Overreach"
+          }
+        }
+      }
+    },
+    "Pace": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ritmo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ritmo"
           }
         }
       }
@@ -8705,6 +8841,40 @@
         }
       }
     },
+    "Source": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Origen"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fonte"
+          }
+        }
+      }
+    },
+    "Sources": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orígenes"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fontes"
+          }
+        }
+      }
+    },
     "Stalled": {
       "extractionState": "manual",
       "localizations": {
@@ -8990,23 +9160,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Forza e músculo"
-          }
-        }
-      }
-    },
-    "Strength days, runs and steps month by month, with each day's details.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Días de fuerza, carreras y pasos mes a mes, con el detalle de cada día."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Días de forza, carreiras e pasos mes a mes, co detalle de cada día."
           }
         }
       }
@@ -10129,6 +10282,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen rematar: {1}. Se paraches antes de tempo, déixaos fóra da túa progresión para que os teus próximos obxectivos sigan sendo correctos. O traballo gárdase en ambos casos."
+          }
+        }
+      }
+    },
+    "Unified history": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historial unificado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historial unificado"
           }
         }
       }
@@ -12594,6 +12764,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "A túa chave quédase no teu iPhone, no Chaveiro, e só se sincroniza co teu propio Chaveiro de iCloud."
+          }
+        }
+      }
+    },
+    "All sources": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos los orígenes"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todas as fontes"
           }
         }
       }
