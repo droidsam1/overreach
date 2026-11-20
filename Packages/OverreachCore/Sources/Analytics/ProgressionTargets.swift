@@ -17,6 +17,10 @@ public struct PlannedSet: Hashable, Codable, Sendable {
 /// Why a target is what it is. Each reason carries its evidence (ADR-0012).
 public enum ProgressionReason: Hashable, Codable, Sendable {
     case noHistory
+    case repeatBaseline
+    case repeatWithoutEffort
+    case repeatAfterHighEffort
+    case repeatBeforeLoadJump
     case topOfRangeReached(reps: Int)
     case addRepsBeforeLoad
     case belowRangeTwice
@@ -31,6 +35,8 @@ public enum ProgressionReason: Hashable, Codable, Sendable {
 
     public var evidence: EvidenceReference {
         switch self {
+        case .repeatBaseline, .repeatWithoutEffort, .repeatAfterHighEffort, .repeatBeforeLoadJump:
+            ProgressionEvidence.firstExposure
         case .noHistory, .repeatAfterMiss, .resetAfterMisses, .belowRangeTwice, .nextRepBlock:
             ProgressionEvidence.stallHeuristics
         case .topOfRangeReached, .addRepsBeforeLoad, .allRepsCompleted, .noLoadIncrementAvailable:
@@ -66,7 +72,11 @@ public enum ProgressionTargets {
         if stored == nil, let focus {
             settings.scheme = FocusPrescription.for(focus).defaultScheme
         }
-        if let prescription { settings.scheme = prescription }
+        if let prescription {
+            settings.scheme = prescription
+            // A routine's prescription replaces a choice made from a logged baseline.
+            settings.requiresLoggedEffort = nil
+        }
         return settings
     }
 
@@ -78,7 +88,9 @@ public enum ProgressionTargets {
     static let resetFactor = 0.9
 
     /// Target for the next exposure, given past exposures (oldest first).
-    public static func next(history: [ExerciseExposure], settings: ProgressionSettings) -> ExerciseTarget {
+    public static func next(
+        history: [ExerciseExposure], settings: ProgressionSettings, startFromBaseline: Bool = false
+    ) -> ExerciseTarget {
         let scheme = settings.scheme
         guard let last = history.last else {
             let reps = firstTargetReps(of: scheme)
@@ -86,7 +98,25 @@ public enum ProgressionTargets {
             return ExerciseTarget(sets: sets, reasons: [.noHistory])
         }
 
-        switch scheme {
+        if startFromBaseline, history.count == 1, FirstProgression.isUsable(last) {
+            return FirstProgression.repeatSets(from: last, rpe: scheme.targetRPE, reason: .repeatBaseline)
+        }
+        if settings.requiresLoggedEffort == true,
+           let hold = FirstProgression.hold(from: last, settings: settings) {
+            return hold
+        }
+        let target = nextTarget(history: history, last: last, settings: settings)
+        if settings.requiresLoggedEffort == true,
+           FirstProgression.isOversizedLoadStep(target, from: last, scheme: scheme) {
+            return FirstProgression.repeatSets(from: last, rpe: scheme.targetRPE, reason: .repeatBeforeLoadJump)
+        }
+        return target
+    }
+
+    private static func nextTarget(
+        history: [ExerciseExposure], last: ExerciseExposure, settings: ProgressionSettings
+    ) -> ExerciseTarget {
+        switch settings.scheme {
         case let .doubleProgression(sets, minReps, maxReps, rpe):
             return doubleProgression(
                 history: history, last: last, sets: max(1, sets),

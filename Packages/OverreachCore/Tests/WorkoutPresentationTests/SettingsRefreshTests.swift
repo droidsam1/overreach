@@ -31,7 +31,7 @@ struct SettingsRefreshTests {
 
     @Test func changedSettingsRefreshTheTargetAndSets() async throws {
         let (model, store) = await makeModel()
-        #expect(model.exercises[0].workingSets[0].weightKg == 62.5)
+        #expect(model.exercises[0].workingSets[0].weightKg == 60)
 
         try await store.save(microplates, for: bench.id)
         await model.applySettingsChanges()
@@ -68,6 +68,7 @@ struct SettingsRefreshTests {
         try await store.deleteProgressionSettings(for: bench.id)
         await model.applySettingsChanges()
 
-        #expect(model.exercises[0].workingSets[0].weightKg == 62.5)
+        #expect(model.exercises[0].workingSets[0].weightKg == 60)
+        #expect(model.exercises[0].progressionOffer != nil)
     }
 }

@@ -76,6 +76,19 @@ extension ProgressionReason {
                 context.reps, format.number(max(0, 10 - context.rpe)),
                 context.effortScale.text(rpe: context.rpe, format: format)
             )
+        case .repeatBaseline:
+            return L10n.text("Use your last session's working sets as today's starting point.")
+        case .repeatWithoutEffort:
+            return L10n.text("Repeat today's target and log how many reps you had left to guide the next session.")
+        case .repeatAfterHighEffort:
+            return L10n.text(
+                "Use the last session as a starting point. Do fewer reps or use less weight if you need more "
+                    + "reps in reserve."
+            )
+        case .repeatBeforeLoadJump:
+            return L10n.text(
+                "Keep the last load. A smaller weight increment in exercise settings can help you progress."
+            )
         case let .topOfRangeReached(reps):
             return context.topOfRangeReached(reps)
         case .addRepsBeforeLoad:

@@ -2,6 +2,8 @@ import Domain
 
 /// Evidence behind the progression engine. Keys match entries in `docs/evidence.md` (ADR-0012).
 public enum ProgressionEvidence {
+    /// First-exposure defaults, effort gate and first load step are product heuristics.
+    public static let firstExposure = EvidenceReference(key: "first-progression", level: .heuristic)
     /// Load progression and rep progression give similar hypertrophy and strength (Plotkin et al. 2022).
     public static let loadOrRepProgression = EvidenceReference(key: "progression-load-or-reps", level: .moderate)
     /// Hypertrophy improves closer to failure; strength similar across a wide RIR range (Robinson et al. 2024).

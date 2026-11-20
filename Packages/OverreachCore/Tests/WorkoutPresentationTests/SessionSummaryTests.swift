@@ -36,7 +36,7 @@ struct SessionSummaryTests {
         #expect(summary.comparison?.hasPrefix("Volume +22 % compared with the last “Workout”") == true)
         let row = try #require(summary.rows.first)
         #expect(row.outcome == .above)
-        #expect(row.outcomeText == "Above target: 60 kg × 11/11/11 vs 60 kg × 10/10/10")
+        #expect(row.outcomeText == "Above target: 60 kg × 11/11/11 vs 60 kg × 9/9/9")
         #expect(row.details.contains("Harder than planned: RPE 9.5 vs RPE 8."))
         #expect(row.details.contains { $0.hasPrefix("New best estimated 1RM:") })
         #expect(row.details.last?.hasPrefix("Next time: 60 kg × 12/12/12") == true)

@@ -299,8 +299,14 @@ public final class HistoryModel {
     public func showReport(for sessionID: UUID, format: Format = Format()) async {
         guard let session = session(id: sessionID) else { return }
         let settings = (try? await progression?.allProgressionSettings()) ?? [:]
+        let routine: Routine?
+        if let routineID = session.routineID {
+            routine = try? await routines.allRoutines().first { $0.id == routineID }
+        } else {
+            routine = nil
+        }
         let review = SessionReviewer.review(
-            session, history: summaries.map(\.session), exercises: catalog, settings: settings
+            session, history: summaries.map(\.session), exercises: catalog, settings: settings, routine: routine
         )
         report = SessionReport(review: review, effortScale: effortScale, format: format)
     }

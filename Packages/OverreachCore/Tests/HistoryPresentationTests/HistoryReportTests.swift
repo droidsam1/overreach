@@ -33,8 +33,8 @@ struct HistoryReportTests {
         #expect(report.title == "Push")
         #expect(report.headline.hasPrefix("60 min · 3 working sets"))
         let row = try #require(report.rows.first)
-        #expect(row.outcome == .below)  // the target after 9/9/9 was 10/10/10
-        #expect(row.outcomeText == "Below target: 60 kg × 10/10/9 vs 60 kg × 10/10/10")
+        #expect(row.outcome == .above)
+        #expect(row.outcomeText == "Above target: 60 kg × 10/10/9 vs 60 kg × 9/9/9")
         #expect(report.comparison?.hasPrefix("Volume +7 % compared with the last “Push”") == true)
 
         model.report = nil

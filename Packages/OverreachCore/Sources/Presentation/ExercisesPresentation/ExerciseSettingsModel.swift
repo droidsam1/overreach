@@ -50,7 +50,7 @@ public final class ExerciseSettingsModel {
     /// `nil` = automatic. While the scheme is the suggested one, it follows the focus.
     public var focus: TrainingFocus? {
         didSet {
-            if scheme == Self.suggestedScheme(for: oldValue) {
+            if requiresLoggedEffort != true, scheme == Self.suggestedScheme(for: oldValue) {
                 apply(Self.suggestedScheme(for: focus))
             }
         }
@@ -180,8 +180,15 @@ public final class ExerciseSettingsModel {
         FocusPrescription.suggestedScheme(for: focus)
     }
 
+    private var requiresLoggedEffort: Bool?
+
     private var settings: ProgressionSettings? {
-        scheme.map { ProgressionSettings(scheme: $0, incrementKg: incrementKg, isMainLift: isMainLift, focus: focus) }
+        guard let scheme else { return nil }
+        var settings = ProgressionSettings(
+            scheme: scheme, incrementKg: incrementKg, isMainLift: isMainLift, focus: focus
+        )
+        settings.requiresLoggedEffort = requiresLoggedEffort
+        return settings
     }
 
     /// The scheme in the form; `nil` while the rep blocks are invalid.
@@ -209,6 +216,7 @@ public final class ExerciseSettingsModel {
         apply(settings.scheme)
         incrementKg = settings.incrementKg
         isMainLift = settings.isMainLift
+        requiresLoggedEffort = settings.requiresLoggedEffort
     }
 
     private func apply(_ scheme: ProgressionScheme) {

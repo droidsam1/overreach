@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- After the first session with an exercise, Train repeats it as a starting point and lets you preview and choose
+  how to progress (reps, load or a wave); progression then waits for logged effort before advancing.
 - Built-in exercises show their Spanish name when the app is in Spanish or Galician; search finds exercises by
   their English or Spanish names, and Strong imports and AI plans that use the Spanish names resolve to them.
 - Cycle-aware recovery: with a natural cycle and regular periods in Apple Health, Today compares HRV and resting

@@ -39,6 +39,7 @@ struct TourContent {
                 body: "The app proposes weight and reps from your history, says why, and how strong the evidence is.",
                 highlights: [
                     ("exclamationmark.triangle.fill", "Stalls explained, with what to try"),
+                    ("arrow.up.right", "Choose how to progress when you repeat an exercise"),
                     ("list.bullet.clipboard.fill", "A summary after every session"),
                     ("trophy.fill", "Records and next targets"),
                 ]

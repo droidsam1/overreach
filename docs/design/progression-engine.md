@@ -23,6 +23,40 @@ deterministic functions with tests. Every output carries the reasons behind it.
 
 Increments are configurable per equipment (e.g. barbell 2.5 kg, dumbbell 2 kg, machine 5 kg, microplates 1 kg).
 
+## Choosing a progression after the first session
+
+With no per-exercise settings and one usable exposure in the logger's history window, Train prefills the last
+straight working sets as today's starting point. This works when adding the exercise by hand or starting a
+routine saved from History. A specific routine prescription takes priority. The entry point is next to the
+exercise target and appears before editing or completing sets. The sheet shows the previous work and previews
+today's sets and effort before the user chooses. Closing keeps the prefilled sets. Choosing updates them
+and saves the method with the exercise. The exercise settings screen can change the scheme or reset it.
+The app uses contextual choices, short action labels and a dismissible sheet.
+[Apple HIG: Layout](https://developer.apple.com/design/human-interface-guidelines/layout) ·
+[Apple HIG: Writing](https://developer.apple.com/design/human-interface-guidelines/writing)
+
+| Choice | Starting rule | Example after 4 × 8 at 100 kg, all sets at RPE 8, 2.5 kg steps |
+| --- | --- | --- |
+| Add reps first (double progression) | Preserve working-set count. Use the lowest logged rep count as the floor and two above the highest as the ceiling. Add a rep per set while there is room, then progress weight at the top. | 4 × 9 at 100 kg, building toward 4 × 10. |
+| Add weight at fixed reps (linear load) | For uniform sets and a positive equipment step of at most 5%, keep reps fixed and add one step when effort allows. | 4 × 8 at 102.5 kg. |
+| Alternate heavy and light sessions (rep cycle) | For uniform sets of 4–10 reps, cycle through reps +2, baseline reps and reps −2. Show it when logged effort supports an estimate and the first heavier step is possible. | 4 × 6 at 105 kg, then a lighter 10-rep exposure if effort allows. |
+
+The presets cover up to ten comparable straight working sets at one load. Rep counts may differ by up to
+three for the rep-range preset. A mixed-load session can repeat its exact sets. Warm-ups, drop sets and exercise
+entries excluded from progression do not contribute. If any set lacks valid effort or exceeds the target RPE,
+or was logged to failure, the chosen preset starts from the last performance and explains how effort can guide
+the next session. The estimate-based cycle additionally requires RPE 6 or above on each set. For presets
+chosen in Train, load increases are capped at 5% for fixed-rep and double progression and 10% for the cycle.
+These caps and the selected rep bounds are heuristics. With further history and no saved choice, the
+regular exercise default is used.
+
+Linear **load progression** raises the weight at fixed reps between successful sessions. Linear
+**periodization** changes volume and intensity in successive phases. Undulating periodization varies them
+more often, typically by workout or week. The exercise-level rep cycle is a way to introduce that variation.
+Multi-week block periodization and goal-specific programming belong in Plan. For a fixed rep target with a load
+estimated from effort, the existing RPE-based scheme is available in exercise settings. See the [evidence
+register](../evidence.md#progression-engine) for effect sizes, sources and the basis for the starting rules.
+
 ## Signals computed from history
 
 - Estimated 1RM per session (Epley) and its trend over 4–8 weeks.
