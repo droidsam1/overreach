@@ -33,6 +33,9 @@ public struct TodayView: View {
                     if model.showsCheckIn {
                         checkIn
                     }
+                    if model.showsTrainingTimeline {
+                        recentTraining
+                    }
                     if model.showsMetrics {
                         metrics
                     }
@@ -126,6 +129,29 @@ public struct TodayView: View {
         }
     }
 
+    private var recentTraining: some View {
+        DisclosureGroup("Recent training and recovery") {
+            VStack(alignment: .leading, spacing: Spacing.medium) {
+                if let note = model.trainingTimelineNote {
+                    Text(note).font(.footnote).foregroundStyle(.secondary)
+                }
+                ForEach(model.recentTrainingDays) { day in
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        Text(day.date).font(.subheadline.weight(.semibold)).accessibilityAddTraits(.isHeader)
+                        if let recovery = day.recovery {
+                            Text(recovery).font(.footnote).foregroundStyle(.secondary)
+                        }
+                        ForEach(Array(day.workouts.enumerated()), id: \.offset) { _, workout in
+                            Text(workout).font(.subheadline)
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, Spacing.small)
+        }
+    }
+
     private var checkIn: some View {
         VStack(alignment: .leading, spacing: Spacing.xSmall) {
             Button(model.checkInButtonTitle, systemImage: "face.smiling") {
@@ -205,7 +231,10 @@ struct PreviewMetricsSource: MetricsSource {
         return [metrics]
     }
 
-    func runs(from start: Date, to end: Date) async throws -> [RunActivity] { [] }
+    func runs(from start: Date, to end: Date) async throws -> [RunActivity] {
+        [RunActivity(id: kind.rawValue, source: kind, startedAt: end.addingTimeInterval(-25 * 3_600),
+                     durationSeconds: 1_800, distanceMeters: 5_000, averageHeartRate: 145)]
+    }
 }
 
 #Preview("Recovery metrics") {

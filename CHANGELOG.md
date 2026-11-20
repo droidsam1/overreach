@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today shows seven days of completed runs, strength sessions and recovery readings together by local date.
 - Today explains gaps in HRV coverage and shows how many comparable readings were low when the trend drops.
 - History shows Garmin heart rate, training load and training effect on matched strength sessions. Watch-only
   strength workouts appear in the same list with their own read-only details.

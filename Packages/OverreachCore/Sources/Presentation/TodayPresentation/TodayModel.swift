@@ -28,6 +28,9 @@ public final class TodayModel {
     public private(set) var accessError: String?
     /// Today's check-in, once filled in.
     public private(set) var checkIn: CheckIn?
+    public private(set) var recentTrainingDays: [RecentTrainingDay] = []
+    private var trainingReadFailed = false
+    private var activeLoad: UUID?
     /// Whether a Garmin account is connected (ADR-0022).
     public private(set) var isGarminConnected = false
     /// The person said they use a Garmin (first-run setup).
@@ -38,6 +41,9 @@ public final class TodayModel {
     private let profiles: (any ProfileRepository)?
     private let checkIns: (any CheckInRepository)?
     private let backup: (any BackupService)?
+    private let workouts: (any WorkoutRepository)?
+    private let exercises: (any ExerciseRepository)?
+    private let recordedStrength: (any RecordedStrengthSource)?
     private let readinessSettings: ReadinessRules.Settings
     private let calendar: Calendar
     private let format: Format
@@ -81,6 +87,16 @@ public final class TodayModel {
     }
 
     public var showsReadinessDetails: Bool { !readiness.reasons.isEmpty || hrvCoverageNote != nil }
+
+    public var trainingTimelineNote: String? {
+        if trainingReadFailed { return L10n.text("Some recent workouts could not be loaded.") }
+        if !recentTrainingDays.isEmpty && recentTrainingDays.allSatisfy({ $0.workouts.isEmpty }) {
+            return L10n.text("No completed workouts found in the last 7 days.")
+        }
+        return nil
+    }
+
+    public var showsTrainingTimeline: Bool { !recentTrainingDays.isEmpty || trainingReadFailed }
 
     /// The check-in button only shows when check-ins can be stored.
     public var showsCheckIn: Bool { checkIns != nil }
@@ -187,6 +203,8 @@ public final class TodayModel {
     public init(
         sources: [any MetricsSource], checkIns: (any CheckInRepository)? = nil, backup: (any BackupService)? = nil,
         garmin: (any GarminAccount)? = nil, profiles: (any ProfileRepository)? = nil,
+        workouts: (any WorkoutRepository)? = nil, exercises: (any ExerciseRepository)? = nil,
+        recordedStrength: (any RecordedStrengthSource)? = nil,
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
@@ -195,25 +213,38 @@ public final class TodayModel {
         self.profiles = profiles
         self.checkIns = checkIns
         self.backup = backup
+        self.workouts = workouts
+        self.exercises = exercises
+        self.recordedStrength = recordedStrength
         self.readinessSettings = readinessSettings
         self.calendar = calendar
         self.format = format
     }
 
     public func load(now: Date = .now) async {
+        let loadID = UUID()
+        activeLoad = loadID
         isLoading = true
-        defer { isLoading = false }
+        defer {
+            if activeLoad == loadID {
+                isLoading = false
+                activeLoad = nil
+            }
+        }
 
         let today = CalendarDay(now, calendar: calendar)
         // The readiness baselines need weeks of history; the screen shows the last 7 days.
-        let range = today.adding(days: -readinessSettings.baselineDays, calendar: calendar)...today
+        let historyDays = max(6, readinessSettings.baselineDays)
+        let range = today.adding(days: -historyDays, calendar: calendar)...today
         let weekStart = today.adding(days: -6, calendar: calendar)
         var byDay: [CalendarDay: DailyMetrics] = [:]
         var failures: [DataSourceKind] = []
         var reasons: [DataSourceKind: String] = [:]
+        var availableSources: [any MetricsSource] = []
 
         for source in sources {
             guard await source.isAvailable() else { continue }
+            availableSources.append(source)
             do {
                 for day in try await source.dailyMetrics(in: range) where range.contains(day.day) {
                     byDay[day.day] = (byDay[day.day] ?? DailyMetrics(day: day.day)).merging(day)
@@ -224,18 +255,60 @@ public final class TodayModel {
             }
         }
 
+        let checkIn = try? await checkIns?.checkIn(for: today)
+        let garminConnected = await garmin?.connection() != nil
+        let profileWearsGarmin = (try? await profiles?.profile())?.wearables.contains(.garmin) ?? false
+        guard activeLoad == loadID else { return }
         let history = byDay.values.filter { !$0.sources.isEmpty }.sorted { $0.day < $1.day }
         week = history.filter { $0.day >= weekStart }
         metrics = byDay[today].flatMap { $0.sources.isEmpty ? nil : $0 }
         failedSources = failures
         failureReasons = reasons
-        let checkIn = try? await checkIns?.checkIn(for: today)
         self.checkIn = checkIn
-        isGarminConnected = await garmin?.connection() != nil
-        wearsGarmin = (try? await profiles?.profile())?.wearables.contains(.garmin) ?? false
+        isGarminConnected = garminConnected
+        wearsGarmin = profileWearsGarmin
         readiness = ReadinessRules.readiness(
             today: today, history: history, checkIn: checkIn, settings: readinessSettings, calendar: calendar
         )
+        await loadRecentTraining(in: weekStart...today, now: now, sources: availableSources, loadID: loadID)
+    }
+
+    private func loadRecentTraining(
+        in range: ClosedRange<CalendarDay>, now: Date, sources: [any MetricsSource], loadID: UUID
+    ) async {
+        // Include the previous day so copies across midnight can match before filtering to the visible week.
+        let start = range.lowerBound.adding(days: -1, calendar: calendar).startDate(in: calendar)
+        async let logged = try? workouts?.sessions(from: start, to: now)
+        async let catalog = try? exercises?.allExercises()
+        async let watch = recordedStrength?.strengthActivities(from: start, to: now)
+        async let checkInHistory = try? checkIns?.checkIns(in: range)
+        async let runs = Self.readRecentRuns(sources: sources, from: start, to: now)
+        let (sessions, allExercises, recordings, previousCheckIns, runResult) = await (
+            logged, catalog, watch, checkInHistory, runs
+        )
+        guard activeLoad == loadID else { return }
+        trainingReadFailed = runResult.failed || (workouts != nil && sessions == nil)
+        let currentCheckIn = checkIn.map { [$0] } ?? []
+        recentTrainingDays = RecentTraining(calendar: calendar, format: format).days(
+            in: range, through: now, metrics: week, checkIns: currentCheckIn + (previousCheckIns ?? []),
+            runs: runResult.activities, sessions: sessions ?? [], recordings: recordings ?? [], exercises: allExercises ?? []
+        )
+    }
+
+    nonisolated private static func readRecentRuns(
+        sources: [any MetricsSource], from start: Date, to end: Date
+    ) async -> (activities: [RunActivity], failed: Bool) {
+        await withTaskGroup(of: [RunActivity]?.self) { group in
+            for source in sources {
+                group.addTask { try? await source.runs(from: start, to: end) }
+            }
+            var activities: [RunActivity] = []
+            var failed = false
+            for await result in group {
+                if let result { activities += result } else { failed = true }
+            }
+            return (activities, failed)
+        }
     }
 
     /// Asks every source for access (the Apple Health permission sheet), then reloads.

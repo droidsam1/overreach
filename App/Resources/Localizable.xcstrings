@@ -1,6 +1,74 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Leg working sets {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series de trabajo de piernas {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series de traballo de pernas {1}"
+          }
+        }
+      }
+    },
+    "No completed workouts found in the last 7 days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se encontraron entrenamientos completados en los últimos 7 días."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se atoparon adestramentos completados nos últimos 7 días."
+          }
+        }
+      }
+    },
+    "Recent training and recovery": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamiento y recuperación recientes"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramento e recuperación recentes"
+          }
+        }
+      }
+    },
+    "Some recent workouts could not be loaded.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudieron cargar algunos entrenamientos recientes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puideron cargar algúns adestramentos recentes."
+          }
+        }
+      }
+    },
     "%lld lines could not be read and will be skipped.": {
       "extractionState": "manual",
       "localizations": {
