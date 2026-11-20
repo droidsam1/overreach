@@ -9,6 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - The hybrid running calendar supports several dated runs, races and rest days, with optional links to recorded runs.
 - Hybrid goals can include a running distance, time or pain-free target and the next planned running day.
+- In Plan, linked runs show progress toward a hybrid running goal and can record pain during or after the run.
 - Today can use the running goal, recent runs and recovery signals to propose a conversational run or a plan adjustment.
 - Today suggests a deload week when your training shows fatigue (stalled lifts, dropping maxes or rising RPE) and
   your recovery has been poor all week (HRV, resting heart rate, sleep or check-ins), with the reasons. Start it
