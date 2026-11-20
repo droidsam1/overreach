@@ -10,6 +10,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  repository:
+    name: Repository rules and translations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check repository rules
+        run: python3 scripts/check-repo.py
+      - name: Check translations
+        run: python3 scripts/check-localization.py
+
   core-linux:
     name: Core tests (Linux)
     runs-on: ubuntu-latest
@@ -24,15 +34,21 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # the strict lint compares with the PR base
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.4.app || sudo xcode-select -s /Applications/Xcode.app
       - name: Install tools
         run: brew install xcodegen swiftlint
-      - name: Check translations
-        run: python3 scripts/check-localization.py
       - name: Lint
-        # Warnings do not fail the build yet; switch to --strict once the codebase settles (phase 1).
+        # Existing warnings are reported; files changed by a pull request must have none.
         run: swiftlint
+      - name: Lint changed files strictly
+        if: github.event_name == 'pull_request'
+        run: |
+          git diff --name-only --diff-filter=d "origin/${{ github.base_ref }}...HEAD" -- \
+            'Packages/*.swift' 'App/Sources/*.swift' > changed-swift.txt
+          if [ -s changed-swift.txt ]; then xargs swiftlint lint --strict --quiet --force-exclude < changed-swift.txt; fi
       - name: Test OverreachCore
         run: swift test --package-path Packages/OverreachCore
       - name: Test OverreachKit

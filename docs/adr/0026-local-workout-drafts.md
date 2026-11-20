@@ -1,4 +1,4 @@
-# ADR-0026: Save one active workout as a local draft
+# 0026 — Save one active workout as a local draft
 
 - **Status:** Accepted
 - **Date:** 2026-11-20

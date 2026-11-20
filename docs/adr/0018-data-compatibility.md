@@ -1,4 +1,4 @@
-# ADR-0018: Stored data stays readable across versions
+# 0018 — Stored data stays readable across versions
 
 - Status: accepted
 - Date: 2026-11-19

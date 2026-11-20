@@ -1,2 +1,9 @@
-* text=auto
-*.sh text eol=lf
+# LF everywhere, also in Windows checkouts: tests and tools read files with "\n" (see .editorconfig).
+* text=auto eol=lf
+*.png binary
+*.pyc binary
+
+# Parallel branches add lines at the top of [Unreleased]: keep both sides.
+CHANGELOG.md merge=union
+# Merge String Catalogs per key (scripts/merge-xcstrings.py; scripts/check-local.py configures the driver).
+*.xcstrings merge=xcstrings

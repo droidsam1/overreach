@@ -33,4 +33,4 @@ evidence runs out.
 
 - PRs that add or change a rule include the `docs/evidence.md` update (PR template checklist).
 - Some features ship with conservative defaults and "low certainty" labels rather than confident claims.
-- Recommendations never present themselves as medical advice (see `CLAUDE.md`).
+- Recommendations never present themselves as medical advice (see `AGENTS.md`).

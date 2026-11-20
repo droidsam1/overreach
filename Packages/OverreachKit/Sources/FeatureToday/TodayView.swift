@@ -390,7 +390,7 @@ struct PreviewMetricsSource: MetricsSource {
 #endif
 
 extension ReadingLinkItem {
-    /// The display values of a curated reading (ADR-0027).
+    /// The display values of a curated reading (ADR-0030).
     init(_ reading: Reading) {
         self.init(url: reading.url, title: reading.title, detail: reading.detail(), note: reading.note)
     }

@@ -85,7 +85,7 @@ public struct TargetSummary: Hashable, Sendable {
     public let reasons: [String]
     /// Ordered suggestions when stalled, numbered: "1. Use smaller jumps (1.25 kg). (moderate evidence)".
     public let stallSuggestions: [String]
-    /// "Learn more" about the reasons and suggestions above (ADR-0027); often empty.
+    /// "Learn more" about the reasons and suggestions above (ADR-0030); often empty.
     public let readings: [Reading]
 }
 

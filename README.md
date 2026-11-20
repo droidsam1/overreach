@@ -45,7 +45,7 @@ A modular Swift Package Manager setup with strict dependency rules:
   and one UI-only module per feature, so screens can be redesigned without touching the logic.
 - `App` — the composition root, generated with [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
-See [`CLAUDE.md`](CLAUDE.md) for the full map and [`docs/adr`](docs/adr) for the decisions behind it.
+See [`AGENTS.md`](AGENTS.md) for the full map and [`docs/adr`](docs/adr) for the decisions behind it.
 
 ## Getting started
 

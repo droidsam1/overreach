@@ -1,4 +1,4 @@
-# ADR-0017: Versioned messages between the app and AI chat apps
+# 0017 — Versioned messages between the app and AI chat apps
 
 - Status: accepted
 - Date: 2026-11-19

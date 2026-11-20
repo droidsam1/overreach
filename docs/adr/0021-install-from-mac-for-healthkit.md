@@ -1,4 +1,4 @@
-# ADR-0021: Install from a Mac with Xcode to get Apple Health on a free Apple ID
+# 0021 — Install from a Mac with Xcode to get Apple Health on a free Apple ID
 
 - Status: accepted
 - Date: 2026-11-20

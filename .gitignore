@@ -23,3 +23,10 @@ App/Config/Local.xcconfig
 *.fit
 strong*.csv
 !**/Fixtures/**/*.csv
+
+# Python
+__pycache__/
+*.pyc
+
+# Agent-local settings (shared agent guidance lives in AGENTS.md, .agents/ and .claude/skills/)
+.claude/settings.local.json
