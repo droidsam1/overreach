@@ -715,6 +715,23 @@
         }
       }
     },
+    "Add reps first": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir repeticiones primero"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Engadir repeticións primeiro"
+          }
+        }
+      }
+    },
     "Add reps until every set reaches the top of the range, then add load and start again.": {
       "extractionState": "manual",
       "localizations": {
@@ -813,6 +830,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Engadir series de quecemento"
+          }
+        }
+      }
+    },
+    "Add weight at fixed reps": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subir el peso con las mismas repeticiones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subir o peso coas mesmas repeticións"
           }
         }
       }
@@ -919,6 +953,23 @@
         }
       }
     },
+    "After your first session with an exercise, preview and choose how to progress.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Después de la primera sesión de un ejercicio, compara las propuestas y elige cómo progresar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Despois da primeira sesión dun exercicio, compara as propostas e escolle como progresar."
+          }
+        }
+      }
+    },
     "Aim to run without pain": {
       "extractionState": "manual",
       "localizations": {
@@ -1000,6 +1051,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Permitir Apple Saúde"
+          }
+        }
+      }
+    },
+    "Alternate heavy and light sessions": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alternar sesiones pesadas y ligeras"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alternar sesións pesadas e lixeiras"
           }
         }
       }
@@ -1582,6 +1650,23 @@
         }
       }
     },
+    "Build up within a rep range, then add weight. A simple starting point.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sube las repeticiones dentro de un rango y luego aumenta el peso. Es la opción más sencilla para empezar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sube as repeticións dentro dun rango e logo aumenta o peso. É a opción máis sinxela para comezar."
+          }
+        }
+      }
+    },
     "Cable": {
       "extractionState": "manual",
       "localizations": {
@@ -1854,6 +1939,23 @@
         }
       }
     },
+    "Choose how to progress when you repeat an exercise": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige cómo progresar al repetir un ejercicio"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolle como progresar ao repetir un exercicio"
+          }
+        }
+      }
+    },
     "Choose iCloud Drive folder…": {
       "extractionState": "manual",
       "localizations": {
@@ -1888,6 +1990,23 @@
         }
       }
     },
+    "Choose progression": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegir progresión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escoller progresión"
+          }
+        }
+      }
+    },
     "Choose the effort: how many reps you had left, as RPE or reps in reserve.": {
       "extractionState": "manual",
       "localizations": {
@@ -1901,6 +2020,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Escolle o esforzo: cantas repeticións che quedaban, como RPE ou como repeticións en reserva."
+          }
+        }
+      }
+    },
+    "Choosing an option updates today's sets and saves the method for this exercise.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al elegir una opción, se actualizan las series de hoy y se guarda el método para este ejercicio."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ao escoller unha opción, actualízanse as series de hoxe e gárdase o método para este exercicio."
           }
         }
       }
@@ -2874,6 +3010,23 @@
         }
       }
     },
+    "Could not save the progression. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo guardar la progresión. Inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido gardar a progresión. Téntao de novo."
+          }
+        }
+      }
+    },
     "Could not save the routine.": {
       "extractionState": "manual",
       "localizations": {
@@ -3142,6 +3295,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bloque actual"
+          }
+        }
+      }
+    },
+    "Cycle through different rep targets with a load estimated for each.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alterna objetivos de repeticiones con un peso estimado para cada uno."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alterna obxectivos de repeticións cun peso estimado para cada un."
           }
         }
       }
@@ -5951,6 +6121,40 @@
         }
       }
     },
+    "Keep reps fixed and add {1} when you have enough reps in reserve.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén las repeticiones y añade {1} cuando te queden suficientes repeticiones en reserva."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén as repeticións e engade {1} cando che queden suficientes repeticións en reserva."
+          }
+        }
+      }
+    },
+    "Keep the last load. A smaller weight increment in exercise settings can help you progress.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén el último peso. En los ajustes del ejercicio puedes elegir un incremento más pequeño para avanzar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén o último peso. Nos axustes do exercicio podes escoller un incremento máis pequeno para avanzar."
+          }
+        }
+      }
+    },
     "Keep today's run easy. Try {1} min at a conversational pace.": {
       "extractionState": "manual",
       "localizations": {
@@ -6185,6 +6389,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Última descarga hai {1} semanas"
+          }
+        }
+      }
+    },
+    "Last session · {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última sesión · {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última sesión · {1}"
           }
         }
       }
@@ -9436,6 +9657,23 @@
         }
       }
     },
+    "Repeat today's target and log how many reps you had left to guide the next session.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repite las series y registra cuántas repeticiones te quedaban para orientar la próxima sesión."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repite as series e rexistra cantas repeticións che quedaban para orientar a próxima sesión."
+          }
+        }
+      }
+    },
     "Repetitions": {
       "extractionState": "manual",
       "localizations": {
@@ -10418,6 +10656,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "“{1}” gardouse nas túas rutinas."
+          }
+        }
+      }
+    },
+    "Saving progression…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardando progresión…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gardando a progresión…"
           }
         }
       }
@@ -12496,6 +12751,23 @@
         }
       }
     },
+    "The exercise changed. Close this screen and review your sets.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El ejercicio ha cambiado. Cierra esta pantalla y revisa tus series."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O exercicio cambiou. Pecha esta pantalla e revisa as túas series."
+          }
+        }
+      }
+    },
     "The file is empty. Export it again from Strong.": {
       "extractionState": "manual",
       "localizations": {
@@ -13036,6 +13308,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hoxe dite se adestrar forte, suave ou descansar, segundo a túa VFC, FC en repouso, sono e rexistro diario, cos motivos."
+          }
+        }
+      }
+    },
+    "Today · {1} · {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy · {1} · {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe · {1} · {2}"
           }
         }
       }
@@ -13767,6 +14056,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Usa saltos máis pequenos ({1} kg): faltouche só 1 repetición, e un salto menor permíteche seguir subindo."
+          }
+        }
+      }
+    },
+    "Use the last session as a starting point. Do fewer reps or use less weight if you need more reps in reserve.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa la última sesión como referencia. Haz menos repeticiones o baja el peso si necesitas dejar más repeticiones en reserva."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa a última sesión como referencia. Fai menos repeticións ou baixa o peso se precisas deixar máis repeticións en reserva."
+          }
+        }
+      }
+    },
+    "Use your last session's working sets as today's starting point.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa las series de trabajo de tu última sesión como punto de partida para hoy."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa as series de traballo da túa última sesión como punto de partida para hoxe."
           }
         }
       }
@@ -15518,6 +15841,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} · semana {2} de {3}"
+          }
+        }
+      }
+    },
+    "{1} × {2} at {3}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} × {2} con {3}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} × {2} con {3}"
+          }
+        }
+      }
+    },
+    "{1} × {2} reps": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} × {2} repeticiones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} × {2} repeticións"
           }
         }
       }

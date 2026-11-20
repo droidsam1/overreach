@@ -17,7 +17,7 @@ struct WorkoutModelTests {
         return (model, store)
     }
 
-    @Test func prefillsSetsFromTheProgressionTarget() async {
+    @Test func prefillsSetsFromTheConfiguredProgressionTarget() async throws {
         let lastTime = StrengthSession(
             name: "Push",
             startedAt: now.addingTimeInterval(-3 * 86_400),
@@ -27,7 +27,8 @@ struct WorkoutModelTests {
                 WorkoutSet(weightKg: 60, reps: 12, rpe: 8),
             ])]
         )
-        let (model, _) = makeModel(sessions: [lastTime])
+        let (model, store) = makeModel(sessions: [lastTime])
+        try await store.save(ProgressionSettings(for: bench), for: bench.id)
         model.start()
         await model.add(bench)
 

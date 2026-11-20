@@ -139,7 +139,10 @@ extension SessionReport {
             lines.append(L10n.text("No longer stalled."))
         }
         if review.outcome != .unfinished, let first = review.nextTarget.sets.first {
-            let next = setsText(weight: first.weightKg ?? 0, reps: review.nextTarget.sets.map(\.reps), format: format)
+            let sets = review.nextTarget.sets
+            let next = sets.contains { $0.weightKg != first.weightKg }
+                ? format.groupedSets(sets)
+                : setsText(weight: first.weightKg ?? 0, reps: sets.map(\.reps), format: format)
             lines.append(L10n.format(
                 "Next time: {1} @ {2}.", next, effortScale.text(rpe: first.targetRPE, format: format)
             ))
@@ -151,5 +154,25 @@ extension SessionReport {
     private static func setsText(weight: Double, reps: [Int], format: Format) -> String {
         let repsText = reps.map(String.init).joined(separator: "/")
         return weight > 0 ? "\(format.kilograms(weight)) × \(repsText)" : repsText
+    }
+}
+
+extension Format {
+    /// Group adjacent identical prescriptions so mixed loads and reps remain visible in logging order.
+    public func groupedSets(_ sets: [PlannedSet]) -> String {
+        var groups: [(set: PlannedSet, count: Int)] = []
+        for set in sets {
+            if groups.last?.set == set {
+                groups[groups.count - 1].count += 1
+            } else {
+                groups.append((set, 1))
+            }
+        }
+        return groups.map { set, count in
+            if let weight = set.weightKg, weight > 0 {
+                return L10n.format("{1} × {2} at {3}", count, set.reps, kilograms(weight))
+            }
+            return L10n.format("{1} × {2} reps", count, set.reps)
+        }.joined(separator: " · ")
     }
 }

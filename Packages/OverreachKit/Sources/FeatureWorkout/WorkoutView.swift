@@ -168,6 +168,7 @@ private struct SessionList: View {
     @Bindable var model: WorkoutModel
     @Binding var isPickingExercise: Bool
     @State private var isShowingGuide = false
+    @State private var progressionExercise: DraftExercise.ID?
 
     var body: some View {
         List {
@@ -204,6 +205,19 @@ private struct SessionList: View {
             ForEach($model.exercises) { $exercise in
                 Section {
                     TargetSummaryView(summary: exercise.summary)
+                    if let offer = exercise.progressionOffer {
+                        Button {
+                            model.clearProgressionSaveError()
+                            progressionExercise = exercise.id
+                        } label: {
+                            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                                Label("Choose progression", systemImage: "chart.line.uptrend.xyaxis")
+                                Text(offer.lastSession)
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
                     ForEach($exercise.sets) { $set in
                         SetRow(
                             number: exercise.number(of: set.id), set: $set,
@@ -266,12 +280,72 @@ private struct SessionList: View {
             ))
         }
         .scrollDismissesKeyboard(.interactively)
+        .sheet(isPresented: Binding(
+            get: { progressionExercise != nil },
+            set: { if !$0 { progressionExercise = nil } }
+        )) {
+            if let id = progressionExercise {
+                ProgressionPicker(model: model, exerciseID: id)
+            }
+        }
         .keyboardDoneButton()
         .safeAreaInset(edge: .bottom) {
             if model.rest.isActive {
                 RestTimerView(model: model.rest)
             }
         }
+    }
+}
+
+private struct ProgressionPicker: View {
+    let model: WorkoutModel
+    let exerciseID: DraftExercise.ID
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if let offer = model.progressionOffer(for: exerciseID) {
+                    Text(offer.lastSession).font(.subheadline.monospacedDigit())
+                    if let note = offer.note {
+                        Text(note).font(.footnote).foregroundStyle(.secondary)
+                    }
+                    Section {
+                        ForEach(offer.options) { option in
+                            Button {
+                                Task {
+                                    if await model.chooseProgression(option, for: exerciseID) { dismiss() }
+                                }
+                            } label: {
+                                VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                                    Text(option.title).font(.headline)
+                                    Text(option.detail).font(.subheadline).foregroundStyle(.secondary)
+                                    Text(option.preview).font(.subheadline.monospacedDigit()).foregroundStyle(.primary)
+                                }
+                                .padding(.vertical, Spacing.xSmall)
+                            }
+                        }
+                    } footer: {
+                        Text("Choosing an option updates today's sets and saves the method for this exercise.")
+                    }
+                    .disabled(model.isSavingProgression)
+                }
+                if model.isSavingProgression {
+                    ProgressView("Saving progression…")
+                }
+                if let message = model.progressionSaveError {
+                    Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                }
+            }
+            .navigationTitle("Choose progression")
+            .inlineTitle(true)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") { dismiss() }.disabled(model.isSavingProgression)
+                }
+            }
+        }
+        .interactiveDismissDisabled(model.isSavingProgression)
     }
 }
 

@@ -111,7 +111,8 @@ struct RoutinesModelTests {
         #expect(model.sessionName == "Push day")
         #expect(model.sessionFocus == .hypertrophy)
         #expect(model.exercises.map(\.name) == ["Bench Press", "Row"])  // the unknown exercise is skipped
-        #expect(model.exercises.first?.workingSets.first?.weightKg == 62.5)
+        #expect(model.exercises.first?.workingSets.first?.weightKg == 60)
+        #expect(model.exercises.first?.progressionOffer != nil)
     }
 
     @Test func aRoutineDoesNotReplaceAnOpenSession() async {

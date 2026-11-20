@@ -20,6 +20,10 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "chart.line.uptrend.xyaxis", title: L10n.text("Choose progression"),
+                    detail: L10n.text("After your first session with an exercise, preview and choose how to progress.")
+                ),
+                ReleaseHighlight(
                     symbol: "character.bubble.fill", title: L10n.text("Exercises in Spanish"),
                     detail: L10n.text("Catalog exercises show their Spanish name; search works in English or Spanish.")
                 ),

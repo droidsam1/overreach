@@ -82,7 +82,7 @@ extension ProgressionSettings {
     /// the new focus; a scheme the user chose stays.
     public func declaring(_ focus: TrainingFocus?) -> ProgressionSettings {
         var updated = self
-        if scheme == FocusPrescription.suggestedScheme(for: self.focus) {
+        if requiresLoggedEffort != true, scheme == FocusPrescription.suggestedScheme(for: self.focus) {
             updated.scheme = FocusPrescription.suggestedScheme(for: focus)
         }
         updated.focus = focus

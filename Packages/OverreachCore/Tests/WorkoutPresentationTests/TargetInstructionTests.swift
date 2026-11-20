@@ -35,12 +35,18 @@ struct TargetInstructionTests {
     }
 
     @Test func topOfTheRangeSaysToAddLoadAndRestartTheReps() async throws {
-        let reason = try await firstReason(history: [session(daysAgo: 3, weight: 60, reps: [12, 12, 12])])
+        let reason = try await firstReason(history: [
+            session(daysAgo: 6, weight: 60, reps: [11, 11, 11]),
+            session(daysAgo: 3, weight: 60, reps: [12, 12, 12]),
+        ])
         #expect(reason.hasPrefix("Today: go up to 62.5 kg and start again at 8 reps. Last time every set reached 12."))
     }
 
     @Test func insideTheRangeSaysWhichRepsToTryAndWhenLoadGoesUp() async throws {
-        let reason = try await firstReason(history: [session(daysAgo: 3, weight: 60, reps: [9, 9, 8])])
+        let reason = try await firstReason(history: [
+            session(daysAgo: 6, weight: 60, reps: [8, 8, 8]),
+            session(daysAgo: 3, weight: 60, reps: [9, 9, 8]),
+        ])
         #expect(reason.hasPrefix(
             "Today: try 10/10/9 reps with 60 kg. When every set reaches 12 reps, the weight goes up."
         ))

@@ -34,7 +34,7 @@ struct TargetSummaryTests {
         await model.add(exerciseID: bench.id)
 
         let summary = try #require(model.exercises.first).summary(format: format)
-        #expect(summary.targetLine.hasPrefix("Target: 62.5 kg × 8/8/8 @ RPE "))  // top of 8–12 reached → +2.5 kg
+        #expect(summary.targetLine.hasPrefix("Target: 60 kg × 12/12/12 @ RPE "))
         #expect(summary.focusLine.lowercased().contains("rest "))
         #expect(!summary.reasons.isEmpty)
         #expect(summary.reasons.allSatisfy { $0.hasSuffix("evidence)") || $0.hasSuffix("heuristic)") })

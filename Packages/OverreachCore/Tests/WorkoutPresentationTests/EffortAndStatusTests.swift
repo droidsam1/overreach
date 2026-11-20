@@ -37,6 +37,8 @@ struct EffortAndStatusTests {
 
     @Test func repsInReserveChangesHowTargetsReadAndIsRemembered() async throws {
         let (model, store) = await makeModel(history: [session(daysAgo: 3, weight: 60, reps: [9, 9, 9])])
+        // Stored settings: the engine progresses instead of offering a first progression.
+        try await store.save(ProgressionSettings(for: bench), for: bench.id)
         await model.add(exerciseID: bench.id)
         #expect(try #require(model.exercises.first).summary(format: format).targetLine.hasSuffix("@ RPE 8"))
         // Adding reps before load: a reading on load vs rep progression.

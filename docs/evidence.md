@@ -88,6 +88,21 @@ Reviewed 2026-11-16.
 
 ## Progression engine
 
+### `first-progression` — heuristic
+Repeat the first session as a starting point. Progressive overload for long-term adaptation can come from
+load or reps. Plotkin et al. compared both in trained lifters over eight weeks and found broadly similar
+adaptations. Chaves et al. compared both in untrained adults over ten weeks and found similar quadriceps
+growth, with a larger gain on the leg-extension 1RM in the load group. These trials support offering both
+options and leave the size and timing of each increment open. ACSM's historical
+2009 guideline suggested increasing load by 2–10% after exceeding the rep goal by one or two reps on two
+consecutive sessions. The 2026 update discusses individualizing the stimulus and gives no universal
+session-to-session step. Overreach's equipment increments, effort gate, two-rep range extension and
+5%/10% caps are product heuristics. They are not estimates of the optimal training dose.
+Refs: [ACSM 2026](https://pmc.ncbi.nlm.nih.gov/articles/PMC12965823/),
+[ACSM 2009](https://pubmed.ncbi.nlm.nih.gov/19204579/),
+[Plotkin et al. 2022](https://doi.org/10.7717/peerj.14142),
+[Chaves et al. 2024](https://pubmed.ncbi.nlm.nih.gov/38286426/). Reviewed 2026-11-20.
+
 ### `progression-load-or-reps` — moderate
 Progressing by adding reps at a fixed load and by adding load at fixed reps gave similar hypertrophy and
 strength in trained lifters over 8 weeks (strength slightly favoured load, of questionable practical size).

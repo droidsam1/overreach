@@ -40,6 +40,8 @@ public struct ProgressionSettings: Hashable, Codable, Sendable {
     public var isMainLift: Bool
     /// Declared focus of this exercise. `nil` = inherit from the session/block, or infer from the sets.
     public var focus: TrainingFocus?
+    /// Choices made from a logged baseline ask for effort before advancing.
+    public var requiresLoggedEffort: Bool?
 
     public init(
         scheme: ProgressionScheme = .default, incrementKg: Double, isMainLift: Bool = false, focus: TrainingFocus? = nil
