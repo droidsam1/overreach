@@ -39,7 +39,7 @@ Packages/
   OverreachKit/           Apple frameworks (SwiftUI, SwiftData, HealthKit, Keychain)
     Persistence           Repositories (in-memory now, SwiftData CloudKit-ready in phase 1)
     HealthKitSource       Apple Health reader/writer
-    GarminSource          Unofficial Garmin Connect client (optional, isolated)
+    GarminSource          Garmin Connect Personal API client (optional, isolated; ADR-0022)
     AIKit                 LLMProvider protocol + adapters
     LocalAlerts           Local notifications (rest timer)
     DesignSystem          Colors, spacing, reusable components and charts. No domain types.
@@ -149,7 +149,8 @@ Phases 1–3 are the prototype. Keep each phase shippable.
 
 - Free Apple ID signing: the app expires after 7 days; iCloud/CloudKit and TestFlight need the paid account.
   Verify early that HealthKit signs correctly with a personal team.
-- Garmin does not write HRV to Apple Health; HRV comes from the unofficial Garmin Connect API
-  (`GarminSource`). Keep it optional and isolated; it can break when Garmin changes things (ADR-0005).
+- Garmin does not write HRV to Apple Health; HRV comes from the official Garmin Connect Personal API with the
+  user's own key (`GarminSource`, ADR-0022). Keep it optional and isolated. The key is personal: it stays in the
+  Keychain and never goes into backups, reports or logs. Rate limits are unpublished: throttle and back off.
 - iOS background refresh is not guaranteed: sync on app launch/foreground.
 - Minimum iOS 18 (ADR-0007).

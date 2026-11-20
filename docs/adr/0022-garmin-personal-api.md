@@ -1,6 +1,6 @@
 # 0022 — Garmin data through the official Personal API
 
-- **Status:** Proposed (supersedes 0005 once accepted)
+- **Status:** Accepted (supersedes 0005)
 - **Date:** 2026-11-20
 
 ## Context
@@ -31,9 +31,16 @@ The analysis is in `docs/design/garmin-integration.md`.
    Linux against recorded fixtures. Networking and the Keychain stay in `GarminSource`.
 4. Apple Health remains the base source. Garmin values win where both exist, and the app works fully without
    Garmin.
-5. Auth, endpoints, ranges and field names have been checked against Garmin's official OpenAPI document. The status
-   becomes Accepted once the key's Terms and Conditions and the rate limits are confirmed with a real key (step 0 of
-   the design).
+5. The key is personal (Garmin Connect Personal API Supplemental Terms, 2026-10-01): it is used only by its owner,
+   in their own copy of the app, and never shared or disclosed. It stays in the Keychain and is sent only to Garmin;
+   it is kept out of backups, AI reports, exchange messages and logs.
+6. Rate limits are unpublished and may change, so the client throttles itself, backs off on 429/427/5xx and syncs
+   incrementally.
+7. Strength workouts recorded on the watch never become sessions. They are paired with logged sessions by time
+   (`StrengthActivityMatching`) and only add heart rate and load; the logged session stays the source of truth.
+
+Checked against Garmin's official OpenAPI document, FAQ, client and Supplemental Terms, and live with a real key
+(2026-11-20).
 
 ## Consequences
 

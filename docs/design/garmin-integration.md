@@ -1,6 +1,6 @@
 # Garmin integration — API review and design
 
-Status: research and proposal (ADR-0022, *Proposed*). Date: 2026-11-20.
+Status: accepted (ADR-0022). Date: 2026-11-20.
 
 This document answers four questions before any Garmin code is written: which Garmin APIs exist, what each one
 gives and lacks, how stable each one is, and how Overreach should use them without breaking its rules (no backend,
@@ -142,23 +142,43 @@ One personal key (Forerunner, account with data since September 2026), about 30 
   every number changed, dates shifted, ids, names and locations removed) are in
   `Packages/OverreachCore/Tests/GarminImportTests/Fixtures/`, made with `scripts/garmin-fixtures.py`. No real values
   are in the repository.
-- **Recording fixtures from a cloud session:** the network proxy injects a saved key into *every* request to the
-  host, which overwrites the `Bearer` header that data calls need (the result is 403). Save the key, mint a token, remove
-  the saved key, then call with the token. The iPhone has no such proxy.
+- **Recording fixtures:** do it on your own machine (mint a token with the key, call the endpoints, run
+  `scripts/garmin-fixtures.py`, and delete the raw responses). Keeping the key in a hosted service's secrets conflicts
+  with the terms (see below), and a cloud network proxy that injects the key into every request to the host also
+  overwrites the `Bearer` header that data calls need (403).
 
 ### Terms
 
-- Official FAQ, verbatim: the Personal API "allows Garmin customers to securely access their own Garmin Connect data
-  using an API. It is intended for developers, hobbyists, data enthusiasts, and individuals who want to build personal
-  applications using their own Garmin data." And: "It is **not intended for commercial applications serving multiple
-  end users.**" Organisations building for many users are pointed to the business program.
-- The key is created only after accepting Terms and Conditions in Garmin Connect. That text sits behind the login
-  and could not be read **[verify]**. Other projects quote it as "used only by you … for your own use", with no
-  sharing of the key.
-- For Overreach today, this fits: open source, non-commercial, each person builds or sideloads their own copy
-  (ADR-0021), uses their own key for their own data, and the key never leaves their iPhone (Keychain, direct calls).
-- It does **not** fit a public App Store or TestFlight app with many users (phase 4). That needs the business
-  program: Starter (route C) with a backend, or written permission from Garmin.
+**Garmin Connect Personal API Supplemental Terms** (last updated 2026-10-01; text read from the key creation page by
+the project owner on 2026-11-20). They supplement the Garmin Terms of Use and prevail over them for the API:
+
+1. **Personal use of the key:** "Any API key issued to you is personal to you and may be used only by you in connection
+   with applications, services, or tools that you develop or operate for your own use. You may not sell, transfer,
+   sublicense, distribute, disclose, or otherwise share your API key with any third party. You are responsible for
+   maintaining the confidentiality and security of your API key and for all activity that occurs using your API key."
+2. **Rate limits:** "Garmin may establish and enforce limits on the number, frequency, or volume of API requests […]
+   These limits may be modified by Garmin at any time. If you exceed applicable rate limits, Garmin may throttle, delay,
+   reject, suspend, or otherwise restrict API requests without notice."
+3. **Violations:** may lead to suspension or termination of access and revocation of the key, and count as a breach
+   of the Garmin Terms of Use.
+
+The official FAQ adds that the Personal API "is not intended for commercial applications serving multiple end users."
+
+What this means for Overreach:
+
+- **Allowed as designed.** Each person runs their own copy (built or sideloaded, ADR-0021) and uses it for their own
+  data: a tool "that you operate for your own use". The project never receives, sees or proxies anyone's key.
+- **The key never leaves the device.** It is stored in the Keychain and sent only to Garmin's token endpoint. It must
+  not appear in backups (ADR-0018), AI reports or exchange messages (ADR-0017), logs, crash reports or analytics. A
+  test in `GarminImport`/`GarminSource` should guard the export paths.
+- **Rate limits are unpublished and can change.** The client throttles itself (a small per-sync request budget and
+  spacing between calls), backs off on 429/427/5xx with jitter, honours `Retry-After`, and never retries in a loop.
+  Fetch only what changed (incremental sync).
+- **Don't store the key in third-party services.** Saving it in a cloud environment's secrets so that a hosted agent
+  can call the API is arguably "disclosing" it to a third party. Record fixtures on your own machine (see the live
+  check above). The key used for the live check was saved only briefly and then removed. If in doubt, rotate it.
+- **Public distribution (App Store, TestFlight to others) is out of scope for this tier.** That needs the business
+  program (Starter, with a backend) or written permission from Garmin, plus a new ADR.
 
 ## 3. Route D — the unofficial Connect API: what happened in 2026
 
@@ -270,16 +290,45 @@ values win where both have them (HRV, sleep stages), and Health fills the rest.
   `sources` shows where they came from).
 - **Provenance.** `DailyMetrics.sources` already records Garmin; reasons on Today can say "HRV from Garmin".
 
+### Strength workouts recorded on the watch
+
+Garmin returns strength workouts started on the watch as `strength_training` activities, with heart rate,
+`activityTrainingLoad`, training effect and the sets and reps the watch counted. The same workout is usually also
+logged in Overreach. Rules, so nothing is counted twice and the two never disagree:
+
+1. **The logged session is the source of truth** for exercises, sets, reps, weights and RPE. The watch's set and rep
+   counts are never imported into it (watches miscount sets, and Garmin's exercise categories don't map to the catalog).
+2. **Garmin strength activities are never turned into sessions.** They become `RecordedStrengthActivity` values
+   (Domain), which hold only what the watch measures.
+3. **`StrengthActivityMatching` (Domain, pure, tested) pairs them by time:**
+   - the intervals must overlap by at least half of the shorter one, so starting the watch early or stopping it late
+     still matches, and another workout later that day does not;
+   - a session without an end time matches a recording that starts within 15 minutes;
+   - pairing is one to one, best overlap first, and does not depend on input order.
+4. **A matched recording enriches its session** (heart rate, Garmin load, training effect) when it is shown or
+   analysed. Nothing is written into `StrengthSession`, so no stored data changes (ADR-0018) and a re-sync just
+   re-matches.
+5. **An unmatched recording** is a workout trained without logging it. It is listed (e.g. "Strength on the watch,
+   not logged") so the person can log it, and is never counted as a session. Its Garmin load is kept apart from
+   sRPE load: the two are different units and must not be added together in ACWR without an evidence-based
+   conversion (step 5).
+6. **Runs follow the same rule against Apple Health:** a Garmin run and the copy Garmin Connect writes to Health are
+   the same run. Keep the Garmin one, since it has load, training effect and the FIT file.
+
+Apple Health can still show both workouts if Overreach writes the session (ADR-0016) and Garmin Connect writes its
+own recording. That is outside the app's data and does not affect Overreach. A later option is to skip writing to
+Health when a matched Garmin recording exists.
+
 ## 7. Plan
 
 | Step | Content | Where |
 |---|---|---|
-| 0 | Done (2026-11-20): checked against Garmin's official OpenAPI document, FAQ and client, and live with a real key; synthetic fixtures recorded. Still open: the text of the key's Terms and Conditions (owner to read), rate limits (undocumented, none hit). Then accept ADR-0022. | docs |
+| 0 | Done (2026-11-20): checked against Garmin's official OpenAPI document, FAQ, client and Supplemental Terms, and live with a real key; synthetic fixtures recorded; ADR-0022 accepted. Rate limits remain unpublished by design. | docs |
 | 1 | `GarminImport`: DTOs + mapping for the HRV range, sleep range and daily summaries v2 (which carry resting HR, steps, stress, Body Battery, respiration and SpO2), with recorded fixtures and Swift Testing tests. | OverreachCore |
 | 2 | `GarminSource`: token provider, HTTP client, `MetricsSource` for daily metrics. Wire in `AppContainer`. | OverreachKit, App |
 | 3 | Settings: connect (paste key + expiry), status, last sync, disconnect; localized texts (en, es, gl). | SettingsPresentation, FeatureSettings |
 | 4 | Readiness: HRV from Garmin feeds `ReadinessRules` (already source-agnostic); evidence note on Garmin HRV (nightly RMSSD) versus Apple SDNN, which are not comparable, so baselines must be per metric type. | Analytics, `docs/evidence.md` |
-| 5 | Activities: summaries → `RunActivity` (with `activityTrainingLoad` and training effect) and walks (`ActivitySource`), dedupe with Health; our own acute/chronic load from per-activity load (evidence first). | Core + Kit |
+| 5 | Activities: summaries → `RunActivity` (with `activityTrainingLoad` and training effect), walks (`ActivitySource`) and `RecordedStrengthActivity`; runs deduplicated with Health; strength paired with logged sessions by `StrengthActivityMatching` (done); our own acute/chronic load from per-activity load (evidence first). | Core + Kit |
 | 6 | FIT decoding (laps, HR, power) for run load and the AI report. | OverreachCore |
 | 7 | Women's health → `CycleSource` (ADR-0009). | Core + Kit |
 
@@ -287,9 +336,6 @@ Steps 1–4 are the shippable unit for phase 2 (v0.2). `ReleaseNotes.all` gets a
 
 ### Open questions
 
-- Strength sessions recorded on the watch overlap with sessions logged in Overreach. Do not import them as workouts:
-  match them to the logged session by time and attach Garmin's heart rate and `activityTrainingLoad` to it. If no
-  logged session matches, keep the load for ACWR (step 5).
 
 - HRV metric type: Garmin reports nightly RMSSD, while Apple Watch writes SDNN to Health. They must not share a baseline.
   Does `DailyMetrics` need a `hrvMetric` tag, or a separate field? (Decide in step 4, with evidence.)
@@ -317,4 +363,4 @@ Steps 1–4 are the shippable unit for phase 2 (v0.2). `ReleaseNotes.all` gets a
   `examples/`).
 - `thomascamminady/gcpapi-sync-python`: models generated from Garmin's OpenAPI document (`models/_generated.py`),
   per-endpoint limits and CHANGELOG (unofficial).
-- Still to read with a Garmin account: the Terms and Conditions shown when creating the key.
+- Garmin Connect Personal API Supplemental Terms (last updated 2026-10-01), shown when creating a key.
