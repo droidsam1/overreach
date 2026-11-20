@@ -173,6 +173,7 @@ public final class AskAIModel {
         for source in sources where await source.isAvailable() {
             all += (try? await source.runs(from: start, to: end)) ?? []
         }
-        return all
+        // Garmin and the copy Garmin Connect writes to Apple Health are the same run: share it once.
+        return RunDeduplication.removingDuplicates(all)
     }
 }

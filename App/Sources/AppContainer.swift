@@ -174,7 +174,7 @@ final class AppContainer {
     }
 
     func makeGarminSetupModel() -> GarminSetupModel {
-        GarminSetupModel(account: garmin ?? NoGarminAccount())
+        GarminSetupModel(account: garmin ?? NoGarminAccount(), reminders: LocalReminders())
     }
 
     func makeBackupModel() -> BackupModel {

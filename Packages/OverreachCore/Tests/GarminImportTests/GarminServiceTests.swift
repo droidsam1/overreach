@@ -324,3 +324,59 @@ actor ProgressRecorder {
         if (last?.completed ?? -1) < progress.completed { last = progress }
     }
 }
+
+/// The key is personal (Supplemental Terms §1, ADR-0022): it lives only in the secret store and goes only to the
+/// token endpoint. These tests fail if any other path starts carrying it.
+@Suite("The Garmin key never leaves secure storage")
+struct GarminKeyContainmentTests {
+    private let key = "valid-key-0123456789"
+
+    @Test func theCacheHoldsNeitherTheKeyNorTheToken() async throws {
+        let garmin = FakeGarmin()
+        let secrets = MemorySecrets()
+        let cache = MemoryCache()
+        let service = makeService(garmin: garmin, secrets: secrets, cache: cache)
+        try await service.connect(key: key, lifetime: .oneYear)
+        _ = try await service.sync { _ in }
+
+        let stored = try #require(await cache.cache)
+        let json = String(decoding: try JSONEncoder().encode(stored), as: UTF8.self)
+        let token = try #require(await secrets.token?.value)
+        #expect(!json.contains(key))
+        #expect(!json.contains(token))
+    }
+
+    @Test func onlyTheTokenRequestCarriesTheKey() async throws {
+        let garmin = FakeGarmin()
+        let service = makeService(garmin: garmin)
+        try await service.connect(key: key, lifetime: .oneYear)
+        _ = try await service.sync { _ in }
+
+        for request in await garmin.requests {
+            let carriesKey = request.headers.values.contains { $0.contains(key) } || request.path.contains(key)
+            #expect(carriesKey == (request.path == GarminEndpoint.tokenPath))
+        }
+    }
+
+    @Test func importedDataAndErrorsNeverMentionTheKey() async throws {
+        let garmin = FakeGarmin()
+        let service = makeService(garmin: garmin)
+        try await service.connect(key: key, lifetime: .oneYear)
+        _ = try await service.sync { _ in }
+
+        let years = CalendarDay(year: 2025, month: 1, day: 1)...CalendarDay(year: 2027, month: 1, day: 1)
+        let metrics = try await service.dailyMetrics(in: years)
+        let runs = try await service.runs(from: .distantPast, to: .distantFuture)
+        let exported = String(decoding: try JSONEncoder().encode(metrics), as: UTF8.self)
+            + String(decoding: try JSONEncoder().encode(runs), as: UTF8.self)
+        #expect(!exported.contains(key))
+
+        await garmin.setAcceptedKey("another-key-0123456789")
+        do {
+            try await service.connect(key: "wrong-key-abcdefghijk", lifetime: .oneYear)
+        } catch {
+            #expect(!String(describing: error).contains("wrong-key"))
+        }
+    }
+}
+

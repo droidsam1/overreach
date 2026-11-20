@@ -228,12 +228,23 @@ women), so HRV only moderates intensity here and never decides the strength plan
 → Baseline = mean ± 0.5 SD of ln nightly HRV over the previous 60 days (≥ 14 nights); signal when the 7-day mean
 (≥ 3 nights) is below that range. Apple Watch reports SDNN, not RMSSD, and wearable HRV agrees only loosely
 with chest-strap references: the same personal-range rule is applied to whatever the source reports, which is a
-heuristic transfer.
+heuristic transfer, and only ever within one statistic (`hrv-metrics`).
 Refs: Düking et al. 2021, J Sci Med Sport 24:1180 (meta-analysis, wearables); Manresa-Rocamora et al. 2021, Int
 J Environ Res Public Health 18:10299 (meta-analysis); Granero-Gallegos et al. 2020, Int J Environ Res Public
 Health 17:7999 (meta-analysis); Vesterinen et al. 2016, Med Sci Sports Exerc 48:1347 (RCT, SWC protocol); Plews
 et al. 2012, Eur J Appl Physiol 112:3729 (7-day rolling average); Front Physiol 2024, 15:1472702 (RCT,
 HRV-guided resistance training, n = 21); Sensors 2024, 24:6220 (Apple Watch HRV validity). Reviewed 2026-11-19.
+
+### `hrv-metrics` — strong
+RMSSD and SDNN are different statistics: RMSSD reflects beat-to-beat (vagal) variation, SDNN the total variation
+over the recording, and both depend on recording length. Their values and norms differ, so a baseline built with one
+cannot judge the other. Garmin reports nightly RMSSD (Personal API `lastNightAvg`); Apple Health stores
+`heartRateVariabilitySDNN` from short Apple Watch readings. Athlete monitoring is usually built on ln RMSSD.
+→ Every HRV value carries its statistic (`HRVMetric`); readiness baselines and Today's 7-day average only use nights
+of the same statistic as the latest night. Switching watches starts a new baseline (14 nights) instead of a false
+drop or rise (ADR-0024). Refs: Task Force of the ESC and NASPE 1996, Circulation 93:1043 (standards); Shaffer &
+Ginsberg 2017, Front Public Health 5:258 (review of HRV metrics and norms); Plews et al. 2013, Sports Med 43:773
+(ln RMSSD for athlete monitoring). Reviewed 2026-11-20.
 
 ### `readiness-resting-hr` — limited
 Short-term overload raises resting HR moderately, longer overload does not, and changes must be read together with
