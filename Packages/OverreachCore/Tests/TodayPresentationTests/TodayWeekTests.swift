@@ -320,6 +320,89 @@ struct TodayWeekTests {
         #expect(option.guidance.contains("at least four reps left"))
     }
 
+    @Test func amberDoubleDayUsesTheDatedRoutineAlongsideTheRun() async throws {
+        let squat = Exercise(name: "Squat", primaryMuscles: [.quadriceps])
+        let routine = Routine(name: "Lower", exerciseIDs: [squat.id], prescriptions: [
+            RoutinePrescription(exerciseID: squat.id, scheme: .linearLoad(sets: 4, reps: 6, targetRPE: 8)),
+        ])
+        let rotation = Routine(name: "Undated", exerciseIDs: [squat.id])
+        let previous = StrengthSession(
+            name: rotation.name, startedAt: now.addingTimeInterval(-86_400), endedAt: now.addingTimeInterval(-82_800),
+            entries: [ExerciseEntry(exerciseID: squat.id, sets: [WorkoutSet(weightKg: 70, reps: 6, rpe: 8)])]
+        )
+        let store = TestStore(exercises: [squat], sessions: [previous], routines: [routine, rotation])
+        let today = CalendarDay(now, calendar: calendar)
+        let run = PlannedRun(day: today, purpose: .intervals, durationMinutes: 40)
+        let assignment = PlannedStrength(day: today, routineID: routine.id)
+        var goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000), nextRun: run)
+        goal.setStrengthSchedule([assignment])
+        let block = TrainingBlock(focus: .strength, start: today, isDeclared: true, routineIDs: [rotation.id])
+        let profile = AthleteProfile(goal: goal, declaredBlocks: [block])
+        try await store.save(profile)
+        let source = WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)], activities: [RunActivity(
+            id: "past-run", source: .appleHealth, startedAt: now.addingTimeInterval(-2 * 86_400),
+            durationSeconds: 2_400, distanceMeters: 6_000
+        )])
+        let model = TodayModel(sources: [source], profiles: store, workouts: store, exercises: store, routines: store,
+                               progression: store, calendar: calendar)
+
+        await model.load(now: now)
+
+        #expect(model.readinessLevel == .amber)
+        #expect(model.scheduledStrengthToday?.id == assignment.id)
+        #expect(model.scheduledStrengthToday?.title == "Strength · Lower")
+        #expect(model.scheduledRunsToday.map(\.id) == [run.id])
+        #expect(model.runningOption?.advice == "Try 30 min at a conversational pace in place of the planned session.")
+        let comparison = try #require(model.strengthOption)
+        #expect(comparison.heading == nil)
+        #expect(comparison.exerciseRows.first?.reference == "Usual target · 4 × 6")
+        #expect(comparison.exerciseRows.first?.suggestion == "Easy option · 2 × 6, with at least 4 reps left")
+        #expect(await store.profile() == profile)
+        #expect(await store.sessions(from: .distantPast, to: now) == [previous])
+    }
+
+    @Test func aDatedStrengthRestDaySuppressesTheUndatedSuggestion() async throws {
+        let today = CalendarDay(now, calendar: calendar)
+        let run = PlannedRun(day: today, purpose: .rest)
+        var goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000), nextRun: run)
+        goal.setStrengthSchedule([PlannedStrength(day: today)])
+        let store = TestStore()
+        try await store.save(AthleteProfile(goal: goal))
+        let model = TodayModel(sources: [WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)])],
+                               profiles: store, workouts: store, calendar: calendar)
+
+        await model.load(now: now)
+
+        #expect(model.readinessLevel == .amber)
+        #expect(model.scheduledStrengthToday?.title == "Strength rest day")
+        #expect(model.scheduledRunsToday.first?.title == "Running rest day")
+        #expect(model.strengthOption == nil)
+        #expect(model.runningOption == nil)
+    }
+
+    @Test(arguments: [true, false])
+    func assignedRoutineShowsCompletedOnlyWhenItsSessionHasFinished(isFinished: Bool) async throws {
+        let today = CalendarDay(now, calendar: calendar)
+        let midday = today.startDate(in: calendar).addingTimeInterval(12 * 3_600)
+        let routine = Routine(name: "Upper")
+        let recorded = StrengthSession(name: routine.name, startedAt: midday.addingTimeInterval(-3_600),
+                                       endedAt: isFinished ? midday.addingTimeInterval(-300) : nil,
+                                       routineID: routine.id)
+        var goal = TrainingGoal(kind: .hybrid)
+        goal.setStrengthSchedule([PlannedStrength(day: today, routineID: routine.id)])
+        let store = TestStore(sessions: [recorded], routines: [routine])
+        try await store.save(AthleteProfile(goal: goal))
+        let model = TodayModel(sources: [WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)])],
+                               profiles: store, workouts: store, routines: store, calendar: calendar)
+
+        await model.load(now: midday)
+
+        #expect(model.readinessLevel == .amber)
+        #expect(model.scheduledStrengthToday?.title == "Strength · Upper")
+        #expect(model.scheduledStrengthToday?.status == (isFinished ? "Completed" : nil))
+        #expect(model.strengthOption == nil)
+    }
+
     @Test func comparesTheConcreteEasyRunWithTodaysHybridPlan() async throws {
         let today = CalendarDay(now, calendar: calendar)
         let store = TestStore()

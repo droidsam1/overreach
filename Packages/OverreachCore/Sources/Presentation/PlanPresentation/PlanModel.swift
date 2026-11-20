@@ -68,12 +68,14 @@ public final class PlanModel {
     /// Text typed in the priority-lift search.
     public var priorityLiftSearch = ""
     public var runningDraft: RunningPlanDraft
-    public private(set) var isSavingRunningPlan = false
+    public private(set) var isSavingProfile = false
+    private var availableRoutines: [Routine] = []
 
     private let profiles: any ProfileRepository
     private let workouts: any WorkoutRepository
     private let exercises: any ExerciseRepository
     private let progression: any ProgressionSettingsRepository
+    private let routines: (any RoutineRepository)?
     private let clock: @Sendable () -> Date
     private let calendar: Calendar
     private let runSources: [any MetricsSource]
@@ -84,7 +86,8 @@ public final class PlanModel {
         exercises: any ExerciseRepository,
         progression: any ProgressionSettingsRepository,
         clock: @escaping @Sendable () -> Date = { Date() },
-        calendar: Calendar = .current, runSources: [any MetricsSource] = []
+        calendar: Calendar = .current, runSources: [any MetricsSource] = [],
+        routines: (any RoutineRepository)? = nil
     ) {
         self.profiles = profiles
         self.workouts = workouts
@@ -93,6 +96,7 @@ public final class PlanModel {
         self.clock = clock
         self.calendar = calendar
         self.runSources = runSources
+        self.routines = routines
         targetDate = clock().addingTimeInterval(Self.defaultTargetWeeks * 7 * 86_400)
         runningDraft = RunningPlanDraft(goal: nil)
     }
@@ -110,13 +114,14 @@ public final class PlanModel {
     public let focusOptions: [Option<TrainingFocus>] = Option.trainingFocuses
     public let runningSessionOptions = PlannedRun.Purpose.allCases.map { Option(value: $0, name: $0.displayName) }
     public var showsRunningPlan: Bool { goalKind == .hybrid }
-    public var showsRunningCalendar: Bool { showsRunningPlan && profile.goal?.running != nil }
+    public var showsHybridCalendar: Bool { showsRunningPlan }
+    public var showsRunningCalendar: Bool { showsHybridCalendar && profile.goal?.running != nil }
     public var runningGoalSummary: String? { profile.goal?.running?.displayName() }
     public var runningGoalPace: String? {
         guard let pace = runningDraft.goal?.targetPaceSecondsPerKm else { return nil }
         return L10n.format("Goal pace {1} per km", Format().minutesAndSeconds(Int(pace.rounded())))
     }
-    public var canSaveRunningPlan: Bool { runningDraft.isValid && !isSavingRunningPlan && showsRunningPlan }
+    public var canSaveRunningPlan: Bool { runningDraft.isValid && !isSavingProfile && showsRunningPlan }
 
     /// Priority lifts only matter for a strength goal.
     public var showsPriorityLifts: Bool { goalKind == .strength }
@@ -177,6 +182,7 @@ public final class PlanModel {
             let now = clock()
             let sessions = try await workouts.sessions(from: now.addingTimeInterval(-365 * 86_400), to: now)
             errorMessage = nil
+            if showsHybridCalendar { await loadCalendarRoutines() }
             await analyse(sessions: sessions, now: now)
         } catch {
             errorMessage = L10n.text("Could not load your plan.")
@@ -192,8 +198,6 @@ public final class PlanModel {
     @discardableResult
     public func saveRunningPlan() async -> Bool {
         guard canSaveRunningPlan, var goal = profile.goal else { return false }
-        isSavingRunningPlan = true
-        defer { isSavingRunningPlan = false }
         goal.running = runningDraft.goal
         await save(goal: goal)
         return profile.goal == goal
@@ -208,13 +212,14 @@ public final class PlanModel {
 
     /// Turns the target date on (with the date shown in the picker) or off.
     public func setHasTargetDate(_ isOn: Bool) async {
-        guard isOn != hasTargetDate else { return }
+        guard !isSavingProfile, isOn != hasTargetDate else { return }
         hasTargetDate = isOn
         await saveTargetDate(isOn ? targetDate : nil)
     }
 
     /// Picks a target date and turns it on.
     public func setTargetDate(_ date: Date) async {
+        guard !isSavingProfile else { return }
         targetDate = date
         hasTargetDate = true
         await saveTargetDate(date)
@@ -260,6 +265,9 @@ public final class PlanModel {
     }
 
     private func persist(_ updated: AthleteProfile) async {
+        guard !isSavingProfile else { return }
+        isSavingProfile = true
+        defer { isSavingProfile = false }
         do {
             try await profiles.save(updated)
             profile = updated
@@ -369,16 +377,13 @@ extension PlanModel {
             status = nil
         }
         return RunningCalendarRow(entry: entry, date: entry.day.startDate(in: calendar).formatted(style),
-                                  title: entry.displayName(), status: status)
+                                  title: entry.calendarTitle(), status: status)
     }
 
     private func updateRunningCalendar(id: UUID, entry: PlannedRun?, isNew: Bool) async -> Bool {
-        guard showsRunningCalendar, !isSavingRunningPlan else { return false }
-        isSavingRunningPlan = true
-        defer { isSavingRunningPlan = false }
-        do {
-            var updated = try await profiles.profile()
-            guard var goal = updated.goal, goal.kind == .hybrid, goal.running != nil else { return false }
+        guard showsRunningCalendar else { return false }
+        return await updateCalendar { goal in
+            guard goal.running != nil else { return false }
             var schedule = goal.scheduledRuns
             let index = schedule.firstIndex { $0.id == id }
             if let entry {
@@ -391,6 +396,17 @@ extension PlanModel {
                 schedule.remove(at: index)
             }
             goal.setRunningSchedule(schedule)
+            return true
+        }
+    }
+
+    private func updateCalendar(_ change: (inout TrainingGoal) -> Bool) async -> Bool {
+        guard showsHybridCalendar, !isSavingProfile else { return false }
+        isSavingProfile = true
+        defer { isSavingProfile = false }
+        do {
+            var updated = try await profiles.profile()
+            guard var goal = updated.goal, goal.kind == .hybrid, change(&goal) else { return false }
             updated.goal = goal
             try await profiles.save(updated)
             profile = updated
@@ -421,5 +437,77 @@ extension PlanModel {
             }
         }
         return true
+    }
+}
+
+extension PlanModel {
+    public func strengthRoutineOptions(for draft: StrengthCalendarDraft) -> [Option<UUID>] {
+        var options = availableRoutines.map { Option(value: $0.id, name: $0.name) }
+        if let id = draft.routineID, !options.contains(where: { $0.value == id }) {
+            options.append(Option(value: id, name: L10n.text("Scheduled routine unavailable")))
+        }
+        return options
+    }
+
+    public var upcomingCalendarRows: [HybridCalendarRow] {
+        calendarRows(runs: showsRunningCalendar ? upcomingRunningEntries : [], isPast: false)
+    }
+
+    public var pastCalendarRows: [HybridCalendarRow] {
+        calendarRows(runs: showsRunningCalendar ? pastRunningEntries : [], isPast: true)
+    }
+
+    public func loadCalendarRoutines() async {
+        do {
+            availableRoutines = try await routines?.allRoutines() ?? []
+        } catch {
+            errorMessage = L10n.text("Could not load your routines.")
+        }
+    }
+
+    public func editStrengthEntry(_ entry: PlannedStrength? = nil) -> StrengthCalendarDraft {
+        errorMessage = nil
+        return StrengthCalendarDraft(entry: entry, today: clock(), calendar: calendar)
+    }
+
+    public func canSaveStrengthEntry(_ draft: StrengthCalendarDraft) -> Bool {
+        !isSavingProfile && (draft.routineID.map { id in availableRoutines.contains { $0.id == id } } ?? true)
+    }
+
+    public func saveStrengthEntry(_ draft: StrengthCalendarDraft) async -> Bool {
+        guard canSaveStrengthEntry(draft) else { return false }
+        let day = CalendarDay(draft.date, calendar: calendar)
+        let entry = PlannedStrength(id: draft.id, day: day, routineID: draft.routineID)
+        return await updateCalendar { goal in
+            var schedule = goal.scheduledStrength
+            let index = schedule.firstIndex { $0.id == entry.id }
+            guard draft.isNew == (index == nil) else { return false }
+            guard !schedule.contains(where: { $0.day == day && $0.id != entry.id }) else {
+                errorMessage = L10n.text("There is already a strength entry on this date.")
+                return false
+            }
+            if let index { schedule[index] = entry } else { schedule.append(entry) }
+            goal.setStrengthSchedule(schedule)
+            return true
+        }
+    }
+
+    public func removeStrengthEntry(_ id: UUID) async -> Bool {
+        await updateCalendar { goal in
+            goal.setStrengthSchedule(goal.scheduledStrength.filter { $0.id != id })
+            return true
+        }
+    }
+
+    private func calendarRows(runs: [RunningCalendarRow], isPast: Bool) -> [HybridCalendarRow] {
+        let today = CalendarDay(clock(), calendar: calendar)
+        let style = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).day().month(.abbreviated).year()
+        let strength = (profile.goal?.scheduledStrength ?? []).filter { ($0.day < today) == isPast }.map { entry in
+            let name = availableRoutines.first { $0.id == entry.routineID }?.name
+            let date = entry.day.startDate(in: calendar).formatted(style)
+            let row = StrengthCalendarRow(entry: entry, date: date, title: entry.displayName(routineName: name))
+            return HybridCalendarRow.strength(row)
+        }
+        return (strength + runs.map(HybridCalendarRow.run)).sorted { isPast ? $0.day > $1.day : $0.day < $1.day }
     }
 }

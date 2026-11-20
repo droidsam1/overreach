@@ -170,7 +170,7 @@ final class AppContainer {
 
     func makePlanModel() -> PlanModel {
         PlanModel(profiles: profiles, workouts: workouts, exercises: exercises, progression: progression,
-                  runSources: metricsSources)
+                  runSources: metricsSources, routines: routines)
     }
 
     func makeExercisesModel() -> ExercisesModel {

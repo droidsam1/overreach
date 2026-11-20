@@ -31,14 +31,17 @@ public struct TodayView: View {
                     if model.showsReadinessCard {
                         readiness
                     }
+                    if model.scheduledStrengthToday != nil || !model.scheduledRunsToday.isEmpty {
+                        scheduledTraining
+                    }
                     if let option = model.runningOption {
                         easyRun(option)
                     }
                     if let advice = model.deloadAdvice {
                         deload(advice)
                     }
-                    if let option = model.strengthOption {
-                        easyStrength(option)
+                    if model.scheduledStrengthToday == nil, let option = model.strengthOption {
+                        DisclosureGroup("If you want to lift today") { strengthDetails(option) }
                     }
                     if model.showsCheckIn {
                         checkIn
@@ -196,7 +199,9 @@ public struct TodayView: View {
     private func easyRun(_ option: RunningOption) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xSmall) {
             Text(option.goal).font(.subheadline.weight(.semibold))
-            if let plan = option.plan { Text(plan).font(.subheadline).foregroundStyle(.secondary) }
+            if model.scheduledRunsToday.isEmpty, let plan = option.plan {
+                Text(plan).font(.subheadline).foregroundStyle(.secondary)
+            }
             Text(option.advice).font(.subheadline)
             if let context = option.context { Text(context).font(.caption).foregroundStyle(.secondary) }
             if let evidence = option.evidence, let source = option.source {
@@ -212,26 +217,49 @@ public struct TodayView: View {
         }
     }
 
-    private func easyStrength(_ option: StrengthOption) -> some View {
-        DisclosureGroup("If you want to lift today") {
-            VStack(alignment: .leading, spacing: Spacing.small) {
-                if let heading = option.heading {
-                    Text(heading).font(.subheadline)
+    private var scheduledTraining: some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            Text("Today's plan").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
+            if let strength = model.scheduledStrengthToday {
+                scheduledRow(strength, symbol: "dumbbell")
+                if let option = model.strengthOption {
+                    DisclosureGroup("Compare with an easy strength option") { strengthDetails(option) }
                 }
-                ForEach(option.exerciseRows) { row in
-                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                        Text(row.title).font(.subheadline.weight(.semibold))
-                        Text(row.reference).foregroundStyle(.secondary)
-                        Text(row.suggestion)
-                    }
-                    .font(.subheadline)
-                }
-                Text(option.guidance).font(.subheadline)
-                Text(option.evidence).font(.caption).foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.top, Spacing.small)
+            ForEach(model.scheduledRunsToday) { run in
+                scheduledRow(run, symbol: "figure.run")
+            }
         }
+    }
+
+    private func scheduledRow(_ row: ScheduledTrainingRow, symbol: String) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+            Label(row.title, systemImage: symbol).font(.subheadline.weight(.semibold))
+            if let status = row.status {
+                Text(status).font(.footnote).foregroundStyle(.secondary)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func strengthDetails(_ option: StrengthOption) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            if let heading = option.heading {
+                Text(heading).font(.subheadline)
+            }
+            ForEach(option.exerciseRows) { row in
+                VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                    Text(row.title).font(.subheadline.weight(.semibold))
+                    Text(row.reference).foregroundStyle(.secondary)
+                    Text(row.suggestion)
+                }
+                .font(.subheadline)
+            }
+            Text(option.guidance).font(.subheadline)
+            Text(option.evidence).font(.caption).foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, Spacing.small)
     }
 
     private var recentTraining: some View {

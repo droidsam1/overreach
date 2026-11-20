@@ -20,6 +20,10 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "calendar.badge.plus", title: L10n.text("Hybrid calendar"),
+                    detail: L10n.text("Schedule strength alongside running and compare an easier option on amber days.")
+                ),
+                ReleaseHighlight(
                     symbol: "arrow.down.right.circle.fill", title: L10n.text("Deloads when you need them"),
                     detail: L10n.text(
                         "When lifts stall and recovery has been poor all week, Today suggests a deload week and says why."

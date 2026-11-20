@@ -17,8 +17,8 @@ public struct StrengthOption: Hashable, Sendable {
     public let evidence: String
 
     static func make(
-        routine: Routine?, sessions: [StrengthSession], exercises: [Exercise], settings: [UUID: ProgressionSettings],
-        historyStart: Date, familiarityStart: Date
+        routine: Routine?, isDated: Bool, sessions: [StrengthSession], exercises: [Exercise],
+        settings: [UUID: ProgressionSettings], historyStart: Date, familiarityStart: Date
     ) -> StrengthOption {
         let context = StrengthOptionContext(
             progressionSessions: sessions.filter { $0.startedAt >= historyStart },
@@ -27,6 +27,7 @@ public struct StrengthOption: Hashable, Sendable {
         if let routine {
             let rows = Array(routine.exerciseIDs.lazy.compactMap { context.row(for: $0, routine: routine) }
                 .prefix(EasyStrengthAdjustment.maximumExercises))
+            if isDated { return option(heading: nil, rows: rows, isDated: true) }
             if !rows.isEmpty {
                 return option(heading: L10n.format("Up next in your plan · {1}", routine.name), rows: rows)
             }
@@ -45,10 +46,17 @@ public struct StrengthOption: Hashable, Sendable {
         return option(heading: nil, rows: [])
     }
 
-    private static func option(heading: String?, rows: [ExerciseRow]) -> StrengthOption {
-        let guidance = rows.isEmpty
-            ? L10n.text("Choose a familiar exercise and a light load. Finish each set with at least four reps left.")
-            : L10n.text("Use a lighter load or an easier version if you need it to keep the effort light.")
+    private static func option(heading: String?, rows: [ExerciseRow], isDated: Bool = false) -> StrengthOption {
+        let guidance: String
+        if rows.isEmpty && isDated {
+            guidance = L10n.text(
+                "Use familiar exercises from this routine and finish each set with at least four reps left."
+            )
+        } else if rows.isEmpty {
+            guidance = L10n.text("Choose a familiar exercise and a light load. Finish each set with at least four reps left.")
+        } else {
+            guidance = L10n.text("Use a lighter load or an easier version if you need it to keep the effort light.")
+        }
         return StrengthOption(heading: heading, exerciseRows: rows, guidance: guidance,
                               evidence: EasyStrengthAdjustment.evidence.level.displayName)
     }

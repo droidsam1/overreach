@@ -34,6 +34,13 @@ public struct TrainingGoal: Hashable, Codable, Sendable {
     /// The single-entry format shipped before the calendar. Prefer `scheduledRuns` for reads.
     public var nextRun: PlannedRun?
     public private(set) var runningSchedule: [PlannedRun]?
+    private var strengthSchedule: [PlannedStrength]?
+
+    public var scheduledStrength: [PlannedStrength] { strengthSchedule ?? [] }
+
+    public mutating func setStrengthSchedule(_ entries: [PlannedStrength]) {
+        strengthSchedule = entries.isEmpty ? nil : entries
+    }
 
     public var scheduledRuns: [PlannedRun] {
         runningSchedule ?? nextRun.map { [$0] } ?? []
