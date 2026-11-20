@@ -106,6 +106,9 @@ existing modules to do it.
 # Pure-Swift core (works on macOS and Linux)
 swift test --package-path Packages/OverreachCore
 
+# Cloud sessions (Claude Code on the web, environment "overreach"): Swift 6.0.3 is preinstalled by the
+# environment's setup script, so the command above works as is.
+
 # Same, in Docker (Windows/any machine without Swift; same image as CI)
 ./scripts/test-core.sh            # or: ./scripts/test-core.ps1 ; extra args go to swift test
 
