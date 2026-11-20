@@ -1,7 +1,5 @@
 # CLAUDE.md — Overreach
 
-Guidance for Claude (and humans) working in this repository. Read this first in every session.
-
 ## What Overreach is
 
 Overreach (*push smart, recover smarter*) is an open-source iOS app for hybrid athletes (strength + running).
@@ -11,12 +9,11 @@ all of it into daily, explainable training recommendations ("Should I train toda
 - One user per install. No backend, no accounts. Data, credentials and API keys stay on the device.
 - Recommendations come from a deterministic rules engine (`Analytics`). AI only interprets numbers the app
   has already computed.
-- AI access: prototype = share a Markdown report to the ChatGPT/Claude app; later = in-app chat through a
-  provider-agnostic `LLMProvider` (OpenAI default, Anthropic, any OpenAI-compatible API).
+- The Assistant shares training context and imports plans. See [AI exchange](docs/ai-exchange.md).
 - Not a medical device. Never present output as a diagnosis.
 
-Full product definition: `docs/product.md`. Evidence register: `docs/evidence.md`. Architecture decisions: `docs/adr/`. Importing history:
-`docs/import.md` (ADR-0011).
+[Product and roadmap](docs/product.md) · [Evidence](docs/evidence.md) · [ADRs](docs/adr/) ·
+[History import](docs/import.md) · [Installing without a Mac](docs/install-without-mac.md)
 
 ## Repository layout
 
@@ -38,7 +35,7 @@ Packages/
       PresentationKit     Display names, search, L10n
       <X>Presentation     @Observable models, screen state and intents of feature X
   OverreachKit/           Apple frameworks (SwiftUI, SwiftData, HealthKit, Keychain)
-    Persistence           Repositories (in-memory now, SwiftData CloudKit-ready in phase 1)
+    Persistence           SwiftData repositories, device-local drafts and portable backups (ADR-0004/0018)
     HealthKitSource       Apple Health reader/writer
     GarminSource          Garmin Connect Personal API client (optional, isolated; ADR-0022)
     AIKit                 LLMProvider protocol + adapters
@@ -76,8 +73,7 @@ existing modules to do it.
   `XView` in `FeatureX` renders state and calls intents. Views keep layout, styling, accessibility, static
   copy and purely visual `@State` (sheet open, focus) — never rule-based `if`s, computations, `.filter`/`.sorted`
   over data, or texts derived from rules. One model per screen/flow; sub-screens get a model from the parent.
-  SwiftLint warns on `.filter`/`.sorted` in views. Presentation tests are the feature's contract: a redesign is
-  safe if they pass. Placeholders (Trends, Assistant) get a presentation module when built.
+  SwiftLint warns on `.filter`/`.sorted` in views. Presentation tests cover the feature contract.
 - Dates: daily data is keyed by `CalendarDay` (year/month/day in the user's calendar), never by raw `Date`.
 - Units: store SI (kg, meters, seconds, ms for HRV). Convert only in the UI.
 - Every metric is optional. Missing data must degrade gracefully, never crash or block.
@@ -102,12 +98,14 @@ existing modules to do it.
 
 ## Commands
 
+For a compact local check, run `python3 scripts/check-local.py` (Windows `py -3 scripts/check-local.py`).
+It selects checks from the diff against the merge base with `origin/main` and prints a log path.
+Pass `--base origin/<branch>` for a different PR base. Use native tools or Docker for the local checks.
+The [CI workflow](.github/workflows/ci.yml) verifies the Apple packages and simulator build.
+
 ```bash
 # Pure-Swift core (works on macOS and Linux)
 swift test --package-path Packages/OverreachCore
-
-# Cloud sessions (Claude Code on the web, environment "overreach"): Swift 6.0.3 is preinstalled by the
-# environment's setup script, so the command above works as is.
 
 # Same, in Docker (Windows/any machine without Swift; same image as CI)
 ./scripts/test-core.sh            # or: ./scripts/test-core.ps1 ; extra args go to swift test
@@ -123,31 +121,6 @@ cd App && xcodegen generate && open Overreach.xcodeproj
 swiftlint
 swift format lint --recursive Packages App/Sources
 ```
-
-## Building without a Mac
-
-Logic in `OverreachCore` (including presentation models) can be developed and tested anywhere Swift runs, or
-in Docker with `scripts/test-core.*`. The iOS app is
-built by the **Build IPA** workflow (`.github/workflows/ipa.yml`) on every push to `main`; the artifact is
-sideloaded with Sideloadly/AltStore (`docs/install-without-mac.md`). UI work without a Mac has no simulator
-or previews, so keep views thin and push logic into models and `OverreachCore` where it can be tested.
-
-## Roadmap (current phase in bold)
-
-- **Phase 0 — Foundation:** repo, modules, CI, DesignSystem basics, domain model, docs. ← current
-- Phase 1 (v0.1) — Replace Strong: exercise catalog, routines, live logger, history, e1RM/PRs, Strong CSV
-  import, write workouts to Health, JSON backup to an iCloud Drive folder, and the **progression engine**:
-  next-session targets from history, stall detection with suggestions, deload proposals from training
-  signals (`docs/design/progression-engine.md`).
-- Phase 2 (v0.2) — Recovery: Health + Garmin sync, daily check-in, Today screen, readiness traffic light;
-  deload proposals also use HRV, resting HR, sleep, stress and sickness; cycle phase as context with
-  phase-aware baselines (ADR-0009, `docs/design/cycle-aware-training.md`); steps and walks vs baseline as
-  low-weight load and recovery tool (ADR-0010, `docs/design/daily-activity.md`).
-- Phase 3 — Intelligence: plan, load/progression analysis, recommendations, shareable report, Trends.
-- Phase 4 — Validation & distribution: paid Apple Developer account, CloudKit sync, TestFlight,
-  in-app chat via API.
-
-Phases 1–3 are the prototype. Keep each phase shippable.
 
 ## Known constraints
 
