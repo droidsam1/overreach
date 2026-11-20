@@ -98,6 +98,24 @@ struct DeloadAdviceTests {
         ))
     }
 
+    @Test func aDetectedRestWeekSuppressesTheRepeatProposal() async throws {
+        let sessions = stalledSessions.map { original in
+            var session = original
+            session.startedAt = original.startedAt.addingTimeInterval(-5 * 86_400)
+            session.endedAt = original.endedAt?.addingTimeInterval(-5 * 86_400)
+            return session
+        }
+        let store = TestStore(exercises: [squat, bench], sessions: sessions)
+        try await store.save(mainLift, for: squat.id)
+        try await store.save(mainLift, for: bench.id)
+        let model = TodayModel(
+            sources: [DayMetrics(days: metrics(poorWeek: true))], profiles: store, workouts: store, exercises: store,
+            progression: store, calendar: calendar, format: format
+        )
+        await model.load(now: now)
+        #expect(model.deloadAdvice == nil)
+    }
+
     @Test func acceptingRecordsTheDeloadWeekAndPostponingHidesIt() async throws {
         let store = TestStore(exercises: [squat, bench], sessions: stalledSessions)
         try await store.save(mainLift, for: squat.id)

@@ -132,9 +132,15 @@ public enum DeloadAdvisor {
         weeklyLoad: WeeklyLoadChange? = nil,
         recovery: RecoveryTrend? = nil,
         now: Date,
-        settings: Settings = Settings()
+        settings: Settings = Settings(),
+        detectedDeloads: [DetectedDeload] = [],
+        calendar: Calendar = .current
     ) -> DeloadProposal? {
         if recovery?.sickRecently == true { return nil }
+        let today = CalendarDay(now, calendar: calendar)
+        let detectedEnd = detectedDeloads.filter { !$0.needsConfirmation && $0.end <= today }.map(\.end).max()
+        let lastRecovery = [lastDeload, detectedEnd?.startDate(in: calendar)].compactMap { $0 }.max()
+        if let detectedEnd, PlanReviewer.days(from: detectedEnd, to: today, calendar: calendar) <= 7 { return nil }
         let mainLifts = lifts.filter(\.settings.isMainLift)
         let considered = mainLifts.isEmpty ? lifts : mainLifts
         var signals: [DeloadSignal] = []
@@ -164,8 +170,10 @@ public enum DeloadAdvisor {
         }
 
         let firstSession = lifts.compactMap { $0.history.first?.date }.min()
-        if let reference = lastDeload ?? firstSession {
-            let weeks = Int(now.timeIntervalSince(reference) / (7 * 86_400))
+        if let reference = lastRecovery ?? firstSession {
+            let weeks = PlanReviewer.days(
+                from: CalendarDay(reference, calendar: calendar), to: today, calendar: calendar
+            ) / 7
             if weeks >= settings.plannedIntervalWeeks {
                 signals.append(.weeksSinceDeload(weeks))
                 score += settings.intervalWeight

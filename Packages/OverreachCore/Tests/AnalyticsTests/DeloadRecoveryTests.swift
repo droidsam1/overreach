@@ -47,6 +47,19 @@ struct DeloadRecoveryTests {
         #expect(proposal.signals.last?.evidence.key == "deload-recovery-signals")
     }
 
+    @Test func aDetectedDeloadResetsTheOverdueSignal() throws {
+        let lifts = [stalled, stalled]
+        let old = try #require(DeloadAdvisor.proposal(lifts: lifts, lastDeload: at(-70), now: now))
+        #expect(old.signals.contains(.weeksSinceDeload(10)))
+        let detected = DetectedDeload(
+            start: CalendarDay(at(-16), calendar: calendar), end: CalendarDay(at(-10), calendar: calendar),
+            reason: .noTraining, needsConfirmation: false
+        )
+        #expect(DeloadAdvisor.proposal(
+            lifts: lifts, lastDeload: at(-70), now: now, detectedDeloads: [detected], calendar: calendar
+        ) == nil)
+    }
+
     @Test func recoveryNeverProposesADeloadWithoutAPerformanceSignal() {
         // Overdue and with every recovery signal, but lifting keeps progressing: no deload.
         let proposal = DeloadAdvisor.proposal(

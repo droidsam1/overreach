@@ -10,6 +10,7 @@ import SwiftUI
 /// Goal, current block, what to do next, balance findings and the plan for the coming months (ADR-0013).
 public struct PlanView<Assistant: View>: View {
     @State private var model: PlanModel
+    @State private var showsDeloadHistory = false
     private let assistant: Assistant
 
     /// - Parameter assistant: links to other features (e.g. "Ask AI"). Wired by the app.
@@ -41,6 +42,7 @@ public struct PlanView<Assistant: View>: View {
                     }
                 }
                 currentBlockSection
+                if model.lastDeloadSummary != nil || !model.pendingDeloadRows.isEmpty { deloadSection }
                 planSection
                 if !model.findingLines.isEmpty {
                     Section("Worth a look") {
@@ -54,6 +56,43 @@ public struct PlanView<Assistant: View>: View {
             .navigationTitle("Plan")
             .task { await model.load() }
             .refreshable { await model.load() }
+        }
+    }
+
+    private var deloadSection: some View {
+        Section("Recovery history") {
+            if let summary = model.lastDeloadSummary {
+                Text(summary)
+            }
+            if !model.deloadRows.isEmpty {
+                DisclosureGroup("Deloads and rest periods", isExpanded: $showsDeloadHistory) {
+                    ForEach(model.deloadRows) { row in
+                        deloadDetails(row)
+                    }
+                }
+            }
+            ForEach(model.pendingDeloadRows) { row in
+                VStack(alignment: .leading, spacing: Spacing.small) {
+                    Text("Count this period as a deload?").bold()
+                    deloadDetails(row)
+                    Button("Count as deload") {
+                        Task { await model.reviewDeload(start: row.id, accepted: true) }
+                    }
+                    Button("Dismiss") {
+                        Task { await model.reviewDeload(start: row.id, accepted: false) }
+                    }
+                }
+                .buttonStyle(.borderless)
+                .disabled(model.isReviewingDeload)
+            }
+        }
+    }
+
+    private func deloadDetails(_ row: DeloadRow) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+            Text(row.start...row.end)
+            Text(row.reason.text).foregroundStyle(.secondary)
+            Text(row.reason.evidence).font(.caption).foregroundStyle(.secondary)
         }
     }
 
