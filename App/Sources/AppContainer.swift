@@ -39,6 +39,8 @@ final class AppContainer {
     let metricsSources: [any MetricsSource]
     /// Apple Health: steps for the History calendar, and runs (Garmin Connect writes its runs there too).
     let healthSource: (any MetricsSource & ActivitySource)?
+    /// The person's Garmin account (ADR-0022). Also in `metricsSources`.
+    let garmin: (any GarminAccount)?
 
     init(
         workouts: any WorkoutRepository,
@@ -53,7 +55,8 @@ final class AppContainer {
         health: any HealthWorkoutWriter = HealthKitWorkoutWriter(),
         onboardingStatus: any OnboardingStatusStore = DefaultsOnboardingStatus(),
         metricsSources: [any MetricsSource],
-        healthSource: (any MetricsSource & ActivitySource)? = nil
+        healthSource: (any MetricsSource & ActivitySource)? = nil,
+        garmin: (any GarminAccount)? = nil
     ) {
         self.workouts = workouts
         self.exercises = exercises
@@ -71,26 +74,28 @@ final class AppContainer {
         )
         self.metricsSources = metricsSources
         self.healthSource = healthSource
+        self.garmin = garmin
     }
 
     /// Production wiring: SwiftData on disk (ADR-0004). If the store cannot be opened, the app still runs on an
     /// in-memory store instead of crashing, and nothing is saved.
     static func live() -> AppContainer {
         let healthKit = HealthKitMetricsSource()
-        let sources: [any MetricsSource] = [GarminMetricsSource(), healthKit]
+        let garmin = GarminConnect.makeService()
+        let sources: [any MetricsSource] = [garmin, healthKit]
         do {
             let store = SwiftDataStore.make(container: try PersistenceContainer.make())
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store,
-                metricsSources: sources, healthSource: healthKit
+                metricsSources: sources, healthSource: healthKit, garmin: garmin
             )
         } catch {
             let store = InMemoryStore(exercises: ExerciseCatalog.builtIn)
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store,
-                metricsSources: sources, healthSource: healthKit
+                metricsSources: sources, healthSource: healthKit, garmin: garmin
             )
         }
     }
@@ -166,6 +171,10 @@ final class AppContainer {
         OnboardingModel(profiles: profiles, workouts: workouts, status: onboardingStatus)
     }
 
+    func makeGarminSetupModel() -> GarminSetupModel {
+        GarminSetupModel(account: garmin ?? NoGarminAccount())
+    }
+
     func makeBackupModel() -> BackupModel {
         BackupModel(service: backup)
     }
@@ -173,4 +182,18 @@ final class AppContainer {
     func makeImportModel() -> ImportModel {
         ImportModel(importer: importer, workouts: workouts, exercises: exercises)
     }
+}
+
+/// Stands in when the app runs without Garmin (previews, tests): nothing is connected.
+private struct NoGarminAccount: GarminAccount {
+    func connection() async -> GarminConnectionInfo? { nil }
+    func connect(key: String, lifetime: GarminKeyLifetime) async throws(GarminAccountError) {
+        throw .garminUnavailable
+    }
+    func sync(
+        progress: @escaping @Sendable (GarminSyncProgress) -> Void
+    ) async throws(GarminAccountError) -> GarminSyncSummary {
+        throw .notConnected
+    }
+    func disconnect() async {}
 }
