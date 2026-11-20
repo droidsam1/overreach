@@ -1,6 +1,6 @@
 # 0024 — HRV baselines per statistic
 
-- **Status:** Accepted
+- **Status:** Accepted; refined by 0025 (separate series instead of one labelled value)
 - **Date:** 2026-11-20
 
 ## Context

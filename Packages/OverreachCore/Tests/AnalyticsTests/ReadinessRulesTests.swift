@@ -8,7 +8,7 @@ struct ReadinessRulesTests {
     private let calendar = Calendar(identifier: .gregorian)
     private var today: CalendarDay { CalendarDay(year: 2026, month: 11, day: 19) }
 
-    /// A realistic history: nightly HRV around 55 ms (± ~5), resting HR around 50 bpm, 7.5 h of sleep.
+    /// A realistic history from Apple Health: nightly SDNN around 55 ms (± ~5), resting HR around 50 bpm, 7.5 h of sleep.
     private func history(
         days: Int = 60, recentHRV: [Double]? = nil, todayResting: Double? = nil, todaySleepHours: Double? = 7.5
     ) -> [DailyMetrics] {
@@ -16,10 +16,10 @@ struct ReadinessRulesTests {
         return (0...days).map { offset in
             let day = today.adding(days: -offset, calendar: calendar)
             var metrics = DailyMetrics(day: day, sources: [.appleHealth])
-            metrics.hrvNightlyAverageMs = 55 + wobble[offset % wobble.count]
+            metrics.hrvSDNNMs = 55 + wobble[offset % wobble.count]
             metrics.restingHeartRate = 50 + wobble[offset % wobble.count] / 5
             metrics.sleepSeconds = 7.5 * 3_600
-            if let recentHRV, offset < recentHRV.count { metrics.hrvNightlyAverageMs = recentHRV[offset] }
+            if let recentHRV, offset < recentHRV.count { metrics.hrvSDNNMs = recentHRV[offset] }
             if offset == 0 {
                 if let todayResting { metrics.restingHeartRate = todayResting }
                 metrics.sleepSeconds = todaySleepHours.map { $0 * 3_600 }
@@ -63,7 +63,7 @@ struct ReadinessRulesTests {
 
     @Test func HRVNeedsThreeRecentNights() {
         var days = history(recentHRV: [40, 41])
-        for index in days.indices where (2..<7).contains(index) { days[index].hrvNightlyAverageMs = nil }
+        for index in days.indices where (2..<7).contains(index) { days[index].hrvSDNNMs = nil }
 
         let result = readiness(days)
         #expect(result.level == .green)
@@ -73,13 +73,14 @@ struct ReadinessRulesTests {
 
     @Test func invalidAndDifferentStatisticReadingsDoNotCountTowardCoverage() {
         var days = switchedToGarmin(garminNights: 30)
-        days[0].hrvNightlyAverageMs = .infinity
-        days[1].hrvNightlyAverageMs = 24
-        days[2].hrvNightlyAverageMs = 24
-        days[3].hrvNightlyAverageMs = nil
-        days[4].hrvNightlyAverageMs = 0
-        days[5].hrvNightlyAverageMs = 24
-        days[6].hrvMetric = .sdnn
+        days[0].hrvRMSSDMs = .infinity
+        days[1].hrvRMSSDMs = 24
+        days[2].hrvRMSSDMs = 24
+        days[3].hrvRMSSDMs = nil
+        days[4].hrvRMSSDMs = 0
+        days[5].hrvRMSSDMs = 24
+        days[6].hrvSDNNMs = days[6].hrvRMSSDMs  // one night read as SDNN instead: a different series
+        days[6].hrvRMSSDMs = nil
 
         let result = readiness(days)
         #expect(result.reasons == [.hrvBelowBaseline(nights: 3)])
@@ -161,7 +162,7 @@ struct ReadinessRulesTests {
         ])
     }
 
-    // MARK: HRV statistics (ADR-0024)
+    // MARK: HRV series (ADR-0024, ADR-0025)
 
     /// 60 nights of Apple Watch SDNN around 55 ms, then the last `garminNights` from a Garmin (RMSSD around 35 ms:
     /// a lower number for the same physiology).
@@ -173,11 +174,9 @@ struct ReadinessRulesTests {
                 [.day], from: day.day.startDate(in: calendar), to: today.startDate(in: calendar)
             ).day ?? 0
             if offset < garminNights {
-                day.hrvNightlyAverageMs = 35 + Double(offset % 3)
-                day.hrvMetric = .rmssd
+                day.hrvRMSSDMs = 35 + Double(offset % 3)
+                day.hrvSDNNMs = nil  // the Apple Watch is no longer worn
                 day.sources = [.garmin]
-            } else {
-                day.hrvMetric = .sdnn
             }
             return day
         }
@@ -195,11 +194,11 @@ struct ReadinessRulesTests {
 
     @Test func onceTheNewWatchHasABaselineItIsJudgedAgainstItsOwnNights() {
         var days = switchedToGarmin(garminNights: 30)
-        for index in days.indices where days[index].hrvMetric == .rmssd {
+        for index in days.indices where days[index].hrvRMSSDMs != nil {
             let offset = calendar.dateComponents(
                 [.day], from: days[index].day.startDate(in: calendar), to: today.startDate(in: calendar)
             ).day ?? 0
-            if offset < 7 { days[index].hrvNightlyAverageMs = 26 }  // a real drop in RMSSD
+            if offset < 7 { days[index].hrvRMSSDMs = 26 }  // a real drop in RMSSD
         }
 
         let result = readiness(days)
@@ -207,20 +206,75 @@ struct ReadinessRulesTests {
         #expect(result.reasons.contains(.hrvBelowBaseline(nights: 7)))
     }
 
-    @Test func mergingKeepsEachValueWithItsStatistic() {
+    @Test func mergingKeepsBothStatisticsOfANight() {
         var garmin = DailyMetrics(day: today, sources: [.garmin])
         garmin.sleepScore = 80
         var health = DailyMetrics(day: today, sources: [.appleHealth])
-        health.hrvNightlyAverageMs = 50
-        health.hrvMetric = .sdnn
+        health.hrvSDNNMs = 50
 
-        let merged = garmin.merging(health)  // Garmin has no HRV tonight: the SDNN value comes with its label
+        let merged = garmin.merging(health)  // Garmin has no HRV tonight: only the SDNN series has a value
+        #expect(merged.hrv(.sdnn) == 50 && merged.hrv(.rmssd) == nil)
         #expect(merged.hrvNightlyAverageMs == 50 && merged.hrvMetric == .sdnn)
 
-        garmin.hrvNightlyAverageMs = 38
-        garmin.hrvMetric = .rmssd
-        let both = garmin.merging(health)
+        garmin.hrvRMSSDMs = 38
+        let both = garmin.merging(health)  // neither value replaces the other
+        #expect(both.hrv(.rmssd) == 38 && both.hrv(.sdnn) == 50)
         #expect(both.hrvNightlyAverageMs == 38 && both.hrvMetric == .rmssd)
+        #expect(health.merging(garmin) == both)  // the order of sources no longer decides which HRV survives
+    }
+
+    /// Someone wearing both watches: 60 nights of Apple SDNN around 55 ms (from `history`) and Garmin RMSSD around
+    /// 35 ms on the last `garminNights`.
+    private func wearingBoth(garminNights: Int, recentRMSSD: [Double] = [], recentSDNN: [Double] = []) -> [DailyMetrics] {
+        history(recentHRV: recentSDNN.isEmpty ? nil : recentSDNN, todaySleepHours: nil).map { day in
+            var day = day
+            day.restingHeartRate = nil
+            let offset = calendar.dateComponents(
+                [.day], from: day.day.startDate(in: calendar), to: today.startDate(in: calendar)
+            ).day ?? 0
+            if offset < garminNights {
+                day.hrvRMSSDMs = offset < recentRMSSD.count ? recentRMSSD[offset] : 35 + Double(offset % 3)
+                day.sources.insert(.garmin)
+            }
+            return day
+        }
+    }
+
+    @Test func withBothSeriesRMSSDIsJudgedAndSDNNIsNotMixedIn() {
+        // Apple's SDNN drops this week, Garmin's RMSSD does not: only RMSSD is judged.
+        let result = readiness(wearingBoth(garminNights: 60, recentSDNN: [40, 41, 39, 42, 40, 41, 40]))
+
+        #expect(result.level == .green)
+        #expect(result.hrvCoverage?.metric == .rmssd)
+        #expect(result.hrvCoverage?.baselineReadings == 59)
+    }
+
+    @Test func aDropInTheChosenSeriesIsReportedWithItsStatistic() {
+        let result = readiness(wearingBoth(garminNights: 60, recentRMSSD: [26, 27, 25, 28, 26, 27, 26]))
+
+        #expect(result.reasons == [.hrvBelowBaseline(nights: 7)])
+        #expect(result.hrvCoverage?.metric == .rmssd)
+    }
+
+    @Test func whileTheRMSSDBaselineBuildsTheSDNNSeriesKeepsBeingJudged() {
+        // Garmin connected four nights ago without history: its RMSSD cannot be compared yet, the SDNN series can.
+        let result = readiness(wearingBoth(garminNights: 4, recentSDNN: [44, 46, 43, 47, 45, 52, 48]))
+
+        #expect(result.reasons == [.hrvBelowBaseline(nights: 7)])
+        #expect(result.hrvCoverage?.metric == .sdnn)
+        #expect(result.hrvCoverage?.baselineReadings == 60)
+    }
+
+    @Test func whenNoSeriesCanBeComparedTheCoverageIsTheWatchReadMostRecently() {
+        // The Apple Watch last read SDNN four nights ago; the Garmin has read RMSSD for the last three nights.
+        var days = switchedToGarmin(garminNights: 3)
+        for index in [3, 5, 6] { days[index].hrvSDNNMs = nil }
+        let result = readiness(days)
+
+        #expect(result.hrvCoverage?.metric == .rmssd)
+        #expect(result.hrvCoverage?.latestDay == today)
+        #expect(result.hrvCoverage?.canCompare == false)
+        #expect(result.hrvCoverage?.baselineReadings == 2)
     }
 
     // MARK: - Natural cycle (`hrv-cycle-phase`)

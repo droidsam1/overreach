@@ -68,7 +68,7 @@ struct TodaySourcesTests {
         let source = DaysSource(days: [day(0) {
             $0.steps = 9_000
             $0.sleepSeconds = 7 * 3_600
-            $0.hrvNightlyAverageMs = 48
+            $0.hrvSDNNMs = 48
             $0.restingHeartRate = 52
         }])
         let model = TodayModel(sources: [source], calendar: calendar)
@@ -79,7 +79,7 @@ struct TodaySourcesTests {
     }
 
     @Test func aMetricMissingTodayButMeasuredThisWeekKeepsItsTile() async {
-        let source = DaysSource(days: [day(-2) { $0.hrvNightlyAverageMs = 45 }, day(0) { $0.steps = 100 }])
+        let source = DaysSource(days: [day(-2) { $0.hrvSDNNMs = 45 }, day(0) { $0.steps = 100 }])
         let model = TodayModel(sources: [source], calendar: calendar)
         await model.load(now: now)
 
@@ -91,7 +91,7 @@ struct TodaySourcesTests {
     @Test func garminAddsItsOwnTilesAndHealthFillsTheRest() async {
         let health = DaysSource(days: [day(0) { $0.steps = 7_000 }])
         var garminDay = day(0) {
-            $0.hrvNightlyAverageMs = 40
+            $0.hrvRMSSDMs = 40
             $0.bodyBatteryHigh = 80
             $0.averageStress = 25
         }
@@ -122,7 +122,7 @@ struct TodaySourcesTests {
     }
 
     @Test func anAppleWatchUserWithDataIsNotNaggedAboutGarmin() async {
-        let source = DaysSource(days: [day(0) { $0.hrvNightlyAverageMs = 50 }])
+        let source = DaysSource(days: [day(0) { $0.hrvSDNNMs = 50 }])
         let model = TodayModel(
             sources: [source], garmin: GarminStub(connected: false),
             profiles: ProfileStub(AthleteProfile(wearables: [.appleWatch])), calendar: calendar

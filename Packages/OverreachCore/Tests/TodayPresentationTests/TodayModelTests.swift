@@ -34,7 +34,7 @@ private struct MissingEntitlement: LocalizedError {
 @Suite("TodayModel")
 struct TodayModelTests {
     @Test func mergesSourcesInPriorityOrder() async {
-        let garmin = StubSource(kind: .garmin) { $0.hrvNightlyAverageMs = 37; $0.restingHeartRate = 52 }
+        let garmin = StubSource(kind: .garmin) { $0.hrvRMSSDMs = 37; $0.restingHeartRate = 52 }
         let health = StubSource(kind: .appleHealth) { $0.restingHeartRate = 55; $0.sleepSeconds = 7 * 3600 }
         let model = TodayModel(sources: [garmin, health])
 

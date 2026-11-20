@@ -55,6 +55,7 @@ struct HealthAggregationTests {
         )
         #expect(day.hrvNightlyAverageMs == 45)
         #expect(day.hrvMetric == .sdnn)
+        #expect(day.hrv(.sdnn) == 45 && day.hrv(.rmssd) == nil)
         #expect(day.restingHeartRate == 52)
         #expect(day.spo2Average == 97)
         #expect(day.steps == 8_412)

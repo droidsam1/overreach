@@ -48,7 +48,7 @@ struct TodayWeekTests {
         var metrics = DailyMetrics(day: CalendarDay(now, calendar: calendar).adding(days: offset, calendar: calendar),
                                    sources: [.appleHealth])
         metrics.sleepSeconds = sleepHours.map { $0 * 3_600 }
-        metrics.hrvNightlyAverageMs = hrv
+        metrics.hrvSDNNMs = hrv
         metrics.steps = steps
         return metrics
     }
@@ -66,13 +66,28 @@ struct TodayWeekTests {
         #expect(model.steps == 9_000)
         #expect(model.week.count == 2)  // eight days ago is out of the week
         #expect(model.sleepCaption == "Deep 1.2 h · REM 1.5 h (watch estimate)")
-        #expect(model.hrvCaption == "7-day avg 45 ms")
+        #expect(model.hrvCaption == "SDNN · 7-day avg 45 ms")
         #expect(model.stepsCaption == "7-day avg 8,000")
         #expect(model.sourcesText == "From Apple Health")
         #expect(!model.showsBodyBattery)
         #expect(!model.showsConnectHealth)
-        #expect(model.hrvCoverageNote == "Still building your usual HRV range (2 of 14 comparable readings needed).")
+        #expect(model.hrvCoverageNote == "Still building your usual HRV range (SDNN, Apple Health: 2 of 14 comparable readings needed).")
         #expect(model.showsReadinessDetails)
+    }
+
+    @Test func withBothWatchesTodayShowsRMSSDAndAveragesOnlyRMSSD() async {
+        // Apple's SDNN every night, Garmin's RMSSD tonight and two nights ago (ADR-0025).
+        var today = day(0, sleepHours: nil, hrv: 60, steps: nil)
+        today.hrvRMSSDMs = 38
+        var twoNightsAgo = day(-2, sleepHours: nil, hrv: 58, steps: nil)
+        twoNightsAgo.hrvRMSSDMs = 42
+        let source = WeekSource(days: [day(-1, sleepHours: nil, hrv: 70, steps: nil), twoNightsAgo, today])
+        let model = TodayModel(sources: [source], calendar: calendar, format: Format(locale: Locale(identifier: "en_US")))
+
+        await model.load(now: now)
+
+        #expect(model.hrvMs == 38)
+        #expect(model.hrvCaption == "RMSSD · 7-day avg 40 ms")
     }
 
     @Test func lowHRVShowsTheMeasuredDenominatorAndConfiguredWindow() async {
@@ -87,7 +102,7 @@ struct TodayWeekTests {
 
         #expect(model.readinessLevel == .amber)
         #expect(model.readinessLines.map(\.text) == [
-            "HRV below your usual range (3 of 3 comparable readings low in the last 5 days)."
+            "HRV (SDNN, Apple Health) below your usual range (3 of 3 comparable readings low in the last 5 days)."
         ])
         #expect(model.hrvCoverageNote == nil)
     }
@@ -102,7 +117,7 @@ struct TodayWeekTests {
 
         #expect(model.readinessLevel == .unknown)
         #expect(model.showsReadinessCard)
-        #expect(model.hrvCoverageNote == "Too few comparable HRV readings in the last 7 days (1 available, 3 needed).")
+        #expect(model.hrvCoverageNote == "Too few comparable HRV readings (SDNN, Apple Health) in the last 7 days (1 available, 3 needed).")
     }
 
     @Test func lowHRVExplainsTheComparisonWithoutInventingMissingNightsOrWorkouts() async {

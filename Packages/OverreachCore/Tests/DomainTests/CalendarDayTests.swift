@@ -40,7 +40,7 @@ struct DailyMetricsTests {
     @Test func mergingKeepsExistingValuesAndFillsGaps() {
         let day = CalendarDay(year: 2026, month: 11, day: 16)
         var garmin = DailyMetrics(day: day, sources: [.garmin])
-        garmin.hrvNightlyAverageMs = 37
+        garmin.hrvRMSSDMs = 37
         garmin.restingHeartRate = 52
 
         var health = DailyMetrics(day: day, sources: [.appleHealth])

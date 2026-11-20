@@ -50,13 +50,13 @@ public enum MarkdownReportRenderer {
                 lines.append("  - \(describe(reason, hrvCoverage: readiness.hrvCoverage))\(source)")
             }
             if let coverage = readiness.hrvCoverage, !coverage.canCompare {
-                lines.append("  - HRV comparison skipped. "
+                lines.append("  - HRV comparison\(seriesNote(coverage.metric)) skipped. "
                     + "Recent readings available: \(coverage.recentReadings) (minimum \(coverage.minimumRecentReadings)). "
                     + "Baseline readings available: \(coverage.baselineReadings) (minimum \(coverage.minimumBaselineReadings)).")
             }
         }
         if let today = report.today {
-            lines.append("- HRV last night: \(format(today.hrvNightlyAverageMs, decimals: 0)) ms "
+            lines.append("- HRV last night: \(format(today.hrvNightlyAverageMs, decimals: 0)) ms\(statisticSuffix(today.hrvMetric)) "
                 + "(watch-reported range \(format(today.hrvBaselineLowMs, decimals: 0))–"
                 + "\(format(today.hrvBaselineHighMs, decimals: 0)) ms)")
             lines.append("- Resting HR: \(format(today.restingHeartRate, decimals: 0)) bpm")
@@ -83,7 +83,7 @@ public enum MarkdownReportRenderer {
         for day in report.recentDays.sorted(by: { $0.day > $1.day }) {
             let cells = [
                 day.day.description,
-                format(day.hrvNightlyAverageMs, decimals: 0),
+                format(day.hrvNightlyAverageMs, decimals: 0) + statisticSuffix(day.hrvMetric),
                 format(day.restingHeartRate, decimals: 0),
                 format(day.sleepSeconds.map { $0 / 3600 }, decimals: 1),
                 format(day.bodyBatteryHigh, decimals: 0),
@@ -156,6 +156,21 @@ public enum MarkdownReportRenderer {
         return "\(total / 60):\(seconds < 10 ? "0" : "")\(seconds) /km"
     }
 
+    /// " RMSSD": the statistic behind a displayed HRV value, which is never unlabelled (ADR-0025).
+    static func statisticSuffix(_ metric: HRVMetric?) -> String {
+        metric.map { " \($0.rawValue.uppercased())" } ?? ""
+    }
+
+    /// " (RMSSD, Garmin)": which HRV series the rule judged (ADR-0025).
+    static func seriesNote(_ metric: HRVMetric?) -> String {
+        guard let metric else { return "" }
+        let source = switch metric.source {
+        case .garmin: "Garmin"
+        default: "Apple Health"
+        }
+        return " (\(metric.rawValue.uppercased()), \(source))"
+    }
+
     static func describe(_ reason: ReadinessReason, hrvCoverage: HRVCoverage?) -> String {
         switch reason {
         case .markedSick:
@@ -164,8 +179,8 @@ public enum MarkdownReportRenderer {
             "Today's check-in says symptoms make training feel unsuitable"
         case .hrvBelowBaseline(let nights):
             if let coverage = hrvCoverage {
-                "HRV below its normal range (\(nights) of \(coverage.recentReadings) comparable readings low "
-                    + "in the last \(coverage.recentDays) days)"
+                "HRV\(seriesNote(coverage.metric)) below its normal range (\(nights) of \(coverage.recentReadings) "
+                    + "comparable readings low in the last \(coverage.recentDays) days)"
             } else {
                 "HRV below its normal range for \(nights) night\(nights == 1 ? "" : "s")"
             }
