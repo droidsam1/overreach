@@ -1,5 +1,6 @@
 import DesignSystem
 import Domain
+import PresentationKit
 import SwiftUI
 import TodayPresentation
 
@@ -28,6 +29,7 @@ public struct TodayView: View {
                             VStack(alignment: .leading, spacing: Spacing.xSmall) {
                                 Text(line.text).font(.subheadline)
                                 Text(line.evidence).font(.caption).foregroundStyle(.secondary)
+                                ReadingLinks(items: line.readings.map(ReadingLinkItem.init))
                             }
                         }
                         if model.showsCheckIn {
@@ -173,3 +175,10 @@ struct PreviewMetricsSource: MetricsSource {
     TodayView(model: TodayModel(sources: [PreviewMetricsSource()]))
 }
 #endif
+
+extension ReadingLinkItem {
+    /// The display values of a curated reading (ADR-0024).
+    init(_ reading: Reading) {
+        self.init(url: reading.url, title: reading.title, detail: reading.detail(), note: reading.note)
+    }
+}

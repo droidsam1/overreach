@@ -20,6 +20,12 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "book", title: L10n.text("Learn more"),
+                    detail: L10n.text(
+                        "Advice now links to the studies behind it and to plain-language reading, such as Fitness Revolucionario."
+                    )
+                ),
+                ReleaseHighlight(
                     symbol: "applewatch.radiowaves.left.and.right", title: L10n.text("Garmin connection"),
                     detail: L10n.text(
                         "Nightly HRV, sleep score, Body Battery and runs from your Garmin, with your own key. "

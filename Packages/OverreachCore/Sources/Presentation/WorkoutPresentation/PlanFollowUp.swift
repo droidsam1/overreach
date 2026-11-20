@@ -12,6 +12,8 @@ public struct PlanCheckRow: Identifiable, Hashable, Sendable {
     public let reason: String
     /// "Plan 2 a week"; `nil` when there is nothing to change in the plan (advice only).
     public let actionTitle: String?
+    /// "Learn more" for the reason (ADR-0024); often empty.
+    public let readings: [Reading]
     let adjustment: PlanAdjustment
     let block: TrainingBlock
 }
@@ -30,7 +32,8 @@ enum PlanFollowUpText {
             return PlanCheckRow(
                 id: index, text: texts.text,
                 reason: "\(texts.reason) (\(adjustment.evidence.level.displayName))",
-                actionTitle: texts.action, adjustment: adjustment, block: review.block
+                actionTitle: texts.action, readings: FurtherReading.readings(for: adjustment.evidence),
+                adjustment: adjustment, block: review.block
             )
         }
     }

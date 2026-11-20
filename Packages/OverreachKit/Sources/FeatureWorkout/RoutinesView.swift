@@ -188,6 +188,7 @@ private struct PlanCheckView: View {
             Text(check.reason)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
+            ReadingLinks(items: check.readings.map(ReadingLinkItem.init))
             if let action = check.actionTitle {
                 Button(action, action: onAccept)
                     .buttonStyle(.borderedProminent)
@@ -195,5 +196,12 @@ private struct PlanCheckView: View {
             }
         }
         .padding(.vertical, Spacing.xSmall)
+    }
+}
+
+extension ReadingLinkItem {
+    /// The display values of a curated reading (ADR-0024).
+    init(_ reading: Reading) {
+        self.init(url: reading.url, title: reading.title, detail: reading.detail(), note: reading.note)
     }
 }

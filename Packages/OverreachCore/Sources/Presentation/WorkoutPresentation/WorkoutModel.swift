@@ -85,6 +85,8 @@ public struct TargetSummary: Hashable, Sendable {
     public let reasons: [String]
     /// Ordered suggestions when stalled, numbered: "1. Use smaller jumps (1.25 kg). (moderate evidence)".
     public let stallSuggestions: [String]
+    /// "Learn more" about the reasons and suggestions above (ADR-0024); often empty.
+    public let readings: [Reading]
 }
 
 extension DraftExercise {
@@ -122,7 +124,9 @@ extension DraftExercise {
         }
 
         var suggestions: [String] = []
+        var evidence = target.reasons.map(\.evidence)
         if case let .stalled(list) = status {
+            evidence += list.map(\.evidence)
             suggestions = list.enumerated().map { index, suggestion in
                 "\(index + 1). \(suggestion.text) (\(suggestion.evidence.level.displayName))"
             }
@@ -141,7 +145,8 @@ extension DraftExercise {
             isStalled: status.isStalled,
             statusExplanation: statusExplanation(format: format),
             reasons: reasons,
-            stallSuggestions: suggestions
+            stallSuggestions: suggestions,
+            readings: FurtherReading.readings(for: evidence)
         )
     }
 

@@ -12121,6 +12121,108 @@
           }
         }
       }
+    },
+    "Learn more": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para saber más"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para saber máis"
+          }
+        }
+      }
+    },
+    "Opens in the browser": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se abre en el navegador"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ábrese no navegador"
+          }
+        }
+      }
+    },
+    "in Spanish": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "en español"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "en castelán"
+          }
+        }
+      }
+    },
+    "in English": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "en inglés"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "en inglés"
+          }
+        }
+      }
+    },
+    "An older introduction. Overreach compares your 7-day average with your own usual range, not a single morning.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una introducción más antigua. Overreach compara tu media de 7 días con tu propio rango habitual, no una sola mañana."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unha introdución máis antiga. Overreach compara a túa media de 7 días co teu propio rango habitual, non unha soa mañá."
+          }
+        }
+      }
+    },
+    "Advice now links to the studies behind it and to plain-language reading, such as Fitness Revolucionario.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los consejos enlazan ahora a los estudios en los que se basan y a lecturas divulgativas, como Fitness Revolucionario."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os consellos ligan agora aos estudos nos que se basean e a lecturas divulgativas, como Fitness Revolucionario."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -13,6 +13,16 @@ Revolucionario (Marcos Vázquez) where it agrees with the evidence (proposal: AD
 - **Verdicts:** ✅ aligned · 🟡 aligned, wording or level to adjust · 🟠 change recommended · 🔴 fix before
   relying on it.
 
+## Status (2026-11-20)
+
+All of §8 is implemented: the uncoupled weekly load comparison (`weekly-load-change`), one HRV measure per
+baseline and the natural-cycle HRV note (`hrv-cycle-phase`), effective sets from RPE 6
+(`effective-set-threshold`), the wording and level changes, the "watch estimate" labels on Today, and further
+reading (ADR-0024, accepted). Still open: the Fitness Revolucionario links were located through a search index
+because the site could not be reached from the development environment; read each one before a release
+(`scripts/check-reading-links.py` from a normal network checks they resolve). Rules for run/lift, muscle recovery
+and steps (§2.4, §7) are for the phases that build them.
+
 ## 1. Summary
 
 The foundation is good. Most rules follow the best current syntheses, heuristics are labelled, and the readiness

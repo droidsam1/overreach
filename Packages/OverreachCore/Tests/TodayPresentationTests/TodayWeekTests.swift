@@ -80,6 +80,18 @@ struct TodayWeekTests {
         #expect(model.bodyBatteryCaption == "Garmin's estimate")
     }
 
+    @Test func readinessReasonsOfferFurtherReading() async {
+        var days = (1...20).map { day(-$0, sleepHours: 7.5, hrv: 55, steps: nil) }
+        days.append(day(0, sleepHours: 4, hrv: 55, steps: nil))
+        let model = TodayModel(sources: [WeekSource(days: days)], calendar: calendar)
+
+        await model.load(now: now)
+
+        let sleep = model.readinessLines.first { $0.text.hasPrefix("Short sleep") }
+        #expect(sleep?.readings.isEmpty == false)
+        #expect(sleep?.readings.allSatisfy { $0.url.host?.contains("fitnessrevolucionario") == true } == true)
+    }
+
     @Test func connectingAsksForAccessAndReloads() async {
         let source = WeekSource(days: [])
         let model = TodayModel(sources: [source], calendar: calendar)

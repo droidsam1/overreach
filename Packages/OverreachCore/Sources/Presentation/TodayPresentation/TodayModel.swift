@@ -8,6 +8,8 @@ import PresentationKit
 public struct ReadinessLine: Hashable, Sendable {
     public let text: String
     public let evidence: String
+    /// "Learn more" for this reason (ADR-0024); often empty.
+    public let readings: [Reading]
 }
 
 /// State and actions of the Today screen (ADR-0003, ADR-0014): dependencies come in as `Domain` protocols, the
@@ -60,8 +62,10 @@ public final class TodayModel {
     /// Why the light has its colour, each reason with its evidence level.
     public var readinessLines: [ReadinessLine] {
         readiness.reasons.map { reason in
-            ReadinessLine(
-                text: text(for: reason), evidence: ReadinessRules.evidence(for: reason).level.displayName
+            let evidence = ReadinessRules.evidence(for: reason)
+            return ReadinessLine(
+                text: text(for: reason), evidence: evidence.level.displayName,
+                readings: FurtherReading.readings(for: evidence)
             )
         }
     }

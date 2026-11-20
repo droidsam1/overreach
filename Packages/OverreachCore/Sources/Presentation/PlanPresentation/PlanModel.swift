@@ -8,6 +8,14 @@ import PresentationKit
 public struct ExplainedLine: Hashable, Sendable {
     public let text: String
     public let evidence: String
+    /// "Learn more" for this line (ADR-0024); often empty.
+    public let readings: [Reading]
+
+    init(text: String, evidence: EvidenceReference) {
+        self.text = text
+        self.evidence = evidence.level.displayName
+        self.readings = FurtherReading.readings(for: evidence)
+    }
 }
 
 /// What to do next: headline plus reasons.
@@ -124,12 +132,12 @@ public final class PlanModel {
                 "{1} block {2}, for {3}–{4} weeks.", suggestion.next.displayName, when,
                 suggestion.nextLengthWeeks.lowerBound, suggestion.nextLengthWeeks.upperBound
             ),
-            reasons: suggestion.reasons.map { ExplainedLine(text: $0.text, evidence: $0.evidence.level.displayName) }
+            reasons: suggestion.reasons.map { ExplainedLine(text: $0.text, evidence: $0.evidence) }
         )
     }
 
     public var findingLines: [ExplainedLine] {
-        findings.map { ExplainedLine(text: $0.text(names: exerciseNames), evidence: $0.evidence.level.displayName) }
+        findings.map { ExplainedLine(text: $0.text(names: exerciseNames), evidence: $0.evidence) }
     }
 
     public var planRows: [PlanRow] {

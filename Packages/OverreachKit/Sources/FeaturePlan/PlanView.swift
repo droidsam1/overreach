@@ -1,6 +1,7 @@
 import DesignSystem
 import Domain
 import PlanPresentation
+import PresentationKit
 import SwiftUI
 
 // Views only: layout, styling and navigation. Goal rules, texts and options come from `PlanPresentation`
@@ -137,6 +138,7 @@ private struct ExplainedLines: View {
             VStack(alignment: .leading, spacing: Spacing.xSmall) {
                 Text(line.text)
                 Text(line.evidence).font(.caption).foregroundStyle(.secondary)
+                ReadingLinks(items: line.readings.map(ReadingLinkItem.init))
             }
         }
     }
@@ -173,5 +175,12 @@ private struct PriorityLiftsView: View {
 extension PlanView where Assistant == EmptyView {
     public init(model: PlanModel) {
         self.init(model: model) { EmptyView() }
+    }
+}
+
+extension ReadingLinkItem {
+    /// The display values of a curated reading (ADR-0024).
+    init(_ reading: Reading) {
+        self.init(url: reading.url, title: reading.title, detail: reading.detail(), note: reading.note)
     }
 }
