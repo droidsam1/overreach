@@ -91,9 +91,6 @@ public struct SettingsView<Library: View>: View {
             }
             .task { await backupModel.load() }
             .task { await garminModel.load() }
-            .sheet(isPresented: $garminModel.isPresented) {
-                GarminSetupView(model: garminModel)
-            }
             .confirmationDialog(
                 "Disconnect Garmin?", isPresented: $isConfirmingDisconnect, titleVisibility: .visible
             ) {

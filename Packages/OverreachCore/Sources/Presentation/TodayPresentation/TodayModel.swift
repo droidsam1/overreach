@@ -28,8 +28,14 @@ public final class TodayModel {
     public private(set) var accessError: String?
     /// Today's check-in, once filled in.
     public private(set) var checkIn: CheckIn?
+    /// Whether a Garmin account is connected (ADR-0022).
+    public private(set) var isGarminConnected = false
+    /// The person said they use a Garmin (first-run setup).
+    private var wearsGarmin = false
 
     private let sources: [any MetricsSource]
+    private let garmin: (any GarminAccount)?
+    private let profiles: (any ProfileRepository)?
     private let checkIns: (any CheckInRepository)?
     private let backup: (any BackupService)?
     private let readinessSettings: ReadinessRules.Settings
@@ -92,9 +98,29 @@ public final class TodayModel {
     public var bodyBattery: Double? { metrics?.bodyBatteryHigh }
     public var steps: Double? { metrics?.steps.map(Double.init) }
     public var vo2Max: Double? { metrics?.vo2Max }
-    /// Body Battery is Garmin's: the tile only shows when there is a value.
-    public var showsBodyBattery: Bool { bodyBattery != nil }
-    public var showsVO2Max: Bool { vo2Max != nil }
+    public var stress: Double? { metrics?.averageStress }
+
+    // A tile shows only when some connected source measures that metric: a value today or in the last 7 days. Without
+    // an Apple Watch or Garmin there is no HRV tile at all, rather than an empty one.
+    public var showsSleep: Bool { has(\.sleepSeconds) }
+    public var showsHRV: Bool { has(\.hrvNightlyAverageMs) }
+    public var showsRestingHeartRate: Bool { has(\.restingHeartRate) }
+    public var showsSteps: Bool { has { $0.steps.map(Double.init) } }
+    /// Body Battery and stress are Garmin's.
+    public var showsBodyBattery: Bool { has(\.bodyBatteryHigh) }
+    public var showsStress: Bool { has(\.averageStress) }
+    public var showsVO2Max: Bool { has(\.vo2Max) }
+    /// Whether any metric tile shows.
+    public var showsMetrics: Bool {
+        showsSleep || showsHRV || showsRestingHeartRate || showsSteps || showsBodyBattery || showsStress
+            || showsVO2Max
+    }
+
+    /// The "Connect Garmin" card: for someone who said they use a Garmin and has not connected it, or when no source
+    /// has given anything yet. Settings → Garmin is always there too.
+    public var showsConnectGarmin: Bool {
+        garmin != nil && !isGarminConnected && !isLoading && (wearsGarmin || !showsMetrics)
+    }
 
     /// "Deep 1.2 h · REM 1.6 h".
     public var sleepCaption: String? {
@@ -138,10 +164,13 @@ public final class TodayModel {
     /// - Parameter checkIns: today's check-in adds how the user feels (and "sick") to the readiness light.
     public init(
         sources: [any MetricsSource], checkIns: (any CheckInRepository)? = nil, backup: (any BackupService)? = nil,
+        garmin: (any GarminAccount)? = nil, profiles: (any ProfileRepository)? = nil,
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
         self.sources = sources
+        self.garmin = garmin
+        self.profiles = profiles
         self.checkIns = checkIns
         self.backup = backup
         self.readinessSettings = readinessSettings
@@ -180,6 +209,8 @@ public final class TodayModel {
         failureReasons = reasons
         let checkIn = try? await checkIns?.checkIn(for: today)
         self.checkIn = checkIn
+        isGarminConnected = await garmin?.connection() != nil
+        wearsGarmin = (try? await profiles?.profile())?.wearables.contains(.garmin) ?? false
         readiness = ReadinessRules.readiness(
             today: today, history: history, checkIn: checkIn, settings: readinessSettings, calendar: calendar
         )
@@ -217,6 +248,10 @@ public final class TodayModel {
         case .missingData:
             L10n.text("It needs about two weeks of HRV or resting HR from Apple Health, last night's sleep or a check-in.")
         }
+    }
+
+    private func has(_ value: (DailyMetrics) -> Double?) -> Bool {
+        metrics.flatMap(value) != nil || week.contains { value($0) != nil }
     }
 
     private func average(_ value: (DailyMetrics) -> Double?) -> Double? {

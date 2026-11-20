@@ -41,6 +41,20 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     private let container: AppContainer
 
+    private var garminSetupInSetup: Binding<Bool> {
+        Binding(
+            get: { garminModel.isPresented && onboardingModel.isPresented },
+            set: { if !$0 { garminModel.finish() } }
+        )
+    }
+
+    private var garminSetupInApp: Binding<Bool> {
+        Binding(
+            get: { garminModel.isPresented && !onboardingModel.isPresented },
+            set: { if !$0 { garminModel.finish() } }
+        )
+    }
+
     init(container: AppContainer) {
         self.container = container
         _todayModel = State(initialValue: container.makeTodayModel())
@@ -61,7 +75,7 @@ struct RootView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Today", systemImage: "gauge.with.needle", value: AppTab.today) {
-                TodayView(model: todayModel)
+                TodayView(model: todayModel, onConnectGarmin: { garminModel.start() })
             }
             Tab("Train", systemImage: "dumbbell", value: AppTab.train) {
                 WorkoutView(model: workoutModel, routines: routinesModel)
@@ -118,7 +132,12 @@ struct RootView: View {
             WhatsNewView(model: whatsNewModel)
         }
         .fullScreenCover(isPresented: $onboardingModel.isPresented) {
-            OnboardingView(model: onboardingModel) { destination in
+            OnboardingView(
+                model: onboardingModel,
+                isGarminConnected: garminModel.isConnected,
+                onConnectHealth: { Task { await todayModel.connectHealth() } },
+                onConnectGarmin: { garminModel.start() }
+            ) { destination in
                 switch destination {
                 case .train:
                     selectedTab = .train
@@ -129,6 +148,14 @@ struct RootView: View {
                     backupModel.requestFolderChoice()
                 }
             }
+            // The Garmin setup over the first-run setup (the devices step opens it).
+            .sheet(isPresented: garminSetupInSetup) { GarminSetupView(model: garminModel) }
+        }
+        // The Garmin setup from Settings or Today. One model, shown over whatever is on screen.
+        .sheet(isPresented: garminSetupInApp) { GarminSetupView(model: garminModel) }
+        .onChange(of: garminModel.isConnected) {
+            // New Garmin data: Today shows it at once.
+            Task { await todayModel.load() }
         }
         .onChange(of: importModel.state) {
             // New exercises from an import need muscles: refresh the badge.
