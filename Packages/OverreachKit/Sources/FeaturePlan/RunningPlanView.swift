@@ -23,6 +23,11 @@ struct RunningPlanView: View {
                     }
                 }
             }
+            if model.showsRunningCalendar {
+                Section {
+                    NavigationLink("Running goal progress") { RunningGoalProgressView(model: model) }
+                }
+            }
         }
         .navigationTitle("Running goal")
         .onAppear { model.resetRunningPlanEditor() }

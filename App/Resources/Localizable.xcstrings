@@ -1,6 +1,244 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Running goal progress": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progreso del objetivo de carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progreso do obxectivo de carreira"
+          }
+        }
+      }
+    },
+    "Linked runs": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreras vinculadas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreiras vinculadas"
+          }
+        }
+      }
+    },
+    "Link a recorded run in the running calendar to see it here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vincula una carrera registrada en el calendario para verla aquí."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vincula unha carreira rexistrada no calendario para vela aquí."
+          }
+        }
+      }
+    },
+    "Meets your goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cumple tu objetivo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cumpre o teu obxectivo"
+          }
+        }
+      }
+    },
+    "Pain during the run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dolor durante la carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dor durante a carreira"
+          }
+        }
+      }
+    },
+    "Pain after the run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dolor después de la carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dor despois da carreira"
+          }
+        }
+      }
+    },
+    "Pain report": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registro de dolor"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rexistro de dor"
+          }
+        }
+      }
+    },
+    "Pain reported": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dolor registrado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dor rexistrada"
+          }
+        }
+      }
+    },
+    "Pain-free during and after": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin dolor durante ni después"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen dor durante nin despois"
+          }
+        }
+      }
+    },
+    "Pain report incomplete": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registro de dolor incompleto"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rexistro de dor incompleto"
+          }
+        }
+      }
+    },
+    "Distance unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distancia no disponible"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distancia non dispoñible"
+          }
+        }
+      }
+    },
+    "Goal confirmed by a linked run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetivo confirmado por una carrera vinculada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obxectivo confirmado por unha carreira vinculada"
+          }
+        }
+      }
+    },
+    "Goal not yet confirmed by linked runs": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún falta una carrera vinculada que confirme el objetivo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda falta unha carreira vinculada que confirme o obxectivo"
+          }
+        }
+      }
+    },
+    "The linked run changed. Open progress again and retry.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La carrera vinculada ha cambiado. Abre el progreso de nuevo e inténtalo otra vez."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A carreira vinculada cambiou. Abre o progreso de novo e téntao outra vez."
+          }
+        }
+      }
+    },
     "You have several runs planned today. Review them in Plan before adding or replacing a run.": {
       "extractionState": "manual",
       "localizations": {

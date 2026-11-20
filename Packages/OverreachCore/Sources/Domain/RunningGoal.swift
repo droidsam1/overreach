@@ -16,6 +16,18 @@ public struct RunningGoal: Hashable, Codable, Sendable {
         guard distanceMeters > 0, let targetSeconds, targetSeconds > 0 else { return nil }
         return 1_000 * Double(targetSeconds) / Double(distanceMeters)
     }
+
+    /// One confirmed recording must establish every selected criterion. Whole-run time is an upper bound
+    /// on the time to cover the goal distance. Split times can establish additional results when available.
+    public func isMet(by result: PlannedRunCompletion) -> Bool {
+        guard distanceMeters > 0, let measured = result.distanceMeters, measured.isFinite,
+              measured >= Double(distanceMeters) else { return false }
+        if let targetSeconds {
+            guard targetSeconds > 0, result.durationSeconds.isFinite, result.durationSeconds > 0,
+                  result.durationSeconds <= Double(targetSeconds) else { return false }
+        }
+        return !aimsForPainFree || (result.painDuring == false && result.painAfter == false)
+    }
 }
 
 /// A dated entry entered by the athlete. It remains separate from recorded run history.
@@ -62,12 +74,16 @@ public struct PlannedRunCompletion: Hashable, Codable, Sendable {
     public let source: DataSourceKind
     public let startedAt: Date
     public let durationSeconds: Double
+    public let distanceMeters: Double?
+    public var painDuring: Bool?
+    public var painAfter: Bool?
 
     public init(_ activity: RunActivity) {
         activityID = activity.id
         source = activity.source
         startedAt = activity.startedAt
         durationSeconds = activity.durationSeconds
+        distanceMeters = activity.distanceMeters.isFinite && activity.distanceMeters > 0 ? activity.distanceMeters : nil
     }
 
     public func matches(_ activity: RunActivity) -> Bool {

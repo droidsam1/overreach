@@ -8,7 +8,7 @@ Today should tell the athlete what to do, which signals matter, and how the sugg
 
 **Next delivery: dated strength assignments.** Show a dated routine alongside runs and races in the hybrid calendar. Today should compare a routine assigned to today with a lighter variant on amber days. Preserve the undated strength rotation and label that fallback as “up next”. Cover a day with both strength and running, explicit rest, and a dated session that is already complete. The delivery lives under [strength adjustments](#5-compare-against-todays-strength-session-and-offer-an-optional-alternative) and [calendar integration](#7-represent-planned-runs-races-and-dates).
 
-Start with `PlanSchedule` and `TrainingBlock` for the strength rotation, `PlannedRun` and `PlanModel` for dated entries, and `TodayModel` and `StrengthOption` for the amber comparison. Follow the storage and ID conventions already used by the calendar. [Strength rotation](../adr/0019-training-plans.md) · [Running calendar](../adr/0028-running-calendar.md)
+The dated-strength implementation is tracked in [#99](https://github.com/droidsam1/overreach/pull/99). Start with `PlanSchedule` and `TrainingBlock` for the strength rotation, `PlannedRun` and `PlanModel` for dated entries, and `TodayModel` and `StrengthOption` for the amber comparison. Follow the storage and ID conventions already used by the calendar. [Strength rotation](../adr/0019-training-plans.md) · [Running calendar](../adr/0028-running-calendar.md)
 
 ## Shipped baseline
 
@@ -88,8 +88,11 @@ Calendar assignments, explicit rest days and accepting or moving a dated session
 ### 6. Add a running objective to hybrid goals
 
 [#89](https://github.com/droidsam1/overreach/pull/89) adds an editable running distance, optional time and pain-free
-criterion to hybrid goals. Optional fields round-trip through backup and appear in the context export. Running and
-strength priority controls and symptom progress tracking remain open.
+criterion to hybrid goals. Optional goal fields round-trip through backup and appear in the context export. Plan
+shows progress from explicitly linked recordings and lets the athlete report pain during and after each run.
+Confirmation requires one linked run to satisfy every selected criterion. A timed goal uses the recorded total
+duration. A pain-free goal requires a clear response for both periods. An older link without measured distance can
+still carry a pain report. Running and strength priority controls remain open.
 
 - [ ] Can start independently. Extend `TrainingGoal` with optional distance, completion/time target, symptom-free criterion, optional target event/date and running/strength priority. Allow completion plus symptom-free and time plus symptom-free where desired. Add edit and progress surfaces in Plan and an optional onboarding path. Preserve priority lifts. Use recent performance or a recent tolerated run to ground progress and show uncertainty for ambitious targets.
 - **Done when** “finish 5 km”, “run 5 km without pain” and “5 km in 15 min” round-trip in app storage, backup and the relevant versioned plan/context exchange. The last example displays a goal pace of 3:00/km and uses current performance to set training intensity. A pain-free goal tracks athlete-reported symptoms during and after runs and never promises a symptom-free outcome. Old hybrid profiles can continue with no running objective.

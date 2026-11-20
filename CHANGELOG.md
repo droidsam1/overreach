@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- In Plan, linked runs show progress toward a hybrid running goal and can record pain during or after the run.
 - The hybrid running calendar supports several dated runs, races and rest days, with optional links to recorded runs.
 - Hybrid goals can include a running distance, time or pain-free target and the next planned running day.
 - Today can use the running goal, recent runs and recovery signals to propose a conversational run or a plan adjustment.

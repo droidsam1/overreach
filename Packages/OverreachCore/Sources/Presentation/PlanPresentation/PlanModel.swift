@@ -53,6 +53,7 @@ public final class PlanModel {
     public private(set) var exerciseNames: [UUID: String] = [:]
     public private(set) var catalog: [Exercise] = []
     public private(set) var errorMessage: String?
+    public private(set) var isSavingRunningPain = false
     /// True while the history is being analysed (off the main actor).
     public private(set) var isAnalysing = false
 
@@ -297,6 +298,43 @@ public final class PlanModel {
 }
 
 extension PlanModel {
+    public var runningGoalProgress: RunningGoalProgress? {
+        guard showsRunningCalendar, let goal = profile.goal, let running = goal.running else { return nil }
+        return RunningGoalProgress(goal: running, schedule: goal.scheduledRuns, calendar: calendar)
+    }
+
+    public func saveRunningPain(_ row: RunningGoalResultRow, during: Bool?, after: Bool?) async -> Bool {
+        guard showsRunningCalendar, !isSavingRunningPain else { return false }
+        isSavingRunningPain = true
+        defer { isSavingRunningPain = false }
+        do {
+            var updated = try await profiles.profile()
+            guard var goal = updated.goal, goal.kind == .hybrid, goal.running != nil else { return false }
+            var schedule = goal.scheduledRuns
+            guard let index = schedule.firstIndex(where: { $0.id == row.id }), var result = schedule[index].completion,
+                  result.activityID == row.result.activityID, result.source == row.result.source,
+                  result.startedAt == row.result.startedAt else {
+                errorMessage = L10n.text("The linked run changed. Open progress again and retry.")
+                return false
+            }
+            result.painDuring = during
+            result.painAfter = after
+            let entry = schedule[index]
+            schedule[index] = PlannedRun(id: entry.id, day: entry.day, purpose: entry.purpose,
+                                         durationMinutes: entry.durationMinutes, distanceMeters: entry.distanceMeters,
+                                         completion: result)
+            goal.setRunningSchedule(schedule)
+            updated.goal = goal
+            try await profiles.save(updated)
+            profile = updated
+            errorMessage = nil
+            return true
+        } catch {
+            errorMessage = L10n.text("Could not save your plan. Try again.")
+            return false
+        }
+    }
+
     public var upcomingRunningEntries: [RunningCalendarRow] {
         let today = CalendarDay(clock(), calendar: calendar)
         return (profile.goal?.scheduledRuns ?? []).filter { $0.day >= today }.sorted { $0.day < $1.day }
