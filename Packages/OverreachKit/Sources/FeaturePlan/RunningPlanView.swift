@@ -23,23 +23,6 @@ struct RunningPlanView: View {
                     }
                 }
             }
-            if model.runningDraft.enabled {
-                Section("Next planned run") {
-                    Toggle("Add a planned day", isOn: $model.runningDraft.hasNextRun)
-                    if model.runningDraft.hasNextRun {
-                        DatePicker("Date", selection: $model.runningDraft.nextDate, displayedComponents: .date)
-                        Picker("Session type", selection: $model.runningDraft.purpose) {
-                            ForEach(model.runningSessionOptions) { option in
-                                Text(option.name).tag(option.value)
-                            }
-                        }
-                        if model.runningDraft.showsPlannedMinutes {
-                            TextField("Planned minutes (0 if unknown)", value: $model.runningDraft.plannedMinutes,
-                                      format: .number)
-                        }
-                    }
-                }
-            }
         }
         .navigationTitle("Running goal")
         .onAppear { model.resetRunningPlanEditor() }

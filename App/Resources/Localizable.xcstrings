@@ -1,6 +1,312 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "You have several runs planned today. Review them in Plan before adding or replacing a run.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tienes varias sesiones de carrera previstas para hoy. Revísalas en Plan antes de añadir o sustituir una."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tes varias sesións de carreira previstas para hoxe. Revísaas en Plan antes de engadir ou substituír unha."
+          }
+        }
+      }
+    },
+    "Running calendar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario de carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendario de carreira"
+          }
+        }
+      }
+    },
+    "Upcoming running days": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximos días de carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximos días de carreira"
+          }
+        }
+      }
+    },
+    "No upcoming running days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay próximos días de carrera en el calendario."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai próximos días de carreira no calendario."
+          }
+        }
+      }
+    },
+    "Past running days": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Días de carrera anteriores"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Días de carreira anteriores"
+          }
+        }
+      }
+    },
+    "Add running day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir día de carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Engadir día de carreira"
+          }
+        }
+      }
+    },
+    "Recorded run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera registrada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira rexistrada"
+          }
+        }
+      }
+    },
+    "Unlinked": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin vincular"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen vincular"
+          }
+        }
+      }
+    },
+    "Linked run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera vinculada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira vinculada"
+          }
+        }
+      }
+    },
+    "Completed": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completado"
+          }
+        }
+      }
+    },
+    "Running day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día de carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día de carreira"
+          }
+        }
+      }
+    },
+    "To move a completed entry, unlink the recorded run first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para mover una sesión completada, desvincula primero la carrera registrada."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para mover unha sesión completada, desvincula primeiro a carreira rexistrada."
+          }
+        }
+      }
+    },
+    "Remove running day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar día de carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar día de carreira"
+          }
+        }
+      }
+    },
+    "Remove this planned day?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Eliminar este día del calendario?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar este día do calendario?"
+          }
+        }
+      }
+    },
+    "No recorded run linked": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin carrera registrada vinculada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen carreira rexistrada vinculada"
+          }
+        }
+      }
+    },
+    "A running rest day must be the only entry on that date.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un día de descanso de carrera debe ser la única entrada de esa fecha."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un día de descanso de carreira debe ser a única entrada desa data."
+          }
+        }
+      }
+    },
+    "Choose a completed run from this date.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige una carrera completada en esta fecha."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolle unha carreira completada nesta data."
+          }
+        }
+      }
+    },
+    "That run is already linked to another entry.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esa carrera ya está vinculada a otra sesión."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esa carreira xa está vinculada a outra sesión."
+          }
+        }
+      }
+    },
     "Easy run": {
       "extractionState": "manual",
       "localizations": {
@@ -307,36 +613,19 @@
         }
       }
     },
-    "Next planned run": {
+    "Planned distance in km (0 if unknown)": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Próxima sesión de carrera"
+            "value": "Distancia prevista en km (0 si no se conoce)"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Próxima sesión de carreira"
-          }
-        }
-      }
-    },
-    "Add a planned day": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Añadir un día al plan"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Engadir un día ao plan"
+            "value": "Distancia prevista en km (0 se non se coñece)"
           }
         }
       }

@@ -72,6 +72,7 @@ struct ContextPackTests {
         #expect(pack.athlete.goal?.running?.aimsForPainFree == true)
         #expect(pack.athlete.goal?.nextRun?.purpose == "rest")
         #expect(pack.athlete.goal?.nextRun?.day == next.day.description)
+        #expect(pack.athlete.goal?.runningSchedule?.map(\.id) == [next.id])
     }
 
     @Test func sessionsAreRawDataWithNotesAndExerciseNames() throws {

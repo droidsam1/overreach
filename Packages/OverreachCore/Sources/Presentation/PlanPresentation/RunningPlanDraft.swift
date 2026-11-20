@@ -9,14 +9,9 @@ public struct RunningPlanDraft: Hashable, Sendable {
     public var targetMinutes: Int
     public var targetSeconds: Int
     public var aimsForPainFree: Bool
-    public var hasNextRun: Bool
-    public var nextDate: Date
-    public var purpose: PlannedRun.Purpose
-    public var plannedMinutes: Int
 
-    init(goal: TrainingGoal?, now: Date, calendar: Calendar) {
+    init(goal: TrainingGoal?) {
         let running = goal?.running
-        let next = goal?.nextRun
         enabled = running != nil
         distanceKm = Double(running?.distanceMeters ?? 5_000) / 1_000
         hasTargetTime = running?.targetSeconds != nil
@@ -24,13 +19,7 @@ public struct RunningPlanDraft: Hashable, Sendable {
         targetMinutes = time / 60
         targetSeconds = time % 60
         aimsForPainFree = running?.aimsForPainFree ?? false
-        hasNextRun = next != nil
-        nextDate = next?.day.startDate(in: calendar) ?? now
-        purpose = next?.purpose ?? .easy
-        plannedMinutes = next?.durationMinutes ?? 0
     }
-
-    public var showsPlannedMinutes: Bool { hasNextRun && purpose != .rest }
 
     var isValid: Bool {
         guard enabled else { return true }
@@ -39,7 +28,7 @@ public struct RunningPlanDraft: Hashable, Sendable {
             guard (0...1_440).contains(targetMinutes), (0...59).contains(targetSeconds),
                   targetMinutes > 0 || targetSeconds > 0 else { return false }
         }
-        return !showsPlannedMinutes || (0...1_440).contains(plannedMinutes)
+        return true
     }
 
     var goal: RunningGoal? {
@@ -47,11 +36,5 @@ public struct RunningPlanDraft: Hashable, Sendable {
         return RunningGoal(distanceMeters: Int((distanceKm * 1_000).rounded()),
                            targetSeconds: hasTargetTime ? targetMinutes * 60 + targetSeconds : nil,
                            aimsForPainFree: aimsForPainFree)
-    }
-
-    func nextRun(calendar: Calendar) -> PlannedRun? {
-        guard enabled, hasNextRun, isValid else { return nil }
-        return PlannedRun(day: CalendarDay(nextDate, calendar: calendar), purpose: purpose,
-                          durationMinutes: plannedMinutes > 0 ? plannedMinutes : nil)
     }
 }

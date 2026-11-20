@@ -74,7 +74,7 @@ public enum ContextPackBuilder {
             generatedAt: now,
             app: .init(name: "Overreach", version: input.appVersion),
             period: .init(from: period.lowerBound.description, to: period.upperBound.description),
-            athlete: athlete(input.profile, routines: input.routines, name: name),
+            athlete: athlete(input.profile, routines: input.routines, today: CalendarDay(now, calendar: calendar), name: name),
             catalog: input.exercises.map(\.name).sorted(),
             exercises: usedIDs.compactMap { byID[$0] }
                 .sorted { $0.name < $1.name }
@@ -106,7 +106,7 @@ public enum ContextPackBuilder {
     // MARK: - Parts
 
     private static func athlete(
-        _ profile: AthleteProfile?, routines: [Routine], name: (UUID) -> String
+        _ profile: AthleteProfile?, routines: [Routine], today: CalendarDay, name: (UUID) -> String
     ) -> ContextPack.Athlete {
         let routineNames = Dictionary(routines.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
         guard let profile else { return .init(declaredBlocks: []) }
@@ -118,16 +118,16 @@ public enum ContextPackBuilder {
             restingHeartRate: rounded(profile.restingHeartRate),
             cycleTracking: profile.cycleTracking == .off ? nil : profile.cycleTracking.rawValue,
             goal: profile.goal.map { goal in
-                .init(
+                let schedule = goal.kind == .hybrid ? goal.scheduledRuns.sorted { $0.day < $1.day } : []
+                return .init(
                     kind: goal.kind.rawValue, targetDate: goal.targetDate?.description,
                     priorityLifts: goal.priorityLifts.map(name),
                     running: goal.kind == .hybrid ? goal.running.map {
                         .init(distanceMeters: $0.distanceMeters, targetSeconds: $0.targetSeconds,
                               aimsForPainFree: $0.aimsForPainFree)
                     } : nil,
-                    nextRun: goal.kind == .hybrid ? goal.nextRun.map {
-                        .init(day: $0.day.description, purpose: $0.purpose.rawValue, durationMinutes: $0.durationMinutes)
-                    } : nil
+                    nextRun: schedule.first { $0.day >= today && $0.completion == nil }.map(runningEntry),
+                    runningSchedule: schedule.isEmpty ? nil : schedule.map(runningEntry)
                 )
             },
             declaredBlocks: profile.declaredBlocks.map { block in
@@ -137,6 +137,12 @@ public enum ContextPackBuilder {
                              sessionsPerWeek: block.sessionsPerWeek)
             }
         )
+    }
+
+    private static func runningEntry(_ entry: PlannedRun) -> ContextPack.NextRun {
+        ContextPack.NextRun(id: entry.id, day: entry.day.description, purpose: entry.purpose.rawValue,
+                            durationMinutes: entry.durationMinutes, distanceMeters: entry.distanceMeters,
+                            completed: entry.completion != nil)
     }
 
     private static func exerciseInfo(_ exercise: Exercise, settings: ProgressionSettings?) -> ContextPack.ExerciseInfo {
