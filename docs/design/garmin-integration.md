@@ -280,8 +280,9 @@ values win where both have them (HRV, sleep stages), and Health fills the rest.
   Garmin changes a payload, the fix is a new fixture plus a test.
 - **Units at the edge.** Garmin mixes seconds and milliseconds, and local versus GMT timestamps. Convert once in
   `Mapping` to SI and `CalendarDay` (the day the sleep *ended*, in the user's calendar), with tests around DST.
-- **Idempotent, incremental sync.** Store the last synced day; on each foreground fetch re-pull today and yesterday
-  (late watch syncs) and any gap, up to a window (e.g. 60 days on first connect, enough for the ADR-0020 baselines).
+- **Idempotent, incremental sync.** Store the last synced day. Revisit today and yesterday for daily metrics,
+  and the last seven days for activities so a workout uploaded late in the week still arrives. Include any gap
+  since the prior sync, up to the initial 60-day window.
   Upserting a day twice gives the same result.
 - **Key lifecycle.** Store the key's expiry date the user picks; a local notification (`LocalAlerts`) and a Settings
   banner 7 days before. On 401 with a fresh token: the key was revoked, so show "Reconnect Garmin".
@@ -322,17 +323,22 @@ logged in Overreach. Rules, so nothing is counted twice and the two never disagr
 4. **A matched recording enriches its session** (heart rate, Garmin load, training effect) when it is shown or
    analysed. Nothing is written into `StrengthSession`, so no stored data changes (ADR-0018) and a re-sync just
    re-matches.
-5. **An unmatched recording** is a workout trained without logging it. History lists it ("Recorded on the watch,
-   not logged", last 30 days) with a button that opens a new session with the watch's times; it is never counted
-   as a session until the person logs it. Its Garmin load is kept apart from
+5. **An unmatched recording** is a workout trained without logging it. It appears chronologically in the History
+   list with read-only details and a **Log this workout** button, which opens a new session with the watch's times
+   (it then pairs with the recording and is not written to Apple Health again). Until logged it is never counted as
+   a session. Strength workouts other apps wrote to Apple Health (e.g. the Apple Watch) are recordings too:
+   `CombinedRecordedStrengthSource` merges both sources and `StrengthActivityMatching.removingDuplicates` keeps one
+   record per workout, Garmin first. The AI context adds a matched recording as `sessions[].watch`. Its Garmin load
+   is kept apart from
    sRPE load: the two are different units and must not be added together in ACWR without an evidence-based
    conversion (step 5).
 6. **Runs follow the same rule against Apple Health:** a Garmin run and the copy Garmin Connect writes to Health are
-   the same run. Keep the Garmin one, since it has load, training effect and the FIT file.
+   the same run. Keep the Garmin one, since it has load, training effect and the FIT file. The History list, calendar and
+   AI report use `RunDeduplication`. The calendar reads one day on each side of the month so copies around
+   midnight can be matched before the run count and distance are assigned to the preferred record's month.
 
-Apple Health can still show both workouts if Overreach writes the session (ADR-0016) and Garmin Connect writes its
-own recording. That is outside the app's data and does not affect Overreach. A later option is to skip writing to
-Health when a matched Garmin recording exists.
+Overreach does not write a session to Apple Health when another app already recorded the same workout there, and
+removes its own copy once the watch's workout arrives (ADR-0023).
 
 ### Setup and onboarding (as built)
 
@@ -356,7 +362,7 @@ Health when a matched Garmin recording exists.
 | 2 | Done (#65): `GarminService` (GarminImport) implements `GarminAccount` and `MetricsSource`: token minting and reuse, spacing and backoff, incremental sync, activity paging, cache. `GarminSource` supplies the Keychain, URLSession and the cache file. Wired in `AppContainer`. | Core, Kit, App |
 | 3 | Done (#65, #66): `GarminSetupModel` + `GarminSetupView` (three steps), Settings → Garmin, the devices step of the first-run setup, the Today card, an expiry notification a week before, translations. | SettingsPresentation, Feature* |
 | 4 | Done: Garmin HRV feeds `ReadinessRules`; every HRV value carries its statistic (`HRVMetric`) and baselines only compare nights of one kind (ADR-0024, `hrv-metrics`). | Domain, Analytics, `docs/evidence.md` |
-| 5 | Partly done: runs (with load and training effect) and `RecordedStrengthActivity` are imported; runs deduplicated against Health copies (`RunDeduplication`, used by the AI report); strength paired by `StrengthActivityMatching` and Health writes deduplicated (ADR-0023); History shows the watch's heart rate, load and training effect on matched sessions and lists unlogged watch workouts (last 30 days) ready to log; the AI context adds them as `sessions[].watch`. Next: walks (`ActivitySource`); our own acute/chronic load from per-activity load (evidence first). | Core + Kit |
+| 5 | Partly done: Garmin runs are deduplicated against Health copies in the AI report and the History calendar, which shows their training load and training effect when available. Strength is paired by `StrengthActivityMatching` and Health writes are deduplicated (ADR-0023). History shows watch metrics on matched strength sessions and lists watch-only workouts. Next: walks (`ActivitySource`) and our own acute/chronic load from per-activity load (evidence first). | Core + Kit |
 | 6 | FIT decoding (laps, HR, power) for run load and the AI report. | OverreachCore |
 | 7 | Women's health → `CycleSource` (ADR-0009). | Core + Kit |
 
@@ -365,9 +371,11 @@ Steps 1–4 are the shippable unit for phase 2 (v0.2). `ReleaseNotes.all` gets a
 ### Decided questions
 
 - **HRV statistic.** Garmin reports nightly RMSSD and Apple Health stores SDNN. `DailyMetrics.hrvMetric` labels every
-  value, merging keeps a value with its label, and readiness and Today only compare nights of one kind (ADR-0024).
+  value, merging keeps a value with its label, and readiness and Today only compare nights of one kind
+  ([ADR-0024](../adr/0024-hrv-baselines-per-statistic.md)). See the [HRV research note](hrv-sources.md) for the
+  evidence and the [follow-up proposal](../adr/0025-hrv-one-series-per-metric.md) for retaining both readings.
 - **Body Battery and stress** are shown on Today when Garmin provides them, as context. They are proprietary scores
-  and are never a rule input unless evidence supports it.
+  and are never a rule input unless evidence supports it (`composite-scores`).
 - **Daily summary v2** carries resting HR, steps, stress, Body Battery, respiration and SpO2 in one call; the separate
   endpoints are not used.
 
@@ -390,10 +398,8 @@ Steps 1–4 are the shippable unit for phase 2 (v0.2). `ReleaseNotes.all` gets a
   does not write its own back until the session is edited (ADR-0023).
 - **iCloud Keychain off or another Apple ID.** The key then stays on this iPhone only: a new phone needs the key
   pasted again (or a new key).
-- **Unlogged watch workouts** are offered for 30 days. Logging one creates a session with the watch's times and no
-  sets; it pairs with the recording and is not written to Apple Health again (the watch's copy is there).
-- **Several watch recordings of one workout** (Garmin's record and its Apple Health copy) count once:
-  `StrengthActivityMatching.removingDuplicates`, Garmin first.
+- **Strength recordings without a logged session** appear in the History list. The calendar's session count still
+  reflects workouts logged in Overreach.
 - **Not verified on a device yet:** the setup flow, the Keychain item and the Health deduplication have only been
   built and unit tested.
 

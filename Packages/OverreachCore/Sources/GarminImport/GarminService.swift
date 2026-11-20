@@ -69,6 +69,17 @@ public struct GarminCache: Codable, Hashable, Sendable {
         let fresh = Set(new.map { $0[keyPath: id] })
         return old.filter { !fresh.contains($0[keyPath: id]) } + new
     }
+
+    /// Older caches may already contain repeated activity IDs from overlapping pages.
+    mutating func removeDuplicateActivities() {
+        runs = Self.unique(runs)
+        strength = Self.unique(strength)
+    }
+
+    private static func unique<T: Identifiable>(_ records: [T]) -> [T] {
+        var seen: Set<T.ID> = []
+        return Array(records.reversed().filter { seen.insert($0.id).inserted }.reversed())
+    }
 }
 
 public protocol GarminCacheStore: Sendable {
@@ -78,7 +89,7 @@ public protocol GarminCacheStore: Sendable {
 
 /// The Garmin account and the Garmin metrics source in one place (ADR-0022). Pure Swift: the iPhone supplies the
 /// Keychain, URLSession and a file; tests supply fakes.
-public actor GarminService: GarminAccount, MetricsSource, StrengthRecordingSource {
+public actor GarminService: GarminAccount, MetricsSource, RecordedStrengthSource {
     public nonisolated let kind: DataSourceKind = .garmin
     /// A sync older than this runs again when the app reads metrics (launch, foreground, Today).
     public static let autoSyncInterval: TimeInterval = 30 * 60
@@ -134,9 +145,15 @@ public actor GarminService: GarminAccount, MetricsSource, StrengthRecordingSourc
         progress: @escaping @Sendable (GarminSyncProgress) -> Void
     ) async throws(GarminAccountError) -> GarminSyncSummary {
         // One sync at a time: a second caller waits for the first instead of asking Garmin twice.
-        let task = running ?? Task { try await self.performSync(progress: progress) }
+        if let running { return try await syncResult(running) }
+        let task = Task { try await self.performSync(progress: progress) }
         running = task
         defer { running = nil }
+        return try await syncResult(task)
+    }
+
+    private func syncResult(_ task: Task<GarminSyncSummary, any Error>) async throws(GarminAccountError)
+        -> GarminSyncSummary {
         do {
             return try await task.value
         } catch let error as GarminAccountError {
@@ -165,25 +182,34 @@ public actor GarminService: GarminAccount, MetricsSource, StrengthRecordingSourc
     }
 
     public func runs(from start: Date, to end: Date) async throws -> [RunActivity] {
-        await syncIfDue()
-        return await loadCache().runs.filter { $0.startedAt >= start && $0.startedAt <= end }
+        let failure = await syncIfDue()
+        let runs = await loadCache().runs.filter { $0.startedAt >= start && $0.startedAt <= end }
+        if runs.isEmpty, let failure { throw failure }
+        return runs
     }
 
     /// Strength workouts recorded on the watch, to pair with logged sessions (`StrengthActivityMatching`).
     public func strengthActivities(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
-        await loadCache().strength.filter { $0.startedAt >= start && $0.startedAt <= end }
-    }
-
-    public func strengthRecordings(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
-        await strengthActivities(from: start, to: end)
+        await syncIfDue()
+        return await loadCache().strength.filter { $0.startedAt >= start && $0.startedAt <= end }
     }
 
     // MARK: Sync
 
-    private func syncIfDue() async {
-        guard await secrets.loadKey() != nil else { return }
-        if let last = await loadCache().lastSync, clock().timeIntervalSince(last) < Self.autoSyncInterval { return }
-        _ = try? await sync { _ in }
+    @discardableResult
+    private func syncIfDue() async -> GarminAccountError? {
+        guard await secrets.loadKey() != nil else { return nil }
+        let lastSync = await loadCache().lastSync
+        do {
+            if let running {
+                _ = try await syncResult(running)
+            } else if lastSync.map({ clock().timeIntervalSince($0) < Self.autoSyncInterval }) != true {
+                _ = try await sync { _ in }
+            }
+            return nil
+        } catch {
+            return error
+        }
     }
 
     private func performSync(
@@ -204,7 +230,7 @@ public actor GarminService: GarminAccount, MetricsSource, StrengthRecordingSourc
         var sleep: [GarminSleep] = []
         var summaries: [GarminDailySummary] = []
         var vo2Max: [GarminVO2Max] = []
-        var activities: [GarminActivity] = []
+        var activitiesByID: [String: GarminActivity] = [:]
         var skipped = 0
         var index = 0
         while index < requests.count {
@@ -231,7 +257,10 @@ public actor GarminService: GarminAccount, MetricsSource, StrengthRecordingSourc
                     skipped += decoded.skipped
                 case let .activities(window, start, limit):
                     let decoded = try GarminDecoding.activities(from: data)
-                    activities += decoded.records
+                    // Offset pages can overlap when new activities arrive during a sync.
+                    decoded.records.forEach { activity in
+                        activitiesByID[activity.id] = activity
+                    }
                     skipped += decoded.skipped
                     let page = start / max(1, limit) + 1
                     if decoded.records.count + decoded.skipped >= limit, page < Self.maximumActivityPages {
@@ -246,6 +275,7 @@ public actor GarminService: GarminAccount, MetricsSource, StrengthRecordingSourc
         }
 
         let metrics = GarminMapping.dailyMetrics(hrv: hrv, sleep: sleep, summaries: summaries, vo2Max: vo2Max)
+        let activities = Array(activitiesByID.values)
         let runs = GarminMapping.runs(activities)
         let strength = GarminMapping.strengthActivities(activities)
         let updated = cache.merging(
@@ -266,7 +296,9 @@ public actor GarminService: GarminAccount, MetricsSource, StrengthRecordingSourc
 
     private func loadCache() async -> GarminCache {
         if let cache { return cache }
-        let loaded = await cacheStore.load() ?? GarminCache()
+        var loaded = await cacheStore.load() ?? GarminCache()
+        if let cache { return cache }
+        loaded.removeDuplicateActivities()
         cache = loaded
         return loaded
     }

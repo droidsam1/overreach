@@ -25,6 +25,13 @@ public struct SetValueFields: View {
     }
 
     public var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: Spacing.small) { fields }
+            VStack(alignment: .leading, spacing: Spacing.xSmall) { fields }
+        }
+    }
+
+    @ViewBuilder private var fields: some View {
         NumberField(placeholder: "kg", unit: "kg", accessibilityLabel: "Weight in kilograms", allowsDecimals: true,
                     value: $weightKg)
         NumberField(placeholder: "reps", unit: "reps", accessibilityLabel: "Repetitions", allowsDecimals: false,
@@ -33,31 +40,32 @@ public struct SetValueFields: View {
                         set: { reps = $0.map { Int($0) } }
                     ))
         Menu {
-            Picker("RPE", selection: $rpe) {
-                Text("No RPE").tag(Double?.none)
+            Picker(selection: $rpe) {
+                (showsRepsInReserve ? Text("No RIR") : Text("No RPE")).tag(Double?.none)
                 // Keep a value outside the usual range (e.g. imported RPE 5) selectable.
                 ForEach(rpeOptions, id: \.self) { value in
                     RPEText(value: value, asRepsInReserve: showsRepsInReserve).tag(Double?.some(value))
                 }
+            } label: {
+                showsRepsInReserve ? Text("RIR") : Text("RPE")
             }
         } label: {
-            Group {
-                if let rpe {
-                    if showsRepsInReserve {
-                        Text("RIR \(RPEScale.repsInReserve(rpe).formatted())")
-                    } else {
-                        Text("RPE \(rpe.formatted())")
-                    }
-                } else if showsRepsInReserve {
-                    Text("RIR –")
-                } else {
-                    Text("RPE –")
-                }
-            }
-            .lineLimit(1)
-            .fixedSize()
+            effortValue
+                .padding(.horizontal, Spacing.small)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
         }
-        .accessibilityLabel("Effort (RPE)")
+        .accessibilityLabel(showsRepsInReserve ? Text("Reps in reserve (RIR)") : Text("Effort (RPE)"))
+        .accessibilityValue(effortValue)
+    }
+
+    private var effortValue: Text {
+        if let rpe {
+            return showsRepsInReserve
+                ? Text("RIR \(RPEScale.repsInReserve(rpe).formatted())")
+                : Text("RPE \(rpe.formatted())")
+        }
+        return showsRepsInReserve ? Text("RIR –") : Text("RPE –")
     }
 
     private var rpeOptions: [Double] {
@@ -326,4 +334,16 @@ public struct SetLoggingGuide: View {
             }
         }
     }
+}
+
+#Preview("Set editor at an accessibility text size") {
+    List {
+        SetEntryRow(number: SetNumberLabel(1)) {
+            SetValueFields(weightKg: .constant(102.5), reps: .constant(12), rpe: .constant(8))
+        } action: {
+            Image(systemName: "checkmark.circle")
+                .frame(minWidth: 44, minHeight: 44)
+        }
+    }
+    .environment(\.dynamicTypeSize, .accessibility3)
 }

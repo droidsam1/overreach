@@ -25,6 +25,7 @@ import WorkoutPresentation
 @Observable
 final class AppContainer {
     let workouts: any WorkoutRepository
+    private let workoutDraftStore: (any WorkoutDraftStore)?
     let exercises: any ExerciseRepository
     let checkIns: any CheckInRepository
     let progression: any ProgressionSettingsRepository
@@ -37,12 +38,11 @@ final class AppContainer {
     let onboardingStatus: any OnboardingStatusStore
     /// In priority order: when two sources report the same value, the first wins.
     let metricsSources: [any MetricsSource]
-    /// Apple Health: steps for the History calendar, and runs (Garmin Connect writes its runs there too).
+    /// Apple Health: steps for the History calendar.
     let healthSource: (any MetricsSource & ActivitySource)?
     /// The person's Garmin account (ADR-0022). Also in `metricsSources`.
     let garmin: (any GarminAccount)?
-    /// Strength workouts recorded by watches (Garmin, other apps through Apple Health), shown next to sessions.
-    let strengthRecordings: [any StrengthRecordingSource]
+    private let recordedStrength: (any RecordedStrengthSource)?
 
     init(
         workouts: any WorkoutRepository,
@@ -53,15 +53,17 @@ final class AppContainer {
         routines: any RoutineRepository,
         importer: any TrainingHistoryImporter = StrongHistoryImporter(),
         backupDestination: any BackupDestination = FolderBackupDestination(),
+        workoutDraftStore: (any WorkoutDraftStore)? = nil,
         restAlerts: any RestAlertScheduler = LocalRestAlerts(),
         health: any HealthWorkoutWriter = HealthKitWorkoutWriter(),
         onboardingStatus: any OnboardingStatusStore = DefaultsOnboardingStatus(),
         metricsSources: [any MetricsSource],
         healthSource: (any MetricsSource & ActivitySource)? = nil,
         garmin: (any GarminAccount)? = nil,
-        strengthRecordings: [any StrengthRecordingSource] = []
+        recordedStrength: (any RecordedStrengthSource)? = nil
     ) {
         self.workouts = workouts
+        self.workoutDraftStore = workoutDraftStore
         self.exercises = exercises
         self.checkIns = checkIns
         self.progression = progression
@@ -78,7 +80,7 @@ final class AppContainer {
         self.metricsSources = metricsSources
         self.healthSource = healthSource
         self.garmin = garmin
-        self.strengthRecordings = strengthRecordings
+        self.recordedStrength = recordedStrength
     }
 
     /// Production wiring: SwiftData on disk (ADR-0004). If the store cannot be opened, the app still runs on an
@@ -86,23 +88,23 @@ final class AppContainer {
     static func live() -> AppContainer {
         let healthKit = HealthKitMetricsSource()
         let garmin = GarminConnect.makeService()
-        let healthWriter = HealthKitWorkoutWriter()
         let sources: [any MetricsSource] = [garmin, healthKit]
+        // Garmin's strength records plus other apps' strength workouts in Apple Health (e.g. the Apple Watch), each
+        // workout once.
+        let recordedStrength = CombinedRecordedStrengthSource([garmin, HealthKitWorkoutWriter()])
         do {
             let store = SwiftDataStore.make(container: try PersistenceContainer.make())
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
-                routines: store,
-                health: healthWriter, metricsSources: sources, healthSource: healthKit, garmin: garmin,
-                strengthRecordings: [garmin, healthWriter]
+                routines: store, workoutDraftStore: FileWorkoutDraftStore(),
+                metricsSources: sources, healthSource: healthKit, garmin: garmin, recordedStrength: recordedStrength
             )
         } catch {
             let store = InMemoryStore(exercises: ExerciseCatalog.builtIn)
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store,
-                health: healthWriter, metricsSources: sources, healthSource: healthKit, garmin: garmin,
-                strengthRecordings: [garmin, healthWriter]
+                metricsSources: sources, healthSource: healthKit, garmin: garmin, recordedStrength: recordedStrength
             )
         }
     }
@@ -131,21 +133,23 @@ final class AppContainer {
     func makeAskAIModel() -> AskAIModel {
         AskAIModel(
             workouts: workouts, exercises: exercises, progression: progression, profiles: profiles,
-            routines: routines, checkIns: checkIns, sources: metricsSources, recordings: strengthRecordings,
+            routines: routines, checkIns: checkIns, sources: metricsSources, recordedStrength: recordedStrength,
             appVersion: Self.appVersion
         )
     }
 
     func makeTodayModel() -> TodayModel {
         TodayModel(
-            sources: metricsSources, checkIns: checkIns, backup: backup, garmin: garmin, profiles: profiles
+            sources: metricsSources, checkIns: checkIns, backup: backup, garmin: garmin, profiles: profiles,
+            workouts: workouts, exercises: exercises, recordedStrength: recordedStrength, routines: routines,
+            progression: progression
         )
     }
 
     func makeWorkoutModel() -> WorkoutModel {
         WorkoutModel(
             workouts: workouts, exercises: exercises, progression: progression, backup: backup, health: health,
-            restAlerts: restAlerts, profiles: profiles
+            restAlerts: restAlerts, profiles: profiles, draftStore: workoutDraftStore
         )
     }
 
@@ -159,8 +163,8 @@ final class AppContainer {
     func makeHistoryModel() -> HistoryModel {
         HistoryModel(
             workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
-            profiles: profiles, progression: progression, activity: healthSource, runs: healthSource,
-            recordings: strengthRecordings
+            profiles: profiles, progression: progression, activity: healthSource, runSources: metricsSources,
+            recordedStrength: recordedStrength
         )
     }
 

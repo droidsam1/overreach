@@ -50,6 +50,26 @@ private struct NoMetrics: MetricsSource {
     func runs(from start: Date, to end: Date) async throws -> [RunActivity] { [] }
 }
 
+private struct LowHRVMetrics: MetricsSource {
+    let kind = DataSourceKind.garmin
+    let today: CalendarDay
+    let calendar: Calendar
+    let elevatedPulse: Bool
+
+    func isAvailable() async -> Bool { true }
+    func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics] {
+        (0...25).map { offset in
+            let day = today.adding(days: -offset, calendar: calendar)
+            var metrics = DailyMetrics(day: day, sources: [.garmin])
+            metrics.hrvMetric = .rmssd
+            metrics.hrvNightlyAverageMs = offset < 7 ? 35 : 55
+            metrics.restingHeartRate = offset == 0 && elevatedPulse ? 59 : 50
+            return metrics
+        }.filter { range.contains($0.day) }
+    }
+    func runs(from start: Date, to end: Date) async throws -> [RunActivity] { [] }
+}
+
 @MainActor
 @Suite("Daily check-in")
 struct CheckInModelTests {
@@ -131,5 +151,77 @@ struct CheckInModelTests {
 
         #expect(!model.showsCheckIn)
         #expect(model.makeCheckInModel(now: now) == nil)
+    }
+
+    @Test func lowHRVAsksAboutStressAndKeepsItAsContext() async throws {
+        let source = LowHRVMetrics(today: today, calendar: calendar, elevatedPulse: false)
+        let store = CheckInStore()
+        let model = TodayModel(sources: [source], checkIns: store, calendar: calendar)
+        await model.load(now: now)
+        let original = model.readiness
+        #expect(model.checkInButtonTitle == "Have you felt more stressed than usual lately?")
+
+        let sheet = try #require(model.makeCheckInModel(now: now))
+        #expect(sheet.contextQuestionTitle == model.checkInButtonTitle)
+        #expect(sheet.contextOptions.map(\.value) == [.yes, .no, .unsure, .skipped])
+        sheet.contextAnswer = .yes
+        #expect(await sheet.save())
+        await model.load(now: now)
+
+        #expect(model.readiness == original)
+        #expect(model.checkInSummary == "More stress than usual")
+        #expect(model.checkInButtonTitle == "Edit today's check-in")
+        #expect(model.makeCheckInModel(now: now)?.contextAnswer == .yes)
+    }
+
+    @Test func elevatedPulsePromptsSymptomsAndAnAnswerCanBeCorrected() async throws {
+        let source = LowHRVMetrics(today: today, calendar: calendar, elevatedPulse: true)
+        let model = TodayModel(sources: [source], checkIns: CheckInStore(), calendar: calendar)
+        await model.load(now: now)
+        let initialReadiness = model.readiness
+        #expect(model.checkInButtonTitle == "Do new symptoms make you feel too unwell to train today?")
+        #expect(model.readinessSummary == "Your HRV is trending below your usual range and your resting heart rate is higher than usual.")
+
+        let sheet = try #require(model.makeCheckInModel(now: now))
+        sheet.contextAnswer = .yes
+        #expect(await sheet.save())
+        await model.load(now: now)
+
+        #expect(model.readiness.reasons == [.symptomsLimitTraining])
+        #expect(model.readinessAdvice == "Skip training today and reassess how you feel.")
+        #expect(model.checkIn?.isSick == false)
+
+        let edit = try #require(model.makeCheckInModel(now: now))
+        edit.contextAnswer = .no
+        #expect(await edit.save())
+        await model.load(now: now)
+
+        #expect(model.readiness == initialReadiness)
+        #expect(model.checkInButtonTitle == "Edit today's check-in")
+        #expect(model.makeCheckInModel(now: now.addingTimeInterval(86_400))?.contextQuestionTitle == nil)
+    }
+
+    @Test func skippingCanBeSavedWithoutChangingTheAdvice() async throws {
+        let source = LowHRVMetrics(today: today, calendar: calendar, elevatedPulse: false)
+        let model = TodayModel(sources: [source], checkIns: CheckInStore(), calendar: calendar)
+        await model.load(now: now)
+        let original = model.readiness
+        let sheet = try #require(model.makeCheckInModel(now: now))
+        sheet.contextAnswer = .skipped
+        #expect(await sheet.save())
+        await model.load(now: now)
+
+        #expect(model.readiness == original)
+        #expect(model.checkInSummary == nil)
+        #expect(model.checkInButtonTitle == "Edit today's check-in")
+    }
+
+    @Test func theOptionalAnswerRoundTripsThroughBackup() throws {
+        let checkIn = CheckIn(day: today, context: .init(question: .symptoms, answer: .unsure))
+        let encoded = try BackupCodec.encode(BackupDocument(createdAt: now, checkIns: [checkIn]))
+        let decoded = try BackupCodec.decode(encoded)
+
+        #expect(decoded.checkIns == [checkIn])
+        #expect(decoded.formatVersion == BackupDocument.currentFormatVersion)
     }
 }

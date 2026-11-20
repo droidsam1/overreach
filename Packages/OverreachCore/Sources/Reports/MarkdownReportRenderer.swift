@@ -1,3 +1,4 @@
+import Analytics
 import Domain
 import Foundation
 
@@ -44,11 +45,19 @@ public enum MarkdownReportRenderer {
         var lines = ["## Today", ""]
         if let readiness = report.readiness {
             lines.append("- Readiness: **\(readiness.level.rawValue)**")
-            lines += readiness.reasons.map { "  - \(describe($0))" }
+            for reason in readiness.reasons {
+                let source = ReadinessRules.evidenceURL(for: reason).map { " ([research source](\($0.absoluteString)))" } ?? ""
+                lines.append("  - \(describe(reason, hrvCoverage: readiness.hrvCoverage))\(source)")
+            }
+            if let coverage = readiness.hrvCoverage, !coverage.canCompare {
+                lines.append("  - HRV comparison skipped. "
+                    + "Recent readings available: \(coverage.recentReadings) (minimum \(coverage.minimumRecentReadings)). "
+                    + "Baseline readings available: \(coverage.baselineReadings) (minimum \(coverage.minimumBaselineReadings)).")
+            }
         }
         if let today = report.today {
             lines.append("- HRV last night: \(format(today.hrvNightlyAverageMs, decimals: 0)) ms "
-                + "(normal range \(format(today.hrvBaselineLowMs, decimals: 0))–"
+                + "(watch-reported range \(format(today.hrvBaselineLowMs, decimals: 0))–"
                 + "\(format(today.hrvBaselineHighMs, decimals: 0)) ms)")
             lines.append("- Resting HR: \(format(today.restingHeartRate, decimals: 0)) bpm")
             lines.append("- Sleep: \(format(today.sleepSeconds.map { $0 / 3600 }, decimals: 1)) h")
@@ -147,12 +156,19 @@ public enum MarkdownReportRenderer {
         return "\(total / 60):\(seconds < 10 ? "0" : "")\(seconds) /km"
     }
 
-    static func describe(_ reason: ReadinessReason) -> String {
+    static func describe(_ reason: ReadinessReason, hrvCoverage: HRVCoverage?) -> String {
         switch reason {
         case .markedSick:
             "Marked as sick in today's check-in"
+        case .symptomsLimitTraining:
+            "Today's check-in says symptoms make training feel unsuitable"
         case .hrvBelowBaseline(let nights):
-            "HRV below its normal range for \(nights) night\(nights == 1 ? "" : "s")"
+            if let coverage = hrvCoverage {
+                "HRV below its normal range (\(nights) of \(coverage.recentReadings) comparable readings low "
+                    + "in the last \(coverage.recentDays) days)"
+            } else {
+                "HRV below its normal range for \(nights) night\(nights == 1 ? "" : "s")"
+            }
         case .restingHeartRateElevated(let bpm):
             "Resting HR \(format(bpm, decimals: 0)) bpm above baseline"
         case .shortSleep(let hours):

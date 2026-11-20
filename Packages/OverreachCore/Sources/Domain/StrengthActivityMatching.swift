@@ -48,9 +48,22 @@ public struct RecordedStrengthActivity: Identifiable, Hashable, Codable, Sendabl
     public var endedAt: Date { startedAt.addingTimeInterval(max(0, durationSeconds)) }
 }
 
-/// Strength workouts recorded by a watch: Garmin's own records, and those other apps write to Apple Health.
-public protocol StrengthRecordingSource: Sendable {
-    func strengthRecordings(from start: Date, to end: Date) async -> [RecordedStrengthActivity]
+/// Several recording sources as one (Garmin's records, other apps' strength workouts in Apple Health), with each
+/// workout once: `StrengthActivityMatching.removingDuplicates`, Garmin first.
+public struct CombinedRecordedStrengthSource: RecordedStrengthSource {
+    private let sources: [any RecordedStrengthSource]
+
+    public init(_ sources: [any RecordedStrengthSource]) {
+        self.sources = sources
+    }
+
+    public func strengthActivities(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
+        var all: [RecordedStrengthActivity] = []
+        for source in sources {
+            all += await source.strengthActivities(from: start, to: end)
+        }
+        return StrengthActivityMatching.removingDuplicates(all)
+    }
 }
 
 /// Which recorded activity belongs to which logged session.

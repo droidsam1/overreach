@@ -7,6 +7,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Log a watch-only strength workout from History: the new session starts with the watch's times, and once saved it
+  shows the watch's heart rate and load. Apple Watch strength workouts appear too, and a Garmin workout and its
+  Apple Health copy count once.
+- The AI context adds what the watch recorded during each session (`sessions[].watch`).
+- On an amber day, Today can show an optional light strength example alongside the next routine or recent session.
+- Today explains low HRV in plain language, puts it alongside measured recovery and recent training, and links to the research.
+- Today can offer one optional check-in question about symptoms or unusual stress when HRV stays below your range.
+- History lists logged strength sessions, watch-only strength and runs together, with activity and source
+  filters. Open any run to see its pace, heart rate and available training metrics.
+- Garmin sync revisits the last seven days of activities to pick up workouts uploaded by the watch days later.
+- Today shows seven days of completed runs, strength sessions and recovery readings together by local date.
+- Today explains gaps in HRV coverage and shows how many comparable readings were low when the trend drops.
+- Resume an interrupted workout with its routine, sets, notes and rest timer. Overreach saves the draft on
+  the device and opens Train on relaunch so you can resume or discard it.
+- History shows Garmin heart rate, training load and training effect on matched strength sessions. Watch-only
+  strength workouts appear in the same list with their own read-only details.
 - Plan check (#34, ADR-0019). Train shows this week's planned and completed sessions. When sessions keep being
   missed, it proposes fewer sessions a week (with the same weekly sets, results are about the same) and a longer
   block. After a break of two weeks or more it says to keep the plan and ease back in, and after an "ill"
@@ -20,8 +36,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - History → Calendar: a month calendar (Monday first) with strength days, runs and a steps ring per day that
   fills against the month's average. It has a legend, month totals (sessions, runs, km run, steps per day) and,
   for a tapped day, its sessions (opening their detail), runs (distance, duration, pace, heart rate) and steps.
-  Runs and steps are read live from Apple Health for the shown month (Garmin runs arrive through Health). Without
-  Health access it still shows sessions, with a hint to connect from Today. List or calendar is remembered.
+  Runs from Garmin and Apple Health are combined and counted once, with training load and training effect shown
+  when available. Steps come from Apple Health. The calendar still shows sessions and available runs if one source
+  fails. List or calendar is remembered.
 - Today reads Apple Health. It shows last night's sleep with deep and REM, HRV, resting heart rate, steps and
   VO2max, each with its 7-day average and where it came from, plus a "Connect Apple Health" button. Runs from
   Health are read too (shown in a later change). Sleep from several sources is merged without counting it twice
@@ -50,10 +67,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings → Appearance: light, dark or the same as the iPhone (the default).
 
 ### Fixed
+- Garmin sync counts each activity once when the same activity appears on multiple API pages.
 - The progression engine ignored the kind of set: warm-up sets in the history now no longer count for targets,
   stalls or the working weight.
 
 ### Changed
+- Training and history editing adapt set controls to narrow screens and large text. The rest countdown stays
+  compact, with time adjustments available on demand.
+- History switches to a daily agenda when the monthly grid needs more room. Today prioritizes available
+  recovery data and the Apple Health connection, and gives large metrics a single column.
+- Plan leads with what to do next, the AI screen shows the report and reply steps in order, and first-run
+  setup can open the Strong import screen directly.
 - Easier weight and reps fields while logging. The whole field, unit included, is the tap target. Tapping selects
   the value so typing replaces it. A "Done" button above the keyboard and scrolling hide the keyboard. Values save
   as you type, so marking a set right after typing keeps them.

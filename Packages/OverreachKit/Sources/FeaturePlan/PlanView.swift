@@ -11,7 +11,7 @@ public struct PlanView<Assistant: View>: View {
     @State private var model: PlanModel
     private let assistant: Assistant
 
-    /// - Parameter assistant: links to other features (e.g. "Ask AI"), shown first. Wired by the app.
+    /// - Parameter assistant: links to other features (e.g. "Ask AI"). Wired by the app.
     public init(model: PlanModel, @ViewBuilder assistant: () -> Assistant) {
         _model = State(initialValue: model)
         self.assistant = assistant()
@@ -23,27 +23,32 @@ public struct PlanView<Assistant: View>: View {
                 if let message = model.errorMessage {
                     Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
                 }
-                Section { assistant }
                 if model.isAnalysing {
                     HStack {
                         ProgressView()
                         Text("Analysing your history…").foregroundStyle(.secondary)
                     }
                 }
-                goalSection
-                blockSection
                 if let next = model.next {
                     Section("Next") {
-                        Text(next.headline).bold()
-                        ExplainedLines(lines: next.reasons)
+                        Text(next.headline).font(.headline)
+                        if !next.reasons.isEmpty {
+                            DisclosureGroup("Why this recommendation?") {
+                                ExplainedLines(lines: next.reasons)
+                            }
+                        }
                     }
                 }
+                currentBlockSection
+                planSection
                 if !model.findingLines.isEmpty {
                     Section("Worth a look") {
                         ExplainedLines(lines: model.findingLines)
                     }
                 }
-                planSection
+                goalSection
+                blockSection
+                Section { assistant }
             }
             .navigationTitle("Plan")
             .task { await model.load() }
@@ -83,14 +88,19 @@ public struct PlanView<Assistant: View>: View {
         }
     }
 
-    private var blockSection: some View {
-        Section {
+    private var currentBlockSection: some View {
+        Section("Current block") {
             if let title = model.currentBlockTitle, let start = model.currentBlockStart {
-                LabeledContent("Current block", value: title)
+                Text(title).font(.headline)
                 LabeledContent("Since", value: start.formatted(date: .abbreviated, time: .omitted))
             } else {
                 Text("No training logged yet.").foregroundStyle(.secondary)
             }
+        }
+    }
+
+    private var blockSection: some View {
+        Section {
             Picker("New block", selection: $model.newBlockFocus) {
                 ForEach(model.focusOptions) { option in
                     Text(option.name).tag(option.value)
@@ -101,7 +111,7 @@ public struct PlanView<Assistant: View>: View {
                 Task { await model.startNewBlock() }
             }
         } header: {
-            Text("Block")
+            Text("New block")
         } footer: {
             Text("Declaring a block tells the app a run of similar sessions is intentional.")
         }

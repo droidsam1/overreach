@@ -20,11 +20,14 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
-                    symbol: "applewatch.radiowaves.left.and.right", title: L10n.text("Your watch in History"),
+                    symbol: "plus.circle.fill", title: L10n.text("Log watch workouts"),
                     detail: L10n.text(
-                        "Sessions your watch also recorded show its heart rate and load. Workouts recorded but not "
-                            + "logged appear in History, ready to log."
+                        "Strength recorded on your watch but not in the app? Log it from History with the watch's times."
                     )
+                ),
+                ReleaseHighlight(
+                    symbol: "arrow.clockwise.circle", title: L10n.text("Resume workout"),
+                    detail: L10n.text("Pick up an interrupted workout with your sets, notes and rest timer.")
                 ),
                 ReleaseHighlight(
                     symbol: "applewatch.radiowaves.left.and.right", title: L10n.text("Garmin connection"),
@@ -48,8 +51,8 @@ public struct ReleaseNotes: Hashable, Sendable {
                     detail: L10n.text("Import a multi-week plan from your AI. Train shows the next session.")
                 ),
                 ReleaseHighlight(
-                    symbol: "calendar", title: L10n.text("History calendar"),
-                    detail: L10n.text("Strength days, runs and steps month by month, with each day's details.")
+                    symbol: "calendar", title: L10n.text("Unified history"),
+                    detail: L10n.text("Find strength workouts and runs together, with filters for type and source.")
                 ),
                 ReleaseHighlight(
                     symbol: "list.bullet.clipboard.fill", title: L10n.text("Session summary"),

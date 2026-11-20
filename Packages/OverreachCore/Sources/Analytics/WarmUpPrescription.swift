@@ -14,7 +14,7 @@ public enum WarmUpEvidence {
 }
 
 /// A suggested warm-up set: lighter than the working sets and not counted for progress or volume.
-public struct WarmUpSet: Hashable, Sendable {
+public struct WarmUpSet: Hashable, Codable, Sendable {
     public var weightKg: Double
     public var reps: Int
 

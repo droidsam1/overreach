@@ -4,7 +4,7 @@ import Foundation
 import Testing
 import WorkoutPresentation
 
-private actor RecordingAlerts: RestAlertScheduler {
+actor RecordingAlerts: RestAlertScheduler {
     enum Event: Equatable {
         case scheduled(Date, String, String)
         case cancelled

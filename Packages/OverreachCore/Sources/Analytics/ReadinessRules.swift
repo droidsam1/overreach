@@ -13,6 +13,7 @@ public enum ReadinessEvidence {
     public static let sleep = EvidenceReference(key: "readiness-sleep", level: .moderate)
     /// Self-reported well-being tracks training load better than common objective markers (Saw et al. 2016).
     public static let subjective = EvidenceReference(key: "readiness-subjective", level: .moderate)
+    public static let reportedSymptoms = EvidenceReference(key: "readiness-reported-symptoms", level: .limited)
     /// How signals combine into green, amber and red: coaching defaults.
     public static let combination = EvidenceReference(key: "readiness-combination", level: .heuristic)
 }
@@ -68,8 +69,12 @@ public enum ReadinessRules {
         today: CalendarDay, history: [DailyMetrics], checkIn: CheckIn?, settings: Settings = Settings(),
         calendar: Calendar = .current
     ) -> Readiness {
+        let checkIn = checkIn.flatMap { $0.day == today ? $0 : nil }
         if checkIn?.isSick == true {
             return Readiness(level: .red, reasons: [.markedSick])
+        }
+        if checkIn?.context == CheckIn.Context(question: .symptoms, answer: .yes) {
+            return Readiness(level: .red, reasons: [.symptomsLimitTraining])
         }
 
         let byDay = Dictionary(history.map { ($0.day, $0) }, uniquingKeysWith: { first, _ in first })
@@ -80,9 +85,10 @@ public enum ReadinessRules {
         var physiological = 0
         var evaluated = false
 
-        if let hrv = hrvCheck(byDay: byDay, baselineDays: baselineDays, rollingDays: rollingDays, settings: settings) {
+        let hrv = hrvCheck(byDay: byDay, baselineDays: baselineDays, rollingDays: rollingDays, settings: settings)
+        if let hrv, hrv.coverage.canCompare {
             evaluated = true
-            if let lowNights = hrv {
+            if let lowNights = hrv.lowNights {
                 reasons.append(.hrvBelowBaseline(nights: lowNights))
                 physiological += 1
             }
@@ -107,7 +113,7 @@ public enum ReadinessRules {
         }
 
         if let checkIn {
-            evaluated = true
+            evaluated = evaluated || checkIn.energy != nil || checkIn.soreness != nil || checkIn.context == nil
             if let energy = checkIn.energy, energy <= settings.lowEnergy {
                 reasons.append(.lowEnergy(score: energy))
             }
@@ -116,18 +122,21 @@ public enum ReadinessRules {
             }
         }
 
-        guard evaluated else { return Readiness(level: .unknown, reasons: [.missingData]) }
-        if reasons.isEmpty { return Readiness(level: .green) }
-        if reasons.count >= settings.redSignals && physiological > 0 {
-            return Readiness(level: .red, reasons: reasons)
+        guard evaluated else {
+            return Readiness(level: .unknown, reasons: [.missingData], hrvCoverage: hrv?.coverage)
         }
-        return Readiness(level: .amber, reasons: reasons)
+        if reasons.isEmpty { return Readiness(level: .green, hrvCoverage: hrv?.coverage) }
+        if reasons.count >= settings.redSignals && physiological > 0 {
+            return Readiness(level: .red, reasons: reasons, hrvCoverage: hrv?.coverage)
+        }
+        return Readiness(level: .amber, reasons: reasons, hrvCoverage: hrv?.coverage)
     }
 
     /// The evidence behind one reason, to show next to it.
     public static func evidence(for reason: ReadinessReason) -> EvidenceReference {
         switch reason {
         case .markedSick: PlanEvidence.illness
+        case .symptomsLimitTraining: ReadinessEvidence.reportedSymptoms
         case .hrvBelowBaseline: ReadinessEvidence.hrv
         case .restingHeartRateElevated: ReadinessEvidence.restingHeartRate
         case .shortSleep: ReadinessEvidence.sleep
@@ -136,31 +145,68 @@ public enum ReadinessRules {
         }
     }
 
-    /// `nil` when HRV cannot be judged; `.some(nil)` when it is in range; `.some(n)` when the rolling average is
-    /// below the normal range, with `n` the low nights in the window.
-    ///
+    /// A representative source from the evidence register for the reason, shared by Today and reports.
+    public static func evidenceURL(for reason: ReadinessReason) -> URL? {
+        let address: String
+        switch reason {
+        case .markedSick, .symptomsLimitTraining: address = "https://doi.org/10.1136/bjsports-2022-105759"
+        case .hrvBelowBaseline: address = "https://doi.org/10.3390/ijerph181910299"
+        case .restingHeartRateElevated: address = "https://pubmed.ncbi.nlm.nih.gov/18308872/"
+        case .shortSleep: address = "https://doi.org/10.1007/s40279-022-01706-y"
+        case .lowEnergy, .highSoreness: address = "https://pubmed.ncbi.nlm.nih.gov/26423706/"
+        case .missingData: return nil
+        }
+        return URL(string: address)
+    }
+
+    /// Decide what is worth asking, without inferring stress or illness from the device (`readiness-context-prompt`).
+    public static func contextQuestion(for readiness: Readiness) -> CheckIn.Context.Question? {
+        var hasLowHRV = false
+        var hasElevatedPulse = false
+        for reason in readiness.reasons {
+            switch reason {
+            case .markedSick, .symptomsLimitTraining: return nil
+            case .hrvBelowBaseline: hasLowHRV = true
+            case .restingHeartRateElevated: hasElevatedPulse = true
+            default: break
+            }
+        }
+        guard hasLowHRV else { return nil }
+        return hasElevatedPulse ? .symptoms : .stress
+    }
+
     /// Only nights of the same statistic as the latest night are compared (RMSSD and SDNN are not interchangeable,
     /// `hrv-metrics`, ADR-0024): someone who moves from an Apple Watch to a Garmin builds a new baseline instead of
     /// being judged against the old one.
-    static func hrvCheck(
+    private static func hrvCheck(
         byDay: [CalendarDay: DailyMetrics], baselineDays: [CalendarDay], rollingDays: [CalendarDay], settings: Settings
-    ) -> Int?? {
-        let latest = rollingDays.lazy.compactMap { byDay[$0] }.first { ($0.hrvNightlyAverageMs ?? 0) > 0 }
+    ) -> (coverage: HRVCoverage, lowNights: Int?)? {
+        let latest = rollingDays.lazy.compactMap { byDay[$0] }.first { validHRV($0.hrvNightlyAverageMs) != nil }
         guard let latest else { return nil }
         let metric = latest.hrvMetric
         let logHRV = { (days: [CalendarDay]) -> [Double] in
             days.compactMap { byDay[$0] }
                 .filter { $0.hrvMetric == metric }
-                .compactMap(\.hrvNightlyAverageMs).filter { $0 > 0 }.map { log($0) }
+                .compactMap { validHRV($0.hrvNightlyAverageMs) }.map { log($0) }
         }
         let baseline = logHRV(baselineDays)
         let recent = logHRV(rollingDays)
-        guard baseline.count >= settings.minimumBaselineNights, recent.count >= settings.minimumRollingNights else {
-            return nil
-        }
+        let coverage = HRVCoverage(
+            metric: metric, latestDay: latest.day,
+            recentDays: rollingDays.count, recentReadings: recent.count,
+            minimumRecentReadings: max(settings.minimumRollingNights, 1),
+            baselineDays: baselineDays.count, baselineReadings: baseline.count,
+            minimumBaselineReadings: max(settings.minimumBaselineNights, 1)
+        )
+        guard coverage.canCompare else { return (coverage, nil) }
         let lowerBound = mean(baseline) - settings.hrvBandStandardDeviations * standardDeviation(baseline)
-        guard mean(recent) < lowerBound else { return .some(nil) }
-        return .some(recent.filter { $0 < lowerBound }.count)
+        guard mean(recent) < lowerBound else { return (coverage, nil) }
+        return (coverage, recent.filter { $0 < lowerBound }.count)
+    }
+
+    private static func validHRV(_ value: Double?) -> Double? {
+        guard let value, value.isFinite, value > 0 else { return nil }
+        return value
     }
 
     private static func mean(_ values: [Double]) -> Double {

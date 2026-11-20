@@ -23,18 +23,26 @@ public struct WorkoutView: View {
     public var body: some View {
         NavigationStack {
             Group {
-                if model.isSessionActive {
+                if model.isPreparingSession {
+                    ProgressView("Preparing workout…")
+                } else if model.isSavingSession && !model.isSessionActive {
+                    ProgressView("Saving workout…")
+                } else if model.isSessionActive {
                     SessionList(model: model, isPickingExercise: $isPickingExercise)
+                        .disabled(model.isSavingSession)
+                } else if model.needsDraftRecovery {
+                    WorkoutRecoveryView(model: model) { isConfirmingDiscard = true }
                 } else {
                     StartSessionView(
                         routines: routines,
+                        notice: model.draftNotice,
                         onStartEmpty: { model.start() },
                         onStart: { routine in Task { await model.start(routine) } },
                         onEdit: { routineEditor = routines.editor(for: $0) }
                     )
                 }
             }
-            .navigationTitle(model.isSessionActive ? model.sessionName : String(localized: "Train"))
+            .navigationTitle("Train")
             .inlineTitle(model.isSessionActive)
             .toolbar { toolbar }
             .sheet(isPresented: $isPickingExercise) {
@@ -50,7 +58,9 @@ public struct WorkoutView: View {
             .sheet(item: $routineEditor) { editor in
                 RoutineEditorView(model: editor)
             }
-            .confirmationDialog("Discard this session?", isPresented: $isConfirmingDiscard) {
+            .confirmationDialog(
+                "Discard this session?", isPresented: $isConfirmingDiscard, titleVisibility: .visible
+            ) {
                 Button("Discard", role: .destructive) { model.discard() }
             }
             .confirmationDialog(
@@ -82,24 +92,72 @@ public struct WorkoutView: View {
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
-        if model.isSessionActive {
-            // Long routine names wrap instead of being cut between the Discard and Finish buttons.
-            ToolbarItem(placement: .principal) {
-                Text(model.sessionName)
-                    .font(.headline)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.8)
-            }
+        if model.isSessionActive && !model.isPreparingSession {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Discard", role: .destructive) { isConfirmingDiscard = true }
+                Menu {
+                    Button("Discard", systemImage: "trash", role: .destructive) { isConfirmingDiscard = true }
+                } label: {
+                    Label("Session options", systemImage: "ellipsis.circle")
+                        .labelStyle(.iconOnly)
+                }
+                .disabled(model.isSavingSession)
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Finish") { Task { await model.requestFinish() } }
+                if model.isSavingSession {
+                    ProgressView()
+                        .accessibilityLabel("Saving workout…")
+                } else {
+                    Button("Finish") { Task { await model.requestFinish() } }
+                }
             }
-        } else {
+        } else if !model.needsDraftRecovery && !model.isPreparingSession && !model.isSavingSession {
             ToolbarItem(placement: .primaryAction) {
                 Button("New routine", systemImage: "plus") { routineEditor = routines.newEditor() }
+            }
+        }
+    }
+}
+
+private struct WorkoutRecoveryView: View {
+    let model: WorkoutModel
+    let onDiscard: () -> Void
+
+    var body: some View {
+        List {
+            Section {
+                if let name = model.recoverableWorkoutName, let start = model.recoverableWorkoutStart {
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        Text(name).font(.title2.weight(.semibold))
+                        Label {
+                            Text(start, format: .dateTime.day().month().year().hour().minute())
+                        } icon: {
+                            Image(systemName: "clock")
+                                .accessibilityHidden(true)
+                        }
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+                if let message = model.draftErrorMessage {
+                    StatusLabel(title: message, tone: .caution)
+                }
+                if model.isRecoveringDraft {
+                    ProgressView()
+                } else if model.canResumeWorkout {
+                    Button("Resume workout", systemImage: "play.fill") {
+                        Task { await model.resumeSavedWorkout() }
+                    }
+                    .buttonStyle(BrandButtonStyle())
+                } else {
+                    Button("Try again", systemImage: "arrow.clockwise") { model.retryDraftAccess() }
+                }
+            } header: {
+                Text("Saved workout draft")
+            }
+            Section {
+                Button("Discard saved workout", role: .destructive, action: onDiscard)
+                    .disabled(model.isRecoveringDraft)
             }
         }
     }
@@ -113,6 +171,9 @@ private struct SessionList: View {
 
     var body: some View {
         List {
+            Text(model.sessionName)
+                .font(.title2.weight(.semibold))
+                .accessibilityAddTraits(.isHeader)
             Button("How to log sets", systemImage: "questionmark.circle") { isShowingGuide = true }
             if let tip = model.generalWarmUpTip {
                 Label(tip, systemImage: "figure.walk")
@@ -127,6 +188,10 @@ private struct SessionList: View {
                 ForEach(model.focusOptions) { option in
                     Text(option.name).tag(TrainingFocus?.some(option.value))
                 }
+            }
+            if let message = model.draftErrorMessage {
+                StatusLabel(title: message, tone: .caution)
+                Button("Retry saving draft", systemImage: "arrow.clockwise") { model.retryDraftAccess() }
             }
             if let message = model.errorMessage {
                 Label(message, systemImage: "exclamationmark.triangle")
@@ -173,6 +238,8 @@ private struct SessionList: View {
                             }
                         } label: {
                             Image(systemName: "ellipsis.circle")
+                                .frame(minWidth: 44, minHeight: 44)
+                                .contentShape(Rectangle())
                         }
                         .accessibilityLabel("Exercise options")
                     }
@@ -194,6 +261,7 @@ private struct SessionList: View {
                 set: { showsRIR in Task { await model.setEffortScale(showsRIR ? .repsInReserve : .rpe) } }
             ))
         }
+        .scrollDismissesKeyboard(.interactively)
         .keyboardDoneButton()
         .safeAreaInset(edge: .bottom) {
             if model.rest.isActive {
@@ -225,11 +293,15 @@ private struct TargetSummaryView: View {
             VStack(alignment: .leading, spacing: Spacing.xSmall) {
                 AdaptiveStack {
                     Text(summary.targetLine).font(.subheadline.monospacedDigit())
-                    Spacer()
                     if let status = summary.status {
-                        Text(status)
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(summary.isStalled ? .orange : .secondary)
+                        if summary.isStalled {
+                            StatusLabel(title: status, tone: .caution)
+                                .font(.caption.weight(.semibold))
+                        } else {
+                            Text(status)
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
                 Text(summary.focusLine)
@@ -239,7 +311,7 @@ private struct TargetSummaryView: View {
                 if summary.isStalled, let explanation = summary.statusExplanation {
                     Text(explanation)
                         .font(.caption)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -253,23 +325,25 @@ private struct SetRow: View {
     let onDoneChange: (Bool) -> Void
 
     var body: some View {
-        AdaptiveStack(spacing: Spacing.small) {
-            SetNumberLabel(number, isWarmUp: set.isWarmUp)
+        SetEntryRow(number: SetNumberLabel(number, isWarmUp: set.isWarmUp)) {
             SetValueFields(
                 weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe, showsRepsInReserve: showsRepsInReserve
             )
+        } action: {
             Toggle(isOn: Binding(get: { set.isDone }, set: onDoneChange)) {
-                Image(systemName: set.isDone ? "checkmark.circle.fill" : "circle")
+                Label("Set \(number) done", systemImage: set.isDone ? "checkmark.circle.fill" : "circle")
+                    .labelStyle(.iconOnly)
+                    .font(.title3)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
             }
             .toggleStyle(.button)
-            .accessibilityLabel("Set \(number) done")
         }
-        .opacity(set.isDone ? 0.6 : 1)
     }
 }
 
 extension View {
-    /// Inline title on iOS while `isInline`, so the session name sits between the toolbar buttons.
+    /// Leave more vertical room for logging when the session is active.
     @ViewBuilder
     fileprivate func inlineTitle(_ isInline: Bool) -> some View {
         #if os(iOS)

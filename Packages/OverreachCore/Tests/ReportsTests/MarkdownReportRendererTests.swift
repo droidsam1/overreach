@@ -36,7 +36,7 @@ struct MarkdownReportRendererTests {
         #expect(markdown.contains("## Athlete context"))
         #expect(markdown.contains("Readiness: **amber**"))
         #expect(markdown.contains("HRV below its normal range for 4 nights"))
-        #expect(markdown.contains("HRV last night: 37 ms (normal range 40–48 ms)"))
+        #expect(markdown.contains("HRV last night: 37 ms (watch-reported range 40–48 ms)"))
         #expect(markdown.contains("| 2026-11-16 | 37 | – |"))
         #expect(markdown.contains("2026-11-16: sick; energy 2/5"))
         #expect(markdown.hasSuffix("## Question\n\nShould I run today?\n"))
@@ -47,6 +47,19 @@ struct MarkdownReportRendererTests {
         #expect(MarkdownReportRenderer.format(.nan, decimals: 0) == "–")
         #expect(MarkdownReportRenderer.format(6.4, decimals: 1) == "6.4")
         #expect(MarkdownReportRenderer.format(37.4, decimals: 0) == "37")
+    }
+
+    @Test func readinessReportUsesComparableHRVReadings() {
+        let coverage = HRVCoverage(
+            metric: .rmssd, latestDay: CalendarDay(year: 2026, month: 11, day: 16),
+            recentDays: 7, recentReadings: 5, minimumRecentReadings: 3,
+            baselineDays: 60, baselineReadings: 24, minimumBaselineReadings: 14
+        )
+        let readiness = Readiness(level: .amber, reasons: [.hrvBelowBaseline(nights: 4)], hrvCoverage: coverage)
+        let markdown = MarkdownReportRenderer.render(TrainingReport(generatedAt: .now, readiness: readiness))
+
+        #expect(markdown.contains("4 of 5 comparable readings low in the last 7 days"))
+        #expect(markdown.contains("[research source](https://doi.org/10.3390/ijerph181910299)"))
     }
 
     @Test func formatsPaceAsMinutesAndSeconds() {

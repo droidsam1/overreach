@@ -1,4 +1,5 @@
 import DesignSystem
+import Domain
 import HistoryPresentation
 import SwiftUI
 
@@ -10,10 +11,10 @@ private enum HistoryLayout: String {
     case list, calendar
 }
 
-/// Past strength sessions with their detail, as a list or as a month calendar with runs and steps.
+/// Strength and runs in a timeline or a month calendar, with steps in the calendar.
 public struct HistoryView: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var model: HistoryModel
-    @State private var newSession: SessionEditorModel?
     @AppStorage("history.layout") private var layout = HistoryLayout.list
 
     public init(model: HistoryModel) {
@@ -24,16 +25,21 @@ public struct HistoryView: View {
         NavigationStack {
             Group {
                 switch layout {
-                case .list: sessionList
+                case .list: activityList
                 case .calendar: HistoryCalendarView(history: model)
                 }
             }
             .safeAreaInset(edge: .top, spacing: 0) {
-                Picker("Show as", selection: $layout) {
-                    Text("List").tag(HistoryLayout.list)
-                    Text("Calendar").tag(HistoryLayout.calendar)
+                Group {
+                    if typeSize.isAccessibilitySize {
+                        layoutPicker
+                            .pickerStyle(.menu)
+                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    } else {
+                        layoutPicker
+                            .pickerStyle(.segmented)
+                    }
                 }
-                .pickerStyle(.segmented)
                 .padding(.horizontal, Spacing.medium)
                 .padding(.vertical, Spacing.small)
                 .background(.bar)
@@ -43,77 +49,113 @@ public struct HistoryView: View {
         }
     }
 
-    private var sessionList: some View {
+    private var layoutPicker: some View {
+        Picker("Show as", selection: $layout) {
+            Text("List").tag(HistoryLayout.list)
+            Text("Calendar").tag(HistoryLayout.calendar)
+        }
+    }
+
+    private var activityList: some View {
         List {
+            filters
             if let message = model.errorMessage {
                 Label(message, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red)
             }
-            if !model.unlogged.isEmpty {
-                Section {
-                    ForEach(model.unlogged) { workout in
-                        Button {
-                            newSession = model.makeEditor(forUnlogged: workout.id)
-                        } label: {
-                            HStack(spacing: Spacing.medium) {
-                                Image(systemName: "applewatch.radiowaves.left.and.right")
-                                    .font(.title3)
-                                    .foregroundStyle(.tint)
-                                    .accessibilityHidden(true)
-                                VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                                    Text(workout.title).font(.headline)
-                                    Text(workout.detail).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
-                                }
-                                Spacer()
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundStyle(.tint)
-                                    .accessibilityHidden(true)
-                            }
+            if let warning = model.runWarning {
+                StatusLabel(title: warning, tone: .caution)
+            }
+            ForEach(model.rows) { row in
+                switch row {
+                case let .session(summary):
+                    NavigationLink {
+                        SessionDetailView(model: model, sessionID: summary.id)
+                    } label: {
+                        HStack(alignment: .firstTextBaseline, spacing: Spacing.small) {
+                            Image(systemName: "dumbbell.fill")
+                                .foregroundStyle(ActivityColor.strength)
+                                .accessibilityHidden(true)
+                            SessionRow(summary: summary, showsSources: true)
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityHint(Text("Log this workout"))
                     }
-                } header: {
-                    Text("Recorded on the watch, not logged")
-                } footer: {
-                    Text("Log it with its exercises and sets. The watch's heart rate and load are added to it.")
+                    .swipeActions {
+                        Button(role: .destructive) {
+                            Task { await model.delete(summary.id) }
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                case let .recording(recording):
+                    NavigationLink {
+                        RecordedStrengthDetail(recording: recording, model: model)
+                    } label: {
+                        RecordedStrengthRow(recording: recording)
+                    }
+                case let .run(run):
+                    NavigationLink {
+                        HistoryRunDetail(run: run)
+                    } label: {
+                        HistoryRunRow(run: run)
+                    }
                 }
             }
-            ForEach(model.summaries) { summary in
-                NavigationLink {
-                    SessionDetailView(model: model, sessionID: summary.id)
-                } label: {
-                    SessionRow(summary: summary)
-                }
-            }
-            .onDelete { offsets in
-                Task { await model.delete(at: offsets) }
-            }
-        }
-        .overlay {
-            if model.showsEmptyState {
+            if model.isLoading && model.rows.isEmpty {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+            } else if model.showsEmptyState {
                 ContentUnavailableView(
-                    "No sessions yet",
+                    "No activities yet",
                     systemImage: "calendar",
-                    description: Text("Finished sessions appear here.")
+                    description: Text("Finished workouts and runs from connected sources appear here.")
                 )
+            } else if model.showsFilteredEmptyState {
+                ContentUnavailableView("No matching activities", systemImage: "line.3.horizontal.decrease.circle")
+                Button("Clear filters") { model.clearFilters() }
             }
         }
         .refreshable { await model.load() }
-        .sheet(item: $newSession) { editor in
-            SessionEditorView(model: editor) { model.didSave($0) }
+    }
+
+    private var filters: some View {
+        Menu {
+            Picker("Activity type", selection: $model.activityFilter) {
+                ForEach(HistoryActivityFilter.allCases) { filter in
+                    Text(filter.title).tag(filter)
+                }
+            }
+            Picker("Source", selection: $model.sourceFilter) {
+                Text("All sources").tag(DataSourceKind?.none)
+                ForEach(model.sourceOptions) { option in
+                    Text(option.name).tag(DataSourceKind?.some(option.value))
+                }
+            }
+            if model.hasFilters {
+                Button("Clear filters", systemImage: "arrow.counterclockwise") { model.clearFilters() }
+            }
+        } label: {
+            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                Label("Filters", systemImage: "line.3.horizontal.decrease.circle")
+                if model.hasFilters {
+                    Text(model.filterSummary)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .contentShape(Rectangle())
         }
     }
 }
 
 struct SessionRow: View {
     let summary: SessionSummary
+    var showsSources = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xSmall) {
-            HStack {
-                Text(summary.title).font(.headline)
-                Spacer()
+            Text(summary.title).font(.headline)
+            if showsSources {
                 Text(summary.date, format: .dateTime.day().month().year())
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -122,14 +164,15 @@ struct SessionRow: View {
                 .font(.subheadline)
                 .lineLimit(2)
             Text(summary.statsLine())
-                .font(.caption.monospacedDigit())
+                .font(.subheadline.monospacedDigit())
                 .foregroundStyle(.secondary)
-            if let watch = summary.watchLine {
-                Label(watch, systemImage: "applewatch.radiowaves.left.and.right")
-                    .font(.caption.monospacedDigit())
+            if showsSources {
+                Text(summary.sourceText)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -179,12 +222,8 @@ struct SessionDetailView: View {
     private func content(_ detail: SessionDetail) -> some View {
         List {
             SessionInfo(detail: detail)
-            if !detail.watchLines.isEmpty {
-                Section("Watch") {
-                    ForEach(detail.watchLines, id: \.self) { line in
-                        Text(line).monospacedDigit()
-                    }
-                }
+            if let recording = detail.recording {
+                RecordedStrengthMetrics(recording: recording)
             }
             ForEach(detail.entries) { entry in
                 Section(entry.name) {
@@ -230,6 +269,7 @@ private struct SessionInfo: View {
                     Text(Duration.seconds(duration), format: .units(allowed: [.hours, .minutes], width: .abbreviated))
                 }
             }
+            LabeledContent("Sources", value: detail.sourceText)
             if let focus = detail.focus {
                 LabeledContent("Focus", value: focus)
             }

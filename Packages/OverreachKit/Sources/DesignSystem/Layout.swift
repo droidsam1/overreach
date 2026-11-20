@@ -25,6 +25,50 @@ public struct AdaptiveStack<Content: View>: View {
     }
 }
 
+/// Set number and trailing action stay together when the editable values need their own row.
+public struct SetEntryRow<Fields: View, Action: View>: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
+    private let number: SetNumberLabel
+    private let fields: Fields
+    private let action: Action
+
+    public init(
+        number: SetNumberLabel,
+        @ViewBuilder fields: () -> Fields,
+        @ViewBuilder action: () -> Action
+    ) {
+        self.number = number
+        self.fields = fields()
+        self.action = action()
+    }
+
+    public var body: some View {
+        if typeSize.isAccessibilitySize {
+            expanded
+        } else {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: Spacing.small) {
+                    number
+                    fields.fixedSize(horizontal: true, vertical: false)
+                    action
+                }
+                expanded
+            }
+        }
+    }
+
+    private var expanded: some View {
+        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+            HStack {
+                number
+                Spacer(minLength: Spacing.small)
+                action
+            }
+            fields
+        }
+    }
+}
+
 /// What an empty list shows: no results for the search, or that there is nothing yet.
 public struct ListEmptyState: View {
     private let query: String

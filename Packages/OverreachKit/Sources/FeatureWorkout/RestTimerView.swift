@@ -2,46 +2,124 @@ import DesignSystem
 import SwiftUI
 import WorkoutPresentation
 
-// Views only: layout and styling. Times and texts come from `RestTimerModel` (ADR-0014).
-
-/// The rest countdown, shown above the bottom of the session.
+/// The compact rest countdown stays above the session. Adjustments open on demand.
 struct RestTimerView: View {
     let model: RestTimerModel
+    @State private var isShowingDetails = false
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
             if let state = model.state(at: context.date) {
-                content(state)
-                    .sensoryFeedback(.success, trigger: state.isFinished) { _, finished in finished }
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: Spacing.small) {
+                        countdownButton(state)
+                        Spacer(minLength: 0)
+                        skipButton(state)
+                    }
+                    VStack(alignment: .leading, spacing: 0) {
+                        countdownButton(state)
+                        skipButton(state)
+                    }
+                }
+                .padding(.horizontal, Spacing.medium)
+                .padding(.vertical, Spacing.xSmall)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.bar)
+                .sensoryFeedback(.success, trigger: state.isFinished) { _, finished in finished }
+            }
+        }
+        .sheet(isPresented: $isShowingDetails) {
+            NavigationStack {
+                TimelineView(.periodic(from: .now, by: 1)) { context in
+                    if let state = model.state(at: context.date) {
+                        details(state)
+                    }
+                }
+                .navigationTitle("Rest timer")
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { isShowingDetails = false }
+                    }
+                }
             }
         }
     }
 
-    private func content(_ state: RestTimerState) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
-            AdaptiveStack(verticalAlignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                    Text(state.title).font(.headline)
-                    Text(state.exerciseName).font(.caption).foregroundStyle(.secondary)
+    private func countdownButton(_ state: RestTimerState) -> some View {
+        Button {
+            isShowingDetails = true
+        } label: {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: Spacing.small) {
+                    detailsLabel(state)
+                    countdown(state)
                 }
-                Spacer()
-                Text(state.remaining)
-                    .font(.title2.monospacedDigit().weight(.semibold))
-                    .accessibilityLabel("Time remaining \(state.remaining)")
+                VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                    detailsLabel(state)
+                    countdown(state)
+                }
             }
-            ProgressView(value: state.progress)
-            AdaptiveStack {
+            .font(.headline)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("Opens rest timer details")
+    }
+
+    private func detailsLabel(_ state: RestTimerState) -> some View {
+        Label {
+            Text(state.title)
+        } icon: {
+            Image(systemName: "slider.horizontal.3")
+                .foregroundStyle(.tint)
+                .accessibilityHidden(true)
+        }
+    }
+
+    private func countdown(_ state: RestTimerState) -> some View {
+        Text(state.remaining)
+            .monospacedDigit()
+            .accessibilityLabel("Time remaining \(state.remaining)")
+    }
+
+    private func skipButton(_ state: RestTimerState) -> some View {
+        Button {
+            model.skip()
+        } label: {
+            Group {
+                if state.isFinished {
+                    Text(state.dismissTitle)
+                } else {
+                    Text("Skip rest")
+                }
+            }
+            .frame(minWidth: 44, minHeight: 44)
+            .contentShape(Rectangle())
+        }
+    }
+
+    private func details(_ state: RestTimerState) -> some View {
+        List {
+            Section {
+                Text(state.exerciseName)
+                    .font(.headline)
+                countdown(state)
+                    .font(.title.weight(.semibold))
+                ProgressView(value: state.progress) {
+                    Text(state.title)
+                }
+                Text(state.suggestion)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            Section {
                 Button("−15 s") { model.removeTime() }
                     .accessibilityLabel("Remove 15 seconds")
                 Button("+15 s") { model.addTime() }
                     .accessibilityLabel("Add 15 seconds")
-                Spacer()
-                Button(state.dismissTitle) { model.skip() }
+                skipButton(state)
             }
-            .buttonStyle(.bordered)
-            Text(state.suggestion).font(.caption2).foregroundStyle(.secondary)
         }
-        .padding(Spacing.medium)
-        .background(.bar)
     }
 }

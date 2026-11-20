@@ -23,6 +23,7 @@ public struct SettingsView<Library: View>: View {
         }
     }
 
+    @Binding private var showsStrongImport: Bool
     @State private var importModel: ImportModel
     @State private var backupModel: BackupModel
     @State private var garminModel: GarminSetupModel
@@ -36,8 +37,10 @@ public struct SettingsView<Library: View>: View {
 
     public init(
         importModel: ImportModel, backupModel: BackupModel, garminModel: GarminSetupModel,
+        showsStrongImport: Binding<Bool> = .constant(false),
         @ViewBuilder library: () -> Library
     ) {
+        _showsStrongImport = showsStrongImport
         _importModel = State(initialValue: importModel)
         _backupModel = State(initialValue: backupModel)
         _garminModel = State(initialValue: garminModel)
@@ -58,31 +61,23 @@ public struct SettingsView<Library: View>: View {
                 }
                 backupSection
                 Section {
-                    Picker("Weights in the file", selection: $importModel.weightUnit) {
-                        Text("kg").tag(WeightUnit.kilograms)
-                        Text("lb").tag(WeightUnit.pounds)
+                    NavigationLink {
+                        strongImport
+                    } label: {
+                        Label("Import from Strong", systemImage: "square.and.arrow.down")
                     }
-                    .onChange(of: importModel.weightUnit) {
-                        Task { await importModel.refreshPreview() }
-                    }
-                    Button("Choose Strong CSV…", systemImage: "square.and.arrow.down") { pick(.strongCSV) }
-                    importStatus
-                } header: {
-                    Text("Import from Strong")
-                } footer: {
-                    Text("In Strong: Settings → Export data. Re-importing the same file does not create duplicates.")
                 }
             }
             .navigationTitle("Settings")
-            .fileImporter(isPresented: $isPickingFile, allowedContentTypes: filePick.contentTypes) { result in
-                handlePicked(result)
+            .navigationDestination(isPresented: $showsStrongImport) {
+                strongImport
             }
             .confirmationDialog(
                 "Restore this backup?",
                 isPresented: $backupModel.isConfirmingRestore,
                 titleVisibility: .visible
             ) {
-                Button("Restore") { Task { await backupModel.confirmRestore() } }
+                Button("Restore", role: .destructive) { Task { await backupModel.confirmRestore() } }
                 Button("Cancel", role: .cancel) { backupModel.cancelRestore() }
             } message: {
                 if let message = backupModel.pendingRestoreMessage {
@@ -106,6 +101,28 @@ public struct SettingsView<Library: View>: View {
                 pick(.backupFolder)
             }
         }
+        .fileImporter(isPresented: $isPickingFile, allowedContentTypes: filePick.contentTypes) { result in
+            handlePicked(result)
+        }
+    }
+
+    private var strongImport: some View {
+        Form {
+            Section {
+                Picker("Weights in the file", selection: $importModel.weightUnit) {
+                    Text("kg").tag(WeightUnit.kilograms)
+                    Text("lb").tag(WeightUnit.pounds)
+                }
+                .onChange(of: importModel.weightUnit) {
+                    Task { await importModel.refreshPreview() }
+                }
+                Button("Choose Strong CSV…", systemImage: "square.and.arrow.down") { pick(.strongCSV) }
+                importStatus
+            } footer: {
+                Text("In Strong: Settings → Export data. Re-importing the same file does not create duplicates.")
+            }
+        }
+        .navigationTitle("Import from Strong")
     }
 
     private func pick(_ kind: FilePick) {
@@ -157,7 +174,7 @@ public struct SettingsView<Library: View>: View {
                     Text(expiry).font(.footnote).foregroundStyle(.secondary)
                 }
                 if let warning = garminModel.expiryWarning {
-                    Label(warning, systemImage: "exclamationmark.triangle").font(.footnote).foregroundStyle(.orange)
+                    StatusLabel(title: warning, tone: .caution).font(.footnote)
                 }
                 if garminModel.isSyncing {
                     ProgressView(value: garminModel.progress?.fraction ?? 0) {
@@ -209,20 +226,19 @@ public struct SettingsView<Library: View>: View {
             }
             Button("Back up now", systemImage: "arrow.up.doc") { Task { await backupModel.backUpNow() } }
                 .disabled(!backupModel.isConfigured || backupModel.isWorking)
-            Button("Export…", systemImage: "square.and.arrow.up") {
+            Button("Export backup…", systemImage: "square.and.arrow.up") {
                 Task { exportURL = await backupModel.exportFile() }
             }
             if let exportURL {
                 ShareLink(item: exportURL) { Label("Share \(exportURL.lastPathComponent)", systemImage: "doc") }
             }
-            Button("Restore from file…", systemImage: "arrow.down.doc") { pick(.backupFile) }
+            Button("Restore backup…", systemImage: "arrow.down.doc") { pick(.backupFile) }
             if let message = backupModel.message {
                 Text(message).font(.footnote).foregroundStyle(.secondary)
             }
             if let warning = backupModel.backupWarning {
-                Label(warning, systemImage: "exclamationmark.triangle")
+                StatusLabel(title: warning, tone: .caution)
                     .font(.footnote)
-                    .foregroundStyle(.orange)
             }
         } header: {
             Text("Backup")
