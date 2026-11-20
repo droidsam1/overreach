@@ -15,6 +15,8 @@ public struct ContextInput: Sendable {
     public var checkIns: [CheckIn]
     public var dailyMetrics: [DailyMetrics]
     public var runs: [RunActivity]
+    /// Strength workouts recorded by watches; those that match a session are attached to it.
+    public var strengthRecordings: [RecordedStrengthActivity]
     public var appVersion: String?
 
     public init(
@@ -27,6 +29,7 @@ public struct ContextInput: Sendable {
         checkIns: [CheckIn] = [],
         dailyMetrics: [DailyMetrics] = [],
         runs: [RunActivity] = [],
+        strengthRecordings: [RecordedStrengthActivity] = [],
         appVersion: String? = nil
     ) {
         self.sessions = sessions
@@ -38,6 +41,7 @@ public struct ContextInput: Sendable {
         self.checkIns = checkIns
         self.dailyMetrics = dailyMetrics
         self.runs = runs
+        self.strengthRecordings = strengthRecordings
         self.appVersion = appVersion
     }
 }
@@ -56,6 +60,9 @@ public enum ContextPackBuilder {
         let byID = Dictionary(input.exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let name = { (id: UUID) in byID[id]?.name ?? "Unknown exercise" }
         let sessions = input.sessions.sorted { $0.startedAt < $1.startedAt }
+        let watchBySession = StrengthActivityMatching.match(
+            sessions: sessions, activities: StrengthActivityMatching.removingDuplicates(input.strengthRecordings)
+        ).bySession
 
         var usedIDs = Set(sessions.flatMap { $0.entries.map(\.exerciseID) })
         usedIDs.formUnion(input.routines.flatMap(\.exerciseIDs))
@@ -79,7 +86,11 @@ public enum ContextPackBuilder {
                           .init(exercise: name(item.exerciseID), scheme: scheme(item.scheme))
                       })
             },
-            sessions: sessions.map { session(from: $0, name: name, calendar: calendar) },
+            sessions: sessions.map { session in
+                var shared = self.session(from: session, name: name, calendar: calendar)
+                shared.watch = watchBySession[session.id].map(watch)
+                return shared
+            },
             exerciseTrends: trends(input, sessions: sessions, byID: byID),
             checkIns: input.checkIns.sorted { $0.day < $1.day }.map { checkIn in
                 .init(date: checkIn.day.description, isSick: checkIn.isSick, energy: checkIn.energy,
@@ -144,6 +155,17 @@ public enum ContextPackBuilder {
         case let .rpeBased(sets, reps, rpe):
             .init(type: "rpeBased", sets: sets, reps: reps, targetRPE: rpe)
         }
+    }
+
+    private static func watch(_ recording: RecordedStrengthActivity) -> ContextPack.Watch {
+        .init(
+            source: recording.source.rawValue,
+            averageHeartRate: recording.averageHeartRate.map { rounded($0, places: 0) },
+            maxHeartRate: recording.maxHeartRate.map { rounded($0, places: 0) },
+            trainingLoad: recording.trainingLoad.map { rounded($0, places: 1) },
+            aerobicTrainingEffect: recording.aerobicTrainingEffect.map { rounded($0, places: 1) },
+            anaerobicTrainingEffect: recording.anaerobicTrainingEffect.map { rounded($0, places: 1) }
+        )
     }
 
     private static func session(

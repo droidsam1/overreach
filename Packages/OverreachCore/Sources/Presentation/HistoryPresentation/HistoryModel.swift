@@ -10,6 +10,8 @@ public struct SessionSummary: Identifiable, Hashable, Sendable {
     public let exerciseNames: [String]
     public let workingSets: Int
     public let tonnageKg: Double
+    /// "Watch: 112 bpm avg · Garmin load 48" when a watch recorded the same workout.
+    public var watchLine: String?
 
     public var id: UUID { session.id }
     public var title: String { session.name }
@@ -50,6 +52,19 @@ public struct SessionDetail: Sendable {
     public let focus: String?
     public let notes: String?
     public let entries: [Entry]
+    /// What the watch measured during this session (heart rate, load, training effect), one line each. Empty when no
+    /// watch recorded it.
+    public var watchLines: [String] = []
+}
+
+/// A strength workout a watch recorded with no session logged in the app. The person can log it: the new session
+/// starts with the watch's times and no sets.
+public struct UnloggedWorkout: Identifiable, Hashable, Sendable {
+    public let id: String
+    /// "Strength on Garmin"
+    public let title: String
+    /// "Tue 18 Nov, 18:02 · 54 min · 112 bpm"
+    public let detail: String
 }
 
 /// Past strength sessions, newest first, plus the month calendar with runs and steps from Apple Health.
@@ -63,6 +78,8 @@ public final class HistoryModel {
     public private(set) var errorMessage: String?
     /// Result of saving a session as a routine, until the user dismisses it.
     public private(set) var routineNotice: String?
+    /// Watch workouts of the last `unloggedWindow` with no logged session, newest first.
+    public private(set) var unlogged: [UnloggedWorkout] = []
 
     private let workouts: any WorkoutRepository
     private let exercises: any ExerciseRepository
@@ -71,8 +88,17 @@ public final class HistoryModel {
     private let health: (any HealthWorkoutWriter)?
     private let profiles: (any ProfileRepository)?
     private let progression: (any ProgressionSettingsRepository)?
+    private let recordingSources: [any StrengthRecordingSource]
     private let clock: @Sendable () -> Date
+    private let format: Format
     private var effortScale = EffortScale.rpe
+    /// Watch recordings in the list's window, one per workout.
+    private var recordings: [RecordedStrengthActivity] = []
+    /// The watch recording of each logged session that has one.
+    private var watchBySession: [UUID: RecordedStrengthActivity] = [:]
+
+    /// How far back watch workouts without a session are offered for logging.
+    static let unloggedWindow: TimeInterval = 30 * 86_400
 
     /// How far back the list goes.
     static let window: TimeInterval = 365 * 86_400
@@ -87,6 +113,7 @@ public final class HistoryModel {
         progression: (any ProgressionSettingsRepository)? = nil,
         activity: (any ActivitySource)? = nil,
         runs: (any MetricsSource)? = nil,
+        recordings: [any StrengthRecordingSource] = [],
         calendar: Calendar = .current,
         format: Format = Format(),
         clock: @escaping @Sendable () -> Date = { Date() }
@@ -98,6 +125,8 @@ public final class HistoryModel {
         self.health = health
         self.profiles = profiles
         self.progression = progression
+        self.recordingSources = recordings
+        self.format = format
         self.clock = clock
         self.calendar = HistoryCalendarModel(
             workouts: workouts, activity: activity, runs: runs, calendar: calendar, format: format, clock: clock
@@ -116,6 +145,12 @@ public final class HistoryModel {
             calendar.exerciseNames = exerciseNames
             let now = clock()
             let sessions = try await workouts.sessions(from: now.addingTimeInterval(-Self.window), to: now)
+            var found: [RecordedStrengthActivity] = []
+            for source in recordingSources {
+                found += await source.strengthRecordings(from: now.addingTimeInterval(-Self.window), to: now)
+            }
+            recordings = StrengthActivityMatching.removingDuplicates(found)
+            matchRecordings(to: sessions)
             summaries = sessions.reversed().map(summary)
             errorMessage = nil
             if let profile = try? await profiles?.profile() {
@@ -131,6 +166,7 @@ public final class HistoryModel {
             try await workouts.deleteSession(id: sessionID)
             summaries.removeAll { $0.id == sessionID }
             calendar.didDelete(sessionID)
+            matchRecordings(to: summaries.map(\.session))  // its watch workout is unlogged again
             await backup?.backUpIfConfigured(now: clock())
             await health?.removeWorkout(forSessionID: sessionID)
         } catch {
@@ -194,8 +230,77 @@ public final class HistoryModel {
                     notes: entry.notes,
                     countsForProgression: entry.countsForProgression
                 )
-            }
+            },
+            watchLines: watchBySession[session.id].map { Self.watchLines($0, format: format) } ?? []
         )
+    }
+
+    // MARK: Watch workouts
+
+    /// A new session for a watch workout that was not logged: its times, no sets yet. Saving it pairs it with the
+    /// recording (so it leaves the list) and does not write a second workout to Apple Health (ADR-0023).
+    public func makeEditor(forUnlogged id: String) -> SessionEditorModel? {
+        guard let recording = recordings.first(where: { $0.id == id }) else { return nil }
+        let session = StrengthSession(
+            name: L10n.text("Strength"), startedAt: recording.startedAt, endedAt: recording.endedAt, source: .app
+        )
+        return makeEditor(for: session)
+    }
+
+    private func matchRecordings(to sessions: [StrengthSession]) {
+        let matches = StrengthActivityMatching.match(sessions: sessions, activities: recordings)
+        watchBySession = matches.bySession
+        let since = clock().addingTimeInterval(-Self.unloggedWindow)
+        unlogged = matches.unmatched.filter { $0.startedAt >= since }.reversed().map { unloggedWorkout($0) }
+    }
+
+    private func unloggedWorkout(_ recording: RecordedStrengthActivity) -> UnloggedWorkout {
+        var parts = [
+            recording.startedAt.formatted(date: .abbreviated, time: .shortened),
+            L10n.format("{1} min", Int((recording.durationSeconds / 60).rounded())),
+        ]
+        if let heartRate = recording.averageHeartRate {
+            parts.append(L10n.format("{1} bpm", format.number(heartRate, maxFractionDigits: 0)))
+        }
+        return UnloggedWorkout(
+            id: recording.id,
+            title: L10n.format("Strength on {1}", recording.source.displayName),
+            detail: parts.joined(separator: " · ")
+        )
+    }
+
+    static func watchLine(_ recording: RecordedStrengthActivity, format: Format) -> String? {
+        var parts: [String] = []
+        if let heartRate = recording.averageHeartRate {
+            parts.append(L10n.format("Watch: {1} bpm avg", format.number(heartRate, maxFractionDigits: 0)))
+        }
+        if let load = recording.trainingLoad {
+            parts.append(L10n.format("Garmin load {1}", format.number(load, maxFractionDigits: 0)))
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
+    static func watchLines(_ recording: RecordedStrengthActivity, format: Format) -> [String] {
+        var lines: [String] = []
+        if let heartRate = recording.averageHeartRate {
+            lines.append(L10n.format("Average heart rate: {1} bpm", format.number(heartRate, maxFractionDigits: 0)))
+        }
+        if let heartRate = recording.maxHeartRate {
+            lines.append(L10n.format("Max heart rate: {1} bpm", format.number(heartRate, maxFractionDigits: 0)))
+        }
+        if let load = recording.trainingLoad {
+            lines.append(L10n.format("Garmin training load: {1}", format.number(load, maxFractionDigits: 0)))
+        }
+        if let aerobic = recording.aerobicTrainingEffect, let anaerobic = recording.anaerobicTrainingEffect {
+            lines.append(L10n.format(
+                "Training effect: aerobic {1}, anaerobic {2}",
+                format.fixed(aerobic, digits: 1), format.fixed(anaerobic, digits: 1)
+            ))
+        }
+        if !lines.isEmpty {
+            lines.append(L10n.format("Recorded by {1}", recording.source.displayName))
+        }
+        return lines
     }
 
     static func describe(_ set: WorkoutSet, format: Format) -> String {
@@ -248,9 +353,13 @@ public final class HistoryModel {
     public func didSave(_ session: StrengthSession) {
         calendar.didSave(session)
         summaries.removeAll { $0.id == session.id }
-        guard session.startedAt >= clock().addingTimeInterval(-Self.window) else { return }
-        let position = summaries.firstIndex { $0.session.startedAt < session.startedAt } ?? summaries.endIndex
-        summaries.insert(summary(session), at: position)
+        if session.startedAt >= clock().addingTimeInterval(-Self.window) {
+            let position = summaries.firstIndex { $0.session.startedAt < session.startedAt } ?? summaries.endIndex
+            summaries.insert(summary(session), at: position)
+        }
+        // A new or moved session may now pair with a watch workout.
+        matchRecordings(to: summaries.map(\.session))
+        summaries = summaries.map { summary($0.session) }
     }
 
     public func name(of exerciseID: UUID) -> String {
@@ -258,6 +367,8 @@ public final class HistoryModel {
     }
 
     private func summary(_ session: StrengthSession) -> SessionSummary {
-        SessionSummary(session: session, names: exerciseNames)
+        var summary = SessionSummary(session: session, names: exerciseNames)
+        summary.watchLine = watchBySession[session.id].flatMap { Self.watchLine($0, format: format) }
+        return summary
     }
 }

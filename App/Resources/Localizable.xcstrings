@@ -6694,7 +6694,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "FC en repouso {1} ppm por riba do habitual."
+            "value": "FC en repouso {1} lpm por riba do habitual."
           }
         }
       }
@@ -12101,6 +12101,278 @@
           "stringUnit": {
             "state": "translated",
             "value": "Crea unha nova en Axustes → Garmin para seguir importando. Son os mesmos tres pasos."
+          }
+        }
+      }
+    },
+    "Average heart rate: {1} bpm": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulso medio: {1} lpm"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulso medio: {1} lpm"
+          }
+        }
+      }
+    },
+    "Garmin load {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "carga Garmin {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "carga Garmin {1}"
+          }
+        }
+      }
+    },
+    "Garmin training load: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga de entrenamiento de Garmin: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga de adestramento de Garmin: {1}"
+          }
+        }
+      }
+    },
+    "Log it with its exercises and sets. The watch's heart rate and load are added to it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regístralo con sus ejercicios y series. Se le añaden el pulso y la carga del reloj."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rexístrao cos seus exercicios e series. Engádenselle o pulso e a carga do reloxo."
+          }
+        }
+      }
+    },
+    "Log this workout": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrar este entreno"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rexistrar este adestramento"
+          }
+        }
+      }
+    },
+    "Max heart rate: {1} bpm": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulso máximo: {1} lpm"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulso máximo: {1} lpm"
+          }
+        }
+      }
+    },
+    "Recorded by {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabado por {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gravado por {1}"
+          }
+        }
+      }
+    },
+    "Recorded on the watch, not logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabado en el reloj, sin registrar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gravado no reloxo, sen rexistrar"
+          }
+        }
+      }
+    },
+    "Sessions your watch also recorded show its heart rate and load. Workouts recorded but not logged appear in History, ready to log.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las sesiones que también grabó tu reloj muestran su pulso y su carga. Los entrenos grabados pero sin registrar aparecen en Historial, listos para registrar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As sesións que tamén gravou o teu reloxo amosan o seu pulso e a súa carga. Os adestramentos gravados pero sen rexistrar aparecen en Historial, listos para rexistrar."
+          }
+        }
+      }
+    },
+    "Strength on {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuerza en {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forza en {1}"
+          }
+        }
+      }
+    },
+    "Training effect: aerobic {1}, anaerobic {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Training effect: aeróbico {1}, anaeróbico {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Training effect: aeróbico {1}, anaeróbico {2}"
+          }
+        }
+      }
+    },
+    "Watch": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reloj"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reloxo"
+          }
+        }
+      }
+    },
+    "Watch: {1} bpm avg": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reloj: {1} lpm de media"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reloxo: {1} lpm de media"
+          }
+        }
+      }
+    },
+    "Your watch in History": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu reloj en el Historial"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teu reloxo no Historial"
+          }
+        }
+      }
+    },
+    "{1} bpm": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} lpm"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} lpm"
+          }
+        }
+      }
+    },
+    "{1} min": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} min"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} min"
           }
         }
       }

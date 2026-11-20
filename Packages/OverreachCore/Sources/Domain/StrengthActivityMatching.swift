@@ -48,6 +48,11 @@ public struct RecordedStrengthActivity: Identifiable, Hashable, Codable, Sendabl
     public var endedAt: Date { startedAt.addingTimeInterval(max(0, durationSeconds)) }
 }
 
+/// Strength workouts recorded by a watch: Garmin's own records, and those other apps write to Apple Health.
+public protocol StrengthRecordingSource: Sendable {
+    func strengthRecordings(from start: Date, to end: Date) async -> [RecordedStrengthActivity]
+}
+
 /// Which recorded activity belongs to which logged session.
 public struct StrengthActivityMatches: Hashable, Sendable {
     /// The watch recording of each logged session that has one.
@@ -77,6 +82,33 @@ public struct StrengthActivityMatches: Hashable, Sendable {
 public enum StrengthActivityMatching {
     public static let minimumOverlapFraction = 0.5
     public static let startTolerance: TimeInterval = 15 * 60
+
+    /// One record per workout when several sources recorded it (Garmin's record and the copy Garmin Connect writes
+    /// to Apple Health). Garmin wins, since it has load and training effect; missing heart rate is filled from the
+    /// copy. Two workouts from the same source are always kept. Oldest first.
+    public static func removingDuplicates(_ recordings: [RecordedStrengthActivity]) -> [RecordedStrengthActivity] {
+        let rank = { (source: DataSourceKind) in source == .garmin ? 0 : 1 }
+        let ordered = recordings.sorted {
+            (rank($0.source), $0.startedAt, $0.id) < (rank($1.source), $1.startedAt, $1.id)
+        }
+        var kept: [RecordedStrengthActivity] = []
+        for recording in ordered {
+            if let index = kept.firstIndex(where: { $0.source != recording.source && overlaps($0, recording) }) {
+                kept[index].averageHeartRate = kept[index].averageHeartRate ?? recording.averageHeartRate
+                kept[index].maxHeartRate = kept[index].maxHeartRate ?? recording.maxHeartRate
+            } else {
+                kept.append(recording)
+            }
+        }
+        return kept.sorted { ($0.startedAt, $0.id) < ($1.startedAt, $1.id) }
+    }
+
+    private static func overlaps(_ lhs: RecordedStrengthActivity, _ rhs: RecordedStrengthActivity) -> Bool {
+        let shorter = min(lhs.durationSeconds, rhs.durationSeconds)
+        guard shorter > 0 else { return abs(lhs.startedAt.timeIntervalSince(rhs.startedAt)) < startTolerance }
+        let overlap = min(lhs.endedAt, rhs.endedAt).timeIntervalSince(max(lhs.startedAt, rhs.startedAt))
+        return overlap / shorter >= minimumOverlapFraction
+    }
 
     public static func match(
         sessions: [StrengthSession], activities: [RecordedStrengthActivity]

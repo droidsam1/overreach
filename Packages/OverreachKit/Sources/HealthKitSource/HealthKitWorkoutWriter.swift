@@ -6,7 +6,7 @@ import Foundation
 ///
 /// Each workout carries the session id in `HKMetadataKeyExternalUUID`. HealthKit workouts cannot be changed, so
 /// saving again writes a new workout and then removes the ones already written for that session.
-public struct HealthKitWorkoutWriter: HealthWorkoutWriter {
+public struct HealthKitWorkoutWriter: HealthWorkoutWriter, StrengthRecordingSource {
     private let store = HKHealthStore()
 
     public init() {}
@@ -59,6 +59,11 @@ public struct HealthKitWorkoutWriter: HealthWorkoutWriter {
                         .maximumQuantity()?.doubleValue(for: .count().unitDivided(by: .minute()))
                 )
             }
+    }
+
+    /// The same workouts, as recordings to show next to logged sessions (Apple Watch Workout app, Garmin's copy).
+    public func strengthRecordings(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
+        (try? await strengthWorkoutsFromOtherSources(from: start, to: end)) ?? []
     }
 
     private var canWrite: Bool {

@@ -13,6 +13,7 @@ private enum HistoryLayout: String {
 /// Past strength sessions with their detail, as a list or as a month calendar with runs and steps.
 public struct HistoryView: View {
     @State private var model: HistoryModel
+    @State private var newSession: SessionEditorModel?
     @AppStorage("history.layout") private var layout = HistoryLayout.list
 
     public init(model: HistoryModel) {
@@ -48,6 +49,36 @@ public struct HistoryView: View {
                 Label(message, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red)
             }
+            if !model.unlogged.isEmpty {
+                Section {
+                    ForEach(model.unlogged) { workout in
+                        Button {
+                            newSession = model.makeEditor(forUnlogged: workout.id)
+                        } label: {
+                            HStack(spacing: Spacing.medium) {
+                                Image(systemName: "applewatch.radiowaves.left.and.right")
+                                    .font(.title3)
+                                    .foregroundStyle(.tint)
+                                    .accessibilityHidden(true)
+                                VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                                    Text(workout.title).font(.headline)
+                                    Text(workout.detail).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundStyle(.tint)
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityHint(Text("Log this workout"))
+                    }
+                } header: {
+                    Text("Recorded on the watch, not logged")
+                } footer: {
+                    Text("Log it with its exercises and sets. The watch's heart rate and load are added to it.")
+                }
+            }
             ForEach(model.summaries) { summary in
                 NavigationLink {
                     SessionDetailView(model: model, sessionID: summary.id)
@@ -69,6 +100,9 @@ public struct HistoryView: View {
             }
         }
         .refreshable { await model.load() }
+        .sheet(item: $newSession) { editor in
+            SessionEditorView(model: editor) { model.didSave($0) }
+        }
     }
 }
 
@@ -90,6 +124,11 @@ struct SessionRow: View {
             Text(summary.statsLine())
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
+            if let watch = summary.watchLine {
+                Label(watch, systemImage: "applewatch.radiowaves.left.and.right")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 }
@@ -140,6 +179,13 @@ struct SessionDetailView: View {
     private func content(_ detail: SessionDetail) -> some View {
         List {
             SessionInfo(detail: detail)
+            if !detail.watchLines.isEmpty {
+                Section("Watch") {
+                    ForEach(detail.watchLines, id: \.self) { line in
+                        Text(line).monospacedDigit()
+                    }
+                }
+            }
             ForEach(detail.entries) { entry in
                 Section(entry.name) {
                     ForEach(entry.sets) { set in

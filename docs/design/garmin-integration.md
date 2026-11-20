@@ -322,8 +322,9 @@ logged in Overreach. Rules, so nothing is counted twice and the two never disagr
 4. **A matched recording enriches its session** (heart rate, Garmin load, training effect) when it is shown or
    analysed. Nothing is written into `StrengthSession`, so no stored data changes (ADR-0018) and a re-sync just
    re-matches.
-5. **An unmatched recording** is a workout trained without logging it. It is listed (e.g. "Strength on the watch,
-   not logged") so the person can log it, and is never counted as a session. Its Garmin load is kept apart from
+5. **An unmatched recording** is a workout trained without logging it. History lists it ("Recorded on the watch,
+   not logged", last 30 days) with a button that opens a new session with the watch's times; it is never counted
+   as a session until the person logs it. Its Garmin load is kept apart from
    sRPE load: the two are different units and must not be added together in ACWR without an evidence-based
    conversion (step 5).
 6. **Runs follow the same rule against Apple Health:** a Garmin run and the copy Garmin Connect writes to Health are
@@ -355,7 +356,7 @@ Health when a matched Garmin recording exists.
 | 2 | Done (#65): `GarminService` (GarminImport) implements `GarminAccount` and `MetricsSource`: token minting and reuse, spacing and backoff, incremental sync, activity paging, cache. `GarminSource` supplies the Keychain, URLSession and the cache file. Wired in `AppContainer`. | Core, Kit, App |
 | 3 | Done (#65, #66): `GarminSetupModel` + `GarminSetupView` (three steps), Settings → Garmin, the devices step of the first-run setup, the Today card, an expiry notification a week before, translations. | SettingsPresentation, Feature* |
 | 4 | Done: Garmin HRV feeds `ReadinessRules`; every HRV value carries its statistic (`HRVMetric`) and baselines only compare nights of one kind (ADR-0024, `hrv-metrics`). | Domain, Analytics, `docs/evidence.md` |
-| 5 | Partly done: runs (with load and training effect) and `RecordedStrengthActivity` are imported; runs deduplicated against Health copies (`RunDeduplication`, used by the AI report); strength paired by `StrengthActivityMatching` and Health writes deduplicated (ADR-0023). Next: show the watch's heart rate and load on matched sessions and list unlogged watch workouts (gap C); walks (`ActivitySource`); our own acute/chronic load from per-activity load (evidence first). | Core + Kit |
+| 5 | Partly done: runs (with load and training effect) and `RecordedStrengthActivity` are imported; runs deduplicated against Health copies (`RunDeduplication`, used by the AI report); strength paired by `StrengthActivityMatching` and Health writes deduplicated (ADR-0023); History shows the watch's heart rate, load and training effect on matched sessions and lists unlogged watch workouts (last 30 days) ready to log; the AI context adds them as `sessions[].watch`. Next: walks (`ActivitySource`); our own acute/chronic load from per-activity load (evidence first). | Core + Kit |
 | 6 | FIT decoding (laps, HR, power) for run load and the AI report. | OverreachCore |
 | 7 | Women's health → `CycleSource` (ADR-0009). | Core + Kit |
 
@@ -389,7 +390,10 @@ Steps 1–4 are the shippable unit for phase 2 (v0.2). `ReleaseNotes.all` gets a
   does not write its own back until the session is edited (ADR-0023).
 - **iCloud Keychain off or another Apple ID.** The key then stays on this iPhone only: a new phone needs the key
   pasted again (or a new key).
-- **Strength recordings without a logged session** are kept but not shown yet (gap C).
+- **Unlogged watch workouts** are offered for 30 days. Logging one creates a session with the watch's times and no
+  sets; it pairs with the recording and is not written to Apple Health again (the watch's copy is there).
+- **Several watch recordings of one workout** (Garmin's record and its Apple Health copy) count once:
+  `StrengthActivityMatching.removingDuplicates`, Garmin first.
 - **Not verified on a device yet:** the setup flow, the Keychain item and the Health deduplication have only been
   built and unit tested.
 

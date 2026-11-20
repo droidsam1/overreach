@@ -71,6 +71,7 @@ public final class AskAIModel {
     private let routines: any RoutineRepository
     private let checkIns: (any CheckInRepository)?
     private let sources: [any MetricsSource]
+    private let recordings: [any StrengthRecordingSource]
     private let appVersion: String?
     private let clock: @Sendable () -> Date
     private let calendar: Calendar
@@ -84,6 +85,7 @@ public final class AskAIModel {
         routines: any RoutineRepository,
         checkIns: (any CheckInRepository)? = nil,
         sources: [any MetricsSource] = [],
+        recordings: [any StrengthRecordingSource] = [],
         appVersion: String? = nil,
         clock: @escaping @Sendable () -> Date = { Date() },
         calendar: Calendar = .current,
@@ -96,6 +98,7 @@ public final class AskAIModel {
         self.routines = routines
         self.checkIns = checkIns
         self.sources = sources
+        self.recordings = recordings
         self.appVersion = appVersion
         self.clock = clock
         self.calendar = calendar
@@ -134,6 +137,7 @@ public final class AskAIModel {
                 checkIns: (try? await checkIns?.checkIns(in: first...today)) ?? [],
                 dailyMetrics: await metrics(in: first...today),
                 runs: await runs(from: start, to: now),
+                strengthRecordings: await strengthRecordings(from: start, to: now),
                 appVersion: appVersion
             )
             let pack = ContextPackBuilder.build(input, period: first...today, now: now, calendar: calendar)
@@ -164,6 +168,14 @@ public final class AskAIModel {
         var all: [DailyMetrics] = []
         for source in sources where await source.isAvailable() {
             all += (try? await source.dailyMetrics(in: range)) ?? []
+        }
+        return all
+    }
+
+    private func strengthRecordings(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
+        var all: [RecordedStrengthActivity] = []
+        for source in recordings {
+            all += await source.strengthRecordings(from: start, to: end)
         }
         return all
     }

@@ -41,6 +41,8 @@ final class AppContainer {
     let healthSource: (any MetricsSource & ActivitySource)?
     /// The person's Garmin account (ADR-0022). Also in `metricsSources`.
     let garmin: (any GarminAccount)?
+    /// Strength workouts recorded by watches (Garmin, other apps through Apple Health), shown next to sessions.
+    let strengthRecordings: [any StrengthRecordingSource]
 
     init(
         workouts: any WorkoutRepository,
@@ -56,7 +58,8 @@ final class AppContainer {
         onboardingStatus: any OnboardingStatusStore = DefaultsOnboardingStatus(),
         metricsSources: [any MetricsSource],
         healthSource: (any MetricsSource & ActivitySource)? = nil,
-        garmin: (any GarminAccount)? = nil
+        garmin: (any GarminAccount)? = nil,
+        strengthRecordings: [any StrengthRecordingSource] = []
     ) {
         self.workouts = workouts
         self.exercises = exercises
@@ -75,6 +78,7 @@ final class AppContainer {
         self.metricsSources = metricsSources
         self.healthSource = healthSource
         self.garmin = garmin
+        self.strengthRecordings = strengthRecordings
     }
 
     /// Production wiring: SwiftData on disk (ADR-0004). If the store cannot be opened, the app still runs on an
@@ -82,20 +86,23 @@ final class AppContainer {
     static func live() -> AppContainer {
         let healthKit = HealthKitMetricsSource()
         let garmin = GarminConnect.makeService()
+        let healthWriter = HealthKitWorkoutWriter()
         let sources: [any MetricsSource] = [garmin, healthKit]
         do {
             let store = SwiftDataStore.make(container: try PersistenceContainer.make())
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store,
-                metricsSources: sources, healthSource: healthKit, garmin: garmin
+                health: healthWriter, metricsSources: sources, healthSource: healthKit, garmin: garmin,
+                strengthRecordings: [garmin, healthWriter]
             )
         } catch {
             let store = InMemoryStore(exercises: ExerciseCatalog.builtIn)
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store,
-                metricsSources: sources, healthSource: healthKit, garmin: garmin
+                health: healthWriter, metricsSources: sources, healthSource: healthKit, garmin: garmin,
+                strengthRecordings: [garmin, healthWriter]
             )
         }
     }
@@ -124,7 +131,8 @@ final class AppContainer {
     func makeAskAIModel() -> AskAIModel {
         AskAIModel(
             workouts: workouts, exercises: exercises, progression: progression, profiles: profiles,
-            routines: routines, checkIns: checkIns, sources: metricsSources, appVersion: Self.appVersion
+            routines: routines, checkIns: checkIns, sources: metricsSources, recordings: strengthRecordings,
+            appVersion: Self.appVersion
         )
     }
 
@@ -151,7 +159,8 @@ final class AppContainer {
     func makeHistoryModel() -> HistoryModel {
         HistoryModel(
             workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
-            profiles: profiles, progression: progression, activity: healthSource, runs: healthSource
+            profiles: profiles, progression: progression, activity: healthSource, runs: healthSource,
+            recordings: strengthRecordings
         )
     }
 

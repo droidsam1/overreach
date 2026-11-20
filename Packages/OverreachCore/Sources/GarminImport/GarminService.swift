@@ -78,7 +78,7 @@ public protocol GarminCacheStore: Sendable {
 
 /// The Garmin account and the Garmin metrics source in one place (ADR-0022). Pure Swift: the iPhone supplies the
 /// Keychain, URLSession and a file; tests supply fakes.
-public actor GarminService: GarminAccount, MetricsSource {
+public actor GarminService: GarminAccount, MetricsSource, StrengthRecordingSource {
     public nonisolated let kind: DataSourceKind = .garmin
     /// A sync older than this runs again when the app reads metrics (launch, foreground, Today).
     public static let autoSyncInterval: TimeInterval = 30 * 60
@@ -172,6 +172,10 @@ public actor GarminService: GarminAccount, MetricsSource {
     /// Strength workouts recorded on the watch, to pair with logged sessions (`StrengthActivityMatching`).
     public func strengthActivities(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
         await loadCache().strength.filter { $0.startedAt >= start && $0.startedAt <= end }
+    }
+
+    public func strengthRecordings(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
+        await strengthActivities(from: start, to: end)
     }
 
     // MARK: Sync

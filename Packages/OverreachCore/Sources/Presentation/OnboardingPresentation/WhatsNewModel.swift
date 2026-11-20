@@ -20,6 +20,13 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "applewatch.radiowaves.left.and.right", title: L10n.text("Your watch in History"),
+                    detail: L10n.text(
+                        "Sessions your watch also recorded show its heart rate and load. Workouts recorded but not "
+                            + "logged appear in History, ready to log."
+                    )
+                ),
+                ReleaseHighlight(
                     symbol: "applewatch.radiowaves.left.and.right", title: L10n.text("Garmin connection"),
                     detail: L10n.text(
                         "Nightly HRV, sleep score, Body Battery and runs from your Garmin, with your own key. "
