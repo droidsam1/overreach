@@ -132,6 +132,16 @@ and meta-analysis); Manresa-Rocamora et al. 2021, Scand J Med Sci Sports 31:1164
 Gastin 2016, Br J Sports Med 50:281 (systematic review); Craven et al. 2022, Sports Med 52:2669 (meta-analysis).
 Reviewed 2026-11-20.
 
+### `unplanned-deload` — heuristic
+
+Bell et al. [2023 Delphi](https://pmc.ncbi.nlm.nih.gov/articles/PMC10511399/) and
+[2024 athlete survey](https://pmc.ncbi.nlm.nih.gov/articles/PMC10948666/) support looking for a short period
+of reduced training stress and volume. Retrospective detection in hybrid athletes is an Overreach heuristic.
+Overreach checks seven complete calendar days against recent training and, for matched strength routines,
+reconstructed progression targets. The 50% and 65% load ratios, effort cutoffs, running-duration fallback,
+and one-week grace period for repeat advice are product heuristics. A break in logging can require
+confirmation before it counts as recovery. Reviewed 2026-11-20.
+
 ### `stall-heuristics` — heuristic
 Stall = no e1RM gain > 1 % over the last 3 exposures vs the 6 before, with ≥ 2 missed targets. Linear reset
 −10 % after 3 misses; microload at half the increment when the miss was by 1 rep; variation swap 3–4 weeks.

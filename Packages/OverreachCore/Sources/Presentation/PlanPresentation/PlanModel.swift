@@ -34,6 +34,13 @@ public struct PlanRow: Identifiable, Hashable, Sendable {
     public let weeks: Int
 }
 
+public struct DeloadRow: Identifiable, Hashable, Sendable {
+    public let id: CalendarDay
+    public let start: Date
+    public let end: Date
+    public let reason: ExplainedLine
+}
+
 /// An exercise in the priority-lift picker.
 public struct PriorityLiftRow: Identifiable, Hashable, Sendable {
     public let id: UUID
@@ -55,6 +62,9 @@ public final class PlanModel {
     public private(set) var errorMessage: String?
     /// True while the history is being analysed (off the main actor).
     public private(set) var isAnalysing = false
+    public private(set) var isReviewingDeload = false
+    private var deloads: [DetectedDeload] = []
+    private var weeksSinceDeload: Int?
 
     // Editable state of the screen.
     /// Whether the goal has a target date. Change it with `setHasTargetDate(_:)`.
@@ -69,6 +79,7 @@ public final class PlanModel {
     public var priorityLiftSearch = ""
     public var runningDraft: RunningPlanDraft
     public private(set) var isSavingProfile = false
+    public var isSavingRunningPain: Bool { isSavingProfile }
     private var availableRoutines: [Routine] = []
 
     private let profiles: any ProfileRepository
@@ -79,15 +90,17 @@ public final class PlanModel {
     private let clock: @Sendable () -> Date
     private let calendar: Calendar
     private let runSources: [any MetricsSource]
+    private let recordedStrength: (any RecordedStrengthSource)?
 
     public init(
         profiles: any ProfileRepository,
         workouts: any WorkoutRepository,
         exercises: any ExerciseRepository,
         progression: any ProgressionSettingsRepository,
+        routines: (any RoutineRepository)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() },
         calendar: Calendar = .current, runSources: [any MetricsSource] = [],
-        routines: (any RoutineRepository)? = nil
+        recordedStrength: (any RecordedStrengthSource)? = nil
     ) {
         self.profiles = profiles
         self.workouts = workouts
@@ -95,8 +108,9 @@ public final class PlanModel {
         self.progression = progression
         self.clock = clock
         self.calendar = calendar
-        self.runSources = runSources
         self.routines = routines
+        self.runSources = runSources
+        self.recordedStrength = recordedStrength
         targetDate = clock().addingTimeInterval(Self.defaultTargetWeeks * 7 * 86_400)
         runningDraft = RunningPlanDraft(goal: nil)
     }
@@ -159,6 +173,37 @@ public final class PlanModel {
         findings.map { ExplainedLine(text: $0.text(names: exerciseNames), evidence: $0.evidence) }
     }
 
+    public var lastDeloadSummary: String? {
+        weeksSinceDeload.map {
+            switch $0 {
+            case 0: L10n.text("Last deload less than a week ago")
+            case 1: L10n.text("Last deload 1 week ago")
+            default: L10n.format("Last deload {1} weeks ago", $0)
+            }
+        }
+    }
+
+    public var deloadRows: [DeloadRow] { deloadRows(needsConfirmation: false) }
+    public var pendingDeloadRows: [DeloadRow] { deloadRows(needsConfirmation: true) }
+
+    private func deloadRows(needsConfirmation: Bool) -> [DeloadRow] {
+        deloads.reversed().filter { $0.needsConfirmation == needsConfirmation }.map { period in
+            let text: String
+            switch period.reason {
+            case .noTraining: text = L10n.text("No training recorded")
+            case .easyRuns:
+                text = period.needsConfirmation
+                    ? L10n.text("Running may have been lighter than usual")
+                    : L10n.text("Only light running recorded")
+            case .reducedStrength: text = L10n.text("Strength training load was well below usual or planned")
+            }
+            return DeloadRow(
+                id: period.start, start: period.start.startDate(in: calendar), end: period.end.startDate(in: calendar),
+                reason: ExplainedLine(text: text, evidence: period.evidence)
+            )
+        }
+    }
+
     public var planRows: [PlanRow] {
         plan.enumerated().map { index, block in
             PlanRow(
@@ -180,16 +225,36 @@ public final class PlanModel {
             catalog = try await exercises.allExercises()
             exerciseNames = Dictionary(catalog.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
             let now = clock()
-            let sessions = try await workouts.sessions(from: now.addingTimeInterval(-365 * 86_400), to: now)
+            let start = CalendarDay(now, calendar: calendar).adding(days: -DeloadDetection.historyDays, calendar: calendar)
+                .startDate(in: calendar)
+            let sessions = try await workouts.sessions(from: start, to: now)
             errorMessage = nil
             if showsHybridCalendar { await loadCalendarRoutines() }
-            await analyse(sessions: sessions, now: now)
+            await analyse(sessions: sessions, from: start, now: now)
         } catch {
             errorMessage = L10n.text("Could not load your plan.")
         }
     }
 
     // MARK: Actions
+
+    public func reviewDeload(start: CalendarDay, accepted: Bool) async {
+        guard !isReviewingDeload, let period = deloads.first(where: { $0.start == start && $0.needsConfirmation })
+        else { return }
+        isReviewingDeload = true
+        defer { isReviewingDeload = false }
+        do {
+            var updated = try await profiles.profile()
+            updated.deloadDecisions.removeAll { $0.start == period.start }
+            updated.deloadDecisions.append(
+                DeloadDecision(start: period.start, end: period.end, reason: period.reason, accepted: accepted)
+            )
+            try await profiles.save(updated)
+            await load()
+        } catch {
+            errorMessage = L10n.text("Could not save your plan. Try again.")
+        }
+    }
 
     public func resetRunningPlanEditor() {
         runningDraft = RunningPlanDraft(goal: profile.goal)
@@ -278,7 +343,7 @@ public final class PlanModel {
     }
 
     /// Runs `PlanAnalysis` off the main actor: with years of history it is the heaviest work in the app.
-    private func analyse(sessions: [StrengthSession], now: Date) async {
+    private func analyse(sessions: [StrengthSession], from start: Date, now: Date) async {
         isAnalysing = true
         defer { isAnalysing = false }
         let settings: [UUID: ProgressionSettings]
@@ -291,20 +356,70 @@ public final class PlanModel {
         let exercises = Dictionary(catalog.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let profile = profile
         let calendar = calendar
+        let routines = (try? await routines?.allRoutines()) ?? []
+        var runs: [RunActivity] = []
+        var runReadFailed = false
+        for source in runSources where await source.isAvailable() {
+            do {
+                runs += try await source.runs(from: start, to: now)
+            } catch {
+                runReadFailed = true
+            }
+        }
+        let recordings = (try? await recordedStrength?.strengthActivities(from: start, to: now)) ?? []
         let analysis = await Task.detached(priority: .userInitiated) {
             PlanAnalysis.run(
                 profile: profile, sessions: sessions, exercises: exercises, settings: settings, now: now,
-                calendar: calendar
+                runs: runs, routines: routines, runReadFailed: runReadFailed, recordings: recordings, calendar: calendar
             )
         }.value
         currentBlock = analysis.currentBlock
         suggestion = analysis.suggestion
         plan = analysis.plan
         findings = analysis.findings
+        deloads = analysis.deloads
+        weeksSinceDeload = analysis.weeksSinceDeload
     }
 }
 
 extension PlanModel {
+    public var runningGoalProgress: RunningGoalProgress? {
+        guard showsRunningCalendar, let goal = profile.goal, let running = goal.running else { return nil }
+        return RunningGoalProgress(goal: running, schedule: goal.scheduledRuns, calendar: calendar)
+    }
+
+    public func saveRunningPain(_ row: RunningGoalResultRow, during: Bool?, after: Bool?) async -> Bool {
+        guard showsRunningCalendar, !isSavingProfile else { return false }
+        isSavingProfile = true
+        defer { isSavingProfile = false }
+        do {
+            var updated = try await profiles.profile()
+            guard var goal = updated.goal, goal.kind == .hybrid, goal.running != nil else { return false }
+            var schedule = goal.scheduledRuns
+            guard let index = schedule.firstIndex(where: { $0.id == row.id }), var result = schedule[index].completion,
+                  result.activityID == row.result.activityID, result.source == row.result.source,
+                  result.startedAt == row.result.startedAt else {
+                errorMessage = L10n.text("The linked run changed. Open progress again and retry.")
+                return false
+            }
+            result.painDuring = during
+            result.painAfter = after
+            let entry = schedule[index]
+            schedule[index] = PlannedRun(id: entry.id, day: entry.day, purpose: entry.purpose,
+                                         durationMinutes: entry.durationMinutes, distanceMeters: entry.distanceMeters,
+                                         completion: result)
+            goal.setRunningSchedule(schedule)
+            updated.goal = goal
+            try await profiles.save(updated)
+            profile = updated
+            errorMessage = nil
+            return true
+        } catch {
+            errorMessage = L10n.text("Could not save your plan. Try again.")
+            return false
+        }
+    }
+
     public var upcomingRunningEntries: [RunningCalendarRow] {
         let today = CalendarDay(clock(), calendar: calendar)
         return (profile.goal?.scheduledRuns ?? []).filter { $0.day >= today }.sorted { $0.day < $1.day }

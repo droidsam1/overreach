@@ -90,6 +90,7 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
     public var deloads: [DeloadRecord]
     /// A deload proposal was postponed until this day (inclusive).
     public var deloadPostponedUntil: CalendarDay?
+    public var deloadDecisions: [DeloadDecision]
 
     public init(
         sex: BiologicalSex? = nil,
@@ -104,7 +105,8 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         effortScale: EffortScale = .rpe,
         wearables: Set<Wearable> = [],
         deloads: [DeloadRecord] = [],
-        deloadPostponedUntil: CalendarDay? = nil
+        deloadPostponedUntil: CalendarDay? = nil,
+        deloadDecisions: [DeloadDecision] = []
     ) {
         self.sex = sex
         self.birthYear = birthYear
@@ -119,6 +121,7 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         self.wearables = wearables
         self.deloads = deloads
         self.deloadPostponedUntil = deloadPostponedUntil
+        self.deloadDecisions = deloadDecisions
     }
 
     /// Whether cycle-aware logic applies: only when the user chose a natural cycle explicitly.
@@ -128,7 +131,7 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
 extension AthleteProfile {
     private enum CodingKeys: String, CodingKey {
         case sex, birthYear, bodyMassKg, maxHeartRate, restingHeartRate, cycleTracking, walkingRoutine, goal
-        case declaredBlocks, effortScale, wearables, deloads, deloadPostponedUntil
+        case declaredBlocks, effortScale, wearables, deloads, deloadPostponedUntil, deloadDecisions
     }
 
     /// Tolerant decoding: fields added in later versions fall back to their defaults, so older stores and
@@ -152,7 +155,8 @@ extension AthleteProfile {
                 (try container.decodeIfPresent([String].self, forKey: .wearables) ?? []).compactMap(Wearable.init)
             ),
             deloads: try container.decodeIfPresent([DeloadRecord].self, forKey: .deloads) ?? [],
-            deloadPostponedUntil: try container.decodeIfPresent(CalendarDay.self, forKey: .deloadPostponedUntil)
+            deloadPostponedUntil: try container.decodeIfPresent(CalendarDay.self, forKey: .deloadPostponedUntil),
+            deloadDecisions: try container.decodeIfPresent([DeloadDecision].self, forKey: .deloadDecisions) ?? []
         )
     }
 }

@@ -40,8 +40,8 @@ struct PlanModelTests {
         let store = TestStore(exercises: [squat, bench], sessions: history)
         let fixedNow = now
         let model = PlanModel(
-            profiles: store, workouts: store, exercises: store, progression: store, clock: { fixedNow },
-            calendar: calendar, runSources: runSources, routines: store
+            profiles: store, workouts: store, exercises: store, progression: store, routines: store,
+            clock: { fixedNow }, calendar: calendar, runSources: runSources
         )
         await model.load()
         return (model, store)
@@ -240,6 +240,32 @@ struct PlanModelTests {
             #expect(next.headline.contains(" block "))
             #expect(next.reasons.allSatisfy { !$0.evidence.isEmpty })
         }
+    }
+
+    @Test(arguments: [true, false])
+    func reviewingADeloadPersistsTheAnswer(accepted: Bool) async throws {
+        let history = sessions().map { original in
+            var session = original
+            session.startedAt = original.startedAt.addingTimeInterval(-8 * 86_400)
+            return session
+        }
+        let store = TestStore(exercises: [squat], sessions: history)
+        try await store.save(AthleteProfile(goal: TrainingGoal(kind: .hybrid)))
+        let fixedNow = now
+        let model = PlanModel(
+            profiles: store, workouts: store, exercises: store, progression: store, clock: { fixedNow }, calendar: calendar
+        )
+        await model.load()
+        let pending = try #require(model.pendingDeloadRows.first)
+        #expect(model.lastDeloadSummary == nil)
+
+        await model.reviewDeload(start: pending.id, accepted: accepted)
+        await model.load()
+
+        #expect(model.pendingDeloadRows.isEmpty)
+        #expect(model.deloadRows.count == (accepted ? 1 : 0))
+        #expect((model.lastDeloadSummary != nil) == accepted)
+        #expect(await store.profile().deloadDecisions.first?.accepted == accepted)
     }
 
     @Test func withoutTrainingThereIsNoCurrentBlock() async {
