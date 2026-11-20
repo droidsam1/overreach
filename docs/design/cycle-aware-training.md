@@ -42,15 +42,35 @@ public protocol CycleSource: Sendable {
 
 ## Phase estimation (phase 2, `Analytics`)
 
-Pure function `estimatePhase(on:events:)` → `CyclePhaseEstimate { phase, cycleDay, confidence, reasons }`.
+Evidence: `cycle-phase-estimation`. Pure function
+`CyclePhaseEstimator.estimate(on:events:mode:calendar:)` → `CyclePhaseEstimate?`:
 
-- Cycle start = first day of flow after ≥ 10 days without flow (or `isCycleStart` from Health).
-- Cycle length = median of the last up to 6 cycles; default 28 until 2 cycles are known.
-- Ovulation ≈ next expected start − 14 days (the luteal phase is the more stable half).
-- Phases: menstrual = flow days; follicular until ovulation − 2; ovulatory = ovulation ± 2;
-  luteal after that; late luteal = last 5 days before the expected start.
-- Confidence drops with few cycles, high variability (> 7 days spread) or an overdue period. Irregular cycles
-  or `cycleTracking != .naturalCycle` → `.unknown`, phase is not used.
+```swift
+public struct CyclePhaseEstimate: Hashable, Sendable {
+    public var phase: CyclePhase          // .menstrual, .follicular, .luteal, .lateLuteal (never .ovulatory)
+    public var cycleDay: Int              // 1 = first day of the current period
+    public var expectedLength: Int        // days
+    public var confidence: Confidence     // .high, .low
+    public var reasons: [Reason]          // fewCycles, irregularCycles, overdue, …
+}
+```
+
+- Returns `nil` unless `mode == .naturalCycle`. Hormonal contraception and menopause never get a phase
+  (`cycle-hormonal-contraception`).
+- Cycle start = first day of flow after ≥ 10 days without flow (or `isCycleStart` from Health). Spotting alone
+  never starts a cycle.
+- Expected length = median of the last up to 6 complete cycles; 28 until 2 complete cycles are known.
+- Windows, counted from the last start (`S`) and the next expected start (`N = S + expectedLength`):
+  - **menstrual**: flow days of the current cycle (at most days 1–7);
+  - **follicular**: after menstrual, until `N − 15`;
+  - **luteal**: `N − 14 … N − 6`;
+  - **late luteal**: `N − 5 … N − 1`.
+  No ovulatory window: a calendar cannot place ovulation (± several days), and the app never shows ovulation
+  or fertility. `CyclePhase.ovulatory` stays in the enum for a future LH-test source and is not produced.
+- Confidence is **high** only with ≥ 2 complete cycles, all of the last 6 within 21–35 days, a spread
+  (max − min) ≤ 7 days and today ≤ `N + 3`. Otherwise **low**, and a low estimate is shown as context at most;
+  no rule uses it.
+- Overdue (today > `N + 3`): phase `.lateLuteal` is not assumed; the estimate is low with reason `overdue`.
 
 ## Where it plugs in
 
@@ -58,23 +78,56 @@ Pure function `estimatePhase(on:events:)` → `CyclePhaseEstimate { phase, cycle
 | --- | --- |
 | 0 — Foundation | Domain types above and `CycleSource` protocol. ADR-0009. No behaviour. |
 | 1 — v0.1 | Progression engine takes an optional context parameter so phase 2 does not change signatures. |
-| 2 — v0.2 | `HealthKitSource` implements `CycleSource` (`menstrualFlow` + symptom types). Onboarding asks sex and tracking mode. Check-in: "period started today" + symptoms. `estimatePhase`. **Phase-aware HRV / resting HR baselines** for the readiness light and deload signals. |
+| 2 — v0.2 | `HealthKitSource` implements `CycleSource` (`menstrualFlow` + symptom types; Garmin's cycle endpoint later). Onboarding asks sex and tracking mode. Check-in: "period started today" + symptoms. `CyclePhaseEstimator`. **Phase-aware HRV / resting HR baselines** for the readiness light and deload signals. |
 | 3 — Intelligence | Report includes phase, cycle day and symptoms (opt-in). Symptom-driven autoregulation. Running: luteal phase raises HR at a given pace and heat strain, so HR-based run load is read with that context. Personal per-phase analysis after ≥ 3 cycles. |
 | Later — Nutrition | New `NutritionSource` + `FeatureNutrition` modules. Energy availability first; protein high end of 1.4–2.2 g/kg/day in luteal; carbohydrates matched to training load in every phase. |
 
 ## Phase-aware baselines (phase 2)
 
-The deload signals "HRV 7-day average below normal ≥ 5 days" and "resting HR ≥ 5 bpm above baseline" compare
-against a baseline. For naturally cycling users with a confident phase estimate, the baseline is computed from
-the same phase in previous cycles (fallback: overall baseline with the luteal tolerance widened). Without at
-least 2 cycles of HRV data, the signal carries the reason "possible luteal shift" instead of firing at full
-weight.
+Evidence: `cycle-phase-baselines` (replaces the interim `hrv-cycle-phase` behaviour). Resting HR rises a few bpm
+and RMSSD falls in the luteal phase, so a whole-cycle baseline reads a normal luteal week as poor recovery.
+
+Two **baseline windows**, enough for the size of the shift and robust to the ± days of error in estimation:
+
+- **follicular window** = menstrual + follicular days;
+- **luteal window** = luteal + late luteal days.
+
+Rule, inside `ReadinessRules` (HRV check and resting-HR check), only when the estimate is high confidence:
+
+1. Build the baseline from previous days whose own estimate (computed with the events known then) falls in the
+   same window as today, over the readiness baseline period extended back to cover ≥ 2 previous cycles (up to
+   120 days).
+2. If that window has ≥ 2 cycles with data and the usual minimum of nights (14 for resting HR, Garmin baseline
+   or 14 nights for HRV), use it in place of the overall baseline. Reason: `phaseBaseline(window)`, evidence
+   `cycle-phase-baselines`.
+3. Otherwise use the overall baseline and:
+   - HRV: keep the interim behaviour (`hrvMayReflectCycle`, not counted towards red) in the luteal window only;
+     in the follicular window a low HRV counts as usual;
+   - resting HR: in the luteal window the "above baseline" threshold widens from 5 to 8 bpm, reason
+     `possibleLutealShift`.
+4. Low confidence, no estimate or another mode → today's behaviour for that user (`hrvMayReflectCycle` stays for
+   natural-cycle trackers without a confident estimate).
+
+Garmin's own HRV baseline is a whole-cycle baseline: with a phase baseline available it is ignored for the
+comparison and still shown as the device's context (`composite-scores`).
+
+`RecoveryTrend` runs `readiness()` per day, so the deload signals (`hrvSuppressed`, `restingHeartRateElevated`)
+inherit phase baselines without change; the per-day call passes the estimate for that day.
+
+**Texts.** Reasons name the window, never a diagnosis: *"Compared with your luteal days in the last 2 cycles"*,
+*"Resting HR often rises a few beats before a period; the threshold allows for it."* Nothing mentions ovulation.
+
+**Tests (fixtures).** Synthetic 28 ± 2-day cycles over 120 days with a +4 bpm / −10 % RMSSD luteal shift:
+- a luteal day at the luteal norm is green with a phase baseline and would have been amber without it;
+- a truly suppressed luteal day (below the luteal baseline) still counts;
+- one known cycle → fallback; irregular cycles (24, 38, 29) → low confidence → no phase;
+- hormonal contraception → overall baseline; missing HRV → nothing breaks.
 
 ## Autoregulation (phase 3)
 
 When check-in symptoms or energy are poor (in any phase, for any user), today's targets switch to RPE-based:
 keep the planned reps at target RPE and let the load fall out of it. A missed target on such a day is not
-counted towards stall detection. The reason shown names the symptom, not the phase.
+counted towards stall detection. The reason shown names the symptom, not the phase (`cycle-symptoms`).
 
 ## Personal pattern detection (phase 3)
 

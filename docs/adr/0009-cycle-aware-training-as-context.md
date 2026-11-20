@@ -46,6 +46,17 @@ lower the loads", "late follicular → push PRs"). The research does not support
   user enables it.
 - Design details and phase placement: `docs/design/cycle-aware-training.md`.
 
+## Update 2026-11-20 — evidence for phase-aware baselines
+
+A new evidence review (`docs/evidence.md`: `cycle-phase-baselines`, `cycle-phase-estimation`, `cycle-symptoms`,
+`cycle-hormonal-contraception`) confirms the order above and narrows how phases are used:
+
+- Phase is estimated only as coarse windows (follicular vs luteal) from period starts; calendar counting cannot
+  verify phase, so the app never estimates ovulation or fertility, and low-confidence estimates are not used.
+- Phase-aware baselines need ≥ 2 previous cycles with data in the same window; until then the interim rule
+  (`hrvMayReflectCycle`) and a widened luteal resting-HR threshold apply.
+- Hormonal contraception and menopause keep the overall baseline.
+
 ## References
 
 - Colenso-Semple LM et al. *Front Sports Act Living* 2023;5:1054542. doi:10.3389/fspor.2023.1054542
@@ -53,3 +64,10 @@ lower the loads", "late follicular → push PRs"). The research does not support
 - Elliott-Sale KJ et al. (oral contraceptives) *Sports Med* 2020;50:1785–1812. doi:10.1007/s40279-020-01317-5
 - Sims ST et al. ISSN position stand: nutritional concerns of the female athlete. *J Int Soc Sports Nutr*
   2023;20:2204066. PMID 37221858
+- Bull JR et al. Real-world menstrual cycle characteristics of more than 600,000 menstrual cycles. *npj Digit Med*
+  2019;2:83. doi:10.1038/s41746-019-0152-7
+- Elliott-Sale KJ et al. Methodological considerations for studies in sport and exercise science with women as
+  participants. *Sports Med* 2021;51:843–861. doi:10.1007/s40279-021-01435-8
+- Alzueta E et al. *Int J Womens Health* 2022;14:491–503. doi:10.2147/IJWH.S341917
+- Schmalenberger KM et al. *J Clin Med* 2019;8:1946. doi:10.3390/jcm8111946
+- Taim BC et al. *Sports Med* 2023;53:1963–1984. doi:10.1007/s40279-023-01871-8
