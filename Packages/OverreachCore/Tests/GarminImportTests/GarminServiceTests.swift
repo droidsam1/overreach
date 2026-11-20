@@ -1,0 +1,326 @@
+import Domain
+import Foundation
+@testable import GarminImport
+import Testing
+
+/// A Garmin that answers from the fixtures, and records what it was asked.
+actor FakeGarmin: GarminTransport {
+    var requests: [GarminHTTPRequest] = []
+    /// Responses to return before the normal ones, in order (e.g. a 429 then success).
+    var queued: [GarminHTTPResponse] = []
+    var acceptedKey = "valid-key-0123456789"
+    var offline = false
+    var tokenExpiry = Date(timeIntervalSince1970: 1_790_086_400)
+
+    func queue(_ responses: GarminHTTPResponse...) { queued += responses }
+    func setOffline(_ value: Bool) { offline = value }
+    func setAcceptedKey(_ key: String) { acceptedKey = key }
+
+    func send(_ request: GarminHTTPRequest) throws -> GarminHTTPResponse {
+        requests.append(request)
+        if offline { throw URLError(.notConnectedToInternet) }
+        if !queued.isEmpty { return queued.removeFirst() }
+        if request.path == GarminEndpoint.tokenPath {
+            guard request.headers["Authorization"] == "ApiKey \(acceptedKey)" else {
+                return GarminHTTPResponse(status: 401)
+            }
+            return GarminHTTPResponse(status: 200, body: Data(Self.jwt(expiring: tokenExpiry).utf8))
+        }
+        guard request.headers["Authorization"]?.hasPrefix("Bearer ") == true else {
+            return GarminHTTPResponse(status: 403)
+        }
+        let name: String? = switch request.path {
+        case let path where path.hasPrefix("/hrv-service"): "hrv-daily-range"
+        case let path where path.hasPrefix("/sleep-service"): "sleep-summaries-range"
+        case let path where path.hasPrefix("/usersummary-service/v2"): "daily-summaries-v2"
+        case let path where path.hasPrefix("/metrics-service/metrics/maxmet"): "vo2max"
+        case let path where path.hasPrefix("/activitylist-service") && path.contains("start=0&"): "activities"
+        default: nil
+        }
+        guard let name, let url = Bundle.module.url(forResource: name, withExtension: "json", subdirectory: "Fixtures"),
+            let body = try? Data(contentsOf: url)
+        else { return GarminHTTPResponse(status: 200, body: Data("[]".utf8)) }
+        return GarminHTTPResponse(status: 200, body: body)
+    }
+
+    static func jwt(expiring date: Date) -> String {
+        let claims = #"{"exp":\#(Int(date.timeIntervalSince1970)),"scope":["CONNECT_READ"]}"#
+        let payload = Data(claims.utf8).base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+        return "eyJhbGciOiJSUzI1NiJ9.\(payload).c2lnbmF0dXJl"
+    }
+}
+
+actor MemorySecrets: GarminSecretStore {
+    var key: GarminStoredKey?
+    var token: GarminToken?
+    var failsToSave = false
+
+    init(key: GarminStoredKey? = nil, failsToSave: Bool = false) {
+        self.key = key
+        self.failsToSave = failsToSave
+    }
+
+    struct SaveFailed: Error {}
+
+    func loadKey() -> GarminStoredKey? { key }
+    func saveKey(_ key: GarminStoredKey) throws {
+        if failsToSave { throw SaveFailed() }
+        self.key = key
+    }
+    func loadToken() -> GarminToken? { token }
+    func saveToken(_ token: GarminToken?) { self.token = token }
+    func deleteAll() {
+        key = nil
+        token = nil
+    }
+}
+
+actor MemoryCache: GarminCacheStore {
+    var cache: GarminCache?
+    func load() -> GarminCache? { cache }
+    func save(_ cache: GarminCache) { self.cache = cache }
+}
+
+/// A clock tests can move.
+final class TestClock: @unchecked Sendable {
+    private let lock = NSLock()
+    private var current: Date
+    init(_ date: Date) { current = date }
+    var now: Date { lock.withLock { current } }
+    func advance(_ seconds: TimeInterval) { lock.withLock { current += seconds } }
+}
+
+private let utcCalendar: Calendar = {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "UTC")!  // swiftlint:disable:this force_unwrapping
+    return calendar
+}()
+
+/// 2026-01-08 12:00 UTC: the last day of the fixtures.
+private let fixtureNow = Date(timeIntervalSince1970: 1_767_873_600)
+
+private func makeService(
+    garmin: FakeGarmin = FakeGarmin(), secrets: MemorySecrets = MemorySecrets(), cache: MemoryCache = MemoryCache(),
+    clock: TestClock = TestClock(fixtureNow)
+) -> GarminService {
+    GarminService(
+        transport: garmin, secrets: secrets, cache: cache, clock: { clock.now }, calendar: utcCalendar,
+        sleep: { _ in }
+    )
+}
+
+@Suite("Garmin client")
+struct GarminClientTests {
+    @Test func theKeyGoesOnlyToTheTokenEndpointAndDataCallsCarryTheToken() async throws {
+        let garmin = FakeGarmin()
+        let client = GarminClient(transport: garmin, clock: { fixtureNow }, sleep: { _ in })
+
+        let week = CalendarDay(year: 2026, month: 1, day: 1)...CalendarDay(year: 2026, month: 1, day: 8)
+        _ = try await client.data(for: .hrv(week), key: "valid-key-0123456789")
+
+        let requests = await garmin.requests
+        #expect(requests.map(\.method) == ["POST", "GET"])
+        #expect(requests[0].headers["Authorization"] == "ApiKey valid-key-0123456789")
+        #expect(requests[1].headers["Authorization"]?.hasPrefix("Bearer eyJ") == true)
+        #expect(!requests[1].headers.values.contains { $0.contains("valid-key") })
+    }
+
+    @Test func theTokenIsReusedUntilAnHourBeforeItExpires() async throws {
+        let garmin = FakeGarmin()
+        let clock = TestClock(fixtureNow)
+        await garmin.setAcceptedKey("valid-key-0123456789")
+        let client = GarminClient(transport: garmin, clock: { clock.now }, sleep: { _ in })
+        let token = try await client.mintToken(key: "valid-key-0123456789")
+        #expect(token.expiresAt == Date(timeIntervalSince1970: 1_790_086_400))  // from the JWT
+
+        let day = CalendarDay(year: 2026, month: 1, day: 8)
+        _ = try await client.data(for: .vo2Max(day...day), key: "valid-key-0123456789")
+        clock.advance(1_790_086_400 - fixtureNow.timeIntervalSince1970 - 1_800)  // 30 minutes left
+        _ = try await client.data(for: .vo2Max(day...day), key: "valid-key-0123456789")
+
+        #expect(await garmin.requests.map(\.method) == ["POST", "GET", "POST", "GET"])
+    }
+
+    @Test func rateLimitsAreRetriedTwiceWithWaitsThenGiveUp() async throws {
+        let garmin = FakeGarmin()
+        let waits = WaitRecorder()
+        let client = GarminClient(
+            transport: garmin, token: GarminToken(value: "t", expiresAt: .distantFuture), clock: { fixtureNow },
+            sleep: { await waits.record($0) }, jitter: { 1 }
+        )
+        let day = CalendarDay(year: 2026, month: 1, day: 8)
+        await garmin.queue(GarminHTTPResponse(status: 429, retryAfter: 5), GarminHTTPResponse(status: 503))
+
+        _ = try await client.data(for: .vo2Max(day...day), key: "k")
+        #expect(await waits.waits.filter { $0 > 1 } == [5, 8])  // Retry-After honoured, then the second backoff
+
+        await garmin.queue(
+            GarminHTTPResponse(status: 429), GarminHTTPResponse(status: 429), GarminHTTPResponse(status: 429)
+        )
+        await #expect(throws: GarminAccountError.rateLimited) {
+            try await client.data(for: .vo2Max(day...day), key: "k")
+        }
+    }
+
+    @Test func aRejectedTokenIsMintedAgainOnceThenTheKeyIsRejected() async throws {
+        let garmin = FakeGarmin()
+        let client = GarminClient(
+            transport: garmin, token: GarminToken(value: "old", expiresAt: .distantFuture), clock: { fixtureNow },
+            sleep: { _ in }
+        )
+        let day = CalendarDay(year: 2026, month: 1, day: 8)
+        await garmin.queue(GarminHTTPResponse(status: 401))
+
+        _ = try await client.data(for: .vo2Max(day...day), key: "valid-key-0123456789")
+        #expect(await garmin.requests.map(\.method) == ["GET", "POST", "GET"])
+
+        await garmin.setAcceptedKey("another-key-0123456789")
+        await garmin.queue(GarminHTTPResponse(status: 401))
+        await #expect(throws: GarminAccountError.keyRejected) {
+            try await client.data(for: .vo2Max(day...day), key: "valid-key-0123456789")
+        }
+    }
+
+    @Test func noConnectionIsOffline() async {
+        let garmin = FakeGarmin()
+        await garmin.setOffline(true)
+        let client = GarminClient(transport: garmin, sleep: { _ in })
+        await #expect(throws: GarminAccountError.offline) { try await client.mintToken(key: "k") }
+    }
+}
+
+actor WaitRecorder {
+    var waits: [TimeInterval] = []
+    func record(_ seconds: TimeInterval) { waits.append(seconds) }
+}
+
+@Suite("Garmin account and sync")
+struct GarminServiceTests {
+    @Test func connectingChecksTheKeyWithGarminBeforeSavingIt() async throws {
+        let secrets = MemorySecrets()
+        let service = makeService(secrets: secrets)
+
+        await #expect(throws: GarminAccountError.keyRejected) {
+            try await service.connect(key: "wrong-key-0123456789", lifetime: .oneYear)
+        }
+        #expect(await secrets.key == nil)
+
+        try await service.connect(key: "  \"valid-key-0123456789\"\n", lifetime: .days90)  // pasted with extras
+        #expect(await secrets.key?.value == "valid-key-0123456789")
+        #expect(await secrets.token != nil)
+        let info = try #require(await service.connection())
+        #expect(info.keyExpiresAt == fixtureNow.addingTimeInterval(90 * 86_400))
+    }
+
+    @Test func somethingThatIsNotAKeyIsRefusedWithoutAskingGarmin() async {
+        let garmin = FakeGarmin()
+        let service = makeService(garmin: garmin)
+        for pasted in ["", "   ", "https://connect.garmin.com/app/settings", "copy the key here", "short"] {
+            await #expect(throws: GarminAccountError.keyLooksWrong) {
+                try await service.connect(key: pasted, lifetime: .oneYear)
+            }
+        }
+        #expect(await garmin.requests.isEmpty)
+    }
+
+    @Test func aKeyThatCannotBeStoredIsReported() async {
+        let service = makeService(secrets: MemorySecrets(failsToSave: true))
+        await #expect(throws: GarminAccountError.storageFailed) {
+            try await service.connect(key: "valid-key-0123456789", lifetime: .oneYear)
+        }
+    }
+
+    @Test func theFirstSyncImportsSixtyDaysAndReportsProgress() async throws {
+        let garmin = FakeGarmin()
+        let cache = MemoryCache()
+        let service = makeService(garmin: garmin, cache: cache)
+        try await service.connect(key: "valid-key-0123456789", lifetime: .oneYear)
+        let steps = ProgressRecorder()
+
+        let summary = try await service.sync { progress in Task { await steps.record(progress) } }
+
+        #expect(summary.days == 17)
+        #expect(summary.hrvNights == 14)
+        #expect(summary.sleepNights == 14)
+        #expect(summary.runs == 4)
+        #expect(summary.strengthWorkouts == 9)
+        #expect(summary.skippedRecords == 0)
+        let dataRequests = await garmin.requests.filter { $0.method == "GET" }
+        #expect(dataRequests.count == 6)  // 60 days: HRV, summaries, VO2max, activities and two sleep windows
+        let stored = try #require(await cache.cache)
+        #expect(stored.lastSyncedDay == CalendarDay(year: 2026, month: 1, day: 8))
+        #expect(stored.lastSync == fixtureNow)
+
+        let day = CalendarDay(year: 2025, month: 12, day: 26)
+        let metrics = try await service.dailyMetrics(in: day...day)
+        #expect(metrics.first?.hrvNightlyAverageMs == 36)
+        let runs = try await service.runs(from: .distantPast, to: .distantFuture)
+        #expect(runs.count == 4)
+        #expect(await service.strengthActivities(from: .distantPast, to: .distantFuture).count == 9)
+        try await Task.sleep(nanoseconds: 50_000_000)
+        #expect(await steps.last == GarminSyncProgress(completed: 6, total: 6))
+    }
+
+    @Test func readingMetricsSyncsOnlyWhenTheLastSyncIsOld() async throws {
+        let garmin = FakeGarmin()
+        let clock = TestClock(fixtureNow)
+        let service = makeService(garmin: garmin, clock: clock)
+        try await service.connect(key: "valid-key-0123456789", lifetime: .oneYear)
+        _ = try await service.sync { _ in }
+        let afterFirst = await garmin.requests.count
+        let day = CalendarDay(year: 2026, month: 1, day: 8)
+
+        _ = try await service.dailyMetrics(in: day...day)
+        #expect(await garmin.requests.count == afterFirst)  // fresh: no request
+
+        clock.advance(GarminService.autoSyncInterval + 1)
+        _ = try await service.dailyMetrics(in: day...day)
+        let later = await garmin.requests.dropFirst(afterFirst).filter { $0.method == "GET" }
+        #expect(later.count == 5)  // only the last days again: one request per endpoint
+        #expect(later.first?.path == "/hrv-service/hrv/daily/2026-01-07/2026-01-08")
+    }
+
+    @Test func syncingWithoutAKeySaysSo() async {
+        let service = makeService()
+        await #expect(throws: GarminAccountError.notConnected) { try await service.sync { _ in } }
+        #expect(await service.isAvailable() == false)
+    }
+
+    @Test func disconnectingForgetsTheKeyButKeepsImportedData() async throws {
+        let secrets = MemorySecrets()
+        let service = makeService(secrets: secrets)
+        try await service.connect(key: "valid-key-0123456789", lifetime: .oneYear)
+        _ = try await service.sync { _ in }
+
+        await service.disconnect()
+
+        #expect(await secrets.key == nil)
+        #expect(await secrets.token == nil)
+        #expect(await service.connection() == nil)
+        #expect(await service.isAvailable())
+        let day = CalendarDay(year: 2025, month: 12, day: 26)
+        #expect(try await service.dailyMetrics(in: day...day).count == 1)
+    }
+
+    @Test func aSecondLaunchReusesTheSavedToken() async throws {
+        let garmin = FakeGarmin()
+        let secrets = MemorySecrets()
+        let cache = MemoryCache()
+        let first = makeService(garmin: garmin, secrets: secrets, cache: cache)
+        try await first.connect(key: "valid-key-0123456789", lifetime: .oneYear)
+
+        let relaunched = makeService(garmin: garmin, secrets: secrets, cache: cache)
+        _ = try await relaunched.sync { _ in }
+
+        #expect(await garmin.requests.filter { $0.method == "POST" }.count == 1)  // only the one from connecting
+    }
+}
+
+actor ProgressRecorder {
+    var last: GarminSyncProgress?
+    func record(_ progress: GarminSyncProgress) {
+        if (last?.completed ?? -1) < progress.completed { last = progress }
+    }
+}
