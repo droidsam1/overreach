@@ -55,7 +55,7 @@ struct StrengthMetricsTests {
                     WorkoutSet(weightKg: 100, reps: 5, rpe: 8),
                     WorkoutSet(weightKg: 100, reps: 5, rpe: 8.5),
                     WorkoutSet(weightKg: 100, reps: 5),          // no RPE: counts
-                    WorkoutSet(weightKg: 80, reps: 5, rpe: 5),   // too easy: does not count
+                    WorkoutSet(weightKg: 80, reps: 5, rpe: 5.5), // too easy (≈ 4.5 RIR): does not count
                 ]),
             ]
         )
@@ -66,5 +66,22 @@ struct StrengthMetricsTests {
         #expect(result[.glutes] == 3)
         #expect(result[.hamstrings] == 1.5)
         #expect(result[.chest] == nil)
+    }
+
+    @Test func setsCountFromAboutFourRepsInReserve() {
+        let curl = Exercise(name: "Curl", primaryMuscles: [.biceps])
+        let session = StrengthSession(
+            name: "Arms",
+            startedAt: Date(timeIntervalSince1970: 0),
+            entries: [
+                ExerciseEntry(exerciseID: curl.id, sets: [
+                    WorkoutSet(weightKg: 15, reps: 12, rpe: 6),    // 4 RIR: counts
+                    WorkoutSet(weightKg: 15, reps: 12, rpe: 6.5),
+                    WorkoutSet(weightKg: 10, reps: 12, rpe: 4),    // far from failure: does not count
+                ]),
+            ]
+        )
+
+        #expect(StrengthMetrics.effectiveSets(in: session, exercises: [curl.id: curl])[.biceps] == 2)
     }
 }

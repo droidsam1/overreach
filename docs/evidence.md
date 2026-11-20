@@ -25,10 +25,12 @@ availability first. Refs: ISSN position stand, Sims et al. 2023. Reviewed 2026-1
 Active recovery gives a small-to-moderate reduction in DOMS and perceived fatigue vs passive rest.
 Refs: Dupuy et al. 2018 (meta-analysis, 99 studies). Reviewed 2026-11-16.
 
-### `walking-no-interference` — strong
+### `walking-no-interference` — moderate
 Interference scales with endurance-training frequency/duration; concurrent aerobic training does not
-compromise hypertrophy or maximal strength (may blunt explosive strength). Low-intensity walking is below
-that. Refs: Wilson et al. 2012; Schumann et al. 2022 (meta-analyses). Reviewed 2026-11-16.
+compromise hypertrophy or maximal strength (may blunt explosive strength, more within the same session than with
+≥ 3 h between). Low-intensity walking is below that. Moderate, not strong: the trials are of structured endurance
+training, and walking is an extrapolation (in the safe direction). Refs: Wilson et al. 2012; Schumann et al. 2022,
+Sports Med 52:601 (meta-analyses). Reviewed 2026-11-20.
 
 ### `low-steps-exercise-resistance` — moderate
 ≈ 5,000 steps/day or fewer blunted the metabolic response to exercise; ≈ 8,500 protected it.
@@ -49,8 +51,10 @@ Refs: Plotkin et al. 2022, PeerJ 10:e14142 (RCT). Reviewed 2026-11-16.
 ### `proximity-to-failure` — strong
 Hypertrophy improves as sets end closer to failure; strength gains are similar across a wide range of RIR.
 → Default target RPE 8 (≈ 2 RIR) for hypertrophy work; strength work does not need to approach failure.
-Refs: Robinson et al. 2024, Sports Med (dose-response meta-regression, 55 studies); Refalo et al. 2024 (RCT).
-Reviewed 2026-11-16.
+Training to failure gave only a trivial hypertrophy advantage over stopping short (Refalo et al. 2023, 15 studies),
+and 1–2 RIR matched failure for quadriceps growth in trained lifters over 8 weeks (Refalo et al. 2024).
+Refs: Robinson et al. 2024, Sports Med 54(9) (dose-response meta-regression, 55 studies); Refalo et al. 2023, Sports
+Med 53(3) (meta-analysis); Refalo et al. 2024, J Sports Sci (RCT). Reviewed 2026-11-20.
 
 ### `rir-based-rpe` — moderate
 RPE scale anchored to reps in reserve (RPE = 10 − RIR). Loads for reps × RPE are derived from the estimated
@@ -92,6 +96,13 @@ configurable 10–20 weekly fractional sets range (heuristic within the evidence
 Refs: Pelland et al. 2026, Sports Med 56(2):481–505 (meta-regressions, 67 studies); Remmert et al. 2025 (SportRxiv
 preprint). Reviewed 2026-11-20 (`docs/evidence-review-2026-11.md`).
 
+### `effective-set-threshold` — heuristic
+A working set counts toward weekly volume from RPE 6 (≈ 4 RIR), or when no RPE is logged. Hypertrophy improves
+gradually as sets end closer to failure, with no cliff at a given RIR, and strength gains are similar across a wide
+RIR range; RIR estimates are also about 1 rep off. So only clearly easy sets are left out; the exact cut-off is a
+default. Refs: Robinson et al. 2024, Sports Med 54(9) (meta-regressions); Pelland et al. 2026, Sports Med 56(2):481;
+Halperin et al. 2022 (RIR accuracy). Reviewed 2026-11-20.
+
 ### `deload-design` — limited
 Expert Delphi consensus defines a deload as a period of reduced training stress to mitigate fatigue and
 enhance preparedness; typically reduced volume and/or intensity of effort, not complete rest.
@@ -111,14 +122,19 @@ All configurable. Reviewed 2026-11-16.
 Same load and reps over 3 exposures with RPE up ≥ 1 point → accumulated fatigue signal (weight 1).
 Reviewed 2026-11-16.
 
-### `acwr` — heuristic
-Acute:chronic workload ratio > 1.5 as a weak signal only; its injury-prediction validity is disputed. The coupled
-form (acute week inside the chronic window, as `Workload.acuteChronicRatio` computes it today) creates a spurious
-acute–chronic correlation, and the association with injury has been argued to be largely an artefact of the ratio.
-Never shown as injury risk. Replacement with an uncoupled "this week vs your usual week" comparison is recommended
-before the ratio is wired into deload proposals (`docs/evidence-review-2026-11.md`, §3.1).
-Refs: Lolli et al. 2019, Br J Sports Med 53:921; Impellizzeri et al. 2020, Int J Sports Physiol Perform;
-Impellizzeri et al. 2021, Sports Med 51:581. Reviewed 2026-11-20.
+### `weekly-load-change` — heuristic
+The last 7 days' load against the usual week (mean of the 3 weeks before it, uncoupled). Above 1.5× it adds a weak
+deload signal (weight 1, never enough on its own). It replaced the acute:chronic workload ratio (ACWR): the coupled
+ratio (acute week inside the chronic window) creates a spurious acute–chronic correlation, the injury association
+has been argued to be largely an artefact of the ratio, and window lengths are arbitrary. Never shown as injury
+risk. Refs: Lolli et al. 2019, Br J Sports Med 53:921; Impellizzeri et al. 2020, Int J Sports Physiol Perform
+15:907; Impellizzeri et al. 2021, Sports Med 51:581. Reviewed 2026-11-20.
+
+### `deload-practice` — limited
+Competitive strength and physique athletes deload for about 6 days every 5–6 weeks, mainly to manage fatigue,
+reducing volume and load and raising RIR while keeping frequency and exercises (cross-sectional survey, n = 246).
+→ The planned interval (default 6 weeks) adds one point to a deload proposal; it never triggers one alone.
+Refs: Rogerson et al. 2024, Sports Med Open 10:22. Reviewed 2026-11-20.
 
 ## Warm-up
 
@@ -174,12 +190,14 @@ Refs: Singer et al. 2024, Front Sports Act Living 6:1429789 (Bayesian meta-analy
 Longer rests (3 min vs 1 min) improved strength and hypertrophy in trained men. → Strength rest 3–5 min.
 Refs: Schoenfeld et al. 2016, J Strength Cond Res (RCT). Reviewed 2026-11-16.
 
-### `periodization` — strong
+### `periodization` — moderate
 With volume equated, periodised training improves 1RM more than non-periodised, not hypertrophy; undulating
 beats linear for 1RM in trained lifters. Linear vs daily undulating give similar hypertrophy.
 → Block suggestions for strength goals; for hypertrophy goals periodisation is optional.
+Level: one meta-analysis of short, heterogeneous studies with an effect only on 1RM, so moderate (was strong until
+the 2026-11-20 review); no newer synthesis found.
 Refs: Moesgaard et al. 2022, Sports Med 52:1647 (meta-analysis, 35 studies); Grgic et al. 2017, PeerJ 5:e3695.
-Reviewed 2026-11-16.
+Reviewed 2026-11-20.
 
 ### `focus-heuristics` — heuristic
 Set classification cut-offs (≤ 6 reps at ≥ 78 % e1RM = strength; ≥ 15 reps = endurance; 60 % majority), streak
@@ -188,13 +206,15 @@ lengths, block lengths (4–8 weeks), templates and deload placement. All config
 ## Training plans
 
 ### `frequency-volume-equated` — strong
-With weekly volume equated, how many days a week a muscle is trained makes little or no difference to strength or
-hypertrophy; the apparent benefit of higher frequency comes from the extra volume.
+With weekly volume equated, how many days a week a muscle is trained makes no difference to hypertrophy and a small
+one to strength; most of the apparent benefit of higher frequency comes from the extra volume. The follow-up text
+says so ("about the same muscle and nearly the same strength").
 → When planned sessions keep being missed, the follow-up proposes fewer sessions a week (the user keeps their
 weekly sets in fewer, fuller sessions) instead of a plan they cannot keep.
 Refs: Schoenfeld, Grgic & Krieger 2019, J Sports Sci 37:1286 (meta-analysis, 25 studies); Grgic et al. 2018,
 Sports Med 48:1207 (meta-analysis, strength); Saric et al. 2019, J Strength Cond Res 33:S122 (RCT, trained men,
-3 vs 6 sessions). Reviewed 2026-11-19.
+3 vs 6 sessions); Pelland et al. 2026, Sports Med 56(2):481 (meta-regressions: with volume equated, frequency
+still has a small effect on strength, none on hypertrophy). Reviewed 2026-11-20.
 
 ### `retraining-after-break` — moderate
 A break of up to ~10 weeks lowers strength and size, but they come back quickly with retraining, and after a
@@ -311,6 +331,13 @@ without notice.
 → Shown as context, labelled as the device's, never a rule input. Refs: Doherty et al. 2025, Transl Exerc Biomed,
 doi 10.1515/teb-2025-0001; Garmin HRV status documentation. Reviewed 2026-11-20.
 
+### `hrv-cycle-phase` — moderate
+Vagally mediated HRV falls from the follicular to the luteal phase (d = −0.39, 37 studies), and within-person
+studies tie it to higher progesterone. → Until phase-aware baselines exist (ADR-0009), for people who track a
+natural cycle a low HRV is shown with the cycle as a possible cause (`hrvMayReflectCycle`) and does not count
+towards red; other signals still do. Refs: Schmalenberger et al. 2019, J Clin Med 8:1946 (meta-analysis).
+Reviewed 2026-11-20.
+
 ### `readiness-resting-hr` — limited
 Short-term overload raises resting HR moderately, longer overload does not, and changes must be read together with
 other signs; daily resting measures are most useful next to training logs and questionnaires.
@@ -354,3 +381,19 @@ Sick in the check-in → red (see `illness-return`). No signal → green; one or
 least one of HRV or resting HR → red. Subjective and sleep signals alone never make it red. Nothing to judge
 (no baseline, no sleep, no check-in) → unknown. Phase-aware baselines for naturally cycling users (ADR-0009)
 are not applied yet. All thresholds configurable. Reviewed 2026-11-19.
+
+## Wearable data
+
+How Today presents numbers from the devices (evidence review 2026-11, §5). Only measured values and Overreach's own
+calculations feed rules; the devices' estimates are shown as such.
+
+### `wearable-sleep-stages` — limited
+Consumer wrist devices detect sleep well but agree only fairly to moderately with polysomnography on stages
+(κ ≈ 0.2–0.5 across six devices); an Apple Watch Series 8 underestimated deep sleep by about 43 minutes.
+→ Deep and REM sleep are shown as "watch estimate" and never feed a rule. Refs: Schyvens et al. 2025, Sleep Adv
+6(2):zpaf021; Apple Watch S8 validation 2024. Reviewed 2026-11-20.
+
+### `wearable-vo2max` — moderate
+Exercise-based watch VO2max estimates are acceptable at group level but have wide individual error; resting-based
+ones overestimate. → Shown as a watch estimate to follow as a trend. Refs: Molina-García et al. 2022, Sports Med
+52:1577 (meta-analysis, INTERLIVE). Reviewed 2026-11-20.

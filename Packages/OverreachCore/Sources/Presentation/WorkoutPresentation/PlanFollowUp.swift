@@ -12,6 +12,8 @@ public struct PlanCheckRow: Identifiable, Hashable, Sendable {
     public let reason: String
     /// "Plan 2 a week"; `nil` when there is nothing to change in the plan (advice only).
     public let actionTitle: String?
+    /// "Learn more" for the reason (ADR-0027); often empty.
+    public let readings: [Reading]
     let adjustment: PlanAdjustment
     let block: TrainingBlock
 }
@@ -30,7 +32,8 @@ enum PlanFollowUpText {
             return PlanCheckRow(
                 id: index, text: texts.text,
                 reason: "\(texts.reason) (\(adjustment.evidence.level.displayName))",
-                actionTitle: texts.action, adjustment: adjustment, block: review.block
+                actionTitle: texts.action, readings: FurtherReading.readings(for: adjustment.evidence),
+                adjustment: adjustment, block: review.block
             )
         }
     }
@@ -62,7 +65,7 @@ enum PlanFollowUpText {
             Texts(L10n.format("Plan {1} sessions a week instead of {2}.", perWeek, from),
              L10n.format(
                 "You did about {1} a week lately. With the same weekly sets, fewer sessions build about the same "
-                    + "strength and muscle.", perWeek
+                    + "muscle and nearly the same strength.", perWeek
              ),
              L10n.format("Plan {1} a week", perWeek))
         case let .extendBlock(weeks):

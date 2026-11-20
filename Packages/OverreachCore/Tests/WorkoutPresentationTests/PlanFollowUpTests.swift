@@ -71,6 +71,8 @@ struct PlanFollowUpTests {
         ])
         #expect(model.planChecks[0].reason.hasSuffix("(strong evidence)"))
         #expect(model.planChecks[1].reason.hasSuffix("(coaching heuristic)"))
+        #expect(!model.planChecks[0].readings.isEmpty)  // frequency: volume and frequency readings
+        #expect(model.planChecks[1].readings.isEmpty)   // a heuristic with nothing curated
         #expect(model.planChecks.map(\.actionTitle) == ["Plan 1 a week", "Add 2 weeks"])
 
         // Extending once is enough: the same missed sessions are not offered again.

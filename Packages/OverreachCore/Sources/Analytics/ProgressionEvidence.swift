@@ -14,6 +14,9 @@ public enum ProgressionEvidence {
     public static let estimatedOneRepMax = EvidenceReference(key: "e1rm-estimation", level: .limited)
     /// Weekly volume has a dose-response with diminishing returns; fractional sets fit best (Pelland et al.).
     public static let volumeDoseResponse = EvidenceReference(key: "volume-dose-response", level: .strong)
+    /// Sets count toward weekly volume from RPE 6 (≈ 4 RIR): a default within a gradual dose-response
+    /// (Robinson et al. 2024; Pelland et al. 2026).
+    public static let effectiveSetThreshold = EvidenceReference(key: "effective-set-threshold", level: .heuristic)
     /// Deload definition and design principles from expert consensus (Bell et al. 2023, Delphi).
     public static let deloadDesign = EvidenceReference(key: "deload-design", level: .limited)
     /// A 1-week training break mid-programme reduced strength gains, no effect on hypertrophy (Coleman 2024).
@@ -22,6 +25,8 @@ public enum ProgressionEvidence {
     public static let stallHeuristics = EvidenceReference(key: "stall-heuristics", level: .heuristic)
     /// Rising RPE at the same load and reps as a fatigue signal.
     public static let rpeCreep = EvidenceReference(key: "rpe-creep", level: .heuristic)
-    /// Acute:chronic workload ratio; contested in the literature, used only as a weak signal.
-    public static let acuteChronicRatio = EvidenceReference(key: "acwr", level: .heuristic)
+    /// Last week's load against the usual week (uncoupled); a weak signal, never an injury-risk measure.
+    public static let weeklyLoadChange = EvidenceReference(key: "weekly-load-change", level: .heuristic)
+    /// Trained lifters deload about every 5–6 weeks, reducing volume and load (Rogerson et al. 2024, survey).
+    public static let deloadPractice = EvidenceReference(key: "deload-practice", level: .limited)
 }

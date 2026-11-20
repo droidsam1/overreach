@@ -23,6 +23,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   the device and opens Train on relaunch so you can resume or discard it.
 - History shows Garmin heart rate, training load and training effect on matched strength sessions. Watch-only
   strength workouts appear in the same list with their own read-only details.
+- "Learn more" under explanations (ADR-0027): the readiness light, the logger's targets and stall suggestions, the
+  plan check and the Plan screen link to the studies behind each rule and to curated plain-language reading
+  (Fitness Revolucionario in Spanish), the user's language first. Only readings that agree with the evidence
+  register are linked; `scripts/check-reading-links.py` reports dead links.
+- Today says which numbers are the devices' estimates: sleep stages, Body Battery, stress and VO2max.
 - Plan check (#34, ADR-0019). Train shows this week's planned and completed sessions. When sessions keep being
   missed, it proposes fewer sessions a week (with the same weekly sets, results are about the same) and a longer
   block. After a break of two weeks or more it says to keep the plan and ease back in, and after an "ill"
@@ -72,6 +77,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   stalls or the working weight.
 
 ### Changed
+- Evidence review of November 2026 (`docs/evidence-review-2026-11.md`):
+  - The acute:chronic workload ratio is replaced by this week's load against the usual week (the 3 weeks before),
+    uncoupled; it is a weak deload signal and never an injury-risk measure.
+  - For people who track a natural cycle, a low HRV is shown as possibly the cycle and does not make the light red
+    on its own.
+  - Sets count toward weekly volume from RPE 6 (was 7).
+  - Red light: "Make it a recovery day" instead of "Rest"; fewer sessions keep "about the same muscle and nearly
+    the same strength". Periodisation and walking-no-interference evidence levels lowered to moderate.
 - Training and history editing adapt set controls to narrow screens and large text. The rest countdown stays
   compact, with time adjustments available on demand.
 - History switches to a daily agenda when the monthly grid needs more room. Today prioritizes available

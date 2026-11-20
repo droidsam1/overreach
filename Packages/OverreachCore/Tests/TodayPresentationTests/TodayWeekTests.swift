@@ -65,7 +65,7 @@ struct TodayWeekTests {
         #expect(model.sleepHours == 7)
         #expect(model.steps == 9_000)
         #expect(model.week.count == 2)  // eight days ago is out of the week
-        #expect(model.sleepCaption == "Deep 1.2 h · REM 1.5 h")
+        #expect(model.sleepCaption == "Deep 1.2 h · REM 1.5 h (watch estimate)")
         #expect(model.hrvCaption == "7-day avg 45 ms")
         #expect(model.stepsCaption == "7-day avg 8,000")
         #expect(model.sourcesText == "From Apple Health")
@@ -152,6 +152,26 @@ struct TodayWeekTests {
         #expect(model.readinessContext.contains("Sleep data for last night is unavailable."))
     }
 
+    @Test func theDevicesEstimatesSayWhatTheyAre() {
+        let model = TodayModel(sources: [], calendar: calendar, format: Format(locale: Locale(identifier: "en_US")))
+
+        #expect(model.vo2MaxCaption == "Watch estimate, follow the trend")
+        #expect(model.bodyBatteryCaption == "Garmin's estimate")
+        #expect(model.stressCaption == "Garmin's estimate")
+    }
+
+    @Test func readinessReasonsOfferFurtherReading() async {
+        var days = (1...20).map { day(-$0, sleepHours: 7.5, hrv: 55, steps: nil) }
+        days.append(day(0, sleepHours: 4, hrv: 55, steps: nil))
+        let model = TodayModel(sources: [WeekSource(days: days)], calendar: calendar)
+
+        await model.load(now: now)
+
+        let sleep = model.readinessLines.first { $0.text.hasPrefix("Short sleep") }
+        #expect(sleep?.readings.isEmpty == false)
+        #expect(sleep?.readings.allSatisfy { $0.url.host?.contains("fitnessrevolucionario") == true } == true)
+    }
+
     @Test func connectingAsksForAccessAndReloads() async {
         let source = WeekSource(days: [])
         let model = TodayModel(sources: [source], calendar: calendar)
@@ -170,7 +190,7 @@ struct TodayWeekTests {
         await model.load(now: now)
 
         #expect(model.readinessLevel == .red)
-        #expect(model.readinessAdvice == "Rest or go for a walk today.")
+        #expect(model.readinessAdvice == "Make it a recovery day: a walk or a very easy session. If you lift, keep it light (RPE 6 or less).")
         #expect(
             model.readinessLines.map(\.text) == ["Marked as sick in today's check-in. Rest until the symptoms ease."]
         )

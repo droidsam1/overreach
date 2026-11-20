@@ -29,7 +29,7 @@ Shared from **Plan → Ask AI**. It is raw data with no instructions. Its top-le
 | `sessions` | Oldest first: `id`, `date`, `startedAt`, `durationSeconds`, `name`, `focus`, `source`, `sessionRPE`, `notes`, and `exercises` with `exercise` (name), `notes`, `sets` and `countsForProgression` (`false` only for an exercise left unfinished, which the app ignores for progression), and `watch` when a watch recorded the same workout (`source`, `averageHeartRate`, `maxHeartRate`, Garmin `trainingLoad` in its own units, `aerobicTrainingEffect`, `anaerobicTrainingEffect`) |
 | `exerciseTrends` | Per exercise in the period: `exposures`, `status` (`progressing`, `holding`, `stalled`, `notEnoughData`, judged over the last year), `lastWorkingWeightKg`, and `estimatedOneRepMaxKg` per session (`date`, `kg`) |
 | `checkIns` | `date`, `isSick`, `energy` (1–5), `soreness` (1–5), `note` |
-| `dailyMetrics` | Per day and `source`: HRV and its baseline, resting heart rate, sleep (total, deep, REM, score), body battery, stress, steps, VO2max, training readiness, acute load, recovery time |
+| `dailyMetrics` | Per day and `source`: HRV, its statistic (`hrvMetric`: Garmin `rmssd` or Apple Watch `sdnn`, never comparable) and its baseline, resting heart rate, sleep (total, deep, REM, score), body battery, stress, steps, VO2max, training readiness, acute load, recovery time |
 | `runs` | `date`, `startedAt`, `source`, `durationSeconds`, `distanceMeters`, `paceSecondsPerKm`, heart rate, elevation, training load and effect |
 
 ### Values

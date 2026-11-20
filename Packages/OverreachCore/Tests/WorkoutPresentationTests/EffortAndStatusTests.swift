@@ -39,6 +39,10 @@ struct EffortAndStatusTests {
         let (model, store) = await makeModel(history: [session(daysAgo: 3, weight: 60, reps: [9, 9, 9])])
         await model.add(exerciseID: bench.id)
         #expect(try #require(model.exercises.first).summary(format: format).targetLine.hasSuffix("@ RPE 8"))
+        // Adding reps before load: a reading on load vs rep progression.
+        #expect(try #require(model.exercises.first).summary(format: format).readings.contains {
+            $0.url.absoluteString.contains("peerj.com/articles/14142")
+        })
 
         await model.setEffortScale(.repsInReserve)
 

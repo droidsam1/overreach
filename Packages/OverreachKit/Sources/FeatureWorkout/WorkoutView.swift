@@ -286,6 +286,7 @@ private struct TargetSummaryView: View {
                     Text("Stalled — try, in order:").bold()
                     ForEach(Array(summary.stallSuggestions.enumerated()), id: \.offset) { Text($0.element) }
                 }
+                ReadingLinks(items: summary.readings.map(ReadingLinkItem.init))
             }
             .font(.footnote)
             .foregroundStyle(.secondary)

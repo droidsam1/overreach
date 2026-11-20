@@ -14,6 +14,8 @@ public enum ReadinessEvidence {
     /// Self-reported well-being tracks training load better than common objective markers (Saw et al. 2016).
     public static let subjective = EvidenceReference(key: "readiness-subjective", level: .moderate)
     public static let reportedSymptoms = EvidenceReference(key: "readiness-reported-symptoms", level: .limited)
+    /// Vagally mediated HRV is lower in the luteal than the follicular phase (Schmalenberger et al. 2019).
+    public static let cyclePhase = EvidenceReference(key: "hrv-cycle-phase", level: .moderate)
     /// How signals combine into green, amber and red: coaching defaults.
     public static let combination = EvidenceReference(key: "readiness-combination", level: .heuristic)
 }
@@ -65,9 +67,12 @@ public enum ReadinessRules {
     /// - Parameters:
     ///   - history: merged daily metrics, in any order. Days after `today` are ignored.
     ///   - checkIn: today's check-in, if the user filled it in.
+    ///   - tracksNaturalCycle: the person tracks a natural menstrual cycle. Until phase-aware baselines exist
+    ///     (ADR-0009), low HRV is then reported with the cycle as a possible cause and is not a physiological
+    ///     signal for red.
     public static func readiness(
         today: CalendarDay, history: [DailyMetrics], checkIn: CheckIn?, settings: Settings = Settings(),
-        calendar: Calendar = .current
+        tracksNaturalCycle: Bool = false, calendar: Calendar = .current
     ) -> Readiness {
         let checkIn = checkIn.flatMap { $0.day == today ? $0 : nil }
         if checkIn?.isSick == true {
@@ -90,7 +95,11 @@ public enum ReadinessRules {
             evaluated = true
             if let lowNights = hrv.lowNights {
                 reasons.append(.hrvBelowBaseline(nights: lowNights))
-                physiological += 1
+                if tracksNaturalCycle {
+                    reasons.append(.hrvMayReflectCycle)
+                } else {
+                    physiological += 1
+                }
             }
         }
 
@@ -126,7 +135,14 @@ public enum ReadinessRules {
             return Readiness(level: .unknown, reasons: [.missingData], hrvCoverage: hrv?.coverage)
         }
         if reasons.isEmpty { return Readiness(level: .green, hrvCoverage: hrv?.coverage) }
-        if reasons.count >= settings.redSignals && physiological > 0 {
+        // With a natural cycle, low HRV is context: neither it nor its note counts as a signal for red.
+        let cycleContext = reasons.contains(.hrvMayReflectCycle)
+        let signals = reasons.filter { reason in
+            if reason == .hrvMayReflectCycle { return false }
+            if case .hrvBelowBaseline = reason { return !cycleContext }
+            return true
+        }.count
+        if signals >= settings.redSignals && physiological > 0 {
             return Readiness(level: .red, reasons: reasons, hrvCoverage: hrv?.coverage)
         }
         return Readiness(level: .amber, reasons: reasons, hrvCoverage: hrv?.coverage)
@@ -138,6 +154,7 @@ public enum ReadinessRules {
         case .markedSick: PlanEvidence.illness
         case .symptomsLimitTraining: ReadinessEvidence.reportedSymptoms
         case .hrvBelowBaseline: ReadinessEvidence.hrv
+        case .hrvMayReflectCycle: ReadinessEvidence.cyclePhase
         case .restingHeartRateElevated: ReadinessEvidence.restingHeartRate
         case .shortSleep: ReadinessEvidence.sleep
         case .lowEnergy, .highSoreness: ReadinessEvidence.subjective
@@ -151,6 +168,7 @@ public enum ReadinessRules {
         switch reason {
         case .markedSick, .symptomsLimitTraining: address = "https://doi.org/10.1136/bjsports-2022-105759"
         case .hrvBelowBaseline: address = "https://doi.org/10.3390/ijerph181910299"
+        case .hrvMayReflectCycle: address = "https://doi.org/10.3390/jcm8111946"
         case .restingHeartRateElevated: address = "https://pubmed.ncbi.nlm.nih.gov/18308872/"
         case .shortSleep: address = "https://doi.org/10.1007/s40279-022-01706-y"
         case .lowEnergy, .highSoreness: address = "https://pubmed.ncbi.nlm.nih.gov/26423706/"

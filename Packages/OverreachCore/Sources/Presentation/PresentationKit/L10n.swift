@@ -13,6 +13,15 @@ public enum L10n {
         #endif
     }
 
+    /// The language the app shows ("en", "es", "gl"), e.g. to put further reading in that language first.
+    public static var languageCode: String {
+        #if canImport(Darwin)
+        Bundle.main.preferredLocalizations.first.map { String($0.prefix(2)) } ?? "en"
+        #else
+        "en"
+        #endif
+    }
+
     /// A translated sentence with values: `{1}`, `{2}`… are replaced by `values`, in the order each language needs.
     /// The template is the catalog key, so never build it by interpolation.
     public static func format(_ template: String, _ values: any CustomStringConvertible...) -> String {

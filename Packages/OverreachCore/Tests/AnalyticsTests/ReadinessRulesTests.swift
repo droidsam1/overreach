@@ -150,13 +150,13 @@ struct ReadinessRulesTests {
 
     @Test func everyReasonCitesItsEvidence() {
         let reasons: [ReadinessReason] = [
-            .markedSick, .hrvBelowBaseline(nights: 3), .restingHeartRateElevated(bpmAboveBaseline: 6),
+            .markedSick, .hrvBelowBaseline(nights: 3), .hrvMayReflectCycle, .restingHeartRateElevated(bpmAboveBaseline: 6),
             .shortSleep(hours: 5), .lowEnergy(score: 1), .highSoreness(score: 3), .missingData,
         ]
         let keys = reasons.map { ReadinessRules.evidence(for: $0).key }
 
         #expect(keys == [
-            "illness-return", "readiness-hrv", "readiness-resting-hr", "readiness-sleep", "readiness-subjective",
+            "illness-return", "readiness-hrv", "hrv-cycle-phase", "readiness-resting-hr", "readiness-sleep", "readiness-subjective",
             "readiness-subjective", "readiness-combination",
         ])
     }
@@ -221,5 +221,30 @@ struct ReadinessRulesTests {
         garmin.hrvMetric = .rmssd
         let both = garmin.merging(health)
         #expect(both.hrvNightlyAverageMs == 38 && both.hrvMetric == .rmssd)
+    }
+
+    // MARK: - Natural cycle (`hrv-cycle-phase`)
+
+    @Test func lowHRVInANaturalCycleIsContextNotRed() {
+        let days = history(recentHRV: [42, 44, 43, 45, 44, 46, 45], todayResting: 58)
+
+        let result = ReadinessRules.readiness(
+            today: today, history: days, checkIn: nil, tracksNaturalCycle: true, calendar: calendar
+        )
+
+        #expect(result.level == .amber)
+        #expect(result.reasons.contains(.hrvMayReflectCycle))
+        #expect(result.reasons.contains(.hrvBelowBaseline(nights: 7)))
+    }
+
+    @Test func aNaturalCycleDoesNotHideOtherPhysiologicalSignals() {
+        let days = history(recentHRV: [42, 44, 43, 45, 44, 46, 45], todayResting: 58, todaySleepHours: 5)
+
+        let result = ReadinessRules.readiness(
+            today: today, history: days, checkIn: nil, tracksNaturalCycle: true, calendar: calendar
+        )
+
+        // Resting HR + short sleep are two signals with one physiological: still red.
+        #expect(result.level == .red)
     }
 }
