@@ -289,7 +289,7 @@ public struct SettingsView<Library: View>: View {
 }
 
 extension SettingsView where Library == EmptyView {
-    public init(importModel: ImportModel, backupModel: BackupModel) {
-        self.init(importModel: importModel, backupModel: backupModel) { EmptyView() }
+    public init(importModel: ImportModel, backupModel: BackupModel, garminModel: GarminSetupModel) {
+        self.init(importModel: importModel, backupModel: backupModel, garminModel: garminModel) { EmptyView() }
     }
 }
