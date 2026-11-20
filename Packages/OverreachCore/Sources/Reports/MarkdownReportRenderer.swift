@@ -44,7 +44,12 @@ public enum MarkdownReportRenderer {
         var lines = ["## Today", ""]
         if let readiness = report.readiness {
             lines.append("- Readiness: **\(readiness.level.rawValue)**")
-            lines += readiness.reasons.map { "  - \(describe($0))" }
+            lines += readiness.reasons.map { "  - \(describe($0, hrvCoverage: readiness.hrvCoverage))" }
+            if let coverage = readiness.hrvCoverage, !coverage.canCompare {
+                lines.append("  - HRV comparison skipped. "
+                    + "Recent readings available: \(coverage.recentReadings) (minimum \(coverage.minimumRecentReadings)). "
+                    + "Baseline readings available: \(coverage.baselineReadings) (minimum \(coverage.minimumBaselineReadings)).")
+            }
         }
         if let today = report.today {
             lines.append("- HRV last night: \(format(today.hrvNightlyAverageMs, decimals: 0)) ms "
@@ -147,12 +152,17 @@ public enum MarkdownReportRenderer {
         return "\(total / 60):\(seconds < 10 ? "0" : "")\(seconds) /km"
     }
 
-    static func describe(_ reason: ReadinessReason) -> String {
+    static func describe(_ reason: ReadinessReason, hrvCoverage: HRVCoverage?) -> String {
         switch reason {
         case .markedSick:
             "Marked as sick in today's check-in"
         case .hrvBelowBaseline(let nights):
-            "HRV below its normal range for \(nights) night\(nights == 1 ? "" : "s")"
+            if let coverage = hrvCoverage {
+                "HRV below its normal range (\(nights) of \(coverage.recentReadings) comparable readings low "
+                    + "in the last \(coverage.recentDays) days)"
+            } else {
+                "HRV below its normal range for \(nights) night\(nights == 1 ? "" : "s")"
+            }
         case .restingHeartRateElevated(let bpm):
             "Resting HR \(format(bpm, decimals: 0)) bpm above baseline"
         case .shortSleep(let hours):
