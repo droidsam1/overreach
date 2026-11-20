@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// One "Learn more" link: a reading behind an explanation (ADR-0024).
+/// One "Learn more" link: a reading behind an explanation (ADR-0027).
 public struct ReadingLinkItem: Identifiable, Hashable {
     public let url: URL
     public let title: String

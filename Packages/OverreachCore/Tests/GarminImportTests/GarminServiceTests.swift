@@ -1,5 +1,7 @@
 import Domain
+import Fixtures
 import Foundation
+import HistoryPresentation
 @testable import GarminImport
 import Testing
 
@@ -8,6 +10,7 @@ actor FakeGarmin: GarminTransport {
     var requests: [GarminHTTPRequest] = []
     /// Responses to return before the normal ones, in order (e.g. a 429 then success).
     var queued: [GarminHTTPResponse] = []
+    private var activityPages: [Int: Data] = [:]
     var acceptedKey = "valid-key-0123456789"
     var offline = false
     var tokenExpiry = Date(timeIntervalSince1970: 1_790_086_400)
@@ -15,6 +18,8 @@ actor FakeGarmin: GarminTransport {
     func queue(_ responses: GarminHTTPResponse...) { queued += responses }
     func setOffline(_ value: Bool) { offline = value }
     func setAcceptedKey(_ key: String) { acceptedKey = key }
+
+    func setActivityPage(start: Int, body: Data) { activityPages[start] = body }
 
     func send(_ request: GarminHTTPRequest) throws -> GarminHTTPResponse {
         requests.append(request)
@@ -28,6 +33,10 @@ actor FakeGarmin: GarminTransport {
         }
         guard request.headers["Authorization"]?.hasPrefix("Bearer ") == true else {
             return GarminHTTPResponse(status: 403)
+        }
+        if request.path.hasPrefix("/activitylist-service"),
+            let page = activityPages.first(where: { request.path.contains("?start=\($0.key)&") }) {
+            return GarminHTTPResponse(status: 200, body: page.value)
         }
         let name: String? = switch request.path {
         case let path where path.hasPrefix("/hrv-service"): "hrv-daily-range"
@@ -109,6 +118,79 @@ private func makeService(
         transport: garmin, secrets: secrets, cache: cache, clock: { clock.now }, calendar: utcCalendar,
         sleep: { _ in }
     )
+}
+
+@MainActor
+@Suite("Garmin runs in History")
+struct GarminRunHistoryTests {
+    @Test func aRunUploadedLateThisWeekAppearsInTheTimelineAndCalendar() async throws {
+        let garmin = FakeGarmin()
+        let service = makeService(garmin: garmin)
+        await garmin.setActivityPage(start: 0, body: Data("[]".utf8))
+        try await service.connect(key: "valid-key-0123456789", lifetime: .recommended)
+        #expect(try await service.sync { _ in }.runs == 0)
+        let priorRequests = await garmin.requests.count
+
+        // The watch finished uploading a Jan 4 treadmill run after the first sync on Jan 8.
+        let payload = """
+        [{
+          "activityId": 901,
+          "activityName": "Treadmill 5K",
+          "startTimeGMT": "2026-01-04 08:00:00",
+          "activityType": {"typeKey": "treadmill_running"},
+          "duration": 1500,
+          "distance": 5000,
+          "averageHR": 140,
+          "activityTrainingLoad": 65
+        }]
+        """
+        await garmin.setActivityPage(start: 0, body: Data(payload.utf8))
+        let imported = try await service.sync { _ in }
+        #expect(imported.runs == 1)
+        let syncRequests = await garmin.requests.dropFirst(priorRequests)
+        #expect(syncRequests.contains {
+            $0.path.hasPrefix("/activitylist-service") && $0.path.contains("startDate=2026-01-02&endDate=2026-01-08")
+        })
+        #expect(syncRequests.contains {
+            $0.path == "/hrv-service/hrv/daily/2026-01-07/2026-01-08"
+        })
+
+        let store = TestStore()
+        let history = HistoryModel(
+            workouts: store, exercises: store, routines: store, runSources: [service],
+            calendar: utcCalendar, clock: { fixtureNow }
+        )
+        await history.load()
+        #expect(history.rows.map(\.id) == [.run("garmin:901")])
+        history.activityFilter = .running
+        history.sourceFilter = .garmin
+        let row = try #require(history.rows.first)
+        guard case let .run(run) = row else {
+            Issue.record("Expected a Garmin run in History")
+            return
+        }
+        #expect(run.title == "Treadmill 5K")
+        #expect(run.sources == [.garmin])
+        #expect(run.trainingMetrics.map(\.value) == ["65"])
+
+        await history.calendar.load()
+        history.calendar.select(CalendarDay(year: 2026, month: 1, day: 4))
+        #expect(history.calendar.selectedDetail?.runs.map(\.id) == ["garmin:901"])
+        _ = try await service.sync { _ in }
+        await history.load()
+        #expect(history.rows.map(\.id) == [.run("garmin:901")])
+    }
+
+    @Test func anOfflineSyncWithNoCachedRunsSurfacesAnError() async throws {
+        let garmin = FakeGarmin()
+        let service = makeService(garmin: garmin)
+        try await service.connect(key: "valid-key-0123456789", lifetime: .recommended)
+        await garmin.setOffline(true)
+
+        await #expect(throws: GarminAccountError.offline) {
+            try await service.runs(from: .distantPast, to: fixtureNow)
+        }
+    }
 }
 
 @Suite("Garmin client")
@@ -263,6 +345,57 @@ struct GarminServiceTests {
         #expect(await steps.last == GarminSyncProgress(completed: 6, total: 6))
     }
 
+    @Test func overlappingActivityPagesImportEachIDOnce() async throws {
+        let garmin = FakeGarmin()
+        let pageSize = GarminEndpoint.activityPageSize
+        let firstPage = (1...pageSize).map { activity(id: $0, heartRate: 140) }
+        let secondPage = [activity(id: pageSize, heartRate: 145), activity(id: pageSize + 1, heartRate: 150)]
+        await garmin.setActivityPage(start: 0, body: try JSONSerialization.data(withJSONObject: firstPage))
+        await garmin.setActivityPage(start: pageSize, body: try JSONSerialization.data(withJSONObject: secondPage))
+        let service = makeService(garmin: garmin)
+        try await service.connect(key: "valid-key-0123456789", lifetime: .oneYear)
+
+        let summary = try await service.sync { _ in }
+        let runs = try await service.runs(from: .distantPast, to: .distantFuture)
+
+        #expect(summary.runs == pageSize + 1)
+        #expect(runs.count == pageSize + 1)
+        #expect(Set(runs.map(\.id)) == Set((1...(pageSize + 1)).map(String.init)))
+        #expect(runs.first { $0.id == String(pageSize) }?.averageHeartRate == 145)
+    }
+
+    private func activity(id: Int, heartRate: Int) -> [String: Any] {
+        [
+            "activityId": id,
+            "activityType": ["typeKey": "running"],
+            "startTimeGMT": "2026-01-08 08:00:00",
+            "duration": 1_800,
+            "averageHR": heartRate
+        ]
+    }
+
+    @Test func olderCachesReturnOneCopyOfEachActivityEvenWhenOffline() async throws {
+        let garmin = FakeGarmin()
+        let cache = MemoryCache()
+        let key = GarminStoredKey(value: "valid-key-0123456789", lifetime: .oneYear, savedAt: fixtureNow)
+        let service = makeService(garmin: garmin, secrets: MemorySecrets(key: key), cache: cache)
+        let olderRun = RunActivity(
+            id: "1", source: .garmin, startedAt: fixtureNow, durationSeconds: 1_800, distanceMeters: 5_000
+        )
+        var newerRun = olderRun
+        newerRun.averageHeartRate = 145
+        let olderStrength = RecordedStrengthActivity(
+            id: "2", source: .garmin, startedAt: fixtureNow, durationSeconds: 1_800
+        )
+        var newerStrength = olderStrength
+        newerStrength.trainingLoad = 42
+        await cache.save(GarminCache(runs: [olderRun, newerRun], strength: [olderStrength, newerStrength]))
+        await garmin.setOffline(true)
+
+        #expect(await service.strengthActivities(from: .distantPast, to: .distantFuture) == [newerStrength])
+        #expect(try await service.runs(from: .distantPast, to: .distantFuture) == [newerRun])
+    }
+
     @Test func readingMetricsSyncsOnlyWhenTheLastSyncIsOld() async throws {
         let garmin = FakeGarmin()
         let clock = TestClock(fixtureNow)
@@ -324,3 +457,59 @@ actor ProgressRecorder {
         if (last?.completed ?? -1) < progress.completed { last = progress }
     }
 }
+
+/// The key is personal (Supplemental Terms §1, ADR-0022): it lives only in the secret store and goes only to the
+/// token endpoint. These tests fail if any other path starts carrying it.
+@Suite("The Garmin key never leaves secure storage")
+struct GarminKeyContainmentTests {
+    private let key = "valid-key-0123456789"
+
+    @Test func theCacheHoldsNeitherTheKeyNorTheToken() async throws {
+        let garmin = FakeGarmin()
+        let secrets = MemorySecrets()
+        let cache = MemoryCache()
+        let service = makeService(garmin: garmin, secrets: secrets, cache: cache)
+        try await service.connect(key: key, lifetime: .oneYear)
+        _ = try await service.sync { _ in }
+
+        let stored = try #require(await cache.cache)
+        let json = String(decoding: try JSONEncoder().encode(stored), as: UTF8.self)
+        let token = try #require(await secrets.token?.value)
+        #expect(!json.contains(key))
+        #expect(!json.contains(token))
+    }
+
+    @Test func onlyTheTokenRequestCarriesTheKey() async throws {
+        let garmin = FakeGarmin()
+        let service = makeService(garmin: garmin)
+        try await service.connect(key: key, lifetime: .oneYear)
+        _ = try await service.sync { _ in }
+
+        for request in await garmin.requests {
+            let carriesKey = request.headers.values.contains { $0.contains(key) } || request.path.contains(key)
+            #expect(carriesKey == (request.path == GarminEndpoint.tokenPath))
+        }
+    }
+
+    @Test func importedDataAndErrorsNeverMentionTheKey() async throws {
+        let garmin = FakeGarmin()
+        let service = makeService(garmin: garmin)
+        try await service.connect(key: key, lifetime: .oneYear)
+        _ = try await service.sync { _ in }
+
+        let years = CalendarDay(year: 2025, month: 1, day: 1)...CalendarDay(year: 2027, month: 1, day: 1)
+        let metrics = try await service.dailyMetrics(in: years)
+        let runs = try await service.runs(from: .distantPast, to: .distantFuture)
+        let exported = String(decoding: try JSONEncoder().encode(metrics), as: UTF8.self)
+            + String(decoding: try JSONEncoder().encode(runs), as: UTF8.self)
+        #expect(!exported.contains(key))
+
+        await garmin.setAcceptedKey("another-key-0123456789")
+        do {
+            try await service.connect(key: "wrong-key-abcdefghijk", lifetime: .oneYear)
+        } catch {
+            #expect(!String(describing: error).contains("wrong-key"))
+        }
+    }
+}
+

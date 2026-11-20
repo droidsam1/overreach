@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reports further-reading links (ADR-0024) that no longer resolve.
+"""Reports further-reading links (ADR-0027) that no longer resolve.
 
 Reads the URLs from FurtherReading.swift and requests each one. Exit code 1 when any link fails.
 Usage: python3 scripts/check-reading-links.py

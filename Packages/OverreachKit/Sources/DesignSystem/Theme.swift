@@ -38,3 +38,32 @@ public enum StatusTone: Sendable {
         }
     }
 }
+
+/// The brand accent uses different luminance in light and dark appearances.
+public struct BrandButtonStyle: ButtonStyle {
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.isEnabled) private var isEnabled
+
+    public init() {}
+
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline)
+            .foregroundStyle(colorScheme == .dark ? Color.black : Color.white)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, Spacing.medium)
+            .padding(.vertical, Spacing.small)
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .background {
+                Color.accentColor
+                    .overlay {
+                        if configuration.isPressed {
+                            (colorScheme == .dark ? Color.white : Color.black).opacity(0.1)
+                        }
+                    }
+            }
+            .clipShape(.rect(cornerRadius: Radius.card))
+            .contentShape(.rect(cornerRadius: Radius.card))
+            .opacity(isEnabled ? 1 : 0.5)
+    }
+}

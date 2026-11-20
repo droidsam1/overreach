@@ -25,18 +25,12 @@ public struct AskAIView: View {
     public var body: some View {
         Form {
             Section {
-                Text(
-                    """
-                    Share your training as data: sessions with notes, exercise settings, trends and health \
-                    metrics. Then ask ChatGPT, Claude or another assistant whatever you need.
-                    """
-                )
-                .foregroundStyle(.secondary)
-            }
-            Section("Data") {
                 Picker("Period", selection: Binding(
                     get: { model.period },
-                    set: { period in Task { await model.setPeriod(period) } }
+                    set: { period in
+                        didCopy = false
+                        Task { await model.setPeriod(period) }
+                    }
                 )) {
                     ForEach(model.periodOptions) { option in
                         Text(option.name).tag(option.value)
@@ -47,8 +41,6 @@ public struct AskAIView: View {
                 } else if let summary = model.summary {
                     Text(summary).foregroundStyle(.secondary)
                 }
-            }
-            Section {
                 Picker("First request", selection: Binding(
                     get: { model.request },
                     set: { request in
@@ -61,6 +53,8 @@ public struct AskAIView: View {
                         Text(option.name).tag(StarterRequest?.some(option.value))
                     }
                 }
+            } header: {
+                Text("Prepare your report")
             } footer: {
                 Text("It goes after the data. You can change it or write your own in the chat.")
             }
@@ -72,13 +66,14 @@ public struct AskAIView: View {
                     ShareLink(item: message) {
                         Label("Share with an AI app", systemImage: "square.and.arrow.up")
                     }
+                    .buttonStyle(BrandButtonStyle())
                     Button {
                         copy(message)
                     } label: {
                         if didCopy {
                             Label("Copied", systemImage: "checkmark")
                         } else {
-                            Label("Copy", systemImage: "doc.on.doc")
+                            Label("Copy report", systemImage: "doc.on.doc")
                         }
                     }
                 }
@@ -87,6 +82,20 @@ public struct AskAIView: View {
                         Label("Share as a file", systemImage: "doc")
                     }
                 }
+                if model.message != nil {
+                    Button {
+                        copyToClipboard(importer.formatGuide)
+                        didCopyFormat = true
+                    } label: {
+                        if didCopyFormat {
+                            Label("Copied", systemImage: "checkmark")
+                        } else {
+                            Label("Copy the reply format", systemImage: "curlybraces")
+                        }
+                    }
+                }
+            } header: {
+                Text("Share with an assistant")
             } footer: {
                 Text(
                     """
@@ -109,20 +118,10 @@ public struct AskAIView: View {
 
     private var answerSection: some View {
         Section {
-            Button {
-                copyToClipboard(importer.formatGuide)
-                didCopyFormat = true
-            } label: {
-                if didCopyFormat {
-                    Label("Copied", systemImage: "checkmark")
-                } else {
-                    Label("Copy the reply format", systemImage: "curlybraces")
-                }
-            }
             PasteButton(payloadType: String.self) { [importer] texts in
                 Task { @MainActor in await importer.read(pasted: texts) }
             }
-            Button("Open a file…", systemImage: "folder") { isPickingFile = true }
+            Button("Import reply file…", systemImage: "folder") { isPickingFile = true }
             if let result = importer.resultMessage {
                 Label(result, systemImage: "checkmark.circle").foregroundStyle(.green)
             }
@@ -130,7 +129,7 @@ public struct AskAIView: View {
                 Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
             }
         } header: {
-            Text("Bring the answer back")
+            Text("Import the reply")
         } footer: {
             Text(
                 """

@@ -129,3 +129,36 @@ struct StrengthActivityMatchingTests {
         #expect(onlySessions.bySession.isEmpty)
     }
 }
+
+@Suite("Strength recordings from several sources")
+struct StrengthRecordingDeduplicationTests {
+    private let start = Date(timeIntervalSince1970: 1_790_000_000)
+
+    private func recording(
+        _ id: String, _ source: DataSourceKind, offsetMinutes: Double = 0, minutes: Double = 50,
+        heartRate: Double? = nil, load: Double? = nil
+    ) -> RecordedStrengthActivity {
+        RecordedStrengthActivity(
+            id: id, source: source, startedAt: start.addingTimeInterval(offsetMinutes * 60),
+            durationSeconds: minutes * 60, averageHeartRate: heartRate, trainingLoad: load
+        )
+    }
+
+    @Test func garminAndItsHealthCopyAreOneWorkout() {
+        let garmin = recording("g1", .garmin, load: 40)
+        let copy = recording("h1", .appleHealth, offsetMinutes: 1, minutes: 49, heartRate: 110)
+
+        let merged = StrengthActivityMatching.removingDuplicates([copy, garmin])
+
+        #expect(merged.map(\.id) == ["g1"])
+        #expect(merged.first?.trainingLoad == 40)
+        #expect(merged.first?.averageHeartRate == 110)
+    }
+
+    @Test func anAppleWatchWorkoutAloneIsKept() {
+        let watch = recording("h1", .appleHealth, heartRate: 120)
+        let later = recording("h2", .appleHealth, offsetMinutes: 30, minutes: 50)
+
+        #expect(StrengthActivityMatching.removingDuplicates([later, watch]).map(\.id) == ["h1", "h2"])
+    }
+}

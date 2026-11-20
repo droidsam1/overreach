@@ -28,7 +28,7 @@ explain itself (ADR-0012).
 - HRV-guided training has moderate evidence for endurance and none so far for strength, so the light moderates
   intensity; it does not change the strength plan by itself.
 - The check-in sheet on Today (energy, soreness, sick, note) feeds the subjective signals.
-- Not yet: phase-aware baselines (ADR-0009), a personal sleep baseline, Garmin HRV, and
-  settings to change the thresholds. Each slots into `ReadinessRules.Settings` or its inputs.
-- Amended 2026-11-20 (evidence review): HRV baselines use one measure only (`HRVMeasure`), and for people who
-  track a natural cycle a low HRV is context, not a signal for red, until phase-aware baselines exist.
+- Not yet: phase-aware baselines (ADR-0009), a personal sleep baseline, and settings to change the thresholds.
+  Garmin HRV feeds the light since ADR-0022, judged only against nights of the same statistic (ADR-0024). Each slots into `ReadinessRules.Settings` or its inputs.
+- Amended 2026-11-20 (evidence review): for people who track a natural cycle, a low HRV is context
+  (`hrvMayReflectCycle`), not a signal for red, until phase-aware baselines exist.

@@ -2,7 +2,7 @@ import Domain
 import Foundation
 
 /// One planned set. `weightKg` is `nil` when there is no history to base it on.
-public struct PlannedSet: Hashable, Sendable {
+public struct PlannedSet: Hashable, Codable, Sendable {
     public var weightKg: Double?
     public var reps: Int
     public var targetRPE: Double
@@ -15,7 +15,7 @@ public struct PlannedSet: Hashable, Sendable {
 }
 
 /// Why a target is what it is. Each reason carries its evidence (ADR-0012).
-public enum ProgressionReason: Hashable, Sendable {
+public enum ProgressionReason: Hashable, Codable, Sendable {
     case noHistory
     case topOfRangeReached(reps: Int)
     case addRepsBeforeLoad
@@ -40,7 +40,7 @@ public enum ProgressionReason: Hashable, Sendable {
 }
 
 /// The next session for one exercise.
-public struct ExerciseTarget: Hashable, Sendable {
+public struct ExerciseTarget: Hashable, Codable, Sendable {
     public var sets: [PlannedSet]
     public var reasons: [ProgressionReason]
 
@@ -52,6 +52,20 @@ public struct ExerciseTarget: Hashable, Sendable {
 
 /// Next-session targets from history (`docs/design/progression-engine.md`). Pure and deterministic.
 public enum ProgressionTargets {
+    /// The logger and previews use the same history and setting priorities.
+    public static let historyWindow: TimeInterval = 365 * 86_400
+
+    public static func settings(
+        for exercise: Exercise, stored: ProgressionSettings?, focus: TrainingFocus?, prescription: ProgressionScheme?
+    ) -> ProgressionSettings {
+        var settings = stored ?? ProgressionSettings(for: exercise)
+        if stored == nil, let focus {
+            settings.scheme = FocusPrescription.for(focus).defaultScheme
+        }
+        if let prescription { settings.scheme = prescription }
+        return settings
+    }
+
     /// Tolerance on RPE when deciding whether a set was "easy enough" to progress.
     static let rpeTolerance = 0.5
     /// Consecutive misses at the same load before a linear-load reset.

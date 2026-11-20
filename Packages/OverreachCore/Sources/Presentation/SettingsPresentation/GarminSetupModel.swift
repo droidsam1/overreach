@@ -26,6 +26,9 @@ public final class GarminSetupModel {
     public static let keyPageURL = URL(string: "https://connect.garmin.com/app/settings/personalApiToken")
     /// Days before expiry when Settings starts to warn.
     static let expiryWarningDays = 14
+    /// Days before expiry when a notification reminds the person (it works with the app closed).
+    static let reminderDaysBeforeExpiry = 7
+    static let reminderID = "garmin-key-expiry"
 
     public var isPresented = false
     public private(set) var step: Step = .intro
@@ -42,13 +45,16 @@ public final class GarminSetupModel {
     public private(set) var hasOpenedGarmin = false
 
     private let account: any GarminAccount
+    private let reminders: (any LocalReminderScheduler)?
     private let clock: @Sendable () -> Date
     private let calendar: Calendar
 
     public init(
-        account: any GarminAccount, clock: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .current
+        account: any GarminAccount, reminders: (any LocalReminderScheduler)? = nil,
+        clock: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .current
     ) {
         self.account = account
+        self.reminders = reminders
         self.clock = clock
         self.calendar = calendar
     }
@@ -132,6 +138,7 @@ public final class GarminSetupModel {
 
     public func load() async {
         connection = await account.connection()
+        await scheduleExpiryReminder()
     }
 
     /// Opens the setup at the start, or at the key steps when renewing a key.
@@ -181,6 +188,7 @@ public final class GarminSetupModel {
             return
         }
         connection = await account.connection()
+        await scheduleExpiryReminder()
         step = .syncing
         await sync()
         step = .done
@@ -211,6 +219,23 @@ public final class GarminSetupModel {
         await account.disconnect()
         connection = nil
         summary = nil
+        await reminders?.cancel(id: Self.reminderID)
+    }
+
+    /// A notification at 10:00 a week before the key expires, so the person renews it before imports stop. A key
+    /// already that close to expiry is covered by the warning in Settings instead.
+    private func scheduleExpiryReminder() async {
+        guard let reminders, let connection else { return }
+        let day = calendar.date(
+            byAdding: .day, value: -Self.reminderDaysBeforeExpiry, to: calendar.startOfDay(for: connection.keyExpiresAt)
+        )
+        guard let day, let date = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: day), date > clock()
+        else { return }
+        await reminders.schedule(
+            id: Self.reminderID, at: date,
+            title: L10n.text("Your Garmin key expires in a week"),
+            body: L10n.text("Create a new one in Settings → Garmin to keep importing. It takes the same three steps.")
+        )
     }
 
     // MARK: Messages

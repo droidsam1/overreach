@@ -8,6 +8,7 @@ import SwiftUI
 /// Optional first-run setup: an animated tour of the app, then goal, about you, walking routine, devices and how to
 /// start. Connecting Apple Health or Garmin from the devices step is wired by the App (other features' flows).
 public struct OnboardingView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Bindable private var model: OnboardingModel
     private let isGarminConnected: Bool
     private let onConnectHealth: () -> Void
@@ -37,19 +38,19 @@ public struct OnboardingView: View {
                     content: TourContent.for(page), index: model.tourIndex, count: model.tourCount,
                     isLast: model.isLastTourPage, canGoBack: model.canGoBackInTour,
                     onNext: { model.nextTourPage() }, onBack: { model.previousTourPage() },
-                    onSkipTour: { model.skipTour() }, onSkipSetup: { Task { await model.skipSetup() } }
+                    onSkipSetup: { Task { await model.skipSetup() } }
                 )
                 .id(page)
-                .transition(.asymmetric(
+                .transition(reduceMotion ? .identity : .asymmetric(
                     insertion: .move(edge: .trailing).combined(with: .opacity),
                     removal: .move(edge: .leading).combined(with: .opacity)
                 ))
             } else {
                 setup
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
+                    .transition(reduceMotion ? .identity : .move(edge: .trailing).combined(with: .opacity))
             }
         }
-        .animation(.spring(duration: 0.5, bounce: 0.2), value: model.tourPage)
+        .animation(reduceMotion ? nil : .spring(duration: 0.5, bounce: 0.2), value: model.tourPage)
     }
 
     private var setup: some View {
@@ -92,7 +93,15 @@ public struct OnboardingView: View {
             }
         }
         ToolbarItem(placement: .confirmationAction) {
-            Button("Skip setup") { Task { await model.skipSetup() } }
+            Menu {
+                if model.canSkipStep {
+                    Button("Skip this step") { model.skipStep() }
+                }
+                Button("Skip setup") { Task { await model.skipSetup() } }
+            } label: {
+                Label("Setup options", systemImage: "ellipsis.circle")
+                    .labelStyle(.iconOnly)
+            }
         }
     }
 
@@ -100,15 +109,10 @@ public struct OnboardingView: View {
         VStack(spacing: Spacing.small) {
             Text(model.progressText).font(.caption).foregroundStyle(.secondary)
             if model.canSkipStep {
-                HStack {
-                    Button("Skip") { model.skipStep() }
-                        .buttonStyle(.bordered)
-                    Spacer()
-                    Button("Continue") {
-                        if model.continueTapped(isGarminConnected: isGarminConnected) { onConnectGarmin() }
-                    }
-                    .buttonStyle(.borderedProminent)
+                Button("Continue") {
+                    if model.continueTapped(isGarminConnected: isGarminConnected) { onConnectGarmin() }
                 }
+                .buttonStyle(BrandButtonStyle())
             }
         }
         .padding(Spacing.medium)
@@ -241,8 +245,8 @@ public struct OnboardingView: View {
                 Text("Sleep, HRV, resting heart rate and steps come from Apple Health. You can change this in Settings.")
             }
         }
-        .animation(.spring(duration: 0.4), value: model.offersGarminSetup)
-        .animation(.spring(duration: 0.4), value: isGarminConnected)
+        .animation(reduceMotion ? nil : .spring(duration: 0.4), value: model.offersGarminSetup)
+        .animation(reduceMotion ? nil : .spring(duration: 0.4), value: isGarminConnected)
     }
 
     private func card(_ wearable: Wearable) -> some View {

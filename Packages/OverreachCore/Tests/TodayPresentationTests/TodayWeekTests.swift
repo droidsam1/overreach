@@ -1,4 +1,5 @@
 import Domain
+import Fixtures
 import Foundation
 import PresentationKit
 import Testing
@@ -7,16 +8,22 @@ import TodayPresentation
 private actor WeekSource: MetricsSource {
     nonisolated let kind = DataSourceKind.appleHealth
     let days: [DailyMetrics]
+    let activities: [RunActivity]
     private(set) var accessRequests = 0
 
-    init(days: [DailyMetrics]) { self.days = days }
+    init(days: [DailyMetrics], activities: [RunActivity] = []) {
+        self.days = days
+        self.activities = activities
+    }
 
     func isAvailable() async -> Bool { true }
     func requestAccess() async { accessRequests += 1 }
     func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics] {
         days.filter { range.contains($0.day) }
     }
-    func runs(from start: Date, to end: Date) async throws -> [RunActivity] { [] }
+    func runs(from start: Date, to end: Date) async throws -> [RunActivity] {
+        activities.filter { (start...end).contains($0.startedAt) }
+    }
 }
 
 private struct OneCheckIn: CheckInRepository {
@@ -24,6 +31,11 @@ private struct OneCheckIn: CheckInRepository {
     func checkIn(for day: CalendarDay) async throws -> CheckIn? { day == stored.day ? stored : nil }
     func checkIns(in range: ClosedRange<CalendarDay>) async throws -> [CheckIn] { [] }
     func save(_ checkIn: CheckIn) async throws {}
+}
+
+private struct OneStrengthRecording: RecordedStrengthSource {
+    let activity: RecordedStrengthActivity
+    func strengthActivities(from start: Date, to end: Date) async -> [RecordedStrengthActivity] { [activity] }
 }
 
 @MainActor
@@ -59,25 +71,93 @@ struct TodayWeekTests {
         #expect(model.sourcesText == "From Apple Health")
         #expect(!model.showsBodyBattery)
         #expect(!model.showsConnectHealth)
+        #expect(model.hrvCoverageNote == "Still building your usual HRV range (2 of 14 comparable readings needed).")
+        #expect(model.showsReadinessDetails)
     }
 
-    @Test func theHRVAverageKeepsToTodaysMeasureAndNamesIt() async {
-        var today = day(0, sleepHours: 7, hrv: 50, steps: nil)
-        today.hrvMeasure = .overnightRMSSD
-        var garmin = day(-1, sleepHours: 7, hrv: 40, steps: nil)
-        garmin.hrvMeasure = .overnightRMSSD
-        var watch = day(-2, sleepHours: 7, hrv: 120, steps: nil)  // SDNN on a night Garmin missed
-        watch.hrvMeasure = .sleepSDNN
+    @Test func lowHRVShowsTheMeasuredDenominatorAndConfiguredWindow() async {
+        let baseline = (6...25).map { day(-$0, sleepHours: nil, hrv: 55, steps: nil) }
+        let recent = [0, -1, -3].map { day($0, sleepHours: nil, hrv: 35, steps: nil) }
         let model = TodayModel(
-            sources: [WeekSource(days: [watch, garmin, today])], calendar: calendar,
-            format: Format(locale: Locale(identifier: "en_US"))
+            sources: [WeekSource(days: baseline + recent)],
+            readinessSettings: .init(rollingDays: 5), calendar: calendar
         )
 
         await model.load(now: now)
 
-        #expect(model.hrvCaption == "7-day avg 45 ms · RMSSD")
+        #expect(model.readinessLevel == .amber)
+        #expect(model.readinessLines.map(\.text) == [
+            "HRV below your usual range (3 of 3 comparable readings low in the last 5 days)."
+        ])
+        #expect(model.hrvCoverageNote == nil)
+    }
+
+    @Test func aMissingRecentReadingShowsWhyHRVWasSkipped() async {
+        let baseline = (7...25).map { day(-$0, sleepHours: nil, hrv: 55, steps: nil) }
+        let model = TodayModel(
+            sources: [WeekSource(days: baseline + [day(-1, sleepHours: nil, hrv: 35, steps: nil)])], calendar: calendar
+        )
+
+        await model.load(now: now)
+
+        #expect(model.readinessLevel == .unknown)
+        #expect(model.showsReadinessCard)
+        #expect(model.hrvCoverageNote == "Too few comparable HRV readings in the last 7 days (1 available, 3 needed).")
+    }
+
+    @Test func lowHRVExplainsTheComparisonWithoutInventingMissingNightsOrWorkouts() async {
+        let days = (0...30).map { offset in
+            let hrv: Double? = switch offset {
+            case 0...3: 34
+            case 4, 6: nil
+            default: 43
+            }
+            var value = day(-offset, sleepHours: offset == 0 ? 7.6 : nil, hrv: hrv, steps: nil)
+            value.restingHeartRate = offset == 0 ? 60 : 59
+            return value
+        }
+        let model = TodayModel(sources: [WeekSource(days: days)], calendar: calendar,
+                               format: Format(locale: Locale(identifier: "en_US")))
+        await model.load(now: now)
+
+        #expect(model.readinessLevel == .amber)
+        #expect(model.readinessSummary == "Your HRV is trending below your usual range.")
+        #expect(model.readinessAdvice == "Keep it easy today. Run at a pace you can talk at, or lift with light effort.")
+        #expect(model.readinessLines.first?.text.contains("4 of 5 comparable readings low") == true)
+        #expect(model.readinessLines.first?.source?.absoluteString == "https://doi.org/10.3390/ijerph181910299")
+        #expect(model.readinessContext.contains("Sleep last night was 7.6 h."))
+        #expect(model.readinessContext.contains(
+            "Resting heart rate today is 60 bpm. The average over 7 measured days in the last week is 59 bpm."
+        ))
+        #expect(model.readinessTrainingContext == nil)
+    }
+
+    @Test func showsOnlyWorkoutsFromTheDayBeforeTheLatestComparableReading() async throws {
+        let days = (0...25).map { offset in
+            day(-offset, sleepHours: nil, hrv: offset == 0 ? nil : (offset < 7 ? 32 : 50), steps: nil)
+        }
+        let older = RunActivity(id: "prior-workout", source: .appleHealth, name: "Intervals",
+                                startedAt: days[2].day.startDate(in: calendar).addingTimeInterval(18 * 3_600),
+                                durationSeconds: 1_800, distanceMeters: 4_000)
+        let sameDay = RunActivity(id: "same-day", source: .appleHealth, name: "Not before the reading",
+                                  startedAt: days[1].day.startDate(in: calendar).addingTimeInterval(18 * 3_600),
+                                  durationSeconds: 1_800, distanceMeters: 4_000)
+        let model = TodayModel(sources: [WeekSource(days: days, activities: [sameDay, older])], calendar: calendar)
+        await model.load(now: now)
+
+        let context = try #require(model.readinessTrainingContext)
+        #expect(context.workouts.count == 1)
+        #expect(context.workouts.first?.contains("Intervals") == true)
+        #expect(model.readinessContext.contains("Resting heart rate is unavailable for today."))
+        #expect(model.readinessContext.contains("Sleep data for last night is unavailable."))
+    }
+
+    @Test func theDevicesEstimatesSayWhatTheyAre() {
+        let model = TodayModel(sources: [], calendar: calendar, format: Format(locale: Locale(identifier: "en_US")))
+
         #expect(model.vo2MaxCaption == "Watch estimate, follow the trend")
         #expect(model.bodyBatteryCaption == "Garmin's estimate")
+        #expect(model.stressCaption == "Garmin's estimate")
     }
 
     @Test func readinessReasonsOfferFurtherReading() async {
@@ -138,5 +218,90 @@ struct TodayWeekTests {
         #expect(model.readinessLevel == .unknown)
         #expect(model.readinessAdvice == "Not enough data yet to judge today.")
         #expect(model.readinessLines.count == 1)
+    }
+
+    @Test func amberShowsALighterExampleFromTheNextUndatedRoutine() async throws {
+        let squat = Exercise(name: "Squat", primaryMuscles: [.quadriceps], equipment: .barbell)
+        let newExercise = Exercise(name: "New exercise", primaryMuscles: [.glutes])
+        let first = Routine(name: "First", exerciseIDs: [squat.id])
+        let next = Routine(name: "Lower body", exerciseIDs: [squat.id, newExercise.id], prescriptions: [
+            RoutinePrescription(exerciseID: squat.id, scheme: .linearLoad(sets: 4, reps: 6, targetRPE: 8)),
+        ])
+        let previous = StrengthSession(
+            name: first.name, startedAt: now.addingTimeInterval(-3 * 86_400), endedAt: now.addingTimeInterval(-250_000),
+            entries: [ExerciseEntry(exerciseID: squat.id, sets: [WorkoutSet(weightKg: 70, reps: 6, rpe: 8)])],
+            routineID: first.id
+        )
+        let store = TestStore(exercises: [squat, newExercise], sessions: [previous], routines: [first, next])
+        let block = TrainingBlock(focus: .strength, start: day(-40, sleepHours: nil, hrv: nil, steps: nil).day,
+                                  plannedWeeks: 8, isDeclared: true, routineIDs: [first.id, next.id])
+        try await store.save(AthleteProfile(declaredBlocks: [block]))
+        try await store.save(ProgressionSettings(scheme: .linearLoad(sets: 3, reps: 10, targetRPE: 9), incrementKg: 2.5),
+                             for: squat.id)
+        let model = TodayModel(sources: [WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)])], profiles: store,
+                               workouts: store, exercises: store, routines: store, progression: store, calendar: calendar)
+
+        await model.load(now: now)
+
+        let option = try #require(model.strengthOption)
+        #expect(option.heading == "Up next in your plan · Lower body")
+        #expect(option.exerciseRows.map(\.title) == ["Squat"])
+        #expect(option.exerciseRows.first?.reference == "Usual target · 4 × 6")
+        #expect(option.exerciseRows.first?.suggestion == "Easy option · 2 × 6, with at least 4 reps left")
+        #expect(await store.sessions(from: .distantPast, to: now) == [previous])
+    }
+
+    @Test func amberWithoutAPlanUsesTheMostRecentFamiliarSession() async throws {
+        let squat = Exercise(name: "Squat", primaryMuscles: [.quadriceps])
+        let previous = StrengthSession(
+            name: "Gym", startedAt: now.addingTimeInterval(-86_400), endedAt: now.addingTimeInterval(-82_800),
+            entries: [ExerciseEntry(exerciseID: squat.id, sets: Array(repeating: WorkoutSet(reps: 8, rpe: 5), count: 3))]
+        )
+        let store = TestStore(exercises: [squat], sessions: [previous])
+        let model = TodayModel(sources: [WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)])],
+                               workouts: store, exercises: store, calendar: calendar)
+        await model.load(now: now)
+
+        let option = try #require(model.strengthOption)
+        #expect(option.heading == "Based on a recent session · Gym")
+        #expect(option.exerciseRows.first?.suggestion == "Easy option · 1 × 8, with at least 5 reps left")
+    }
+
+    @Test func alreadyCompletedStrengthAndSicknessHideTheOption() async {
+        let today = CalendarDay(now, calendar: calendar)
+        let now = today.startDate(in: calendar).addingTimeInterval(12 * 3_600)
+        let source = WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)])
+        let store = TestStore()
+        let recording = RecordedStrengthActivity(id: "gym", source: .garmin, startedAt: now.addingTimeInterval(-3_600),
+                                                 durationSeconds: 3_000)
+        let trained = TodayModel(sources: [source], workouts: store,
+                                 recordedStrength: OneStrengthRecording(activity: recording), calendar: calendar)
+        await trained.load(now: now)
+        #expect(trained.readinessLevel == .amber)
+        #expect(trained.strengthOption == nil)
+
+        let sick = TodayModel(sources: [source], checkIns: OneCheckIn(stored: CheckIn(day: today, isSick: true)),
+                              workouts: store, calendar: calendar)
+        await sick.load(now: now)
+        #expect(sick.readinessLevel == .red)
+        #expect(sick.strengthOption == nil)
+
+        let overnight = StrengthSession(name: "Late lift", startedAt: now.addingTimeInterval(-45_000),
+                                        endedAt: now.addingTimeInterval(-42_000))
+        let logged = TodayModel(sources: [source], workouts: TestStore(sessions: [overnight]), calendar: calendar)
+        await logged.load(now: now)
+        #expect(logged.readinessLevel == .amber)
+        #expect(logged.strengthOption == nil)
+    }
+
+    @Test func anEmptyHistoryOffersAnEffortCueWithoutInventingAnExercise() async throws {
+        let source = WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)])
+        let model = TodayModel(sources: [source], workouts: TestStore(), calendar: calendar)
+        await model.load(now: now)
+
+        let option = try #require(model.strengthOption)
+        #expect(option.heading == nil)
+        #expect(option.exerciseRows.isEmpty)
+        #expect(option.guidance.contains("at least four reps left"))
     }
 }

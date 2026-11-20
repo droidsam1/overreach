@@ -5,7 +5,7 @@ import Observation
 import PresentationKit
 
 /// A set being logged. Prefilled from the progression target; `isDone` marks it as performed.
-public struct DraftSet: Identifiable, Hashable, Sendable {
+public struct DraftSet: Identifiable, Hashable, Codable, Sendable {
     public let id: UUID
     public var weightKg: Double?
     public var reps: Int?
@@ -28,7 +28,7 @@ public struct DraftSet: Identifiable, Hashable, Sendable {
 }
 
 /// An exercise in the session being logged, with the engine's target and status for context.
-public struct DraftExercise: Identifiable, Hashable, Sendable {
+public struct DraftExercise: Identifiable, Hashable, Codable, Sendable {
     public let id: UUID
     public let exercise: Exercise
     public var target: ExerciseTarget
@@ -85,7 +85,7 @@ public struct TargetSummary: Hashable, Sendable {
     public let reasons: [String]
     /// Ordered suggestions when stalled, numbered: "1. Use smaller jumps (1.25 kg). (moderate evidence)".
     public let stallSuggestions: [String]
-    /// "Learn more" about the reasons and suggestions above (ADR-0024); often empty.
+    /// "Learn more" about the reasons and suggestions above (ADR-0027); often empty.
     public let readings: [Reading]
 }
 
@@ -213,16 +213,24 @@ public final class WorkoutModel {
     public private(set) var catalog: [Exercise] = []
     /// Start time of the session in progress; `nil` when no session is open.
     public private(set) var startedAt: Date?
-    public var sessionName = "Workout"
+    public var sessionName = "Workout" {
+        didSet { saveDraft() }
+    }
     /// Notes on the whole session (sleep, how it felt). Saved trimmed; empty = none.
-    public var sessionNotes = ""
+    public var sessionNotes = "" {
+        didSet { saveDraft() }
+    }
     /// Declared focus of the session; `nil` = automatic (per exercise). Change it with `setSessionFocus(_:)`.
-    public private(set) var sessionFocus: TrainingFocus?
+    public private(set) var sessionFocus: TrainingFocus? {
+        didSet { saveDraft() }
+    }
     /// The routine the session was started from: its prescriptions set sets and reps, and the saved session
     /// remembers it so the plan knows which session comes next.
     public private(set) var sessionRoutine: Routine?
     /// Exercises of the session in progress. Views bind to it directly (`$model.exercises`).
-    public var exercises: [DraftExercise] = []
+    public var exercises: [DraftExercise] = [] {
+        didSet { saveDraft() }
+    }
     public private(set) var errorMessage: String?
     /// The summary of the session just finished; set it to `nil` to dismiss it.
     public var summary: SessionReport?
@@ -230,6 +238,19 @@ public final class WorkoutModel {
     public let rest: RestTimerModel
 
     public var isSessionActive: Bool { startedAt != nil }
+    public private(set) var isPreparingSession = false
+    public private(set) var isSavingSession = false
+    public private(set) var isRecoveringDraft = false
+    public private(set) var draftErrorMessage: String?
+    public private(set) var draftNotice: String?
+    public var needsDraftRecovery: Bool { pendingDraft != nil || isDraftUnreadable }
+    public var recoverableWorkoutName: String? { pendingDraft?.name }
+    public var recoverableWorkoutStart: Date? { pendingDraft?.startedAt }
+    public var canResumeWorkout: Bool { pendingDraft != nil }
+
+    private var sessionID: UUID?
+    private var pendingDraft: WorkoutDraft?
+    private var isDraftUnreadable = false
 
     /// How effort is logged and shown (Settings for the athlete; changed from the logging guide).
     public private(set) var effortScale = EffortScale.rpe
@@ -267,6 +288,7 @@ public final class WorkoutModel {
     public let focusOptions: [Option<TrainingFocus>] = Option.trainingFocuses
 
     private let workouts: any WorkoutRepository
+    private let draftStore: (any WorkoutDraftStore)?
     private let exerciseRepository: any ExerciseRepository
     private let progression: any ProgressionSettingsRepository
     private let backup: (any BackupService)?
@@ -275,7 +297,7 @@ public final class WorkoutModel {
     private let clock: @Sendable () -> Date
 
     /// How far back history is read to compute targets and stalls.
-    static let historyWindow: TimeInterval = 365 * 86_400
+    static let historyWindow = ProgressionTargets.historyWindow
 
     public init(
         workouts: any WorkoutRepository,
@@ -285,9 +307,11 @@ public final class WorkoutModel {
         health: (any HealthWorkoutWriter)? = nil,
         restAlerts: (any RestAlertScheduler)? = nil,
         profiles: (any ProfileRepository)? = nil,
+        draftStore: (any WorkoutDraftStore)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
+        self.draftStore = draftStore
         self.exerciseRepository = exercises
         self.progression = progression
         self.backup = backup
@@ -295,6 +319,8 @@ public final class WorkoutModel {
         self.profiles = profiles
         self.clock = clock
         rest = RestTimerModel(alerts: restAlerts, clock: clock)
+        rest.onChange = { [weak self] in self?.saveDraft() }
+        readSavedDraft()
     }
 
     public func load() async {
@@ -312,9 +338,12 @@ public final class WorkoutModel {
     }
 
     private func applyEffortScale(_ scale: EffortScale) {
+        guard scale != effortScale else { return }
         effortScale = scale
-        for index in exercises.indices {
-            exercises[index].effortScale = scale
+        exercises = exercises.map { exercise in
+            var updated = exercise
+            updated.effortScale = scale
+            return updated
         }
     }
 
@@ -328,38 +357,43 @@ public final class WorkoutModel {
     }
 
     public func start(name: String = L10n.text("Workout")) {
-        guard startedAt == nil else { return }
+        guard !isSessionActive, !needsDraftRecovery, !isSavingSession else { return }
+        beginSession(name: name)
+        saveDraft()
+    }
+
+    private func beginSession(name: String, routine: Routine? = nil) {
         sessionName = name
         sessionNotes = ""
-        sessionFocus = nil
-        sessionRoutine = nil
+        sessionFocus = routine?.focus
+        sessionRoutine = routine
         exercises = []
         errorMessage = nil
+        draftNotice = nil
+        sessionID = UUID()
         startedAt = clock()
     }
 
-    /// Opens a session from `routine`: its name, focus and exercises, with sets prefilled from each exercise's next
-    /// progression target. Exercises that no longer exist are skipped. Does nothing if a session is open.
+    /// Prefills a routine before exposing the editable draft, so recovery never restores half a routine.
     public func start(_ routine: Routine) async {
-        guard !isSessionActive else { return }
-        start(name: routine.name)
-        sessionFocus = routine.focus
-        sessionRoutine = routine
-        let session = startedAt
+        guard !isSessionActive, !needsDraftRecovery, !isSavingSession else { return }
+        isPreparingSession = true
+        beginSession(name: routine.name, routine: routine)
         await load()
         for exerciseID in routine.exerciseIDs {
             guard let exercise = catalog.first(where: { $0.id == exerciseID }) else { continue }
-            let prepared = await prepare(exercise, id: UUID())
-            // The session may have been discarded while the target was computed.
-            guard startedAt == session else { return }
-            exercises.append(prepared)
+            exercises.append(await prepare(exercise, id: UUID()))
         }
+        isPreparingSession = false
+        saveDraft()
     }
 
-    /// Adds `exercise` with sets prefilled from its next progression target.
+    /// Adds an exercise with sets prefilled from its next progression target.
     public func add(_ exercise: Exercise) async {
-        guard isSessionActive else { return }
-        exercises.append(await prepare(exercise, id: UUID()))
+        guard let sessionID, !isSavingSession, !isPreparingSession else { return }
+        let prepared = await prepare(exercise, id: UUID())
+        guard self.sessionID == sessionID, !isSavingSession else { return }
+        exercises.append(prepared)
     }
 
     /// Adds the catalog exercise with `exerciseID` (from `exerciseChoices`).
@@ -377,10 +411,13 @@ public final class WorkoutModel {
 
     /// Recomputes targets for exercises with no completed set (e.g. after changing the session focus).
     public func refreshTargets() async {
+        guard let sessionID, !isSavingSession, !isPreparingSession else { return }
         let pending = exercises.filter { !$0.sets.contains(where: \.isDone) }
         for current in pending {
             var refreshed = await prepare(current.exercise, id: current.id)
-            if let position = exercises.firstIndex(where: { $0.id == current.id }) {
+            guard self.sessionID == sessionID, !isSavingSession else { return }
+            if let position = exercises.firstIndex(where: { $0.id == current.id }),
+               exercises[position].sets == current.sets {
                 refreshed.notes = exercises[position].notes
                 exercises[position] = refreshed
             }
@@ -413,6 +450,7 @@ public final class WorkoutModel {
     /// touched, so typed values survive; exercises with completed sets keep their sets and update the target.
     public func applySettingsChanges() async {
         await loadEffortScale()
+        guard let sessionID, !isSavingSession, !isPreparingSession else { return }
         for current in exercises {
             let stored: ProgressionSettings?
             do {
@@ -422,9 +460,10 @@ public final class WorkoutModel {
             }
             guard stored != current.appliedSettings else { continue }
             var refreshed = await prepare(current.exercise, id: current.id)
+            guard self.sessionID == sessionID, !isSavingSession else { return }
             guard let position = exercises.firstIndex(where: { $0.id == current.id }) else { continue }
             refreshed.notes = exercises[position].notes
-            if exercises[position].sets.contains(where: \.isDone) {
+            if exercises[position].sets != current.sets || exercises[position].sets.contains(where: \.isDone) {
                 refreshed.sets = exercises[position].sets
             }
             exercises[position] = refreshed
@@ -443,15 +482,10 @@ public final class WorkoutModel {
             warnAboutTargets()
         }
         let declaredFocus = stored?.focus ?? sessionFocus
-        var settings = stored ?? ProgressionSettings(for: exercise)
-        if stored == nil, let declaredFocus {
-            settings.scheme = FocusPrescription.for(declaredFocus).defaultScheme
-        }
         // A routine's prescription wins in that routine; the engine still sets the load from history.
         let prescribed = sessionRoutine?.prescription(for: exercise.id)
-        if let prescribed {
-            settings.scheme = prescribed
-        }
+        let settings = ProgressionTargets.settings(for: exercise, stored: stored, focus: declaredFocus,
+                                                   prescription: prescribed)
         let inferredFocus = FocusClassifier.dominant(history.indices.suffix(3).compactMap { index in
             FocusClassifier.focus(of: history[index], previous: Array(history[..<index]))
         })
@@ -543,6 +577,7 @@ public final class WorkoutModel {
 
     /// Finishes, or asks first when some exercises are unfinished (`isConfirmingUnfinished`).
     public func requestFinish() async {
+        guard !isSavingSession, !isPreparingSession else { return }
         if unfinishedExerciseNames.isEmpty {
             await finish()
         } else {
@@ -561,41 +596,49 @@ public final class WorkoutModel {
     @discardableResult
     public func finish(countingUnfinished: Bool = true) async -> Bool {
         isConfirmingUnfinished = false
-        guard let startedAt else { return false }
+        guard let sessionID, let startedAt, !isSavingSession, !isPreparingSession else { return false }
         let now = clock()
         let entries = exercises.compactMap { exercise -> ExerciseEntry? in
             let done = exercise.sets.filter(\.isDone).map { set in
                 WorkoutSet(
-                    kind: set.isWarmUp ? .warmup : .working, weightKg: set.weightKg, reps: set.reps, rpe: set.rpe,
+                    id: set.id, kind: set.isWarmUp ? .warmup : .working, weightKg: set.weightKg, reps: set.reps, rpe: set.rpe,
                     completedAt: now
                 )
             }
             return done.isEmpty ? nil : ExerciseEntry(
-                exerciseID: exercise.exercise.id, sets: done, notes: Self.trimmedOrNil(exercise.notes),
+                id: exercise.id, exerciseID: exercise.exercise.id, sets: done, notes: Self.trimmedOrNil(exercise.notes),
                 countsForProgression: countingUnfinished || !Self.isUnfinished(exercise)
             )
         }
         guard !entries.isEmpty else {
+            guard clearStoredDraft() else { return false }
             close()
             return true
         }
         let finished = StrengthSession(
-            name: sessionName, startedAt: startedAt, endedAt: now, entries: entries,
+            id: sessionID, name: sessionName, startedAt: startedAt, endedAt: now, entries: entries,
             notes: Self.trimmedOrNil(sessionNotes), focus: sessionFocus, routineID: sessionRoutine?.id
         )
         let targets = Dictionary(exercises.map { ($0.exercise.id, $0.target) }, uniquingKeysWith: { first, _ in first })
+        isSavingSession = true
         do {
             try await workouts.save(finished)
-            let summary = await makeSummary(of: finished, targets: targets, now: now)
-            close()
-            self.summary = summary
-            await backup?.backUpIfConfigured(now: now)
-            await health?.sync(finished)
-            return true
         } catch {
+            isSavingSession = false
             errorMessage = L10n.text("Could not save the session. It is still open.")
             return false
         }
+
+        // If the app stops after the commit but before cleanup, resume finds the finished session by this same ID.
+        if !clearStoredDraft() {
+            pendingDraft = draft
+        }
+        close()
+        summary = await makeSummary(of: finished, targets: targets, now: now)
+        isSavingSession = false
+        await backup?.backUpIfConfigured(now: now)
+        await health?.sync(finished)
+        return true
     }
 
     private func makeSummary(
@@ -610,14 +653,110 @@ public final class WorkoutModel {
     }
 
     public func discard() {
-        close()
+        let mayHavePendingRestAlert = pendingDraft?.rest != nil || isDraftUnreadable
+        guard !isPreparingSession, !isSavingSession, !isRecoveringDraft, clearStoredDraft() else { return }
+        close(cancelPendingRestAlert: mayHavePendingRestAlert)
     }
 
-    private func close() {
-        rest.stop()
+    private func close(cancelPendingRestAlert: Bool = false) {
         startedAt = nil
+        sessionID = nil
+        rest.stop(cancelPendingAlert: cancelPendingRestAlert)
         exercises = []
         errorMessage = nil
+    }
+
+    // MARK: Draft recovery
+
+    public func resumeSavedWorkout() async {
+        guard let pendingDraft, !isRecoveringDraft, !isSavingSession, !isSessionActive else { return }
+        isRecoveringDraft = true
+        defer { isRecoveringDraft = false }
+        do {
+            if try await workouts.containsSession(id: pendingDraft.id) {
+                if clearStoredDraft() {
+                    if pendingDraft.rest != nil {
+                        rest.stop(cancelPendingAlert: true)
+                    }
+                    draftNotice = L10n.text("This workout is already saved in History.")
+                }
+                return
+            }
+        } catch {
+            draftErrorMessage = L10n.text("Could not check the saved workout. Try again.")
+            return
+        }
+
+        sessionID = pendingDraft.id
+        startedAt = pendingDraft.startedAt
+        sessionName = pendingDraft.name
+        sessionNotes = pendingDraft.notes
+        sessionFocus = pendingDraft.focus
+        sessionRoutine = pendingDraft.routine
+        effortScale = pendingDraft.effortScale
+        exercises = pendingDraft.exercises
+        if let timer = pendingDraft.rest,
+           let exercise = exercises.first(where: { $0.id == timer.exerciseID }),
+           exercise.sets.contains(where: { $0.id == timer.setID && $0.isDone }) {
+            rest.restore(timer, for: exercise)
+        }
+        self.pendingDraft = nil
+        draftErrorMessage = nil
+    }
+
+    public func retryDraftAccess() {
+        if isSessionActive {
+            saveDraft()
+        } else if isDraftUnreadable {
+            readSavedDraft()
+        }
+    }
+
+    private var draft: WorkoutDraft? {
+        guard let sessionID, let startedAt else { return nil }
+        return WorkoutDraft(
+            id: sessionID, startedAt: startedAt, name: sessionName, notes: sessionNotes, focus: sessionFocus,
+            routine: sessionRoutine, effortScale: effortScale, exercises: exercises, rest: rest.draft
+        )
+    }
+
+    private func readSavedDraft() {
+        do {
+            pendingDraft = try draftStore?.readDraft().map { try JSONDecoder().decode(WorkoutDraft.self, from: $0) }
+            if let pendingDraft, pendingDraft.version != WorkoutDraft.currentVersion {
+                self.pendingDraft = nil
+                isDraftUnreadable = true
+            } else {
+                isDraftUnreadable = false
+            }
+        } catch {
+            pendingDraft = nil
+            isDraftUnreadable = true
+        }
+        draftErrorMessage = isDraftUnreadable ? L10n.text("Could not open the saved workout.") : nil
+    }
+
+    private func saveDraft() {
+        guard let draftStore, !isPreparingSession, !isRecoveringDraft, !isSavingSession, let draft else { return }
+        do {
+            try draftStore.writeDraft(JSONEncoder().encode(draft))
+            draftErrorMessage = nil
+        } catch {
+            draftErrorMessage = L10n.text("Could not save the draft. Keep the app open and try again.")
+        }
+    }
+
+    private func clearStoredDraft() -> Bool {
+        do {
+            try draftStore?.writeDraft(nil)
+            pendingDraft = nil
+            isDraftUnreadable = false
+            draftErrorMessage = nil
+            return true
+        } catch {
+            draftErrorMessage = L10n.text("Could not remove the saved workout draft. Try again.")
+            return false
+        }
     }
 
     private func history(of exerciseID: UUID) async -> [ExerciseExposure] {

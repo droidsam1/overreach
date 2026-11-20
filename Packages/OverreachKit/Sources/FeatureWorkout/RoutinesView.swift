@@ -9,12 +9,16 @@ import WorkoutPresentation
 /// What the Train tab shows when no session is open: start an empty session or one from a routine.
 struct StartSessionView: View {
     let routines: RoutinesModel
+    let notice: String?
     let onStartEmpty: () -> Void
     let onStart: (Routine) -> Void
     let onEdit: (UUID) -> Void
 
     var body: some View {
         List {
+            if let notice {
+                StatusLabel(title: notice, tone: .positive)
+            }
             if let message = routines.errorMessage {
                 Label(message, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red)
@@ -54,6 +58,11 @@ struct StartSessionView: View {
                     Text("Up next in your plan")
                 }
             }
+            Section {
+                Button("Start empty session", systemImage: "plus.circle.fill", action: onStartEmpty)
+            } footer: {
+                Text("Targets come from your history.")
+            }
             if !routines.planChecks.isEmpty {
                 Section("Plan check") {
                     ForEach(routines.planChecks) { check in
@@ -62,11 +71,6 @@ struct StartSessionView: View {
                         }
                     }
                 }
-            }
-            Section {
-                Button("Start empty session", systemImage: "plus.circle.fill", action: onStartEmpty)
-            } footer: {
-                Text("Targets come from your history.")
             }
             Section {
                 ForEach(routines.rows) { row in
@@ -109,6 +113,8 @@ struct StartSessionView: View {
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
             .accessibilityLabel("Routine options")
@@ -191,8 +197,7 @@ private struct PlanCheckView: View {
             ReadingLinks(items: check.readings.map(ReadingLinkItem.init))
             if let action = check.actionTitle {
                 Button(action, action: onAccept)
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
+                    .buttonStyle(BrandButtonStyle())
             }
         }
         .padding(.vertical, Spacing.xSmall)
@@ -200,7 +205,7 @@ private struct PlanCheckView: View {
 }
 
 extension ReadingLinkItem {
-    /// The display values of a curated reading (ADR-0024).
+    /// The display values of a curated reading (ADR-0027).
     init(_ reading: Reading) {
         self.init(url: reading.url, title: reading.title, detail: reading.detail(), note: reading.note)
     }

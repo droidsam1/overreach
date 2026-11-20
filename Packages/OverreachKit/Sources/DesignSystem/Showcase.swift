@@ -73,6 +73,8 @@ public struct PageDots: View {
     private let count: Int
     private let index: Int
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     public init(count: Int, index: Int) {
         self.count = count
         self.index = index
@@ -86,7 +88,7 @@ public struct PageDots: View {
                     .frame(width: page == index ? 22 : 8, height: 8)
             }
         }
-        .animation(.spring(duration: 0.4), value: index)
+        .animation(reduceMotion ? nil : .spring(duration: 0.4), value: index)
         .accessibilityElement()
         .accessibilityLabel(Text("Page \(index + 1) of \(count)"))
     }

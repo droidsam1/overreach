@@ -12,7 +12,7 @@ public struct PlanCheckRow: Identifiable, Hashable, Sendable {
     public let reason: String
     /// "Plan 2 a week"; `nil` when there is nothing to change in the plan (advice only).
     public let actionTitle: String?
-    /// "Learn more" for the reason (ADR-0024); often empty.
+    /// "Learn more" for the reason (ADR-0027); often empty.
     public let readings: [Reading]
     let adjustment: PlanAdjustment
     let block: TrainingBlock

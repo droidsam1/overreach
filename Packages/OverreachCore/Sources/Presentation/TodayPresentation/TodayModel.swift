@@ -8,7 +8,8 @@ import PresentationKit
 public struct ReadinessLine: Hashable, Sendable {
     public let text: String
     public let evidence: String
-    /// "Learn more" for this reason (ADR-0024); often empty.
+    public let source: URL?
+    /// "Learn more" for this reason (ADR-0027); often empty.
     public let readings: [Reading]
 }
 
@@ -30,6 +31,11 @@ public final class TodayModel {
     public private(set) var accessError: String?
     /// Today's check-in, once filled in.
     public private(set) var checkIn: CheckIn?
+    public private(set) var recentTrainingDays: [RecentTrainingDay] = []
+    public private(set) var strengthOption: StrengthOption?
+    private var trainingReadFailed = false
+    private var activeLoad: UUID?
+    private var loadedDay: CalendarDay?
     /// Whether a Garmin account is connected (ADR-0022).
     public private(set) var isGarminConnected = false
     /// The person said they use a Garmin (first-run setup).
@@ -40,6 +46,11 @@ public final class TodayModel {
     private let profiles: (any ProfileRepository)?
     private let checkIns: (any CheckInRepository)?
     private let backup: (any BackupService)?
+    private let workouts: (any WorkoutRepository)?
+    private let exercises: (any ExerciseRepository)?
+    private let recordedStrength: (any RecordedStrengthSource)?
+    private let routines: (any RoutineRepository)?
+    private let progression: (any ProgressionSettingsRepository)?
     private let readinessSettings: ReadinessRules.Settings
     private let calendar: Calendar
     private let format: Format
@@ -51,9 +62,12 @@ public final class TodayModel {
 
     /// What the light means for today's training.
     public var readinessAdvice: String {
-        switch readiness.level {
+        if readiness.reasons.contains(.symptomsLimitTraining) {
+            return L10n.text("Skip training today and reassess how you feel.")
+        }
+        return switch readiness.level {
         case .green: L10n.text("Train as planned.")
-        case .amber: L10n.text("Keep it easy: an easy run (zone 1–2) or light strength.")
+        case .amber: L10n.text("Keep it easy today. Run at a pace you can talk at, or lift with light effort.")
         case .red: L10n.text("Make it a recovery day: a walk or a very easy session. If you lift, keep it light (RPE 6 or less).")
         case .unknown: L10n.text("Not enough data yet to judge today.")
         }
@@ -63,17 +77,64 @@ public final class TodayModel {
     public var readinessLines: [ReadinessLine] {
         readiness.reasons.map { reason in
             let evidence = ReadinessRules.evidence(for: reason)
+            let source = ReadinessRules.evidenceURL(for: reason)
             return ReadinessLine(
-                text: text(for: reason), evidence: evidence.level.displayName,
-                readings: FurtherReading.readings(for: evidence)
+                text: text(for: reason), evidence: evidence.level.displayName, source: source,
+                // The research source already has its own link.
+                readings: FurtherReading.readings(for: evidence).filter { $0.url != source }
             )
         }
     }
 
+    public var hrvCoverageNote: String? {
+        guard let coverage = readiness.hrvCoverage, !coverage.canCompare else { return nil }
+        if coverage.baselineReadings < coverage.minimumBaselineReadings {
+            return L10n.format(
+                "Still building your usual HRV range ({1} of {2} comparable readings needed).",
+                String(coverage.baselineReadings), String(coverage.minimumBaselineReadings)
+            )
+        }
+        return L10n.format(
+            "Too few comparable HRV readings in the last {1} days ({2} available, {3} needed).",
+            String(coverage.recentDays), String(coverage.recentReadings), String(coverage.minimumRecentReadings)
+        )
+    }
+
+    public var showsReadinessDetails: Bool { !readiness.reasons.isEmpty || hrvCoverageNote != nil }
+    public var showsReadinessCard: Bool { loadedDay != nil && (readinessLevel != .unknown || hrvCoverageNote != nil) }
+
+    public var readinessSummary: String? {
+        if let summary = explanation.summary { return summary }
+        return readiness.reasons.first.flatMap { $0 == .missingData ? nil : text(for: $0) }
+    }
+    public var readinessContext: [String] { explanation.context }
+    public var readinessTrainingContext: ReadinessTrainingContext? { isLoading ? nil : explanation.trainingContext }
+
+    private var explanation: ReadinessExplanation {
+        ReadinessExplanation(readiness: readiness, today: metrics, week: week, training: recentTrainingDays,
+                             calendar: calendar, format: format)
+    }
+
+    public var trainingTimelineNote: String? {
+        if trainingReadFailed { return L10n.text("Some recent workouts could not be loaded.") }
+        if !recentTrainingDays.isEmpty && recentTrainingDays.allSatisfy({ $0.workouts.isEmpty }) {
+            return L10n.text("No completed workouts found in the last 7 days.")
+        }
+        return nil
+    }
+
+    public var showsTrainingTimeline: Bool { !recentTrainingDays.isEmpty || trainingReadFailed }
+
     /// The check-in button only shows when check-ins can be stored.
     public var showsCheckIn: Bool { checkIns != nil }
     public var checkInButtonTitle: String {
-        checkIn == nil ? L10n.text("How do you feel today?") : L10n.text("Edit today's check-in")
+        if let title = CheckInModel.title(for: suggestedContextQuestion) { return title }
+        return checkIn == nil ? L10n.text("How do you feel today?") : L10n.text("Edit today's check-in")
+    }
+
+    private var suggestedContextQuestion: CheckIn.Context.Question? {
+        guard checkIn?.context == nil else { return nil }
+        return ReadinessRules.contextQuestion(for: readiness)
     }
 
     /// "Energy 4/5 · Soreness 1/3", or "Sick" — what today's check-in said.
@@ -83,6 +144,11 @@ public final class TodayModel {
         var parts: [String] = []
         if let energy = checkIn.energy { parts.append(L10n.format("Energy {1}/5", String(energy))) }
         if let soreness = checkIn.soreness { parts.append(L10n.format("Soreness {1}/3", String(soreness))) }
+        switch checkIn.context?.answer == .yes ? checkIn.context?.question : nil {
+        case .symptoms: parts.append(L10n.text("New symptoms affect training"))
+        case .stress: parts.append(L10n.text("More stress than usual"))
+        case nil: break
+        }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
@@ -91,7 +157,8 @@ public final class TodayModel {
         guard let checkIns else { return nil }
         let today = CalendarDay(now, calendar: calendar)
         return CheckInModel(
-            day: today, existing: checkIn?.day == today ? checkIn : nil, checkIns: checkIns, backup: backup
+            day: today, existing: checkIn?.day == today ? checkIn : nil, checkIns: checkIns, backup: backup,
+            contextQuestion: loadedDay == today ? suggestedContextQuestion : nil
         )
     }
 
@@ -139,17 +206,16 @@ public final class TodayModel {
         )
     }
 
-    /// "7-day avg 42 ms · SDNN": only the days measured like today's value, and which measure it is, since
-    /// Garmin's RMSSD and the Apple Watch's SDNN are not comparable.
+    /// "7-day avg 42 ms", from the days that have a value of the same statistic as the latest (RMSSD and SDNN are not
+    /// averaged together, ADR-0024).
     public var hrvCaption: String? {
-        let measure = metrics?.resolvedHRVMeasure ?? week.last { $0.hrvNightlyAverageMs != nil }?.resolvedHRVMeasure
-        let values = week.filter { $0.resolvedHRVMeasure == measure }.compactMap(\.hrvNightlyAverageMs)
-        guard !values.isEmpty else { return nil }
-        let text = weekly(format.number(values.reduce(0, +) / Double(values.count), maxFractionDigits: 0) + " ms")
-        return measure.map { "\(text) · \($0.displayName)" } ?? text
+        let latest = ([metrics].compactMap { $0 } + week.reversed()).first { $0.hrvNightlyAverageMs != nil }
+        guard let latest else { return nil }
+        return average { $0.hrvMetric == latest.hrvMetric ? $0.hrvNightlyAverageMs : nil }
+            .map { weekly(format.number($0, maxFractionDigits: 0) + " ms") }
     }
 
-    /// Body Battery and stress are Garmin's own scores, not validated independently (`wearable-composite-scores`).
+    /// Body Battery and stress are Garmin's own scores, not validated independently (`composite-scores`).
     public var bodyBatteryCaption: String { L10n.text("Garmin's estimate") }
     public var stressCaption: String { L10n.text("Garmin's estimate") }
     /// Watch VO2max estimates have a wide individual error: useful as a long-term trend (`wearable-vo2max`).
@@ -188,6 +254,9 @@ public final class TodayModel {
     public init(
         sources: [any MetricsSource], checkIns: (any CheckInRepository)? = nil, backup: (any BackupService)? = nil,
         garmin: (any GarminAccount)? = nil, profiles: (any ProfileRepository)? = nil,
+        workouts: (any WorkoutRepository)? = nil, exercises: (any ExerciseRepository)? = nil,
+        recordedStrength: (any RecordedStrengthSource)? = nil, routines: (any RoutineRepository)? = nil,
+        progression: (any ProgressionSettingsRepository)? = nil,
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
@@ -196,25 +265,41 @@ public final class TodayModel {
         self.profiles = profiles
         self.checkIns = checkIns
         self.backup = backup
+        self.workouts = workouts
+        self.exercises = exercises
+        self.recordedStrength = recordedStrength
+        self.routines = routines
+        self.progression = progression
         self.readinessSettings = readinessSettings
         self.calendar = calendar
         self.format = format
     }
 
     public func load(now: Date = .now) async {
+        let loadID = UUID()
+        activeLoad = loadID
         isLoading = true
-        defer { isLoading = false }
+        strengthOption = nil
+        defer {
+            if activeLoad == loadID {
+                isLoading = false
+                activeLoad = nil
+            }
+        }
 
         let today = CalendarDay(now, calendar: calendar)
         // The readiness baselines need weeks of history; the screen shows the last 7 days.
-        let range = today.adding(days: -readinessSettings.baselineDays, calendar: calendar)...today
+        let historyDays = max(6, readinessSettings.baselineDays)
+        let range = today.adding(days: -historyDays, calendar: calendar)...today
         let weekStart = today.adding(days: -6, calendar: calendar)
         var byDay: [CalendarDay: DailyMetrics] = [:]
         var failures: [DataSourceKind] = []
         var reasons: [DataSourceKind: String] = [:]
+        var availableSources: [any MetricsSource] = []
 
         for source in sources {
             guard await source.isAvailable() else { continue }
+            availableSources.append(source)
             do {
                 for day in try await source.dailyMetrics(in: range) where range.contains(day.day) {
                     byDay[day.day] = (byDay[day.day] ?? DailyMetrics(day: day.day)).merging(day)
@@ -225,20 +310,97 @@ public final class TodayModel {
             }
         }
 
+        let checkIn = (try? await checkIns?.checkIn(for: today)).flatMap { $0.day == today ? $0 : nil }
+        let garminConnected = await garmin?.connection() != nil
+        let profile = try? await profiles?.profile()
+        guard activeLoad == loadID else { return }
+        loadedDay = today
         let history = byDay.values.filter { !$0.sources.isEmpty }.sorted { $0.day < $1.day }
         week = history.filter { $0.day >= weekStart }
         metrics = byDay[today].flatMap { $0.sources.isEmpty ? nil : $0 }
         failedSources = failures
         failureReasons = reasons
-        let checkIn = try? await checkIns?.checkIn(for: today)
         self.checkIn = checkIn
-        isGarminConnected = await garmin?.connection() != nil
-        let profile = try? await profiles?.profile()
+        isGarminConnected = garminConnected
         wearsGarmin = profile?.wearables.contains(.garmin) ?? false
         readiness = ReadinessRules.readiness(
             today: today, history: history, checkIn: checkIn, settings: readinessSettings,
             tracksNaturalCycle: profile?.usesCyclePhase ?? false, calendar: calendar
         )
+        await loadRecentTraining(in: weekStart...today, now: now, sources: availableSources, profile: profile,
+                                 loadID: loadID)
+    }
+
+    private func loadRecentTraining(
+        in range: ClosedRange<CalendarDay>, now: Date, sources: [any MetricsSource], profile: AthleteProfile?,
+        loadID: UUID
+    ) async {
+        // Include the previous day so copies across midnight can match before filtering to the visible week.
+        let start = range.lowerBound.adding(days: -1, calendar: calendar).startDate(in: calendar)
+        async let logged = try? workouts?.sessions(from: start, to: now)
+        async let catalog = try? exercises?.allExercises()
+        async let watch = recordedStrength?.strengthActivities(from: start, to: now)
+        async let checkInHistory = try? checkIns?.checkIns(in: range)
+        async let runs = Self.readRecentRuns(sources: sources, from: start, to: now)
+        let (sessions, allExercises, recordings, previousCheckIns, runResult) = await (
+            logged, catalog, watch, checkInHistory, runs
+        )
+        guard activeLoad == loadID else { return }
+        trainingReadFailed = runResult.failed || (workouts != nil && sessions == nil)
+        let currentCheckIn = checkIn.map { [$0] } ?? []
+        recentTrainingDays = RecentTraining(calendar: calendar, format: format).days(
+            in: range, through: now, metrics: week, checkIns: currentCheckIn + (previousCheckIns ?? []),
+            runs: runResult.activities, sessions: sessions ?? [], recordings: recordings ?? [], exercises: allExercises ?? []
+        )
+        guard readiness.level == .amber, let sessions,
+              !hasStrengthToday(sessions: sessions, recordings: recordings ?? [], now: now) else { return }
+        await loadStrengthOption(today: range.upperBound, now: now, profile: profile, catalog: allExercises ?? [],
+                                 loadID: loadID)
+    }
+
+    private func hasStrengthToday(sessions: [StrengthSession], recordings: [RecordedStrengthActivity], now: Date) -> Bool {
+        let start = calendar.startOfDay(for: now)
+        return sessions.contains { $0.startedAt <= now && ($0.endedAt ?? $0.startedAt) >= start }
+            || recordings.contains { $0.durationSeconds.isFinite && (start...now).contains($0.endedAt) }
+    }
+
+    private func loadStrengthOption(
+        today: CalendarDay, now: Date, profile: AthleteProfile?, catalog: [Exercise], loadID: UUID
+    ) async {
+        let blocks = profile?.declaredBlocks ?? []
+        let historyStart = now.addingTimeInterval(-ProgressionTargets.historyWindow)
+        let blockStart = PlanSchedule.runningBlock(blocks, today: today, calendar: calendar)?.start.startDate(in: calendar)
+        async let history = try? workouts?.sessions(from: min(historyStart, blockStart ?? historyStart), to: now)
+        async let allRoutines = try? routines?.allRoutines()
+        async let allSettings = try? progression?.allProgressionSettings()
+        let (sessions, availableRoutines, settings) = await (history, allRoutines, allSettings)
+        guard activeLoad == loadID, let sessions, !hasStrengthToday(sessions: sessions, recordings: [], now: now)
+        else { return }
+        let completed = sessions.filter { RecentTraining.isCompleted($0, through: now) }
+        let planned = PlanSchedule.next(blocks: blocks, routines: availableRoutines ?? [], sessions: completed,
+                                        today: today, calendar: calendar)
+        let familiarityStart = today.adding(days: -EasyStrengthAdjustment.familiarityDays, calendar: calendar)
+            .startDate(in: calendar)
+        strengthOption = StrengthOption.make(
+            routine: progression != nil && settings == nil ? nil : planned?.routine, sessions: completed,
+            exercises: catalog, settings: settings ?? [:], historyStart: historyStart, familiarityStart: familiarityStart
+        )
+    }
+
+    nonisolated private static func readRecentRuns(
+        sources: [any MetricsSource], from start: Date, to end: Date
+    ) async -> (activities: [RunActivity], failed: Bool) {
+        await withTaskGroup(of: [RunActivity]?.self) { group in
+            for source in sources {
+                group.addTask { try? await source.runs(from: start, to: end) }
+            }
+            var activities: [RunActivity] = []
+            var failed = false
+            for await result in group {
+                if let result { activities += result } else { failed = true }
+            }
+            return (activities, failed)
+        }
     }
 
     /// Asks every source for access (the Apple Health permission sheet), then reloads.
@@ -260,8 +422,17 @@ public final class TodayModel {
         switch reason {
         case .markedSick:
             L10n.text("Marked as sick in today's check-in. Rest until the symptoms ease.")
+        case .symptomsLimitTraining:
+            L10n.text("You reported symptoms that make you feel too unwell to train.")
         case .hrvBelowBaseline(let nights):
-            L10n.format("HRV below your usual range ({1} of the last 7 nights low).", String(nights))
+            if let coverage = readiness.hrvCoverage {
+                L10n.format(
+                    "HRV below your usual range ({1} of {2} comparable readings low in the last {3} days).",
+                    String(nights), String(coverage.recentReadings), String(coverage.recentDays)
+                )
+            } else {
+                L10n.text("HRV below your usual range.")
+            }
         case .hrvMayReflectCycle:
             L10n.text("HRV is normally lower in the second half of the menstrual cycle, so this alone does not make the light red.")
         case .restingHeartRateElevated(let bpm):

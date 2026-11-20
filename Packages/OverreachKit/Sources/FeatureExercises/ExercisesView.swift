@@ -247,7 +247,7 @@ struct ExerciseEditorView: View {
             Text(suggestion.muscles)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
-            HStack {
+            AdaptiveStack(spacing: Spacing.small) {
                 Button("Copy muscles") { model.copyMuscles(from: suggestion.id) }
                 if model.canMerge {
                     Spacer()

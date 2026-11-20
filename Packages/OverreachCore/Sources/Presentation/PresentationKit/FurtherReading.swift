@@ -1,7 +1,7 @@
 import Domain
 import Foundation
 
-/// A reading that explains the idea behind a rule (ADR-0024).
+/// A reading that explains the idea behind a rule (ADR-0027).
 public struct Reading: Hashable, Sendable, Identifiable {
     public enum Kind: String, Hashable, Sendable {
         /// A trial or a meta-analysis.
@@ -34,7 +34,7 @@ public struct Reading: Hashable, Sendable, Identifiable {
     }
 }
 
-/// Curated further reading per evidence key (ADR-0024, `docs/evidence-review-2026-11.md` §6).
+/// Curated further reading per evidence key (ADR-0027, `docs/evidence-review-2026-11.md` §6).
 ///
 /// Rules for adding one: a person has read it and it agrees with the register entry of its key. An article that
 /// contradicts the entry is not linked, whoever wrote it (e.g. Fitness Revolucionario's 2016 article on training by

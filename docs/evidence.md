@@ -234,6 +234,20 @@ gradually". The app never says when it is safe to train: it is not a medical dev
 Refs: Schwellnus et al. 2022, IOC consensus, Br J Sports Med 56:1066; Snyders et al. 2022, Br J Sports Med
 (systematic review, 54 studies). Reviewed 2026-11-19.
 
+### `easy-strength-example` — heuristic
+
+On an amber day with no strength workout detected today, Today can show a separate light example. The next
+undated routine supplies the reference, using ordinary progression targets. If it has no recently performed
+exercises, a recent logged session supplies examples instead. A session with insufficient information falls back
+to an effort cue. Workouts already logged today or captured by the watch suppress the example.
+
+The defaults are up to three exercises performed in the last 42 days, up to two working sets per exercise
+(roughly half the reference, with one as the minimum), repetitions within the reference and recent exposure,
+and at least four repetitions in reserve. A lower reference effort is respected. A qualitative load cue avoids
+assuming a specific weight will feel light today. The opt-in example creates no session and has no effect on
+the rotation. Reduced volume and effort are used in deload practice. The studies support neither these exact
+numbers nor prescribing this example from HRV. Reviewed 2026-11-20. [Deload consensus](https://doi.org/10.1186/s40798-023-00633-0) · [Athlete survey](https://pubmed.ncbi.nlm.nih.gov/38499934/) · [Repetitions in reserve](https://pubmed.ncbi.nlm.nih.gov/27531969/)
+
 ### `plan-adherence` — heuristic
 A break is 14 days without strength sessions; low adherence is under two thirds of planned sessions over the last
 two finished weeks of a block; the proposed frequency is the sessions actually done per week, rounded up;
@@ -255,24 +269,74 @@ women), so HRV only moderates intensity here and never decides the strength plan
 → Baseline = mean ± 0.5 SD of ln nightly HRV over the previous 60 days (≥ 14 nights); signal when the 7-day mean
 (≥ 3 nights) is below that range. Apple Watch reports SDNN, not RMSSD, and wearable HRV agrees only loosely
 with chest-strap references: the same personal-range rule is applied to whatever the source reports, which is a
-heuristic transfer.
+heuristic transfer, and only ever within one statistic (`hrv-metrics`).
+→ Readiness reports the number of comparable daily readings actually used in the rolling window and indicates
+when either window has insufficient coverage. Missing, non-positive and non-finite values are excluded. The
+calendar windows retain their existing overlap, and the displayed count does not change the decision threshold.
+→ The Today details distinguish observed readings, the app's reference window and the remaining uncertainty about
+the cause. Recent workouts are aligned by local date to the latest comparable reading. Date order does not establish
+the precise sleep or measurement interval. For easy-run copy, conversational effort is a practical cue rather than
+a conversion to a particular zone system. [Foster et al., talk-test study](https://pubmed.ncbi.nlm.nih.gov/18277826/)
 Refs: Düking et al. 2021, J Sci Med Sport 24:1180 (meta-analysis, wearables); Manresa-Rocamora et al. 2021, Int
 J Environ Res Public Health 18:10299 (meta-analysis); Granero-Gallegos et al. 2020, Int J Environ Res Public
 Health 17:7999 (meta-analysis); Vesterinen et al. 2016, Med Sci Sports Exerc 48:1347 (RCT, SWC protocol); Plews
 et al. 2012, Eur J Appl Physiol 112:3729 (7-day rolling average); Front Physiol 2024, 15:1472702 (RCT,
 HRV-guided resistance training, n = 21); Sensors 2024, 24:6220 (Apple Watch HRV validity). Reviewed 2026-11-19.
 
-**One measure per baseline.** Garmin reports overnight RMSSD; Apple Watch reports SDNN from short PPG readings,
-which is a different signal from ECG HRV, not a noisy copy of it (Dewig et al. 2024, Sports Med, simulation). Each
-value is tagged with its measure (`HRVMeasure`: overnight RMSSD, SDNN during sleep, daytime SDNN). The baseline
-and the 7-day average use only the measure with the most values in the baseline window; values of other measures
-are left out, never mixed in. Reviewed 2026-11-20.
+### `hrv-metrics` — strong
+RMSSD and SDNN are different statistics: RMSSD reflects beat-to-beat (vagal) variation, SDNN the total variation
+over the recording, and both depend on recording length. Their values and norms differ, so a baseline built with one
+cannot judge the other. Garmin reports nightly RMSSD (Personal API `lastNightAvg`); Apple Health stores
+`heartRateVariabilitySDNN` from short Apple Watch readings. Athlete monitoring is usually built on ln RMSSD.
+→ Every HRV value carries its statistic (`HRVMetric`); readiness baselines and Today's 7-day average only use nights
+of the same statistic as the latest night. Switching watches starts a new baseline (14 nights) instead of a false
+drop or rise (ADR-0024). Refs: Task Force of the ESC and NASPE 1996, Circulation 93:1043 (standards); Shaffer &
+Ginsberg 2017, Front Public Health 5:258 (review of HRV metrics and norms); Plews et al. 2013, Sports Med 43:773
+(ln RMSSD for athlete monitoring). Reviewed 2026-11-20.
+
+### `hrv-metric-type` — moderate
+SDNN and RMSSD measure different things (overall vs beat-to-beat variability; short-term SDNN tracks LF power,
+r = 0.90–0.94), RMSSD is the more robust metric in short recordings, and no conversion between them exists.
+Wearable HRV is comparable only within one device and one metric.
+→ Apple Watch SDNN and Garmin RMSSD use separate baselines (`hrv-metrics`). The [research note](design/hrv-sources.md)
+compares the two inputs and motivates preserving both values when they are available for the same night.
+Refs: Esco 2026, J Funct Morphol Kinesiol 11:304 (narrative review); Shaffer & Ginsberg 2017, Front Public Health
+5:258 (review); Munoz et al. 2015, PLoS One 10:e0138921 (n = 3,387); Doherty et al. 2025, Transl Exerc Biomed
+(review of 14 composite scores). Reviewed 2026-11-20.
+
+### `wearable-hrv-validity` — moderate
+Wrist HRV is inaccurate in absolute terms but reliable enough for a personal trend. Nocturnal RMSSD vs chest-strap
+ECG (536 nights): Garmin Fenix 6 CCC 0.87, MAPE 10.5 %, behind Oura (0.97–0.99) and WHOOP (0.94); against each
+person's own baseline (nightly Z-scores) Garmin agreed least (CCC 0.77). Garmin Elevate v4 (short supine and seated
+recordings): test–retest ICC 0.84 / 0.79, proportional bias, individual errors from −43 % to +118 %. Apple Watch
+S9/Ultra 2 SDNN from 5-minute morning Breathe readings: −8.3 ms bias, limits of agreement −53.8 to +37.2 ms, MAPE
+28.9 %, outside a ±10 ms equivalence margin; no validation of the passive nocturnal SDNN (3–4 spot readings a
+night) that Health stores.
+→ Interpret wearable HRV against the person's own baseline for the same device. The use of passive Apple Watch
+SDNN in the readiness rule remains a heuristic transfer. Refs: Dial et al. 2025, Physiol Rep 13:e70527;
+Sensors 2026, 26:6549 (Elevate v4, n = 23);
+O'Grady et al. 2024, Sensors 24:6220; Miller et al. 2022, Sensors 22:6317. Reviewed 2026-11-20.
+
+### `hrv-nocturnal` — moderate
+Nocturnal HR and RMSSD are reliable, have a low typical error and respond to the preceding training load; their
+response to two weeks of overload tracked 3000 m performance changes, while morning values responded differently.
+→ Nightly averages are a valid input for the 7-day rolling rule. Refs: Nuuttila et al. 2022, Int J Sports Physiol
+Perform 17:1296; Nuuttila et al. 2024, Sports Med Open 10:120; Mishica et al. 2022, PLoS One 17:e0262333.
+Reviewed 2026-11-20 (full texts checked).
+
+### `composite-scores` — limited
+Device scores (Garmin HRV status and baseline, Body Battery, training readiness, other brands' readiness and
+recovery) have undisclosed inputs, weights and baselines and no rigorous independent validation; they can change
+without notice.
+→ Shown as context, labelled as the device's, never a rule input. Refs: Doherty et al. 2025, Transl Exerc Biomed,
+doi 10.1515/teb-2025-0001; Garmin HRV status documentation. Reviewed 2026-11-20.
 
 ### `hrv-cycle-phase` — moderate
 Vagally mediated HRV falls from the follicular to the luteal phase (d = −0.39, 37 studies), and within-person
 studies tie it to higher progesterone. → Until phase-aware baselines exist (ADR-0009), for people who track a
-natural cycle a low HRV is shown with the cycle as a possible cause and does not count towards red; other signals
-still do. Refs: Schmalenberger et al. 2019, J Clin Med 8:1946 (meta-analysis). Reviewed 2026-11-20.
+natural cycle a low HRV is shown with the cycle as a possible cause (`hrvMayReflectCycle`) and does not count
+towards red; other signals still do. Refs: Schmalenberger et al. 2019, J Clin Med 8:1946 (meta-analysis).
+Reviewed 2026-11-20.
 
 ### `readiness-resting-hr` — limited
 Short-term overload raises resting HR moderately, longer overload does not, and changes must be read together with
@@ -295,6 +359,23 @@ objective markers, and the two often disagree, so both are worth collecting.
 → Check-in energy ≤ 2 / 5 and soreness 3 / 3 are one signal each. Refs: Saw, Main & Gastin 2016, Br J Sports Med
 50:281 (systematic review, 56 studies). Reviewed 2026-11-19.
 
+### `readiness-context-prompt` — heuristic
+
+Below-range HRV prompts a question about recent unusual stress. When resting heart rate is also above the
+personal reference, the first question asks whether new symptoms make the user feel too unwell to train.
+Daily-life HRV can vary with perceived stress and physical activity. The exact prompt and its priority are
+product heuristics. Stress is shown as self-reported context and has no weight in the traffic light. A negative,
+unsure or skipped answer neither clears the athlete to train nor counts as evidence of illness. Questions and
+answers apply only to the current day. Reviewed 2026-11-20. [Daily-life study](https://pubmed.ncbi.nlm.nih.gov/39032150/)
+
+### `readiness-reported-symptoms` — limited
+
+When the athlete reports that new symptoms make them feel too unwell to train, Today suggests skipping the
+session and reassessing how they feel. This extends the existing symptom-led approach to a direct self-report,
+without a diagnosis or a time to return. The IOC guidance applies to acute respiratory illness in athletes and
+considers symptoms and severity for return decisions. A wearable deviation only selects a question. The app
+offers no symptom-specific triage in this flow. Reviewed 2026-11-20. [IOC consensus](https://doi.org/10.1136/bjsports-2022-105759)
+
 ### `readiness-combination` — heuristic
 Sick in the check-in → red (see `illness-return`). No signal → green; one or more → amber; two or more with at
 least one of HRV or resting HR → red. Subjective and sleep signals alone never make it red. Nothing to judge
@@ -311,11 +392,6 @@ Consumer wrist devices detect sleep well but agree only fairly to moderately wit
 (κ ≈ 0.2–0.5 across six devices); an Apple Watch Series 8 underestimated deep sleep by about 43 minutes.
 → Deep and REM sleep are shown as "watch estimate" and never feed a rule. Refs: Schyvens et al. 2025, Sleep Adv
 6(2):zpaf021; Apple Watch S8 validation 2024. Reviewed 2026-11-20.
-
-### `wearable-composite-scores` — limited
-Vendor readiness, energy and stress scores (Garmin Body Battery, stress, Training Readiness, sleep score) are
-proprietary composites; vendors validate the sensors, not the scores, and no independent validation was found.
-→ Shown as "Garmin's estimate", never a rule input or part of the readiness light. Reviewed 2026-11-20.
 
 ### `wearable-vo2max` — moderate
 Exercise-based watch VO2max estimates are acceptable at group level but have wide individual error; resting-based

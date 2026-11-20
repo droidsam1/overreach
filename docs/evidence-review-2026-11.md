@@ -2,7 +2,7 @@
 
 A full pass over every rule, threshold, metric and user-facing text in Overreach against the most recent
 high-quality evidence (ADR-0012). It also maps each topic to further reading for the user, including Fitness
-Revolucionario (Marcos Vázquez) where it agrees with the evidence (proposal: ADR-0024).
+Revolucionario (Marcos Vázquez) where it agrees with the evidence (proposal: ADR-0027).
 
 - **Scope:** `Analytics` (progression, stalls, deloads, focus, blocks, plan follow-up, warm-ups, workload,
   readiness), the metrics in `DailyMetrics` and how Today and the logger present them, and the design docs for
@@ -15,10 +15,11 @@ Revolucionario (Marcos Vázquez) where it agrees with the evidence (proposal: AD
 
 ## Status (2026-11-20)
 
-All of §8 is implemented: the uncoupled weekly load comparison (`weekly-load-change`), one HRV measure per
-baseline and the natural-cycle HRV note (`hrv-cycle-phase`), effective sets from RPE 6
+All of §8 is implemented: the uncoupled weekly load comparison (`weekly-load-change`), one HRV statistic per
+baseline (done on main as `HRVMetric`, ADR-0024 and ADR-0025, which this branch adopted instead of its own version)
+and the natural-cycle HRV note (`hrv-cycle-phase`), effective sets from RPE 6
 (`effective-set-threshold`), the wording and level changes, the "watch estimate" labels on Today, and further
-reading (ADR-0024, accepted). Still open: the Fitness Revolucionario links were located through a search index
+reading (ADR-0027, accepted). Still open: the Fitness Revolucionario links were located through a search index
 because the site could not be reached from the development environment; read each one before a release
 (`scripts/check-reading-links.py` from a normal network checks they resolve). Rules for run/lift, muscle recovery
 and steps (§2.4, §7) are for the phases that build them.
@@ -175,7 +176,7 @@ How each metric in `DailyMetrics` should be used, given what is known about its 
 Presentation rule that follows: **every number on screen tells the user whether it is measured, estimated by the
 watch, or computed by Overreach,** and only the first and last kinds feed rules.
 
-## 6. Further reading — map for ADR-0024
+## 6. Further reading — map for ADR-0027
 
 Fitness Revolucionario articles were located through a search index; the site could not be fetched from the
 development environment, so each link must be opened and read before it ships. "Agrees" means the summary found
@@ -222,7 +223,7 @@ by the same authors as several of the meta-analyses).
   steps/day with smaller further gains (Ding et al. 2025, Lancet Public Health 10:e668).
 - `wearable-sleep-stages` — limited. Consumer wrist devices agree fairly to moderately with polysomnography on
   stages (κ ≈ 0.2–0.5); display only (Schyvens et al. 2025, Sleep Advances 6(2):zpaf021).
-- `wearable-composite-scores` — limited. Vendor readiness, energy and stress scores have no independent
+- `composite-scores` — limited. Vendor readiness, energy and stress scores have no independent
   validation; context only.
 - `wearable-vo2max` — moderate. Exercise-based watch estimates are acceptable at group level with wide individual
   error (Molina-García et al. 2022, Sports Med 52:1577).
@@ -234,7 +235,7 @@ by the same authors as several of the meta-analyses).
 3. Effective-set cut-off and register entry (§3.3).
 4. Wording changes and level adjustments (§3.4, §4), with localisation.
 5. "Measured / estimated / computed" labels on Today (§5).
-6. Further reading (ADR-0024), starting with the "agrees" rows of §6 after reading each article.
+6. Further reading (ADR-0027), starting with the "agrees" rows of §6 after reading each article.
 
 ## References (new or updated in this review)
 

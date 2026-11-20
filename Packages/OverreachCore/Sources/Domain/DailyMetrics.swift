@@ -1,5 +1,11 @@
 import Foundation
 
+/// Which heart rate variability statistic a source reports. They are not interchangeable (ADR-0024): Garmin reports
+/// nightly RMSSD, Apple Watch reports SDNN from short readings. A baseline only ever compares nights of one kind.
+public enum HRVMetric: String, Codable, Sendable, CaseIterable {
+    case rmssd, sdnn
+}
+
 /// Everything known about one day of recovery. Every field is optional: what is available depends on the
 /// watch model and on which sources the user connected.
 public struct DailyMetrics: Hashable, Codable, Sendable {
@@ -7,14 +13,13 @@ public struct DailyMetrics: Hashable, Codable, Sendable {
 
     // MARK: Recovery
     public var hrvNightlyAverageMs: Double?
+    /// The statistic behind the HRV values of this day. `nil` for data stored before it was recorded.
+    public var hrvMetric: HRVMetric?
     public var hrvNightlyHighMs: Double?
     public var hrvBaselineLowMs: Double?
     public var hrvBaselineHighMs: Double?
     /// Source label, e.g. Garmin "BALANCED", "UNBALANCED", "LOW".
     public var hrvStatus: String?
-    /// What the nightly HRV value measures. Baselines never mix measures (`readiness-hrv`). `nil` in data saved
-    /// before it existed; `resolvedHRVMeasure` infers it.
-    public var hrvMeasure: HRVMeasure?
     public var restingHeartRate: Double?
     public var bodyBatteryHigh: Double?
     public var bodyBatteryLow: Double?
@@ -52,12 +57,12 @@ public struct DailyMetrics: Hashable, Codable, Sendable {
     public func merging(_ other: DailyMetrics) -> DailyMetrics {
         var merged = self
         merged.hrvNightlyAverageMs = hrvNightlyAverageMs ?? other.hrvNightlyAverageMs
+        // The statistic travels with the value it describes, never mixed across sources.
+        merged.hrvMetric = hrvNightlyAverageMs != nil ? hrvMetric : other.hrvMetric
         merged.hrvNightlyHighMs = hrvNightlyHighMs ?? other.hrvNightlyHighMs
         merged.hrvBaselineLowMs = hrvBaselineLowMs ?? other.hrvBaselineLowMs
         merged.hrvBaselineHighMs = hrvBaselineHighMs ?? other.hrvBaselineHighMs
         merged.hrvStatus = hrvStatus ?? other.hrvStatus
-        // The measure follows the value it describes.
-        merged.hrvMeasure = hrvNightlyAverageMs != nil ? hrvMeasure : other.hrvMeasure
         merged.restingHeartRate = restingHeartRate ?? other.restingHeartRate
         merged.bodyBatteryHigh = bodyBatteryHigh ?? other.bodyBatteryHigh
         merged.bodyBatteryLow = bodyBatteryLow ?? other.bodyBatteryLow
@@ -79,25 +84,4 @@ public struct DailyMetrics: Hashable, Codable, Sendable {
         merged.sources = sources.union(other.sources)
         return merged
     }
-}
-
-extension DailyMetrics {
-    /// `hrvMeasure`, or for data saved before it existed: Garmin's overnight RMSSD when Garmin's HRV status or
-    /// baseline is there (Apple Health never has them), otherwise unknown.
-    public var resolvedHRVMeasure: HRVMeasure? {
-        guard hrvNightlyAverageMs != nil else { return nil }
-        if let hrvMeasure { return hrvMeasure }
-        return hrvStatus != nil || hrvBaselineLowMs != nil ? .overnightRMSSD : nil
-    }
-}
-
-/// What a daily HRV value measures. Values of different measures are on different scales and never share a
-/// baseline (`docs/evidence-review-2026-11.md`, §3.2).
-public enum HRVMeasure: String, Codable, Sendable, CaseIterable {
-    /// Garmin: RMSSD averaged over the night.
-    case overnightRMSSD
-    /// Apple Watch: mean of the SDNN readings taken during the night's sleep.
-    case sleepSDNN
-    /// Apple Watch: mean of the day's SDNN readings, on a day without sleep data.
-    case daytimeSDNN
 }

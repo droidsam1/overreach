@@ -1,4 +1,4 @@
-# 0024 — Explanations can link to curated further reading
+# 0027 — Explanations can link to curated further reading
 
 - **Status:** Accepted (implemented 2026-11-20)
 - **Date:** 2026-11-20

@@ -9,15 +9,28 @@ public protocol WorkoutRepository: Sendable {
     /// Saves many sessions in one go (import, restore), replacing sessions with the same id.
     func save(_ sessions: [StrengthSession]) async throws
     func deleteSession(id: UUID) async throws
+    func containsSession(id: UUID) async throws -> Bool
 }
 
 extension WorkoutRepository {
+    public func containsSession(id: UUID) async throws -> Bool {
+        try await sessions(from: .distantPast, to: .distantFuture).contains { $0.id == id }
+    }
+
     /// Default: one save per session. Stores override it to write a batch at once.
     public func save(_ sessions: [StrengthSession]) async throws {
         for session in sessions {
             try await save(session)
         }
     }
+}
+
+/// One device-local workout draft. The feature owns the versioned payload.
+@MainActor
+public protocol WorkoutDraftStore: Sendable {
+    func readDraft() throws -> Data?
+    /// Replaces the draft atomically, or removes it when data is nil.
+    func writeDraft(_ data: Data?) throws
 }
 
 public protocol ExerciseRepository: Sendable {
@@ -58,6 +71,11 @@ extension MetricsSource {
     public func requestAccess() async {}
 }
 
+/// Strength workouts recorded outside the app, available to match with logged sessions.
+public protocol RecordedStrengthSource: Sendable {
+    func strengthActivities(from start: Date, to end: Date) async -> [RecordedStrengthActivity]
+}
+
 public protocol ProfileRepository: Sendable {
     func profile() async throws -> AthleteProfile
     func save(_ profile: AthleteProfile) async throws
@@ -89,6 +107,13 @@ public protocol OnboardingStatusStore: Sendable {
     /// The last app version whose "What's new" the user saw; `nil` if never.
     func lastSeenReleaseNotesVersion() async -> String?
     func markReleaseNotesSeen(version: String) async
+}
+
+/// One-off local notifications identified by a stable id: scheduling again with the same id replaces it.
+public protocol LocalReminderScheduler: Sendable {
+    /// Asks for permission the first time; does nothing if it is refused or `date` has passed.
+    func schedule(id: String, at date: Date, title: String, body: String) async
+    func cancel(id: String) async
 }
 
 /// Alerts the user when a rest ends while the app is in the background. There is at most one pending alert.

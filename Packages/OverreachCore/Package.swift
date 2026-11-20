@@ -93,7 +93,9 @@ let package = Package(
         .testTarget(name: "AIExchangeTests", dependencies: ["AIExchange", "Analytics", "Domain", "Fixtures"]),
         .testTarget(name: "StrongImportTests", dependencies: ["StrongImport", "Domain"]),
         .testTarget(
-            name: "GarminImportTests", dependencies: ["GarminImport", "Domain"], resources: [.copy("Fixtures")]
+            name: "GarminImportTests",
+            dependencies: ["GarminImport", "Domain", "HistoryPresentation", "Fixtures"],
+            resources: [.copy("Fixtures")]
         ),
         .testTarget(name: "PresentationKitTests", dependencies: ["PresentationKit", "Domain"]),
         .testTarget(

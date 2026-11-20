@@ -74,7 +74,8 @@ Contributions are welcome — read [`CONTRIBUTING.md`](CONTRIBUTING.md) first.
 ## Disclaimer
 
 Overreach is an independent project. It is not affiliated with, endorsed by or sponsored by Garmin, Strong
-or Apple. Garmin Connect integration uses an unofficial API and may stop working at any time.
+or Apple. The Garmin integration uses Garmin's official Connect Personal API with each person's own key, for their
+own data (Garmin's Personal API terms); the key never leaves their iPhone.
 
 ## License
 

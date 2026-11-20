@@ -1,6 +1,567 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "If you want to lift today": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si quieres hacer fuerza hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se queres facer forza hoxe"
+          }
+        }
+      }
+    },
+    "Up next in your plan · {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siguiente rutina del plan · {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguinte rutina do plan · {1}"
+          }
+        }
+      }
+    },
+    "Based on a recent session · {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A partir de una sesión reciente · {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A partir dunha sesión recente · {1}"
+          }
+        }
+      }
+    },
+    "Choose a familiar exercise and a light load. Finish each set with at least four reps left.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige un ejercicio que conozcas y una carga ligera. Termina cada serie sintiendo que podrías hacer al menos cuatro repeticiones más."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolle un exercicio que coñezas e unha carga lixeira. Remata cada serie sentindo que poderías facer polo menos catro repeticións máis."
+          }
+        }
+      }
+    },
+    "Use a lighter load or an easier version if you need it to keep the effort light.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si te cuesta mantener un esfuerzo suave, baja la carga o elige una variante más fácil."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se che custa manter un esforzo suave, baixa a carga ou escolle unha variante máis doada."
+          }
+        }
+      }
+    },
+    "Usual target · {1} × {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Objetivo habitual · {1} × {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obxectivo habitual · {1} × {2}"
+          }
+        }
+      }
+    },
+    "Last session · {1} × {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesión de referencia · {1} × {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesión de referencia · {1} × {2}"
+          }
+        }
+      }
+    },
+    "Easy option · {1} × {2}, with at least {3} reps left": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opción suave · {1} × {2}. Acaba cada serie pudiendo hacer al menos {3} repeticiones más."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opción suave · {1} × {2}. Remata cada serie podendo facer polo menos {3} repeticións máis."
+          }
+        }
+      }
+    },
+    "Keep it easy today. Run at a pace you can talk at, or lift with light effort.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrena suave hoy. Corre a un ritmo que te permita hablar o haz fuerza con poco esfuerzo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestra suave hoxe. Corre a un ritmo que che permita falar ou fai forza con pouco esforzo."
+          }
+        }
+      }
+    },
+    "Research source": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuente científica"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fonte científica"
+          }
+        }
+      }
+    },
+    "Your HRV is trending below your usual range and your resting heart rate is higher than usual.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu VFC lleva varios días por debajo de tu rango habitual y tu pulso en reposo está más alto de lo normal."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa VFC leva varios días por debaixo do teu rango habitual e o pulso en repouso está máis alto do normal."
+          }
+        }
+      }
+    },
+    "Your HRV is trending below your usual range.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu VFC lleva varios días por debajo de tu rango habitual."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa VFC leva varios días por debaixo do teu rango habitual."
+          }
+        }
+      }
+    },
+    "Your usual range uses {1} comparable readings from the previous {2} days. The latest reading was on {3}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu rango habitual se calcula con {1} mediciones comparables de los {2} días anteriores. La última medición comparable es del {3}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teu rango habitual calcúlase con {1} medicións comparables dos {2} días anteriores. A última medición comparable é do {3}."
+          }
+        }
+      }
+    },
+    "Sleep last night was {1} h.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anoche dormiste {1} h."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Onte á noite durmiches {1} h."
+          }
+        }
+      }
+    },
+    "Sleep data for last night is unavailable.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan los datos de sueño de anoche."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan os datos de sono de onte á noite."
+          }
+        }
+      }
+    },
+    "HRV measures how much the time between heartbeats varies. A sustained drop can inform training effort. Its cause is uncertain.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La VFC mide cuánto varía el tiempo entre latidos. Si baja durante varios días, sirve de referencia para ajustar el esfuerzo. La causa sigue siendo incierta."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A VFC mide canto varía o tempo entre latexos. Se baixa durante varios días, serve de referencia para axustar o esforzo. A causa segue a ser incerta."
+          }
+        }
+      }
+    },
+    "Resting heart rate is unavailable for today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan los datos de pulso en reposo de hoy."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan os datos de pulso en repouso de hoxe."
+          }
+        }
+      }
+    },
+    "Resting heart rate today is {1} bpm.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy tu pulso en reposo es de {1} lpm."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe o teu pulso en repouso é de {1} lpm."
+          }
+        }
+      }
+    },
+    "Resting heart rate today is {1} bpm. The average over {2} measured days in the last week is {3} bpm.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy tu pulso en reposo es de {1} lpm. La media de los {2} días con datos de la última semana es de {3} lpm."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe o teu pulso en repouso é de {1} lpm. A media dos {2} días con datos da última semana é de {3} lpm."
+          }
+        }
+      }
+    },
+    "Workouts recorded on {1}, the day before your latest comparable HRV reading.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamientos registrados el {1}, el día anterior a tu última medición comparable de VFC."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramentos rexistrados o {1}, o día anterior á túa última medición comparable de VFC."
+          }
+        }
+      }
+    },
+    "Do new symptoms make you feel too unwell to train today?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Tienes síntomas nuevos que te hacen sentir demasiado mal para entrenar hoy?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tes síntomas novos que che fan sentir demasiado mal para adestrar hoxe?"
+          }
+        }
+      }
+    },
+    "Have you felt more stressed than usual lately?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Has sentido más estrés de lo habitual últimamente?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sentiches máis estrés do habitual ultimamente?"
+          }
+        }
+      }
+    },
+    "Yes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sí"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si"
+          }
+        }
+      }
+    },
+    "No": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non"
+          }
+        }
+      }
+    },
+    "Skip for today": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitir por hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitir por hoxe"
+          }
+        }
+      }
+    },
+    "Skip training today and reassess how you feel.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descansa hoy y vuelve a valorar cómo te encuentras."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descansa hoxe e volve valorar como te atopas."
+          }
+        }
+      }
+    },
+    "New symptoms affect training": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Síntomas nuevos que afectan al entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Síntomas novos que afectan ao adestramento"
+          }
+        }
+      }
+    },
+    "More stress than usual": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más estrés de lo habitual"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis estrés do habitual"
+          }
+        }
+      }
+    },
+    "You reported symptoms that make you feel too unwell to train.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Has indicado que los síntomas te hacen sentir demasiado mal para entrenar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indicaches que os síntomas che fan sentir demasiado mal para adestrar."
+          }
+        }
+      }
+    },
+    "Leg working sets {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series de trabajo de piernas {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series de traballo de pernas {1}"
+          }
+        }
+      }
+    },
+    "No completed workouts found in the last 7 days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se encontraron entrenamientos completados en los últimos 7 días."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se atoparon adestramentos completados nos últimos 7 días."
+          }
+        }
+      }
+    },
+    "Recent training and recovery": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamiento y recuperación recientes"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramento e recuperación recentes"
+          }
+        }
+      }
+    },
+    "Some recent workouts could not be loaded.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudieron cargar algunos entrenamientos recientes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puideron cargar algúns adestramentos recentes."
+          }
+        }
+      }
+    },
     "%lld lines could not be read and will be skipped.": {
       "extractionState": "manual",
       "localizations": {
@@ -409,6 +970,23 @@
         }
       }
     },
+    "About Apple Health data": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca de los datos de Apple Salud"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre os datos de Apple Saúde"
+          }
+        }
+      }
+    },
     "About you": {
       "extractionState": "manual",
       "localizations": {
@@ -439,6 +1017,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Por riba do obxectivo: {1} fronte a {2}"
+          }
+        }
+      }
+    },
+    "Activity by day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actividad por día"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actividade por día"
+          }
+        }
+      }
+    },
+    "Activity type": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo de actividad"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo de actividade"
           }
         }
       }
@@ -677,6 +1289,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tras cada sesión: axuste ao plan, récords e próximos obxectivos. Volve abrilo desde Historial."
+          }
+        }
+      }
+    },
+    "All activities": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todas las actividades"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todas as actividades"
           }
         }
       }
@@ -1072,23 +1701,6 @@
         }
       }
     },
-    "Block": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bloque"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bloque"
-          }
-        }
-      }
-    },
     "Body Battery": {
       "extractionState": "manual",
       "localizations": {
@@ -1136,23 +1748,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ambas significan o mesmo: RPE = 10 − repeticións en reserva. O teu historial e os teus obxectivos non cambian."
-          }
-        }
-      }
-    },
-    "Bring the answer back": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Traer la respuesta"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Traer a resposta"
           }
         }
       }
@@ -1395,6 +1990,23 @@
         }
       }
     },
+    "Clear filters": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar filtros"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpar filtros"
+          }
+        }
+      }
+    },
     "Clearer advice": {
       "extractionState": "manual",
       "localizations": {
@@ -1531,23 +2143,6 @@
         }
       }
     },
-    "Copy": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Copiar"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Copiar"
-          }
-        }
-      }
-    },
     "Copy fills in the muscles below. Merge moves this exercise's history to the other one.": {
       "extractionState": "manual",
       "localizations": {
@@ -1578,6 +2173,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Copiar músculos"
+          }
+        }
+      }
+    },
+    "Copy report": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar informe"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar informe"
           }
         }
       }
@@ -1667,6 +2279,23 @@
         }
       }
     },
+    "Could not check the saved workout. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo comprobar el entrenamiento guardado. Inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido comprobar o adestramento gardado. Téntao de novo."
+          }
+        }
+      }
+    },
     "Could not delete the routine.": {
       "extractionState": "manual",
       "localizations": {
@@ -1731,6 +2360,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non se puideron cargar os exercicios."
+          }
+        }
+      }
+    },
+    "Could not load runs from {1}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudieron cargar las carreras de {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puideron cargar as carreiras de {1}."
           }
         }
       }
@@ -1922,6 +2568,23 @@
         }
       }
     },
+    "Could not open the saved workout.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo abrir el entrenamiento guardado."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido abrir o adestramento gardado."
+          }
+        }
+      }
+    },
     "Could not prepare your data. Try again.": {
       "extractionState": "manual",
       "localizations": {
@@ -2007,6 +2670,23 @@
         }
       }
     },
+    "Could not remove the saved workout draft. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo eliminar el borrador del entrenamiento. Inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido eliminar o borrador do adestramento. Téntao de novo."
+          }
+        }
+      }
+    },
     "Could not save everything. Import the answer again to finish.": {
       "extractionState": "manual",
       "localizations": {
@@ -2020,6 +2700,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non se puido gardar todo. Importa a resposta outra vez para rematar."
+          }
+        }
+      }
+    },
+    "Could not save the draft. Keep the app open and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo guardar el borrador. Mantén la app abierta e inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido gardar o borrador. Mantén a app aberta e téntao de novo."
           }
         }
       }
@@ -2364,23 +3061,6 @@
         }
       }
     },
-    "Data": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Datos"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Datos"
-          }
-        }
-      }
-    },
     "Date": {
       "extractionState": "manual",
       "localizations": {
@@ -2517,6 +3197,23 @@
         }
       }
     },
+    "Discard saved workout": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descartar el entrenamiento guardado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descartar o adestramento gardado"
+          }
+        }
+      }
+    },
     "Discard this session?": {
       "extractionState": "manual",
       "localizations": {
@@ -2581,6 +3278,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pechar"
+          }
+        }
+      }
+    },
+    "Distance": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distancia"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distancia"
           }
         }
       }
@@ -3129,19 +3843,19 @@
         }
       }
     },
-    "Export…": {
+    "Export backup…": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Exportar…"
+            "value": "Exportar copia de seguridad…"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Exportar…"
+            "value": "Exportar copia de seguranza…"
           }
         }
       }
@@ -3214,6 +3928,40 @@
         }
       }
     },
+    "Filters": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtros"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtros"
+          }
+        }
+      }
+    },
+    "Find strength workouts and runs together, with filters for type and source.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encuentra sesiones de fuerza y carreras juntas, con filtros por tipo y origen."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atopa sesións de forza e carreiras xuntas, con filtros por tipo e fonte."
+          }
+        }
+      }
+    },
     "Finish": {
       "extractionState": "manual",
       "localizations": {
@@ -3231,19 +3979,19 @@
         }
       }
     },
-    "Finished sessions appear here.": {
+    "Finished workouts and runs from connected sources appear here.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aquí aparecen las sesiones terminadas."
+            "value": "Aquí aparecen los entrenamientos terminados y las carreras de los orígenes conectados."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aquí aparecen as sesións rematadas."
+            "value": "Aquí aparecen os adestramentos rematados e as carreiras das fontes conectadas."
           }
         }
       }
@@ -3588,19 +4336,36 @@
         }
       }
     },
-    "HRV below your usual range ({1} of the last 7 nights low).": {
+    "HRV below your usual range ({1} of {2} comparable readings low in the last {3} days).": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "VFC por debajo de tu rango habitual ({1} de las últimas 7 noches bajas)."
+            "value": "VFC por debajo de tu rango habitual ({1} de {2} mediciones comparables fueron bajas en los últimos {3} días)."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "VFC por debaixo do teu rango habitual ({1} das últimas 7 noites baixas)."
+            "value": "VFC por debaixo do teu rango habitual ({1} de {2} medicións comparables foron baixas nos últimos {3} días)."
+          }
+        }
+      }
+    },
+    "HRV below your usual range.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC por debajo de tu rango habitual."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC por debaixo do teu rango habitual."
           }
         }
       }
@@ -3686,23 +4451,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Historial"
-          }
-        }
-      }
-    },
-    "History calendar": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Calendario en el historial"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Calendario no historial"
           }
         }
       }
@@ -3996,6 +4744,23 @@
         }
       }
     },
+    "Import reply file…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar archivo de respuesta…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar ficheiro de resposta…"
+          }
+        }
+      }
+    },
     "Import stopped. Already imported sessions are kept; importing again is safe.": {
       "extractionState": "manual",
       "localizations": {
@@ -4009,6 +4774,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "A importación detívose. As sesións xa importadas consérvanse e podes volver importar sen risco."
+          }
+        }
+      }
+    },
+    "Import the reply": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar la respuesta"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar a resposta"
           }
         }
       }
@@ -4230,23 +5012,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Os elementos combínanse por identificador: non se duplica nada."
-          }
-        }
-      }
-    },
-    "Keep it easy: an easy run (zone 1–2) or light strength.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hoy suave: carrera fácil (zona 1–2) o fuerza ligera."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hoxe suave: carreira doada (zona 1–2) ou forza lixeira."
           }
         }
       }
@@ -5254,6 +6019,23 @@
         }
       }
     },
+    "No RIR": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin RIR"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen RIR"
+          }
+        }
+      }
+    },
     "No RPE": {
       "extractionState": "manual",
       "localizations": {
@@ -5284,6 +6066,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen conta, funciona sen conexión"
+          }
+        }
+      }
+    },
+    "No activities yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no hay actividades"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda non hai actividades"
+          }
+        }
+      }
+    },
+    "No activity recorded this month.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay actividad registrada este mes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai actividade rexistrada este mes."
           }
         }
       }
@@ -5335,6 +6151,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Xa non está estancado."
+          }
+        }
+      }
+    },
+    "No matching activities": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay actividades con estos filtros"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai actividades con estes filtros"
           }
         }
       }
@@ -5403,23 +6236,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non hai ningunha copia recente neste cartafol. Comproba que siga dispoñible e fai unha copia agora."
-          }
-        }
-      }
-    },
-    "No sessions yet": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aún no hay sesiones"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aínda non hai sesións"
           }
         }
       }
@@ -5679,19 +6495,19 @@
         }
       }
     },
-    "Open a file…": {
+    "Opens rest timer details": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abrir un archivo…"
+            "value": "Abre los detalles del descanso"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abrir un ficheiro…"
+            "value": "Abre os detalles do descanso"
           }
         }
       }
@@ -5781,6 +6597,23 @@
         }
       }
     },
+    "Pace": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ritmo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ritmo"
+          }
+        }
+      }
+    },
     "Page %lld of %lld": {
       "extractionState": "manual",
       "localizations": {
@@ -5845,6 +6678,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Período"
+          }
+        }
+      }
+    },
+    "Pick up an interrupted workout with your sets, notes and rest timer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retoma un entrenamiento interrumpido con tus series, notas y temporizador de descanso."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retoma un adestramento interrompido coas túas series, notas e temporizador de descanso."
           }
         }
       }
@@ -5981,6 +6831,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Prefiro non dicilo"
+          }
+        }
+      }
+    },
+    "Prepare your report": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparar el informe"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparar o informe"
+          }
+        }
+      }
+    },
+    "Preparing workout…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparando entrenamiento…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparando adestramento…"
           }
         }
       }
@@ -6168,6 +7052,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cuádriceps"
+          }
+        }
+      }
+    },
+    "RIR": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RIR"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RIR"
           }
         }
       }
@@ -6614,6 +7515,23 @@
         }
       }
     },
+    "Rest timer": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporizador de descanso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temporizador de descanso"
+          }
+        }
+      }
+    },
     "Rest timer after every set": {
       "extractionState": "manual",
       "localizations": {
@@ -6699,6 +7617,23 @@
         }
       }
     },
+    "Restore backup…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar copia de seguridad…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar copia de seguranza…"
+          }
+        }
+      }
+    },
     "Restore failed.": {
       "extractionState": "manual",
       "localizations": {
@@ -6746,23 +7681,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Restaurar desde unha copia"
-          }
-        }
-      }
-    },
-    "Restore from file…": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Restaurar desde archivo…"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Restaurar desde ficheiro…"
           }
         }
       }
@@ -6831,6 +7749,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Restaurar e importar continúan en Axustes: escolle o cartafol de iCloud Drive coa túa copia de Overreach ou o teu ficheiro CSV de Strong."
+          }
+        }
+      }
+    },
+    "Resume workout": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reanudar entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retomar adestramento"
+          }
+        }
+      }
+    },
+    "Retry saving draft": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volver a guardar el borrador"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volver gardar o borrador"
           }
         }
       }
@@ -6988,19 +7940,19 @@
         }
       }
     },
-    "Runs and steps appear here once Apple Health is connected (from Today).": {
+    "Connect Apple Health or Garmin from Today to see runs. Steps come from Apple Health.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Las carreras y los pasos aparecen aquí cuando conectas Apple Salud (desde Hoy)."
+            "value": "Conecta Apple Salud o Garmin desde Hoy para ver tus carreras. Los pasos vienen de Apple Salud."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "As carreiras e os pasos aparecen aquí cando conectas Apple Saúde (desde Hoxe)."
+            "value": "Conecta Apple Saúde ou Garmin desde Hoxe para ver as túas carreiras. Os pasos veñen de Apple Saúde."
           }
         }
       }
@@ -7124,6 +8076,23 @@
         }
       }
     },
+    "Saved workout draft": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrador de entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrador de adestramento"
+          }
+        }
+      }
+    },
     "Saved “{1}” to your routines.": {
       "extractionState": "manual",
       "localizations": {
@@ -7137,6 +8106,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "“{1}” gardouse nas túas rutinas."
+          }
+        }
+      }
+    },
+    "Saving workout…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardando entrenamiento…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gardando adestramento…"
           }
         }
       }
@@ -7273,6 +8259,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Notas da sesión"
+          }
+        }
+      }
+    },
+    "Session options": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opciones de la sesión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opcións da sesión"
           }
         }
       }
@@ -7447,6 +8450,23 @@
         }
       }
     },
+    "Setup options": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opciones de configuración"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opcións de configuración"
+          }
+        }
+      }
+    },
     "Sex": {
       "extractionState": "manual",
       "localizations": {
@@ -7515,6 +8535,23 @@
         }
       }
     },
+    "Share with an assistant": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir con un asistente"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir cun asistente"
+          }
+        }
+      }
+    },
     "Share your data with ChatGPT or Claude and bring routines back.": {
       "extractionState": "manual",
       "localizations": {
@@ -7545,23 +8582,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Comparte o teu adestramento como datos con ChatGPT ou Claude, coméntao e trae rutinas de volta."
-          }
-        }
-      }
-    },
-    "Share your training as data: sessions with notes, exercise settings, trends and health metrics. Then ask ChatGPT, Claude or another assistant whatever you need.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Comparte tu entrenamiento como datos: sesiones con notas, ajustes de ejercicios, tendencias y métricas de salud. Después pregunta a ChatGPT, Claude u otro asistente lo que necesites."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Comparte o teu adestramento como datos: sesións con notas, axustes de exercicios, tendencias e métricas de saúde. Despois pregunta a ChatGPT, Claude ou outro asistente o que precises."
           }
         }
       }
@@ -7702,6 +8722,23 @@
         }
       }
     },
+    "Skip rest": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitir descanso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitir descanso"
+          }
+        }
+      }
+    },
     "Skip setup": {
       "extractionState": "manual",
       "localizations": {
@@ -7719,19 +8756,19 @@
         }
       }
     },
-    "Skip tour": {
+    "Skip this step": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saltar presentación"
+            "value": "Omitir este paso"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saltar presentación"
+            "value": "Omitir este paso"
           }
         }
       }
@@ -7902,6 +8939,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Agulletas {1}/3"
+          }
+        }
+      }
+    },
+    "Source": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Origen"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fonte"
+          }
+        }
+      }
+    },
+    "Sources": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orígenes"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fontes"
           }
         }
       }
@@ -8127,6 +9198,23 @@
         }
       }
     },
+    "Still building your usual HRV range ({1} of {2} comparable readings needed).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún estamos calculando tu rango habitual de VFC (tenemos {1} de las {2} mediciones comparables necesarias)."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda estamos calculando o teu rango habitual de VFC (temos {1} das {2} medicións comparables necesarias)."
+          }
+        }
+      }
+    },
     "Stop sets a rep or two earlier than usual for a week. Strength lost in a break comes back quickly.": {
       "extractionState": "manual",
       "localizations": {
@@ -8174,23 +9262,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Forza e músculo"
-          }
-        }
-      }
-    },
-    "Strength days, runs and steps month by month, with each day's details.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Días de fuerza, carreras y pasos mes a mes, con el detalle de cada día."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Días de forza, carreiras e pasos mes a mes, co detalle de cada día."
           }
         }
       }
@@ -8960,6 +10031,23 @@
         }
       }
     },
+    "Today's metrics": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Métricas de hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Métricas de hoxe"
+          }
+        }
+      }
+    },
     "Today: drop to {1} and aim for {2} reps. The last two times, some sets fell short of {3} with the previous weight.": {
       "extractionState": "manual",
       "localizations": {
@@ -9092,6 +10180,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hoxe: {1}, o {2} do teu máximo estimado ({3}), para {4} repeticións a {5}."
+          }
+        }
+      }
+    },
+    "Too few comparable HRV readings in the last {1} days ({2} available, {3} needed).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan mediciones comparables de VFC en los últimos {1} días (hay {2} y hacen falta {3})."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan medicións comparables de VFC nos últimos {1} días (hai {2} e fan falta {3})."
           }
         }
       }
@@ -9279,6 +10384,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen rematar: {1}. Se paraches antes de tempo, déixaos fóra da túa progresión para que os teus próximos obxectivos sigan sendo correctos. O traballo gárdase en ambos casos."
+          }
+        }
+      }
+    },
+    "Unified history": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historial unificado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historial unificado"
           }
         }
       }
@@ -11680,6 +12802,23 @@
         }
       }
     },
+    "Why this recommendation?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Por qué esta recomendación?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por que esta recomendación?"
+          }
+        }
+      }
+    },
     "With Garmin's baseline: the key signal for the readiness light.": {
       "extractionState": "manual",
       "localizations": {
@@ -11710,6 +12849,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "A túa chave quédase no teu iPhone, no Chaveiro, e só se sincroniza co teu propio Chaveiro de iCloud."
+          }
+        }
+      }
+    },
+    "All sources": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos los orígenes"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todas as fontes"
           }
         }
       }
@@ -11952,6 +13108,23 @@
         }
       }
     },
+    "This workout is already saved in History.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este entrenamiento ya está guardado en Historial."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este adestramento xa está gardado no Historial."
+          }
+        }
+      }
+    },
     "Three steps, about a minute. Or later from Today or Settings → Garmin.": {
       "extractionState": "manual",
       "localizations": {
@@ -12016,6 +13189,227 @@
           "stringUnit": {
             "state": "translated",
             "value": "Os teus dispositivos"
+          }
+        }
+      }
+    },
+    "Your Garmin key expires in a week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu clave de Garmin caduca en una semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa chave de Garmin caduca nunha semana"
+          }
+        }
+      }
+    },
+    "Create a new one in Settings → Garmin to keep importing. It takes the same three steps.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea una nueva en Ajustes → Garmin para seguir importando. Son los mismos tres pasos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea unha nova en Axustes → Garmin para seguir importando. Son os mesmos tres pasos."
+          }
+        }
+      }
+    },
+    "Strength workout": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamiento de fuerza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramento de forza"
+          }
+        }
+      }
+    },
+    "{1} · No logged session": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · Sin sesión registrada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · Sen sesión rexistrada"
+          }
+        }
+      }
+    },
+    "Average heart rate": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulso medio"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulso medio"
+          }
+        }
+      }
+    },
+    "Maximum heart rate": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulso máximo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulso máximo"
+          }
+        }
+      }
+    },
+    "Training load": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga de entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga de adestramento"
+          }
+        }
+      }
+    },
+    "Aerobic training effect": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efecto aeróbico del entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efecto aeróbico do adestramento"
+          }
+        }
+      }
+    },
+    "Anaerobic training effect": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efecto anaeróbico del entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efecto anaeróbico do adestramento"
+          }
+        }
+      }
+    },
+    "Log it with its exercises and sets. The watch's heart rate and load are added to it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regístralo con sus ejercicios y series. Se le añaden el pulso y la carga del reloj."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rexístrao cos seus exercicios e series. Engádenselle o pulso e a carga do reloxo."
+          }
+        }
+      }
+    },
+    "Log this workout": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrar este entreno"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rexistrar este adestramento"
+          }
+        }
+      }
+    },
+    "Log watch workouts": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registra los entrenos del reloj"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rexistra os adestramentos do reloxo"
+          }
+        }
+      }
+    },
+    "Strength recorded on your watch but not in the app? Log it from History with the watch's times.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Fuerza grabada en el reloj pero no en la app? Regístrala desde Historial con las horas del reloj."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forza gravada no reloxo pero non na app? Rexístraa desde Historial coas horas do reloxo."
           }
         }
       }
