@@ -129,8 +129,14 @@ public final class TodayModel {
         return L10n.format("Deep {1} h · REM {2} h", hours(metrics.deepSleepSeconds), hours(metrics.remSleepSeconds))
     }
 
-    /// "7-day avg 42 ms", from the days that have a value.
-    public var hrvCaption: String? { average(\.hrvNightlyAverageMs).map { weekly(format.number($0, maxFractionDigits: 0) + " ms") } }
+    /// "7-day avg 42 ms", from the days that have a value of the same statistic as the latest (RMSSD and SDNN are not
+    /// averaged together, ADR-0024).
+    public var hrvCaption: String? {
+        let latest = ([metrics].compactMap { $0 } + week.reversed()).first { $0.hrvNightlyAverageMs != nil }
+        guard let latest else { return nil }
+        return average { $0.hrvMetric == latest.hrvMetric ? $0.hrvNightlyAverageMs : nil }
+            .map { weekly(format.number($0, maxFractionDigits: 0) + " ms") }
+    }
     public var restingHeartRateCaption: String? {
         average(\.restingHeartRate).map { weekly(format.number($0, maxFractionDigits: 0) + " bpm") }
     }

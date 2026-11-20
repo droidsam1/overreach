@@ -42,7 +42,7 @@ Packages/
     HealthKitSource       Apple Health reader/writer
     GarminSource          Garmin Connect Personal API client (optional, isolated; ADR-0022)
     AIKit                 LLMProvider protocol + adapters
-    LocalAlerts           Local notifications (rest timer)
+    LocalAlerts           Local notifications (rest timer, Garmin key expiry reminder)
     DesignSystem          Colors, spacing, reusable components and charts. No domain types.
     Feature*              SwiftUI views of one screen/flow (Today, Workout, History, Trends,
                           Exercises, Plan, Assistant, Settings, Onboarding). UI only (ADR-0014).

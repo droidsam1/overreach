@@ -1,7 +1,8 @@
 # HRV from several sources: research and proposal
 
-Status: research done 2026-11-20; proposal in ADR-0024 (Proposed). Answers step 4 of
-`docs/design/garmin-integration.md`, which deferred the HRV metric question to "Decide in step 4, with evidence".
+Research completed 2026-11-20 for step 4 of the [Garmin integration](garmin-integration.md).
+[ADR-0024](../adr/0024-hrv-baselines-per-statistic.md) records the implemented rule.
+[ADR-0025](../adr/0025-hrv-one-series-per-metric.md) proposes retaining both readings on the same night.
 Evidence keys: `hrv-metric-type`, `wearable-hrv-validity`, `hrv-nocturnal`, `composite-scores` (`docs/evidence.md`).
 
 ## 1. The question
@@ -16,11 +17,10 @@ Overreach gets nightly HRV from two places that measure different things:
 | Source baseline | None | `baselineLowUpper`/`balancedLow`/`balancedUpper` and status label (method unpublished) |
 
 Both go into `DailyMetrics.hrvNightlyAverageMs`. `TodayModel` merges per day with Garmin first
-(`garmin.merging(health)`), so **on any day without a Garmin value the Apple SDNN fills the gap**, and
-`ReadinessRules.hrvCheck` then builds one ln baseline out of two different metrics from two devices. The same
-happens when someone moves from an Apple Watch to a Garmin (or back): the old metric sits in the 60-day baseline
-and the new one in the 7-day window. Neither case is rare for a hybrid athlete who sleeps with one watch and
-trains with another.
+(`garmin.merging(health)`), so Apple SDNN fills gaps in Garmin coverage. Before ADR-0024, this could mix the two
+statistics in the readiness baseline. Each retained value now carries its statistic, and `ReadinessRules.hrvCheck`
+compares only nights matching the latest reading's statistic. On days with readings from both sources, the
+merged record keeps only Garmin's reading, leaving fewer SDNN nights for a baseline.
 
 Questions:
 1. Can SDNN and RMSSD share a baseline, or be converted into each other?
@@ -90,20 +90,19 @@ ADR-0022 decision 2).
 
 | Option | How | For | Against |
 |---|---|---|---|
-| A. Keep one field | as today | no change | mixes metrics and devices; violates 2.1 |
-| B. Field + tag | `hrvNightlyAverageMs` + `hrvMetric` | small change | `merging` fills field and tag independently unless special-cased; a day can only carry one value, so the other source's night is lost |
+| A. One unlabelled field | original design | simple storage | mixes metrics and devices |
+| B. Field + tag (implemented) | `hrvNightlyAverageMs` + `hrvMetric` | preserves the statistic of the retained value | a day can only carry one reading |
 | **C. One field per metric** | `hrvRMSSDMs` (Garmin) and `hrvSDNNMs` (Apple), merged independently | both nights kept; each series is clean; the rule chooses a series explicitly | the old field becomes a computed "preferred HRV" for display and reports |
 
-`DailyMetrics` is not persisted or backed up (it is rebuilt from Health and Garmin on each load), so C needs no
-backup format bump (ADR-0018). Still, the new fields are optional.
+`GarminCache` persists `DailyMetrics`. Option C needs to preserve or rebuild existing cached readings when the
+optional fields are introduced.
 
-## 4. Proposal (ADR-0024)
+## 4. Follow-up proposal (ADR-0025)
 
 1. **One series = one metric from one source.** `DailyMetrics` gets `hrvRMSSDMs` and `hrvSDNNMs`;
    `GarminMapping` fills RMSSD, `HealthSamples` fills SDNN. `hrvNightlyAverageMs` becomes a computed property
    (RMSSD when present, else SDNN) used only for display, the AI report and the exchange context, which also say
-   which metric it is. A future source writing RMSSD to Health still lands in its own series because the Health
-   identifier says SDNN; a second RMSSD source would need its own field or a source tag (not needed now).
+   which metric it is. Supporting a second RMSSD source would require a separate field or a source tag.
 2. **The rule judges one series and never mixes.** `ReadinessRules` picks the series that qualifies (≥ 14 nights
    in the 60-day baseline and ≥ 3 in the last 7); if both qualify it uses RMSSD (better-supported metric and whole
    night). If none qualifies the HRV signal is skipped, as today. The reason says which metric it used
@@ -155,5 +154,5 @@ backup format bump (ADR-0018). Still, the new fields are optional.
   Apple Watch overnight sampling (secondary, for how Apple samples, not for validity).
 
 Not read in full in this session (the network blocks the journal hosts): the numbers above come from the
-abstracts and indexed full-text excerpts. Before the code change, check the Dial et al. and Esco PDFs for
+abstracts and indexed full-text excerpts. Before implementing ADR-0025, check the Dial et al. and Esco PDFs for
 anything that contradicts §2.

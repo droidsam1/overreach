@@ -48,7 +48,8 @@ Checked against Garmin's official OpenAPI document, FAQ, client and Supplemental
 - Stable, documented, terms-compliant access for self-built and sideloaded copies, with no password handling.
 - We lose Garmin's aggregate scores (readiness, status, acute load, recovery time). Readiness does not need them,
   and acute/chronic load can be computed, with reasons, from the per-activity load we do get.
-- Keys expire (30 days to 1 year): the app has to remind the user and handle reconnection.
+- Keys expire (30 days to 1 year): Settings warns two weeks before (with a tab badge), a local notification
+  reminds a week before, and renewing is the same three-step setup.
 - Garmin's FAQ says the Personal API is "not intended for commercial applications serving multiple end users". That
   fits self-built, non-commercial copies. Public distribution (phase 4) needs the business program (Starter, which
   needs a backend and a new ADR) or written permission from Garmin.

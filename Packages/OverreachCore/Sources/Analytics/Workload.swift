@@ -24,7 +24,9 @@ public enum Workload {
     /// - Acute: total load of the 7 days ending on `day` (inclusive).
     /// - Chronic: average weekly load over the 28 days ending on `day` (total / 4).
     ///
-    /// Returns `nil` when there is no chronic load yet. Values above ~1.3–1.5 suggest load is rising too fast.
+    /// Returns `nil` when there is no chronic load yet. This is the coupled ratio (the acute week is inside the
+    /// chronic window), which inflates the acute–chronic correlation; a high value only says this week is above the
+    /// recent average. It is not an injury-risk measure (`acwr` in `docs/evidence.md`).
     public static func acuteChronicRatio(
         loads: [DailyLoad],
         on day: CalendarDay,

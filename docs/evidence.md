@@ -5,6 +5,8 @@ Levels: **strong** (meta-analyses / umbrella reviews / position stands built on 
 low-certainty syntheses), **limited** (consensus, observational, mechanistic), **heuristic** (coaching default,
 configurable). Keys are referenced from code as `EvidenceReference(key:level:)`.
 
+Latest full review: `docs/evidence-review-2026-11.md` (2026-11-20), with open findings and proposed entries.
+
 ## Menstrual cycle
 
 ### `cycle-phase-performance` — limited (no phase-based rules)
@@ -87,8 +89,8 @@ strength); counting indirect sets as 0.5 ("fractional") fits best. Per-session b
 fractional sets per muscle (preprint).
 → Effective sets per muscle use 1 / 0.5 weighting; stall suggestions add/remove a set relative to a
 configurable 10–20 weekly fractional sets range (heuristic within the evidence).
-Refs: Pelland et al. (meta-regressions, 67 studies, 2026); Remmert et al. 2025 (SportRxiv preprint).
-Reviewed 2026-11-16.
+Refs: Pelland et al. 2026, Sports Med 56(2):481–505 (meta-regressions, 67 studies); Remmert et al. 2025 (SportRxiv
+preprint). Reviewed 2026-11-20 (`docs/evidence-review-2026-11.md`).
 
 ### `deload-design` — limited
 Expert Delphi consensus defines a deload as a period of reduced training stress to mitigate fatigue and
@@ -110,8 +112,13 @@ Same load and reps over 3 exposures with RPE up ≥ 1 point → accumulated fati
 Reviewed 2026-11-16.
 
 ### `acwr` — heuristic
-Acute:chronic workload ratio > 1.5 as a weak signal only; its injury-prediction validity is disputed.
-Reviewed 2026-11-16.
+Acute:chronic workload ratio > 1.5 as a weak signal only; its injury-prediction validity is disputed. The coupled
+form (acute week inside the chronic window, as `Workload.acuteChronicRatio` computes it today) creates a spurious
+acute–chronic correlation, and the association with injury has been argued to be largely an artefact of the ratio.
+Never shown as injury risk. Replacement with an uncoupled "this week vs your usual week" comparison is recommended
+before the ratio is wired into deload proposals (`docs/evidence-review-2026-11.md`, §3.1).
+Refs: Lolli et al. 2019, Br J Sports Med 53:921; Impellizzeri et al. 2020, Int J Sports Physiol Perform;
+Impellizzeri et al. 2021, Sports Med 51:581. Reviewed 2026-11-20.
 
 ## Warm-up
 
@@ -227,20 +234,31 @@ The one RCT of HRV-guided resistance training found no advantage for strength or
 women), so HRV only moderates intensity here and never decides the strength plan alone.
 → Baseline = mean ± 0.5 SD of ln nightly HRV over the previous 60 days (≥ 14 nights); signal when the 7-day mean
 (≥ 3 nights) is below that range. Apple Watch reports SDNN, not RMSSD, and wearable HRV agrees only loosely
-with chest-strap references: the same personal-range rule is applied to one series at a time (one metric from
-one source, `hrv-metric-type`), which for Apple SDNN is a heuristic transfer.
+with chest-strap references: the same personal-range rule is applied to whatever the source reports, which is a
+heuristic transfer, and only ever within one statistic (`hrv-metrics`).
 Refs: Düking et al. 2021, J Sci Med Sport 24:1180 (meta-analysis, wearables); Manresa-Rocamora et al. 2021, Int
 J Environ Res Public Health 18:10299 (meta-analysis); Granero-Gallegos et al. 2020, Int J Environ Res Public
 Health 17:7999 (meta-analysis); Vesterinen et al. 2016, Med Sci Sports Exerc 48:1347 (RCT, SWC protocol); Plews
 et al. 2012, Eur J Appl Physiol 112:3729 (7-day rolling average); Front Physiol 2024, 15:1472702 (RCT,
 HRV-guided resistance training, n = 21); Sensors 2024, 24:6220 (Apple Watch HRV validity). Reviewed 2026-11-19.
 
+### `hrv-metrics` — strong
+RMSSD and SDNN are different statistics: RMSSD reflects beat-to-beat (vagal) variation, SDNN the total variation
+over the recording, and both depend on recording length. Their values and norms differ, so a baseline built with one
+cannot judge the other. Garmin reports nightly RMSSD (Personal API `lastNightAvg`); Apple Health stores
+`heartRateVariabilitySDNN` from short Apple Watch readings. Athlete monitoring is usually built on ln RMSSD.
+→ Every HRV value carries its statistic (`HRVMetric`); readiness baselines and Today's 7-day average only use nights
+of the same statistic as the latest night. Switching watches starts a new baseline (14 nights) instead of a false
+drop or rise (ADR-0024). Refs: Task Force of the ESC and NASPE 1996, Circulation 93:1043 (standards); Shaffer &
+Ginsberg 2017, Front Public Health 5:258 (review of HRV metrics and norms); Plews et al. 2013, Sports Med 43:773
+(ln RMSSD for athlete monitoring). Reviewed 2026-11-20.
+
 ### `hrv-metric-type` — moderate
 SDNN and RMSSD measure different things (overall vs beat-to-beat variability; short-term SDNN tracks LF power,
 r = 0.90–0.94), RMSSD is the more robust metric in short recordings, and no conversion between them exists.
 Wearable HRV is comparable only within one device and one metric.
-→ Apple Watch SDNN and Garmin RMSSD are kept as separate series and never share a baseline; when both qualify,
-the rule uses RMSSD; a new source starts its own baseline (ADR-0024, `docs/design/hrv-sources.md`).
+→ Apple Watch SDNN and Garmin RMSSD use separate baselines (`hrv-metrics`). The [research note](design/hrv-sources.md)
+compares the two inputs and motivates preserving both values when they are available for the same night.
 Refs: Esco 2026, J Funct Morphol Kinesiol 11:304 (narrative review); Shaffer & Ginsberg 2017, Front Public Health
 5:258 (review); Munoz et al. 2015, PLoS One 10:e0138921 (n = 3,387); Doherty et al. 2025, Transl Exerc Biomed
 (review of 14 composite scores). Reviewed 2026-11-20.
@@ -251,8 +269,9 @@ ECG (536 nights): Garmin Fenix 6 CCC 0.87, MAPE 10.5 %, behind Oura (0.97–0.99
 v4: good test–retest reliability, proportional bias, individual errors up to about ±50 %. Apple Watch S9/Ultra 2
 SDNN: −8.3 ms bias, MAPE 28.9 %, outside a ±10 ms equivalence margin; no validation of the passive nocturnal SDNN
 (3–4 spot readings a night) that Health stores.
-→ Only the person's own baseline from the same device is used; Apple nightly SDNN is the weaker input and its
-reasons say so. Refs: Dial et al. 2025, Physiol Rep 13:e70527; Sensors 2026, 26:6549 (Elevate v4, n = 23);
+→ Interpret wearable HRV against the person's own baseline for the same device. The use of passive Apple Watch
+SDNN in the readiness rule remains a heuristic transfer. Refs: Dial et al. 2025, Physiol Rep 13:e70527;
+Sensors 2026, 26:6549 (Elevate v4, n = 23);
 O'Grady et al. 2024, Sensors 24:6220; Miller et al. 2022, Sensors 22:6317. Reviewed 2026-11-20.
 
 ### `hrv-nocturnal` — moderate

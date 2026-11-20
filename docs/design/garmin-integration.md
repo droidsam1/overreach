@@ -333,32 +333,72 @@ Apple Health can still show both workouts if Overreach writes the session (ADR-0
 own recording. That is outside the app's data and does not affect Overreach. A later option is to skip writing to
 Health when a matched Garmin recording exists.
 
+### Setup and onboarding (as built)
+
+- **First-run setup** asks "Which devices do you use?" (Apple Watch, Garmin, another watch or ring, only the iPhone)
+  with animated cards. The answer is stored in `AthleteProfile.wearables` (optional, unknown values dropped:
+  ADR-0018). Picking Garmin opens the Garmin setup on Continue; Apple Health can be allowed from the same step.
+- **Garmin setup** (`GarminSetupView`): what you get → create the key (Garmin Connect opens in-app at the key page,
+  1 year recommended) → paste (system `PasteButton`, no clipboard prompt). Checking, saving in the Keychain and the
+  first 60-day import follow on their own. One sheet at the app root serves the first-run setup, Today and Settings.
+- **Later:** Settings → Garmin (status, last sync, key expiry with a warning and badge, sync now, renew, disconnect),
+  and a "Connect your Garmin" card on Today for someone who said they use one, or when nothing is connected.
+- **Today shows only what sources measure:** a tile appears when a value exists today or in the last 7 days. An
+  iPhone alone shows steps; an Apple Watch adds sleep, HRV and resting HR; Garmin adds Body Battery and stress.
+
 ## 7. Plan
 
 | Step | Content | Where |
 |---|---|---|
 | 0 | Done (2026-11-20): checked against Garmin's official OpenAPI document, FAQ, client and Supplemental Terms, and live with a real key; synthetic fixtures recorded; ADR-0022 accepted. Rate limits remain unpublished by design. | docs |
 | 1 | Done (2026-11-20): `GarminImport` decodes HRV, sleep, daily summaries v2, VO2max and activities, maps them to `DailyMetrics`, `RunActivity` and `RecordedStrengthActivity`, and plans the requests (first sync of 60 days = 6 requests). Tested against the fixtures. | OverreachCore |
-| 2 | `GarminSource`: token provider, HTTP client, `MetricsSource` for daily metrics. Wire in `AppContainer`. | OverreachKit, App |
-| 3 | Settings: connect (paste key + expiry), status, last sync, disconnect; localized texts (en, es, gl). | SettingsPresentation, FeatureSettings |
-| 4 | Readiness: HRV from Garmin feeds `ReadinessRules`, one series per metric (research done 2026-11-20: `docs/design/hrv-sources.md`, ADR-0024). | Analytics, `docs/evidence.md` |
-| 5 | Activities: summaries → `RunActivity` (with `activityTrainingLoad` and training effect), walks (`ActivitySource`) and `RecordedStrengthActivity`; runs deduplicated with Health; strength paired with logged sessions by `StrengthActivityMatching` (done); our own acute/chronic load from per-activity load (evidence first). | Core + Kit |
+| 2 | Done (#65): `GarminService` (GarminImport) implements `GarminAccount` and `MetricsSource`: token minting and reuse, spacing and backoff, incremental sync, activity paging, cache. `GarminSource` supplies the Keychain, URLSession and the cache file. Wired in `AppContainer`. | Core, Kit, App |
+| 3 | Done (#65, #66): `GarminSetupModel` + `GarminSetupView` (three steps), Settings → Garmin, the devices step of the first-run setup, the Today card, an expiry notification a week before, translations. | SettingsPresentation, Feature* |
+| 4 | Done: Garmin HRV feeds `ReadinessRules`; every HRV value carries its statistic (`HRVMetric`) and baselines only compare nights of one kind (ADR-0024, `hrv-metrics`). | Domain, Analytics, `docs/evidence.md` |
+| 5 | Partly done: runs (with load and training effect) and `RecordedStrengthActivity` are imported; runs deduplicated against Health copies (`RunDeduplication`, used by the AI report); strength paired by `StrengthActivityMatching` and Health writes deduplicated (ADR-0023). Next: show the watch's heart rate and load on matched sessions and list unlogged watch workouts (gap C); walks (`ActivitySource`); our own acute/chronic load from per-activity load (evidence first). | Core + Kit |
 | 6 | FIT decoding (laps, HR, power) for run load and the AI report. | OverreachCore |
 | 7 | Women's health → `CycleSource` (ADR-0009). | Core + Kit |
 
 Steps 1–4 are the shippable unit for phase 2 (v0.2). `ReleaseNotes.all` gets an entry when step 3 lands.
 
-### Open questions
+### Decided questions
 
+- **HRV statistic.** Garmin reports nightly RMSSD and Apple Health stores SDNN. `DailyMetrics.hrvMetric` labels every
+  value, merging keeps a value with its label, and readiness and Today only compare nights of one kind
+  ([ADR-0024](../adr/0024-hrv-baselines-per-statistic.md)). See the [HRV research note](hrv-sources.md) for the
+  evidence and the [follow-up proposal](../adr/0025-hrv-one-series-per-metric.md) for retaining both readings.
+- **Body Battery and stress** are shown on Today when Garmin provides them, as context. They are proprietary scores
+  and are never a rule input unless evidence supports it (`composite-scores`).
+- **Daily summary v2** carries resting HR, steps, stress, Body Battery, respiration and SpO2 in one call; the separate
+  endpoints are not used.
 
-- ~~HRV metric type~~ Researched 2026-11-20 (`docs/design/hrv-sources.md`, ADR-0024 proposed): separate fields per
-  metric, the rule judges one series and prefers RMSSD, a new source starts its own baseline.
-- ~~Body Battery~~ No independent validation of composite scores (`composite-scores`): shown as Garmin context,
-  never a rule input.
-- Exact rate limits (about 100 per minute reported unofficially). A 60-day backfill is about 6 requests: one daily
-  summaries call (up to a year), two sleep calls (31 days), one HRV range, two Body Battery calls, plus activity pages.
-- Daily summary v2 versus the separate stress, steps and Body Battery endpoints: v2 covers most fields in one call.
-  Use it and fall back to the others only if a field is missing.
+### Known limitations and corner cases
+
+- **First sync during Today's load.** `GarminService` syncs when metrics are read and the last sync is older than
+  30 minutes, so a launch after a long time can wait for a few requests before Today shows data. Errors are
+  swallowed there and shown in Settings.
+- **"Range too long" is not split again.** Requests follow the documented limits; if Garmin lowers one, a 400 stops
+  that sync (reported as "Garmin isn't answering") until the limit in `GarminEndpoint` is updated.
+- **Rate limits are unpublished.** The client spaces requests and retries at most twice, then stops the sync.
+- **Disconnecting keeps imported data.** The cache stays and still feeds Today; deleting it is a future option.
+- **Cached nights from before `hrvMetric` existed** have no label and form their own group until they age out (the
+  integration had not shipped to users then).
+- **Key lifetime is what the person says.** Garmin does not report it; the reminder and the Settings warning use
+  the lifetime picked in the setup (1 year preselected), counted from when the key was pasted.
+- **Notification permission** is asked when the expiry reminder is first scheduled; if refused, the Settings warning
+  and badge remain.
+- **Health workout deduplication is one way.** If the person deletes the watch's workout from Apple Health, the app
+  does not write its own back until the session is edited (ADR-0023).
+- **iCloud Keychain off or another Apple ID.** The key then stays on this iPhone only: a new phone needs the key
+  pasted again (or a new key).
+- **Strength recordings without a logged session** are kept but not shown yet (gap C).
+- **Not verified on a device yet:** the setup flow, the Keychain item and the Health deduplication have only been
+  built and unit tested.
+
+### Remaining open questions
+
+- Exact rate limits; a first sync of 60 days is about 6 requests plus activity pages.
+- How to combine Garmin's per-activity load with sRPE load in ACWR (different units): needs evidence before a rule.
 
 ## Sources
 

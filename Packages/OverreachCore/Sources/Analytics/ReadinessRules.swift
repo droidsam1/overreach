@@ -5,6 +5,8 @@ import Foundation
 public enum ReadinessEvidence {
     /// 7-day rolling HRV against a personal normal range (HRV-guided training meta-analyses, 2020–2021).
     public static let hrv = EvidenceReference(key: "readiness-hrv", level: .moderate)
+    /// RMSSD and SDNN are not interchangeable: baselines compare one statistic only (ADR-0024).
+    public static let hrvMetrics = EvidenceReference(key: "hrv-metrics", level: .strong)
     /// Resting HR rises with short-term overload but inconsistently (Bosquet et al. 2008).
     public static let restingHeartRate = EvidenceReference(key: "readiness-resting-hr", level: .limited)
     /// Acute sleep loss lowers performance, endurance more than strength (Craven et al. 2022).
@@ -136,11 +138,20 @@ public enum ReadinessRules {
 
     /// `nil` when HRV cannot be judged; `.some(nil)` when it is in range; `.some(n)` when the rolling average is
     /// below the normal range, with `n` the low nights in the window.
+    ///
+    /// Only nights of the same statistic as the latest night are compared (RMSSD and SDNN are not interchangeable,
+    /// `hrv-metrics`, ADR-0024): someone who moves from an Apple Watch to a Garmin builds a new baseline instead of
+    /// being judged against the old one.
     static func hrvCheck(
         byDay: [CalendarDay: DailyMetrics], baselineDays: [CalendarDay], rollingDays: [CalendarDay], settings: Settings
     ) -> Int?? {
+        let latest = rollingDays.lazy.compactMap { byDay[$0] }.first { ($0.hrvNightlyAverageMs ?? 0) > 0 }
+        guard let latest else { return nil }
+        let metric = latest.hrvMetric
         let logHRV = { (days: [CalendarDay]) -> [Double] in
-            days.compactMap { byDay[$0]?.hrvNightlyAverageMs }.filter { $0 > 0 }.map { log($0) }
+            days.compactMap { byDay[$0] }
+                .filter { $0.hrvMetric == metric }
+                .compactMap(\.hrvNightlyAverageMs).filter { $0 > 0 }.map { log($0) }
         }
         let baseline = logHRV(baselineDays)
         let recent = logHRV(rollingDays)

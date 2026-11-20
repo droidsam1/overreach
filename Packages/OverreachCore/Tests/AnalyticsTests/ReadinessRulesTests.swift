@@ -119,4 +119,64 @@ struct ReadinessRulesTests {
             "readiness-subjective", "readiness-combination",
         ])
     }
+
+    // MARK: HRV statistics (ADR-0024)
+
+    /// 60 nights of Apple Watch SDNN around 55 ms, then the last `garminNights` from a Garmin (RMSSD around 35 ms:
+    /// a lower number for the same physiology).
+    private func switchedToGarmin(garminNights: Int) -> [DailyMetrics] {
+        history(todaySleepHours: nil).map { day in
+            var day = day
+            day.restingHeartRate = nil
+            let offset = calendar.dateComponents(
+                [.day], from: day.day.startDate(in: calendar), to: today.startDate(in: calendar)
+            ).day ?? 0
+            if offset < garminNights {
+                day.hrvNightlyAverageMs = 35 + Double(offset % 3)
+                day.hrvMetric = .rmssd
+                day.sources = [.garmin]
+            } else {
+                day.hrvMetric = .sdnn
+            }
+            return day
+        }
+    }
+
+    @Test func aNewWatchDoesNotLookLikeAnHRVDrop() {
+        // A week of Garmin RMSSD against an SDNN baseline would read as "far below normal". It is not compared.
+        let result = readiness(switchedToGarmin(garminNights: 7))
+
+        #expect(!result.reasons.contains { if case .hrvBelowBaseline = $0 { true } else { false } })
+        #expect(result.level == .unknown)  // no RMSSD baseline yet, nothing else to judge
+    }
+
+    @Test func onceTheNewWatchHasABaselineItIsJudgedAgainstItsOwnNights() {
+        var days = switchedToGarmin(garminNights: 30)
+        for index in days.indices where days[index].hrvMetric == .rmssd {
+            let offset = calendar.dateComponents(
+                [.day], from: days[index].day.startDate(in: calendar), to: today.startDate(in: calendar)
+            ).day ?? 0
+            if offset < 7 { days[index].hrvNightlyAverageMs = 26 }  // a real drop in RMSSD
+        }
+
+        let result = readiness(days)
+
+        #expect(result.reasons.contains(.hrvBelowBaseline(nights: 7)))
+    }
+
+    @Test func mergingKeepsEachValueWithItsStatistic() {
+        var garmin = DailyMetrics(day: today, sources: [.garmin])
+        garmin.sleepScore = 80
+        var health = DailyMetrics(day: today, sources: [.appleHealth])
+        health.hrvNightlyAverageMs = 50
+        health.hrvMetric = .sdnn
+
+        let merged = garmin.merging(health)  // Garmin has no HRV tonight: the SDNN value comes with its label
+        #expect(merged.hrvNightlyAverageMs == 50 && merged.hrvMetric == .sdnn)
+
+        garmin.hrvNightlyAverageMs = 38
+        garmin.hrvMetric = .rmssd
+        let both = garmin.merging(health)
+        #expect(both.hrvNightlyAverageMs == 38 && both.hrvMetric == .rmssd)
+    }
 }
