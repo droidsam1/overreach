@@ -31,6 +31,7 @@ public final class TodayModel {
     public private(set) var recentTrainingDays: [RecentTrainingDay] = []
     private var trainingReadFailed = false
     private var activeLoad: UUID?
+    private var loadedDay: CalendarDay?
     /// Whether a Garmin account is connected (ADR-0022).
     public private(set) var isGarminConnected = false
     /// The person said they use a Garmin (first-run setup).
@@ -55,7 +56,10 @@ public final class TodayModel {
 
     /// What the light means for today's training.
     public var readinessAdvice: String {
-        switch readiness.level {
+        if readiness.reasons.contains(.symptomsLimitTraining) {
+            return L10n.text("Skip training today and reassess how you feel.")
+        }
+        return switch readiness.level {
         case .green: L10n.text("Train as planned.")
         case .amber: L10n.text("Keep it easy: an easy run (zone 1–2) or light strength.")
         case .red: L10n.text("Rest or go for a walk today.")
@@ -101,7 +105,13 @@ public final class TodayModel {
     /// The check-in button only shows when check-ins can be stored.
     public var showsCheckIn: Bool { checkIns != nil }
     public var checkInButtonTitle: String {
-        checkIn == nil ? L10n.text("How do you feel today?") : L10n.text("Edit today's check-in")
+        if let title = CheckInModel.title(for: suggestedContextQuestion) { return title }
+        return checkIn == nil ? L10n.text("How do you feel today?") : L10n.text("Edit today's check-in")
+    }
+
+    private var suggestedContextQuestion: CheckIn.Context.Question? {
+        guard checkIn?.context == nil else { return nil }
+        return ReadinessRules.contextQuestion(for: readiness)
     }
 
     /// "Energy 4/5 · Soreness 1/3", or "Sick" — what today's check-in said.
@@ -111,6 +121,11 @@ public final class TodayModel {
         var parts: [String] = []
         if let energy = checkIn.energy { parts.append(L10n.format("Energy {1}/5", String(energy))) }
         if let soreness = checkIn.soreness { parts.append(L10n.format("Soreness {1}/3", String(soreness))) }
+        switch checkIn.context?.answer == .yes ? checkIn.context?.question : nil {
+        case .symptoms: parts.append(L10n.text("New symptoms affect training"))
+        case .stress: parts.append(L10n.text("More stress than usual"))
+        case nil: break
+        }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
@@ -119,7 +134,8 @@ public final class TodayModel {
         guard let checkIns else { return nil }
         let today = CalendarDay(now, calendar: calendar)
         return CheckInModel(
-            day: today, existing: checkIn?.day == today ? checkIn : nil, checkIns: checkIns, backup: backup
+            day: today, existing: checkIn?.day == today ? checkIn : nil, checkIns: checkIns, backup: backup,
+            contextQuestion: loadedDay == today ? suggestedContextQuestion : nil
         )
     }
 
@@ -255,10 +271,11 @@ public final class TodayModel {
             }
         }
 
-        let checkIn = try? await checkIns?.checkIn(for: today)
+        let checkIn = (try? await checkIns?.checkIn(for: today)).flatMap { $0.day == today ? $0 : nil }
         let garminConnected = await garmin?.connection() != nil
         let profileWearsGarmin = (try? await profiles?.profile())?.wearables.contains(.garmin) ?? false
         guard activeLoad == loadID else { return }
+        loadedDay = today
         let history = byDay.values.filter { !$0.sources.isEmpty }.sorted { $0.day < $1.day }
         week = history.filter { $0.day >= weekStart }
         metrics = byDay[today].flatMap { $0.sources.isEmpty ? nil : $0 }
@@ -330,6 +347,8 @@ public final class TodayModel {
         switch reason {
         case .markedSick:
             L10n.text("Marked as sick in today's check-in. Rest until the symptoms ease.")
+        case .symptomsLimitTraining:
+            L10n.text("You reported symptoms that make you feel too unwell to train.")
         case .hrvBelowBaseline(let nights):
             if let coverage = readiness.hrvCoverage {
                 L10n.format(

@@ -135,6 +135,19 @@ struct ReadinessRulesTests {
         #expect(readiness([], checkIn: CheckIn(day: today, energy: 4, soreness: 1)).level == .green)
     }
 
+    @Test func reportedSymptomsTakePriorityAndApplyOnlyToTheirOwnDay() {
+        let response = CheckIn.Context(question: .symptoms, answer: .yes)
+        #expect(readiness([], checkIn: CheckIn(day: today, context: response)).reasons == [.symptomsLimitTraining])
+        let yesterday = today.adding(days: -1, calendar: calendar)
+        #expect(readiness([], checkIn: CheckIn(day: yesterday, isSick: true, context: response)).level == .unknown)
+    }
+
+    @Test(arguments: [CheckIn.Context.Answer.no, .unsure, .skipped])
+    func anInconclusiveContextAnswerAloneCannotGiveAGreenLight(answer: CheckIn.Context.Answer) {
+        let context = CheckIn.Context(question: .symptoms, answer: answer)
+        #expect(readiness([], checkIn: CheckIn(day: today, context: context)).level == .unknown)
+    }
+
     @Test func everyReasonCitesItsEvidence() {
         let reasons: [ReadinessReason] = [
             .markedSick, .hrvBelowBaseline(nights: 3), .restingHeartRateElevated(bpmAboveBaseline: 6),
