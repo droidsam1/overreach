@@ -51,11 +51,11 @@ struct RestTimerView: View {
         } label: {
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: Spacing.small) {
-                    Text(state.title)
+                    detailsLabel(state)
                     countdown(state)
                 }
                 VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                    Text(state.title)
+                    detailsLabel(state)
                     countdown(state)
                 }
             }
@@ -65,6 +65,16 @@ struct RestTimerView: View {
         }
         .buttonStyle(.plain)
         .accessibilityHint("Opens rest timer details")
+    }
+
+    private func detailsLabel(_ state: RestTimerState) -> some View {
+        Label {
+            Text(state.title)
+        } icon: {
+            Image(systemName: "slider.horizontal.3")
+                .foregroundStyle(.tint)
+                .accessibilityHidden(true)
+        }
     }
 
     private func countdown(_ state: RestTimerState) -> some View {
