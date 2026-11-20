@@ -89,19 +89,22 @@ final class AppContainer {
         let healthKit = HealthKitMetricsSource()
         let garmin = GarminConnect.makeService()
         let sources: [any MetricsSource] = [garmin, healthKit]
+        // Garmin's strength records plus other apps' strength workouts in Apple Health (e.g. the Apple Watch), each
+        // workout once.
+        let recordedStrength = CombinedRecordedStrengthSource([garmin, HealthKitWorkoutWriter()])
         do {
             let store = SwiftDataStore.make(container: try PersistenceContainer.make())
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store, workoutDraftStore: FileWorkoutDraftStore(),
-                metricsSources: sources, healthSource: healthKit, garmin: garmin, recordedStrength: garmin
+                metricsSources: sources, healthSource: healthKit, garmin: garmin, recordedStrength: recordedStrength
             )
         } catch {
             let store = InMemoryStore(exercises: ExerciseCatalog.builtIn)
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store,
-                metricsSources: sources, healthSource: healthKit, garmin: garmin, recordedStrength: garmin
+                metricsSources: sources, healthSource: healthKit, garmin: garmin, recordedStrength: recordedStrength
             )
         }
     }
@@ -130,7 +133,8 @@ final class AppContainer {
     func makeAskAIModel() -> AskAIModel {
         AskAIModel(
             workouts: workouts, exercises: exercises, progression: progression, profiles: profiles,
-            routines: routines, checkIns: checkIns, sources: metricsSources, appVersion: Self.appVersion
+            routines: routines, checkIns: checkIns, sources: metricsSources, recordedStrength: recordedStrength,
+            appVersion: Self.appVersion
         )
     }
 

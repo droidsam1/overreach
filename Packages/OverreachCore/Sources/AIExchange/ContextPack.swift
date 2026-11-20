@@ -140,6 +140,31 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var sessionRPE: Double?
         public var notes: String?
         public var exercises: [Entry]
+        /// What a watch recorded during the session. Optional, added after v1 shipped; absent when no watch did.
+        public var watch: Watch?
+    }
+
+    /// A watch's recording of a logged session (Garmin, or another app through Apple Health).
+    public struct Watch: Codable, Hashable, Sendable {
+        public var source: String
+        public var averageHeartRate: Double?
+        public var maxHeartRate: Double?
+        /// Garmin's training load for the activity (its own units, not sRPE).
+        public var trainingLoad: Double?
+        public var aerobicTrainingEffect: Double?
+        public var anaerobicTrainingEffect: Double?
+
+        public init(
+            source: String, averageHeartRate: Double? = nil, maxHeartRate: Double? = nil, trainingLoad: Double? = nil,
+            aerobicTrainingEffect: Double? = nil, anaerobicTrainingEffect: Double? = nil
+        ) {
+            self.source = source
+            self.averageHeartRate = averageHeartRate
+            self.maxHeartRate = maxHeartRate
+            self.trainingLoad = trainingLoad
+            self.aerobicTrainingEffect = aerobicTrainingEffect
+            self.anaerobicTrainingEffect = anaerobicTrainingEffect
+        }
     }
 
     public struct Entry: Codable, Hashable, Sendable {

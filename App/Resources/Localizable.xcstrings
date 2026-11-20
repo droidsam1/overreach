@@ -13396,6 +13396,74 @@
           }
         }
       }
+    },
+    "Log it with its exercises and sets. The watch's heart rate and load are added to it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regístralo con sus ejercicios y series. Se le añaden el pulso y la carga del reloj."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rexístrao cos seus exercicios e series. Engádenselle o pulso e a carga do reloxo."
+          }
+        }
+      }
+    },
+    "Log this workout": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrar este entreno"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rexistrar este adestramento"
+          }
+        }
+      }
+    },
+    "Log watch workouts": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registra los entrenos del reloj"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rexistra os adestramentos do reloxo"
+          }
+        }
+      }
+    },
+    "Strength recorded on your watch but not in the app? Log it from History with the watch's times.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Fuerza grabada en el reloj pero no en la app? Regístrala desde Historial con las horas del reloj."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forza gravada no reloxo pero non na app? Rexístraa desde Historial coas horas do reloxo."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

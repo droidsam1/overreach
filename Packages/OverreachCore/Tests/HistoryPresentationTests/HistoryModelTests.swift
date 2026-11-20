@@ -203,6 +203,60 @@ struct HistoryModelTests {
     }
 }
 
+@MainActor
+@Suite("Logging a watch workout")
+struct LogWatchWorkoutTests {
+    private let now = Date(timeIntervalSince1970: 1_790_000_000)
+    private let squat = Exercise(name: "Back Squat", primaryMuscles: [.quadriceps], equipment: .barbell)
+
+    @Test func aWatchOnlyWorkoutBecomesASessionWithTheWatchsTimes() async throws {
+        let recording = RecordedStrengthActivity(
+            id: "g1", source: .garmin, startedAt: now.addingTimeInterval(-86_400), durationSeconds: 3_000,
+            averageHeartRate: 118, trainingLoad: 45
+        )
+        let store = TestStore(exercises: [squat])
+        let fixedNow = now
+        let model = HistoryModel(
+            workouts: store, exercises: store, routines: store,
+            recordedStrength: StrengthRecordings(activities: [recording]), clock: { fixedNow }
+        )
+        await model.load()
+        #expect(model.rows.map(\.id) == [.recording("g1")])
+        #expect(model.makeEditor(forRecording: "missing") == nil)
+
+        let editor = try #require(model.makeEditor(forRecording: "g1"))
+        #expect(editor.draft.startedAt == recording.startedAt)
+        #expect(editor.draft.endedAt == recording.endedAt)
+        editor.addExercise(squat)
+        editor.draft.entries[0].sets[0].weightKg = 100
+        editor.draft.entries[0].sets[0].reps = 5
+        let saved = try #require(await editor.save())
+        model.didSave(saved)
+
+        #expect(model.rows.map(\.id) == [.session(saved.id)])  // no longer a watch-only row
+        #expect(model.detail(for: saved.id)?.recording?.id == "g1")  // the watch's data is on the session
+    }
+
+    @Test func garminAndItsAppleHealthCopyAreOneWatchWorkout() async {
+        let garmin = RecordedStrengthActivity(
+            id: "g1", source: .garmin, startedAt: now.addingTimeInterval(-86_400), durationSeconds: 3_000,
+            trainingLoad: 45
+        )
+        let copy = RecordedStrengthActivity(
+            id: "h1", source: .appleHealth, startedAt: now.addingTimeInterval(-86_400 + 30), durationSeconds: 2_950,
+            averageHeartRate: 118
+        )
+        let combined = CombinedRecordedStrengthSource([
+            StrengthRecordings(activities: [garmin]), StrengthRecordings(activities: [copy]),
+        ])
+
+        let recordings = await combined.strengthActivities(from: .distantPast, to: .distantFuture)
+
+        #expect(recordings.map(\.id) == ["g1"])
+        #expect(recordings.first?.averageHeartRate == 118)
+    }
+}
+
 private struct TimelineRuns: MetricsSource {
     enum Failure: Error { case unavailable }
     let kind: DataSourceKind

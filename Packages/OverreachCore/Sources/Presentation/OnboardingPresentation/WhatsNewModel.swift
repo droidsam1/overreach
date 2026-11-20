@@ -20,6 +20,12 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "plus.circle.fill", title: L10n.text("Log watch workouts"),
+                    detail: L10n.text(
+                        "Strength recorded on your watch but not in the app? Log it from History with the watch's times."
+                    )
+                ),
+                ReleaseHighlight(
                     symbol: "arrow.clockwise.circle", title: L10n.text("Resume workout"),
                     detail: L10n.text("Pick up an interrupted workout with your sets, notes and rest timer.")
                 ),

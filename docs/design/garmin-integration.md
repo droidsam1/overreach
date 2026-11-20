@@ -324,7 +324,12 @@ logged in Overreach. Rules, so nothing is counted twice and the two never disagr
    analysed. Nothing is written into `StrengthSession`, so no stored data changes (ADR-0018) and a re-sync just
    re-matches.
 5. **An unmatched recording** is a workout trained without logging it. It appears chronologically in the History
-   list with read-only details and is never counted as a logged session. Its Garmin load is kept apart from
+   list with read-only details and a **Log this workout** button, which opens a new session with the watch's times
+   (it then pairs with the recording and is not written to Apple Health again). Until logged it is never counted as
+   a session. Strength workouts other apps wrote to Apple Health (e.g. the Apple Watch) are recordings too:
+   `CombinedRecordedStrengthSource` merges both sources and `StrengthActivityMatching.removingDuplicates` keeps one
+   record per workout, Garmin first. The AI context adds a matched recording as `sessions[].watch`. Its Garmin load
+   is kept apart from
    sRPE load: the two are different units and must not be added together in ACWR without an evidence-based
    conversion (step 5).
 6. **Runs follow the same rule against Apple Health:** a Garmin run and the copy Garmin Connect writes to Health are
@@ -332,9 +337,8 @@ logged in Overreach. Rules, so nothing is counted twice and the two never disagr
    AI report use `RunDeduplication`. The calendar reads one day on each side of the month so copies around
    midnight can be matched before the run count and distance are assigned to the preferred record's month.
 
-Apple Health can still show both workouts if Overreach writes the session (ADR-0016) and Garmin Connect writes its
-own recording. That is outside the app's data and does not affect Overreach. A later option is to skip writing to
-Health when a matched Garmin recording exists.
+Overreach does not write a session to Apple Health when another app already recorded the same workout there, and
+removes its own copy once the watch's workout arrives (ADR-0023).
 
 ### Setup and onboarding (as built)
 

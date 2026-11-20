@@ -126,4 +126,33 @@ struct ContextPackTests {
         #expect(pack.athlete.goal == nil)
         #expect(try ContextMessage.decode(ContextMessage.json(pack)) == pack)
     }
+
+    @Test func aSessionTheWatchRecordedCarriesItsHeartRateAndLoad() throws {
+        let recorded = session(daysAgo: 2, reps: [10])
+        let alone = session(daysAgo: 9, reps: [9])
+        let garmin = RecordedStrengthActivity(
+            id: "g1", source: .garmin, startedAt: recorded.startedAt.addingTimeInterval(-60), durationSeconds: 3_660,
+            averageHeartRate: 111.6, maxHeartRate: 149.2, trainingLoad: 47.84, aerobicTrainingEffect: 2.14,
+            anaerobicTrainingEffect: 1.76
+        )
+        let healthCopy = RecordedStrengthActivity(
+            id: "h1", source: .appleHealth, startedAt: recorded.startedAt, durationSeconds: 3_600
+        )
+        let input = ContextInput(
+            sessions: [recorded, alone], exercises: [bench], strengthRecordings: [healthCopy, garmin]
+        )
+
+        let pack = ContextPackBuilder.build(input, period: period, now: now, calendar: calendar)
+
+        let shared = try #require(pack.sessions.first { $0.id == recorded.id.uuidString })
+        #expect(shared.watch == ContextPack.Watch(
+            source: "garmin", averageHeartRate: 112, maxHeartRate: 149, trainingLoad: 47.8,
+            aerobicTrainingEffect: 2.1, anaerobicTrainingEffect: 1.8
+        ))
+        #expect(pack.sessions.first { $0.id == alone.id.uuidString }?.watch == nil)
+        let json = String(decoding: try ContextMessage.json(pack), as: UTF8.self)
+        #expect(json.contains("\"watch\""))
+        #expect(pack.version == 1)  // an optional field keeps the version (docs/ai-exchange.md)
+    }
 }
+

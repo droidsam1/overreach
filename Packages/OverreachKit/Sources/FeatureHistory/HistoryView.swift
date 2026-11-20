@@ -88,7 +88,7 @@ public struct HistoryView: View {
                     }
                 case let .recording(recording):
                     NavigationLink {
-                        RecordedStrengthDetail(recording: recording)
+                        RecordedStrengthDetail(recording: recording, model: model)
                     } label: {
                         RecordedStrengthRow(recording: recording)
                     }

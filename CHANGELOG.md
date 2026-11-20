@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Log a watch-only strength workout from History: the new session starts with the watch's times, and once saved it
+  shows the watch's heart rate and load. Apple Watch strength workouts appear too, and a Garmin workout and its
+  Apple Health copy count once.
+- The AI context adds what the watch recorded during each session (`sessions[].watch`).
 - On an amber day, Today can show an optional light strength example alongside the next routine or recent session.
 - Today explains low HRV in plain language, puts it alongside measured recovery and recent training, and links to the research.
 - Today can offer one optional check-in question about symptoms or unusual stress when HRV stays below your range.

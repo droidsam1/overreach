@@ -323,6 +323,17 @@ public final class HistoryModel {
         )
     }
 
+    /// A new session for a watch workout that was not logged: its times, no sets yet. Saving it pairs it with the
+    /// recording, so it leaves the timeline as a watch-only row, and it is not written to Apple Health a second time
+    /// (ADR-0023). Call `didSave(_:)` with what the editor returns.
+    public func makeEditor(forRecording id: String) -> SessionEditorModel? {
+        guard let recording = recordings.first(where: { $0.id == id }) else { return nil }
+        let session = StrengthSession(
+            name: L10n.text("Strength"), startedAt: recording.startedAt, endedAt: recording.endedAt, source: .app
+        )
+        return makeEditor(for: session)
+    }
+
     /// Replaces an edited session in the list, keeping it sorted newest first, and in the calendar.
     public func didSave(_ session: StrengthSession) {
         calendar.didSave(session)
