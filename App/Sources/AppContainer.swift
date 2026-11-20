@@ -37,7 +37,7 @@ final class AppContainer {
     let onboardingStatus: any OnboardingStatusStore
     /// In priority order: when two sources report the same value, the first wins.
     let metricsSources: [any MetricsSource]
-    /// Apple Health: steps for the History calendar, and runs (Garmin Connect writes its runs there too).
+    /// Apple Health: steps for the History calendar.
     let healthSource: (any MetricsSource & ActivitySource)?
     /// The person's Garmin account (ADR-0022). Also in `metricsSources`.
     let garmin: (any GarminAccount)?
@@ -154,7 +154,7 @@ final class AppContainer {
     func makeHistoryModel() -> HistoryModel {
         HistoryModel(
             workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
-            profiles: profiles, progression: progression, activity: healthSource, runs: healthSource,
+            profiles: profiles, progression: progression, activity: healthSource, runSources: metricsSources,
             recordedStrength: recordedStrength
         )
     }

@@ -43,8 +43,9 @@ public struct CalendarTotal: Identifiable, Hashable, Sendable {
 /// A run in the day detail.
 public struct CalendarRunLine: Identifiable, Hashable, Sendable {
     public let id: String
-    /// The app that recorded it ("Garmin Connect"), or "Run".
+    /// The imported name, or "Run".
     public let title: String
+    public let source: String
     /// "5.2 km"
     public let distance: String
     /// "28:30" or "1:05:20"
@@ -53,6 +54,7 @@ public struct CalendarRunLine: Identifiable, Hashable, Sendable {
     public let pace: String?
     /// "152 bpm"; `nil` when the watch gave none.
     public let heartRate: String?
+    public let trainingMetrics: [HistoryMetric]
 }
 
 /// What happened on the selected day.
@@ -70,8 +72,8 @@ public struct CalendarDayDetail: Hashable, Sendable {
 }
 
 /// The month calendar of History: strength days, runs and steps per day (ADR-0014). Sessions come from the
-/// workout repository; runs and steps are read live from Apple Health for the shown month only. Every source is
-/// optional and a failing one never blocks the others.
+/// workout repository, steps from Apple Health, and runs from available sources. A failing source leaves the
+/// successful reads visible.
 @MainActor
 @Observable
 public final class HistoryCalendarModel {
@@ -82,16 +84,18 @@ public final class HistoryCalendarModel {
     public private(set) var sessions: [StrengthSession] = []
     public private(set) var runs: [RunActivity] = []
     public private(set) var steps: [CalendarDay: Int] = [:]
-    /// Whether runs and steps could be read for the shown month.
+    /// Whether reading Apple Health failed for the shown month.
     public private(set) var activityFailed = false
     public private(set) var sessionsFailed = false
+    private var didReadRuns = false
+    @ObservationIgnored private var activeLoad: UUID?
 
     /// Exercise names for the day detail, kept up to date by `HistoryModel`.
     var exerciseNames: [UUID: String] = [:]
 
     private let workouts: any WorkoutRepository
     private let activity: (any ActivitySource)?
-    private let runSource: (any MetricsSource)?
+    private let runSources: [any MetricsSource]
     private let calendar: Calendar
     private let format: Format
     private let clock: @Sendable () -> Date
@@ -99,14 +103,14 @@ public final class HistoryCalendarModel {
     public init(
         workouts: any WorkoutRepository,
         activity: (any ActivitySource)? = nil,
-        runs: (any MetricsSource)? = nil,
+        runSources: [any MetricsSource] = [],
         calendar: Calendar = .current,
         format: Format = Format(),
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
         self.activity = activity
-        self.runSource = runs
+        self.runSources = runSources
         self.calendar = calendar
         self.format = format
         self.clock = clock
@@ -184,14 +188,13 @@ public final class HistoryCalendarModel {
     /// not be read.
     public var totals: [CalendarTotal] {
         let unknown = "–"
-        let hasRuns = runSource != nil && !activityFailed
         let kilometres = runs.reduce(0) { $0 + $1.distanceMeters } / 1_000
         return [
             CalendarTotal(id: "sessions", value: String(sessions.count), label: L10n.text("Sessions")),
-            CalendarTotal(id: "runs", value: hasRuns ? String(runs.count) : unknown, label: L10n.text("Runs")),
+            CalendarTotal(id: "runs", value: didReadRuns ? String(runs.count) : unknown, label: L10n.text("Runs")),
             CalendarTotal(
                 id: "km",
-                value: hasRuns ? format.number(kilometres, maxFractionDigits: 1) : unknown,
+                value: didReadRuns ? format.number(kilometres, maxFractionDigits: 1) : unknown,
                 label: L10n.text("Km run")
             ),
             CalendarTotal(
@@ -212,7 +215,7 @@ public final class HistoryCalendarModel {
     public var healthHint: String? {
         if activityFailed { return L10n.text("Could not read Apple Health. Your sessions are still shown.") }
         guard steps.isEmpty, runs.isEmpty, !isLoading else { return nil }
-        return L10n.text("Runs and steps appear here once Apple Health is connected (from Today).")
+        return L10n.text("Connect Apple Health or Garmin from Today to see runs. Steps come from Apple Health.")
     }
 
     public var errorMessage: String? {
@@ -284,14 +287,25 @@ public final class HistoryCalendarModel {
     // MARK: Loading
 
     private func load(month requested: CalendarDay) async {
+        let loadID = UUID()
+        activeLoad = loadID
         month = requested
         isLoading = true
-        defer { isLoading = false }
+        defer {
+            if activeLoad == loadID {
+                activeLoad = nil
+                isLoading = false
+            }
+        }
 
         let start = requested.startDate(in: calendar)
         let next = requested.adding(months: 1, calendar: calendar)
         let end = next.startDate(in: calendar)
         let range = requested...next.adding(days: -1, calendar: calendar)
+        // Match copies on opposite sides of midnight before filtering by the preferred record's start.
+        let runStart = requested.adding(days: -1, calendar: calendar).startDate(in: calendar)
+        let runEnd = next.adding(days: 1, calendar: calendar).startDate(in: calendar)
+        async let loadedRuns = readRuns(from: runStart, to: runEnd)
 
         let loadedSessions: [StrengthSession]?
         do {
@@ -311,24 +325,45 @@ public final class HistoryCalendarModel {
                 failed = true
             }
         }
-        var loadedRuns: [RunActivity] = []
-        if let runSource, await runSource.isAvailable() {
-            do {
-                loadedRuns = try await runSource.runs(from: start, to: end)
-                    .filter { $0.startedAt >= start && $0.startedAt < end }
-                    .sorted { $0.startedAt < $1.startedAt }
-            } catch {
-                failed = true
-            }
-        }
-
-        // The user moved on to another month while this one loaded.
-        guard month == requested else { return }
+        let runResults = await loadedRuns
+        guard activeLoad == loadID else { return }
         sessions = loadedSessions ?? []
         sessionsFailed = loadedSessions == nil
         steps = loadedSteps
-        runs = loadedRuns
-        activityFailed = failed
+        runs = RunDeduplication.removingDuplicates(runResults.runs)
+            .filter { $0.startedAt >= start && $0.startedAt < end }
+        didReadRuns = runResults.didRead
+        activityFailed = failed || runResults.healthFailed
+    }
+
+    private struct RunReadings {
+        var runs: [RunActivity] = []
+        var didRead = false
+        var healthFailed = false
+    }
+
+    private func readRuns(from start: Date, to end: Date) async -> RunReadings {
+        await withTaskGroup(of: ([RunActivity]?, Bool).self) { group in
+            for source in runSources {
+                group.addTask {
+                    guard await source.isAvailable() else { return (nil, false) }
+                    do {
+                        return (try await source.runs(from: start, to: end), false)
+                    } catch {
+                        return (nil, source.kind == .appleHealth)
+                    }
+                }
+            }
+            var readings = RunReadings()
+            for await (result, failed) in group {
+                if let result {
+                    readings.didRead = true
+                    readings.runs += result
+                }
+                readings.healthFailed = readings.healthFailed || failed
+            }
+            return readings
+        }
     }
 
     // MARK: Helpers
@@ -356,12 +391,17 @@ public final class HistoryCalendarModel {
 
     private func runLine(_ run: RunActivity) -> CalendarRunLine {
         CalendarRunLine(
-            id: run.id,
+            id: "\(run.source.rawValue):\(run.id)",
             title: run.name ?? L10n.text("Run"),
+            source: run.source.displayName,
             distance: format.number(run.distanceMeters / 1_000, maxFractionDigits: 2) + " km",
             duration: Self.clockText(seconds: Int(run.durationSeconds.rounded())),
             pace: run.paceSecondsPerKm.map { format.minutesAndSeconds(Int($0.rounded())) + " /km" },
-            heartRate: run.averageHeartRate.map { format.number($0, maxFractionDigits: 0) + " bpm" }
+            heartRate: run.averageHeartRate.map { format.number($0, maxFractionDigits: 0) + " bpm" },
+            trainingMetrics: HistoryMetric.training(
+                load: run.trainingLoad, aerobic: run.aerobicTrainingEffect,
+                anaerobic: run.anaerobicTrainingEffect, format: format
+            )
         )
     }
 
