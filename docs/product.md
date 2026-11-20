@@ -29,7 +29,7 @@ Non-goals: medical diagnosis, App Store publication (for now), sharing data betw
 
 ## Core analytics
 
-- Effective sets per muscle group per week (RPE ≥ 7; primary muscle 1, secondary 0.5).
+- Effective sets per muscle group per week (RPE ≥ 6, or no RPE; primary muscle 1, secondary 0.5).
 - Tonnage, estimated 1RM (Epley), relative intensity.
 - Session load (sRPE), run load (TRIMP or Garmin load), this week's load against the usual week (not the
   acute:chronic ratio: `weekly-load-change` in `docs/evidence.md`).

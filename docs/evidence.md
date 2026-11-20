@@ -92,6 +92,13 @@ configurable 10–20 weekly fractional sets range (heuristic within the evidence
 Refs: Pelland et al. 2026, Sports Med 56(2):481–505 (meta-regressions, 67 studies); Remmert et al. 2025 (SportRxiv
 preprint). Reviewed 2026-11-20 (`docs/evidence-review-2026-11.md`).
 
+### `effective-set-threshold` — heuristic
+A working set counts toward weekly volume from RPE 6 (≈ 4 RIR), or when no RPE is logged. Hypertrophy improves
+gradually as sets end closer to failure, with no cliff at a given RIR, and strength gains are similar across a wide
+RIR range; RIR estimates are also about 1 rep off. So only clearly easy sets are left out; the exact cut-off is a
+default. Refs: Robinson et al. 2024, Sports Med 54(9) (meta-regressions); Pelland et al. 2026, Sports Med 56(2):481;
+Halperin et al. 2022 (RIR accuracy). Reviewed 2026-11-20.
+
 ### `deload-design` — limited
 Expert Delphi consensus defines a deload as a period of reduced training stress to mitigate fatigue and
 enhance preparedness; typically reduced volume and/or intensity of effort, not complete rest.
