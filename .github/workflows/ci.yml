@@ -10,6 +10,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  repository:
+    name: Repository rules and translations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check repository rules
+        run: python3 scripts/check-repo.py
+      - name: Check translations
+        run: python3 scripts/check-localization.py
+
   core-linux:
     name: Core tests (Linux)
     runs-on: ubuntu-latest
@@ -24,15 +34,18 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # new lint warnings are found against the PR base
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.4.app || sudo xcode-select -s /Applications/Xcode.app
       - name: Install tools
         run: brew install xcodegen swiftlint
-      - name: Check translations
-        run: python3 scripts/check-localization.py
       - name: Lint
-        # Warnings do not fail the build yet; switch to --strict once the codebase settles (phase 1).
-        run: swiftlint
+        shell: bash  # pipefail: a SwiftLint error still fails the step
+        run: swiftlint --reporter github-actions-logging | tee swiftlint.log
+      - name: No new lint warnings on changed lines
+        if: github.event_name == 'pull_request'
+        run: python3 scripts/new-lint-warnings.py --base "origin/${{ github.base_ref }}" swiftlint.log
       - name: Test OverreachCore
         run: swift test --package-path Packages/OverreachCore
       - name: Test OverreachKit

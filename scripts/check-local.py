@@ -54,7 +54,8 @@ def run_check(name, command, logs, *, cwd=ROOT, env=None):
             status = 127
     lines = log.read_text(encoding="utf-8", errors="replace").splitlines()
     if status == 0:
-        summary = next((line for line in reversed(lines) if "tests passed" in line or "strings translated" in line), "")
+        markers = ("tests passed", "strings translated", "rules hold", "new lint warnings")
+        summary = next((line for line in reversed(lines) if any(marker in line for marker in markers)), "")
         if "Test run with" in summary:
             summary = summary[summary.index("Test run with"):]
         if name == "swiftlint":
@@ -69,7 +70,7 @@ def run_check(name, command, logs, *, cwd=ROOT, env=None):
     return status if status >= 0 else 128 - status
 
 
-def lint(paths, logs, image):
+def lint(paths, logs, image, base):
     with tempfile.TemporaryDirectory(prefix="lint-", dir=logs) as directory:
         staging = Path(directory)
         configuration = [LINT_CONFIG] if (ROOT / LINT_CONFIG).is_file() else []
@@ -80,9 +81,13 @@ def lint(paths, logs, image):
             destination.write_text((ROOT / path).read_text(encoding="utf-8-sig"), encoding="utf-8", newline="\n")
         options = ["--quiet", "--no-cache", "--reporter", "github-actions-logging"]
         if shutil.which("swiftlint"):
-            return run_check("swiftlint", ["swiftlint", *options], logs, cwd=staging)
-        command = ["docker", "run", "--rm", "-v", f"{staging}:/src:ro", "-w", "/src", image, "swiftlint"]
-        return run_check("swiftlint", [*command, *options], logs)
+            status = run_check("swiftlint", ["swiftlint", *options], logs, cwd=staging)
+        else:
+            command = ["docker", "run", "--rm", "-v", f"{staging}:/src:ro", "-w", "/src", image, "swiftlint"]
+            status = run_check("swiftlint", [*command, *options], logs)
+    # Lines this branch changed must not add warnings; older warnings are only counted.
+    script = [sys.executable, "scripts/new-lint-warnings.py", "--base", base, str(logs / "swiftlint.log")]
+    return status or run_check("new-lint-warnings", script, logs)
 
 
 def core_tests(logs):
@@ -100,11 +105,19 @@ def core_tests(logs):
     return run_check("core", command, logs, env=env)
 
 
+def configure_merge_drivers():
+    """Repository-local git settings that .gitattributes refers to; shared by every worktree."""
+    driver = f'"{Path(sys.executable).as_posix()}" scripts/merge-xcstrings.py %O %A %B'
+    subprocess.run(["git", "config", "merge.xcstrings.name", "String Catalog merge per key"], cwd=ROOT, check=True)
+    subprocess.run(["git", "config", "merge.xcstrings.driver", driver], cwd=ROOT, check=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base", help="Base ref to compare against (origin/main, or HEAD if unavailable)")
     parser.add_argument("--lint-image", default=LINT_IMAGE, help="Docker image to use when SwiftLint is unavailable locally")
     args = parser.parse_args()
+    configure_merge_drivers()
 
     base = args.base
     if base is None:
@@ -123,19 +136,13 @@ def main():
     } for path in paths)
     apple_check = any(path.startswith(("App/", "Packages/OverreachKit/")) for path in paths)
 
-    if not (lint_paths or translation_check or core_check):
-        print(f"No applicable local checks ({len(paths)} changed paths, base {base}).")
-        if apple_check:
-            print("Apple package tests and the iOS simulator build run in CI.")
-        return 0
-
     logs = Path(tempfile.mkdtemp(prefix="overreach-check-"))
     print(f"Base: {base} | {len(paths)} changed paths | Logs: {logs}", flush=True)
-    statuses = []
+    statuses = [run_check("repository", [sys.executable, "scripts/check-repo.py"], logs)]
     if translation_check:
         statuses.append(run_check("localization", [sys.executable, "scripts/check-localization.py"], logs))
     if lint_paths:
-        statuses.append(lint(lint_paths, logs, args.lint_image))
+        statuses.append(lint(lint_paths, logs, args.lint_image, base))
     if core_check:
         statuses.append(core_tests(logs))
     if apple_check:

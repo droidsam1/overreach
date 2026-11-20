@@ -13,7 +13,7 @@ The dated-strength implementation is tracked in [#99](https://github.com/droidsa
 ## Shipped baseline
 
 - Today has an explainable readiness card, a contextual check-in and a seven-day training and recovery timeline. `MetricsSource` and `WorkoutRepository` supply the timeline, with `RunDeduplication` and `StrengthActivityMatching` for mirrored workouts. [Timeline PR](https://github.com/droidsam1/overreach/pull/75) · [Explanation PR](https://github.com/droidsam1/overreach/pull/78)
-- Plan stores hybrid running goals, dated runs, races and rest days. A planned run can link explicitly to an imported recording. Hoxe uses recovery, recent runs and the calendar for easy-run advice. Strength currently uses an undated rotation and an optional amber example. [Strength PR](https://github.com/droidsam1/overreach/pull/79) · [Running goal PR](https://github.com/droidsam1/overreach/pull/89) · [Calendar PR](https://github.com/droidsam1/overreach/pull/95)
+- Plan stores hybrid running goals, dated runs, races and rest days. A planned run can link explicitly to an imported recording. Today uses recovery, recent runs and the calendar for easy-run advice. Strength currently uses an undated rotation and an optional amber example. [Strength PR](https://github.com/droidsam1/overreach/pull/79) · [Running goal PR](https://github.com/droidsam1/overreach/pull/89) · [Calendar PR](https://github.com/droidsam1/overreach/pull/95)
 
 ## What Today should show
 

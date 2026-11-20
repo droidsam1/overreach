@@ -9,7 +9,7 @@ public struct ReadinessLine: Hashable, Sendable {
     public let text: String
     public let evidence: String
     public let source: URL?
-    /// "Learn more" for this reason (ADR-0027); often empty.
+    /// "Learn more" for this reason (ADR-0030); often empty.
     public let readings: [Reading]
 }
 

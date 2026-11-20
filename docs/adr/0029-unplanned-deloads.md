@@ -1,4 +1,4 @@
-# 0029. Detect unplanned deloads from completed training
+# 0029 — Detect unplanned deloads from completed training
 
 Plan looks back over the last year for at least seven complete local days of inactivity or substantially
 reduced training. Strength and running are assessed independently. An uninterrupted gap is one period.

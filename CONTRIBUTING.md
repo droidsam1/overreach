@@ -4,7 +4,7 @@ Thanks for your interest! Overreach is a small project; these rules keep it main
 
 ## Before you start
 
-- Read [`CLAUDE.md`](CLAUDE.md) — it describes the module layout and the dependency rules.
+- Read [`AGENTS.md`](AGENTS.md) for the module layout and dependency rules, and [`CODING_STANDARDS.md`](CODING_STANDARDS.md) for the coding rules.
 - For anything bigger than a bug fix, open an issue first so we can agree on the approach.
 - Architectural changes need an ADR in `docs/adr/` (copy the template in `0000-template.md`).
 
@@ -13,12 +13,8 @@ Thanks for your interest! Overreach is a small project; these rules keep it main
 1. Fork and create a branch: `feat/short-description`, `fix/short-description` or `docs/...`.
 2. Keep pull requests focused: one feature or fix per PR.
 3. Write tests for logic in `OverreachCore`. UI changes should include a SwiftUI preview.
-4. Run locally before pushing:
-   ```bash
-   swift test --package-path Packages/OverreachCore   # or ./scripts/test-core.sh (Docker)
-   swiftlint
-   swift format lint --recursive Packages App/Sources
-   ```
+4. Run the compact local check before pushing: `python3 scripts/check-local.py` (Windows: `py -3 ...`). It also
+   registers the String Catalog merge driver for your clone.
 5. Use [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `refactor:`,
    `test:`, `chore:`.
 6. Update `CHANGELOG.md` under *Unreleased* when the change is user-visible.

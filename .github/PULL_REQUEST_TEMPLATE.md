@@ -8,7 +8,7 @@
 
 ## Checklist
 
-- [ ] Follows the dependency rules in `CLAUDE.md` (no feature → feature or feature → data-module imports)
+- [ ] Follows the dependency rules in `AGENTS.md` and the rules in `CODING_STANDARDS.md` (no feature → feature or feature → data-module imports)
 - [ ] Tests added/updated for logic in `OverreachCore`
 - [ ] SwiftUI previews for new or changed views
 - [ ] Missing data handled gracefully (all metrics optional)
