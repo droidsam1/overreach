@@ -47,6 +47,22 @@ private actor FakeGarminAccount: GarminAccount {
     }
 }
 
+private actor ReminderSpy: LocalReminderScheduler {
+    var scheduled: [String: Date] = [:]
+    var titles: [String] = []
+    var cancelled: [String] = []
+
+    func schedule(id: String, at date: Date, title: String, body: String) {
+        scheduled[id] = date
+        titles.append(title)
+    }
+
+    func cancel(id: String) {
+        cancelled.append(id)
+        scheduled[id] = nil
+    }
+}
+
 private let now = Date(timeIntervalSince1970: 1_795_000_000)
 
 private let calendar: Calendar = {
@@ -195,5 +211,54 @@ struct GarminSetupModelTests {
         #expect(setup.canGoBack)
         setup.back()
         #expect(setup.step == .intro)
+    }
+
+    @Test func connectingSchedulesAReminderAWeekBeforeTheKeyExpires() async throws {
+        let reminders = ReminderSpy()
+        let setup = GarminSetupModel(
+            account: FakeGarminAccount(now: now), reminders: reminders, clock: { now }, calendar: calendar
+        )
+        setup.start()
+        setup.next()
+        setup.next()
+        setup.lifetime = .days90
+
+        await setup.paste("pasted-key-0123456789")
+
+        let date = try #require(await reminders.scheduled["garmin-key-expiry"])
+        let expiry = calendar.startOfDay(for: now.addingTimeInterval(90 * 86_400))
+        let expected = try #require(calendar.date(
+            bySettingHour: 10, minute: 0, second: 0, of: calendar.date(byAdding: .day, value: -7, to: expiry) ?? expiry
+        ))
+        #expect(date == expected)
+        #expect(await reminders.titles == ["Your Garmin key expires in a week"])
+    }
+
+    @Test func aKeyAlreadyCloseToExpiryReliesOnTheSettingsWarning() async {
+        let reminders = ReminderSpy()
+        let soon = GarminConnectionInfo(connectedAt: now, keyExpiresAt: now.addingTimeInterval(3 * 86_400))
+        let setup = GarminSetupModel(
+            account: FakeGarminAccount(info: soon, now: now), reminders: reminders, clock: { now }, calendar: calendar
+        )
+
+        await setup.load()
+
+        #expect(await reminders.scheduled.isEmpty)
+        #expect(setup.expiryWarning != nil)
+    }
+
+    @Test func disconnectingCancelsTheReminder() async {
+        let reminders = ReminderSpy()
+        let info = GarminConnectionInfo(connectedAt: now, keyExpiresAt: now.addingTimeInterval(200 * 86_400))
+        let setup = GarminSetupModel(
+            account: FakeGarminAccount(info: info, now: now), reminders: reminders, clock: { now }, calendar: calendar
+        )
+        await setup.load()
+        #expect(await reminders.scheduled["garmin-key-expiry"] != nil)
+
+        await setup.disconnect()
+
+        #expect(await reminders.cancelled == ["garmin-key-expiry"])
+        #expect(await reminders.scheduled.isEmpty)
     }
 }

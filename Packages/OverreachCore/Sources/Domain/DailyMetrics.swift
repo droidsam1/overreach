@@ -1,5 +1,11 @@
 import Foundation
 
+/// Which heart rate variability statistic a source reports. They are not interchangeable (ADR-0024): Garmin reports
+/// nightly RMSSD, Apple Watch reports SDNN from short readings. A baseline only ever compares nights of one kind.
+public enum HRVMetric: String, Codable, Sendable, CaseIterable {
+    case rmssd, sdnn
+}
+
 /// Everything known about one day of recovery. Every field is optional: what is available depends on the
 /// watch model and on which sources the user connected.
 public struct DailyMetrics: Hashable, Codable, Sendable {
@@ -7,6 +13,8 @@ public struct DailyMetrics: Hashable, Codable, Sendable {
 
     // MARK: Recovery
     public var hrvNightlyAverageMs: Double?
+    /// The statistic behind the HRV values of this day. `nil` for data stored before it was recorded.
+    public var hrvMetric: HRVMetric?
     public var hrvNightlyHighMs: Double?
     public var hrvBaselineLowMs: Double?
     public var hrvBaselineHighMs: Double?
@@ -49,6 +57,8 @@ public struct DailyMetrics: Hashable, Codable, Sendable {
     public func merging(_ other: DailyMetrics) -> DailyMetrics {
         var merged = self
         merged.hrvNightlyAverageMs = hrvNightlyAverageMs ?? other.hrvNightlyAverageMs
+        // The statistic travels with the value it describes, never mixed across sources.
+        merged.hrvMetric = hrvNightlyAverageMs != nil ? hrvMetric : other.hrvMetric
         merged.hrvNightlyHighMs = hrvNightlyHighMs ?? other.hrvNightlyHighMs
         merged.hrvBaselineLowMs = hrvBaselineLowMs ?? other.hrvBaselineLowMs
         merged.hrvBaselineHighMs = hrvBaselineHighMs ?? other.hrvBaselineHighMs

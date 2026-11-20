@@ -151,6 +151,7 @@ struct GarminMappingTests {
         #expect(metrics.map(\.day) == metrics.map(\.day).sorted())
         let night = try #require(metrics.first { $0.day == day(2025, 12, 26) })
         #expect(night.hrvNightlyAverageMs == 36)
+        #expect(night.hrvMetric == .rmssd)
         #expect(night.hrvBaselineLowMs == 37)
         #expect(night.hrvBaselineHighMs == 44)
         #expect(night.hrvStatus == "UNBALANCED")

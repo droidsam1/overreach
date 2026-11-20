@@ -21,6 +21,7 @@ public enum GarminMapping {
         for night in hrv {
             update(night.day) {
                 $0.hrvNightlyAverageMs = night.lastNightAverage
+                $0.hrvMetric = night.lastNightAverage == nil ? nil : .rmssd
                 $0.hrvNightlyHighMs = night.lastNight5MinuteHigh
                 $0.hrvBaselineLowMs = night.baselineBalancedLow
                 $0.hrvBaselineHighMs = night.baselineBalancedUpper

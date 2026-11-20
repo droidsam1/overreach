@@ -12070,6 +12070,40 @@
           }
         }
       }
+    },
+    "Your Garmin key expires in a week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu clave de Garmin caduca en una semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa chave de Garmin caduca nunha semana"
+          }
+        }
+      }
+    },
+    "Create a new one in Settings → Garmin to keep importing. It takes the same three steps.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea una nueva en Ajustes → Garmin para seguir importando. Son los mismos tres pasos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea unha nova en Axustes → Garmin para seguir importando. Son os mesmos tres pasos."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

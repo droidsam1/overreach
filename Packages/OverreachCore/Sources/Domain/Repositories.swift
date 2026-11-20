@@ -91,6 +91,13 @@ public protocol OnboardingStatusStore: Sendable {
     func markReleaseNotesSeen(version: String) async
 }
 
+/// One-off local notifications identified by a stable id: scheduling again with the same id replaces it.
+public protocol LocalReminderScheduler: Sendable {
+    /// Asks for permission the first time; does nothing if it is refused or `date` has passed.
+    func schedule(id: String, at date: Date, title: String, body: String) async
+    func cancel(id: String) async
+}
+
 /// Alerts the user when a rest ends while the app is in the background. There is at most one pending alert.
 public protocol RestAlertScheduler: Sendable {
     func scheduleRestEnd(at date: Date, title: String, body: String) async
