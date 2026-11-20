@@ -72,6 +72,8 @@ existing modules to do it.
 - Swift 6, strict concurrency. Domain types are `Sendable` value types; repositories are actors or
   `Sendable` protocols with `async` APIs.
 - UI: SwiftUI + `@Observable` models (`@MainActor`), no third-party architecture frameworks (ADR-0003).
+  For interface changes, use the [iPhone UX guide](docs/design/iphone-ux.md) for action hierarchy,
+  progressive disclosure and before/after usability checks.
 - **Views only render (ADR-0014).** `XModel` and its screen state live in `XPresentation` (OverreachCore);
   `XView` in `FeatureX` renders state and calls intents. Views keep layout, styling, accessibility, static
   copy and purely visual `@State` (sheet open, focus) — never rule-based `if`s, computations, `.filter`/`.sorted`
