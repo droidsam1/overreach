@@ -1,0 +1,42 @@
+# 0022 — Garmin data through the official Personal API
+
+- **Status:** Proposed (supersedes 0005 once accepted)
+- **Date:** 2026-11-20
+
+## Context
+
+ADR-0005 chose the unofficial Garmin Connect API to get nightly HRV and other Garmin-only metrics, because the
+official API was business-only. Since then:
+
+- In 2026 the unofficial API broke roughly every one to two months: the auth flow changed in March, `garth` was
+  deprecated, Cloudflare started blocking clients by fingerprint, and logins hit 401, 429 and 427 errors. Clients
+  survive only by impersonating Garmin's app and its TLS stack.
+- On 2026-10-21 Garmin opened a free, self-service **Personal API key**: read-only REST pull, the key exchanged for
+  a 24 h OAuth2 token, with health summaries (including nightly HRV), activity summaries and FIT files, and women's
+  health data. Training readiness, training status, load and recovery time are not included.
+
+The analysis is in `docs/design/garmin-integration.md`.
+
+## Decision
+
+1. `GarminSource` uses the official Personal API. The user creates a key in Garmin Connect and pastes it into
+   Settings; it is stored in the Keychain, and requests go straight from the iPhone to Garmin.
+2. We do not implement the unofficial API, not even as a fallback. Proprietary Garmin scores (training readiness
+   and status, load, recovery time) are not imported. Overreach computes its own explainable readiness from the raw
+   signals (ADR-0020).
+3. JSON decoding and mapping live in a new pure module, `GarminImport` (OverreachCore, depends on Domain), tested on
+   Linux against recorded fixtures. Networking and the Keychain stay in `GarminSource`.
+4. Apple Health remains the base source. Garmin values win where both exist, and the app works fully without
+   Garmin.
+5. Before implementation, the official Swagger and Supplemental Terms are checked with a real key (step 0 of the
+   design). The status becomes Accepted only after that check.
+
+## Consequences
+
+- Stable, documented, terms-compliant access for self-built and sideloaded copies, with no password handling.
+- We lose Garmin's proprietary scores and HRV status and baseline. Readiness does not need them.
+- Keys expire (30 days to 1 year): the app has to remind the user and handle reconnection.
+- Public distribution (phase 4) may not fit "for your own use" under the Personal terms. Ask Garmin, or move to the
+  Starter tier, which needs a backend and a new ADR.
+- If Garmin closes the Personal tier, the app falls back to Health and the check-in. A Connect IQ HRV app remains
+  the plan B.

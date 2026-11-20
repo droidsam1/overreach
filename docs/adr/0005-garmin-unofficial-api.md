@@ -1,6 +1,6 @@
 # 0005 — Garmin Connect via unofficial API, optional and isolated
 
-- **Status:** Accepted
+- **Status:** Accepted (to be superseded by 0022, proposed)
 - **Date:** 2026-11-16
 
 ## Context
