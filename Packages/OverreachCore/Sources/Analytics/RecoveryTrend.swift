@@ -5,7 +5,7 @@ import Foundation
 /// signals, not single bad days: the daily readiness light already handles a single day.
 public struct RecoveryTrend: Hashable, Sendable {
     /// Days whose 7-day HRV trend was below the personal range (one HRV statistic, ADR-0024).
-    public var hrvLowDays = 0
+    public var hrvTrendLowDays = 0
     /// Days with resting HR at least the configured rise above its 60-day mean.
     public var restingHeartRateHighDays = 0
     /// Nights under the short-sleep threshold.
@@ -16,10 +16,10 @@ public struct RecoveryTrend: Hashable, Sendable {
     public var sickRecently = false
 
     public init(
-        hrvLowDays: Int = 0, restingHeartRateHighDays: Int = 0, shortSleepNights: Int = 0,
+        hrvTrendLowDays: Int = 0, restingHeartRateHighDays: Int = 0, shortSleepNights: Int = 0,
         poorWellbeingCheckIns: Int = 0, sickRecently: Bool = false
     ) {
-        self.hrvLowDays = hrvLowDays
+        self.hrvTrendLowDays = hrvTrendLowDays
         self.restingHeartRateHighDays = restingHeartRateHighDays
         self.shortSleepNights = shortSleepNights
         self.poorWellbeingCheckIns = poorWellbeingCheckIns
@@ -52,7 +52,7 @@ public struct RecoveryTrend: Hashable, Sendable {
             let explainedByCycle = reasons.contains(.hrvMayReflectCycle)
             for reason in reasons {
                 switch reason {
-                case .hrvBelowBaseline: trend.hrvLowDays += explainedByCycle ? 0 : 1
+                case .hrvBelowBaseline: trend.hrvTrendLowDays += explainedByCycle ? 0 : 1
                 case .restingHeartRateElevated: trend.restingHeartRateHighDays += 1
                 case .shortSleep: trend.shortSleepNights += 1
                 default: break

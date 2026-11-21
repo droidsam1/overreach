@@ -226,7 +226,8 @@ public final class PlanModel {
             catalog = try await exercises.allExercises()
             exerciseNames = Exercise.displayNames(catalog)
             let now = clock()
-            let start = CalendarDay(now, calendar: calendar).adding(days: -DeloadDetection.historyDays, calendar: calendar)
+            let day = CalendarDay(now, calendar: calendar)
+            let start = day.adding(days: -TrainingRecordLoader.historyDays, calendar: calendar)
                 .startDate(in: calendar)
             let sessions = try await workouts.sessions(from: start, to: now)
             errorMessage = nil
@@ -358,7 +359,7 @@ public final class PlanModel {
         let profile = profile
         let calendar = calendar
         let routines = (try? await routines?.allRoutines()) ?? []
-        let runReading = await SourceReader(sources: runSources).runs(from: start, to: now)
+        let runReading = await SourceReader(sources: runSources).readRuns(from: start, to: now)
         let runs = runReading.activities
         let runReadFailed = runReading.failed
         let recordings = (try? await recordedStrength?.strengthActivities(from: start, to: now)) ?? []
@@ -450,7 +451,7 @@ extension PlanModel {
             RunningCompletionChoice(completion: $0, title: L10n.text("Linked run"))
         }
         guard selectedDay <= CalendarDay(now, calendar: calendar) else { return [] }
-        let activities = await SourceReader(sources: runSources).runs(from: start, to: end).activities
+        let activities = await SourceReader(sources: runSources).readRuns(from: start, to: end).activities
         let otherLinks = (profile.goal?.scheduledRuns ?? []).filter { $0.id != draft.id }.compactMap(\.completion)
         let style = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).hour().minute()
         let choices = activities.filter { activity in

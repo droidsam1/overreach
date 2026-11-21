@@ -129,3 +129,12 @@ public struct StrengthSession: Identifiable, Hashable, Codable, Sendable {
         source == .app && (durationSeconds ?? 0) > 0
     }
 }
+
+extension StrengthSession {
+    public func isCompleted(through now: Date) -> Bool {
+        guard startedAt <= now else { return false }
+        if let endedAt { return endedAt <= now }
+        // Older imports can have sets but no end time.
+        return source == .strongImport && entries.contains { !$0.sets.isEmpty }
+    }
+}

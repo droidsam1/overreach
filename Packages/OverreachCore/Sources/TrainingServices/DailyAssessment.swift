@@ -29,6 +29,31 @@ public enum ReadinessAssessment {
     }
 }
 
+/// The decisions Today presents for a given day.
+public struct DailyAssessment: Sendable {
+    public let readiness: Readiness
+    public let deload: DeloadAssessment?
+
+    public init(
+        record: TrainingRecord, profile: AthleteProfile?, checkIn: CheckIn?, now: Date,
+        settings: ReadinessRules.Settings = .init(), calendar: Calendar = .current
+    ) {
+        let today = CalendarDay(now, calendar: calendar)
+        readiness = ReadinessAssessment.assess(
+            today: today, history: record.metrics, checkIn: checkIn, profile: profile, cycle: record.cycle,
+            settings: settings, calendar: calendar
+        )
+        if let profile, !readiness.reasons.contains(where: \.advisesSkippingTraining) {
+            deload = DeloadAssessment.assess(
+                today: today, now: now, profile: profile, record: record,
+                readinessSettings: settings, calendar: calendar
+            )
+        } else {
+            deload = nil
+        }
+    }
+}
+
 /// Everything the deload decision reads, gathered once.
 public struct TrainingRecord: Sendable {
     /// Completed sessions of the last year.
@@ -87,9 +112,11 @@ public enum DeloadAssessment: Hashable, Sendable {
         }
         if let postponed = profile.deloadPostponedUntil, today <= postponed { return nil }
 
+        let start = today.adding(days: -TrainingRecordLoader.historyDays, calendar: calendar).startDate(in: calendar)
+        let sessions = record.sessions.filter { $0.startedAt >= start }
         let byID = Dictionary(record.exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let lifts = LiftStatus.assessAll(
-            index: ExposureIndex(sessions: record.sessions), exercises: byID, stored: record.settings,
+            index: ExposureIndex(sessions: sessions), exercises: byID, stored: record.settings,
             routines: record.routines, now: now, lookbackDays: settings.lookbackDays
         )
         let recovery = RecoveryTrend.assess(
@@ -97,18 +124,21 @@ public enum DeloadAssessment: Hashable, Sendable {
             cycle: record.cycle, calendar: calendar
         )
         let detected = DeloadDetection.periods(
-            sessions: record.sessions, runs: record.runs, profile: profile, routines: record.routines,
+            sessions: sessions, runs: record.runs, profile: profile, routines: record.routines,
             exercises: byID, settings: record.settings, runReadFailed: record.runReadFailed,
             recordings: record.recordings, today: today, calendar: calendar
         )
         let weeklyLoad = weeklyLoad(record: record, profile: profile, today: today, calendar: calendar)
+        let currentExerciseIDs = LiftStatus.currentExerciseIDs(
+            sessions: sessions, routines: record.routines, profile: profile, now: now, calendar: calendar
+        )
         func lastRecovery(_ periods: [DetectedDeload]) -> LastRecovery? {
             RecoveryHistory.lastRecovery(deloads: profile.deloads, detected: periods, before: today, calendar: calendar)
         }
         func propose(_ periods: [DetectedDeload]) -> DeloadProposal? {
             DeloadAdvisor.proposal(
                 lifts: lifts, lastRecovery: lastRecovery(periods), weeklyLoad: weeklyLoad, recovery: recovery,
-                now: now, settings: settings, calendar: calendar
+                now: now, settings: settings, calendar: calendar, currentExerciseIDs: currentExerciseIDs
             )
         }
         guard let proposal = propose(detected) else { return nil }

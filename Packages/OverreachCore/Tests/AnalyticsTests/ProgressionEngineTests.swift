@@ -240,7 +240,7 @@ struct StallDetectionTests {
 struct DeloadAdvisorTests {
     private let main = ProgressionSettings(scheme: .linearLoad(sets: 3, reps: 5, targetRPE: 8), incrementKg: 2.5, isMainLift: true)
 
-    @Test func proposesWhenLiftsStallAndADeloadIsDue() throws {
+    @Test func proposesWhenLiftsStallAndFatigueSupportsADueDeload() throws {
         let lifts = [
             LiftStatus.assess(exerciseID: UUID(), history: stalledSquat(), settings: main, now: date(day: 17)),
             LiftStatus.assess(
@@ -248,7 +248,8 @@ struct DeloadAdvisorTests {
             ),
         ]
         let proposal = try #require(DeloadAdvisor.proposal(
-            lifts: lifts, lastRecovery: deloadEnded(date(day: -42)), now: date(day: 17)
+            lifts: lifts, lastRecovery: deloadEnded(date(day: -42)),
+            recovery: RecoveryTrend(hrvTrendLowDays: 5), now: date(day: 17)
         ))
         #expect(proposal.signals.contains(.liftsStalled(count: 2, mainLifts: true)))
         #expect(proposal.signals.contains(.weeksSinceDeload(8)))

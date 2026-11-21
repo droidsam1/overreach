@@ -30,6 +30,7 @@ Shared from **Plan → Ask AI**. It is raw data with no instructions. Its top-le
 | `exerciseTrends` | Per exercise in the period: `exposures`, `status` (`progressing`, `holding`, `stalled`, `notEnoughData`, judged over the last year with a working exposure in the last 28 days), `lastWorkingWeightKg`, and `estimatedOneRepMaxKg` per session (`date`, `kg`) |
 | `checkIns` | `date`, `isSick`, `energy` (1–5), `soreness` (1–5), `note` |
 | `dailyMetrics` | Per day and `source`: HRV, its statistic (`hrvMetric`: Garmin `rmssd` or Apple Watch `sdnn`, never comparable) and its baseline, resting heart rate, sleep (total, deep, REM, score), body battery, stress, steps, VO2max, training readiness, acute load, recovery time |
+| `today` | Optional local readiness and deload decisions for `period.to`. See the decision fields below. |
 | `runs` | `date`, `startedAt`, `source`, `durationSeconds`, `distanceMeters`, `paceSecondsPerKm`, heart rate, elevation, training load and effect |
 
 ### Values
@@ -48,8 +49,15 @@ Shared from **Plan → Ask AI**. It is raw data with no instructions. Its top-le
   - `linearLoad`: `sets` × `reps`. Load is added after a complete session.
   - `repCycle`: rotates through `repBlocks`.
   - `rpeBased`: `sets` × `reps` at `targetRPE`, with the load taken from the estimated 1RM.
-- **Status:** these are the app's deterministic rules (`docs/design/progression-engine.md`), not a judgement on
-  the athlete.
+- **Exercise trend status:** these are the app's [progression rules](design/progression-engine.md). An exercise
+  outside the current routine or rotation can keep its history and omit a current stall by reporting `notEnoughData`.
+- **Decision fields:** `today.readiness` is `green`, `amber`, `red` or `unknown`. `today.reasons` lists stable English rule
+  identifiers such as `hrvBelowBaseline` and `shortSleep`. `today.deload.state` is `none`, `inProgress`,
+  `confirmBreak` or `proposed`. A proposal includes `today.deload.signals`, for example `liftsStalled` and
+  `rpeCreep`. `hrvTrendBelowBaseline` counts sustained changes to the rolling HRV average used for deload advice.
+  `hrvBelowBaseline` refers to the comparable readings used by today's readiness assessment.
+  The export omits private check-in answers and their corresponding reason identifiers. The readiness level and
+  deload state still reflect the full assessment shown in Today.
 
 The pack also lists `imports`: the formats the app can read back, with this reference.
 

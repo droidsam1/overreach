@@ -49,9 +49,15 @@ public struct ExerciseExposure: Hashable, Sendable {
 
     /// Best RPE-adjusted estimated 1RM among the sets (sets above 12 reps are ignored).
     public var bestEstimatedOneRepMax: Double? {
-        sets.compactMap { set -> Double? in
-            guard let weight = set.weightKg, let reps = set.reps else { return nil }
-            return LoadPrescription.estimatedOneRepMax(weightKg: weight, reps: reps, rpe: set.rpe)
-        }.max()
+        bestEstimatedSet?.kg
+    }
+
+    var bestEstimatedSet: (kg: Double, set: WorkoutSet)? {
+        sets.compactMap { set -> (kg: Double, set: WorkoutSet)? in
+            guard let weight = set.weightKg, let reps = set.reps,
+                  let estimate = LoadPrescription.estimatedOneRepMax(weightKg: weight, reps: reps, rpe: set.rpe)
+            else { return nil }
+            return (estimate, set)
+        }.max { $0.kg < $1.kg }
     }
 }

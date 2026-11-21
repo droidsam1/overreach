@@ -33,8 +33,9 @@ public struct PlanAnalysis: Hashable, Sendable {
         let today = CalendarDay(now, calendar: calendar)
         let inferred = BlockAdvisor.inferBlocks(index: index, calendar: calendar)
         let current = FocusBalance.activeDeclaredBlock(in: profile, now: now, calendar: calendar) ?? inferred.last
+        let completed = sessions.filter { $0.isCompleted(through: now) }
         let deloads = DeloadDetection.periods(
-            sessions: sessions, runs: runs, profile: profile, routines: routines, exercises: exercises,
+            sessions: completed, runs: runs, profile: profile, routines: routines, exercises: exercises,
             settings: settings, runReadFailed: runReadFailed, recordings: recordings, today: today, calendar: calendar
         )
         let lastRecovery = RecoveryHistory.lastRecovery(
@@ -42,9 +43,12 @@ public struct PlanAnalysis: Hashable, Sendable {
         )
         let deloadAge = lastRecovery.map { PlanReviewer.days(from: $0.lastDay, to: today, calendar: calendar) }
 
+        let currentIDs = LiftStatus.currentExerciseIDs(
+            sessions: sessions, routines: routines, profile: profile, now: now, calendar: calendar
+        )
         let stalled = LiftStatus.assessAll(
             index: index, exercises: exercises, stored: settings, routines: routines, now: now
-        ).filter(\.isStalled).count
+        ).filter { $0.isStalled && (currentIDs?.contains($0.exerciseID) ?? true) }.count
 
         return PlanAnalysis(
             currentBlock: current,

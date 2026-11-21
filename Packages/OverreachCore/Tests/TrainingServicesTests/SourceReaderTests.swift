@@ -53,7 +53,7 @@ struct SourceReaderTests {
             FakeSource(kind: .appleHealth, metrics: [metrics(restingHeartRate: 52, steps: 9_000, source: .appleHealth)])
         ])
 
-        let reading = await reader.dailyMetrics(in: day...day)
+        let reading = await reader.readDailyMetrics(in: day...day)
 
         #expect(reading.value.count == 1)
         #expect(reading.value.first?.restingHeartRate == 48)
@@ -67,7 +67,7 @@ struct SourceReaderTests {
         outside.day = CalendarDay(year: 2026, month: 11, day: 1)
         let reader = SourceReader(sources: [FakeSource(kind: .garmin, metrics: [outside])])
 
-        #expect(await reader.dailyMetrics(in: day...day).value.isEmpty)
+        #expect(await reader.readDailyMetrics(in: day...day).value.isEmpty)
     }
 
     @Test func unavailableSourcesAreSkippedAndFailuresKeepTheOtherSources() async {
@@ -77,7 +77,7 @@ struct SourceReaderTests {
             FakeSource(kind: .manual, available: false, fails: true)
         ])
 
-        let reading = await reader.runs(from: .distantPast, to: .distantFuture)
+        let reading = await reader.readRuns(from: .distantPast, to: .distantFuture)
 
         #expect(reading.activities.map(\.id) == ["h1"])
         #expect(reading.readSources == [.appleHealth])
@@ -91,7 +91,7 @@ struct SourceReaderTests {
             FakeSource(kind: .garmin, activities: [run("g1", source: .garmin)])
         ])
 
-        let reading = await reader.runs(from: .distantPast, to: .distantFuture)
+        let reading = await reader.readRuns(from: .distantPast, to: .distantFuture)
 
         #expect(reading.value.count == 1)
         #expect(reading.activities.first?.source == .garmin)
@@ -101,7 +101,7 @@ struct SourceReaderTests {
 
     @Test func noAvailableSourceMeansNothingWasRead() async {
         let reader = SourceReader(sources: [FakeSource(kind: .garmin, available: false)])
-        let reading = await reader.runs(from: .distantPast, to: .distantFuture)
+        let reading = await reader.readRuns(from: .distantPast, to: .distantFuture)
         #expect(!reading.didRead)
         #expect(!reading.failed)
     }

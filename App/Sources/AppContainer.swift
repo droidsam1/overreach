@@ -146,7 +146,7 @@ final class AppContainer {
         AskAIModel(
             workouts: workouts, exercises: exercises, progression: progression, profiles: profiles,
             routines: routines, checkIns: checkIns, sources: metricsSources, recordedStrength: recordedStrength,
-            appVersion: Self.appVersion
+            activity: activitySources, cycle: cycleSource, appVersion: Self.appVersion
         )
     }
 

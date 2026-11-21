@@ -8,6 +8,7 @@ Checks:
 - Shared agent skills in .agents/skills and .claude/skills are identical.
 - Relative links in agent guidance resolve.
 - No Python bytecode is tracked.
+- Presentation accesses shared training rules and sources through TrainingServices.
 
 Usage: scripts/check-repo.py
 """
@@ -101,8 +102,25 @@ def bytecode():
     return [f"Python bytecode is tracked: {path}" for path in tracked]
 
 
+def training_services_boundary():
+    presentation = ROOT / "Packages/OverreachCore/Sources/Presentation"
+    direct_call = re.compile(
+        r"\.(?:runs\s*\(\s*from:|dailyMetrics\s*\(\s*in:)"
+        r"|\b(?:DeloadDetection|DeloadAdvisor)\s*\."
+        r"|\b(?:StallDetection\s*\.\s*status|ReadinessRules\s*\.\s*readiness)\b"
+    )
+    problems = []
+    for path in sorted(presentation.rglob("*.swift")):
+        source = text(path)
+        for match in direct_call.finditer(source):
+            line = source.count("\n", 0, match.start()) + 1
+            problems.append(f"{path.relative_to(ROOT)}:{line}: use TrainingServices for this training question.")
+    return problems
+
+
 def main():
     problems = adrs() + backup_fixture() + release_notes() + skills() + links() + bytecode()
+    problems += training_services_boundary()
     print("\n".join(problems) or "Repository rules hold.")
     return 1 if problems else 0
 

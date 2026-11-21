@@ -65,14 +65,8 @@ public final class AskAIModel {
     public let requestOptions = StarterRequest.allCases.map { Option(value: $0, name: $0.displayName) }
 
     private var json: String?
-    private let workouts: any WorkoutRepository
-    private let exercises: any ExerciseRepository
-    private let progression: any ProgressionSettingsRepository
+    private let recordLoader: TrainingRecordLoader
     private let profiles: any ProfileRepository
-    private let routines: any RoutineRepository
-    private let checkIns: (any CheckInRepository)?
-    private let sources: [any MetricsSource]
-    private let recordedStrength: (any RecordedStrengthSource)?
     private let appVersion: String?
     private let clock: @Sendable () -> Date
     private let calendar: Calendar
@@ -87,19 +81,18 @@ public final class AskAIModel {
         checkIns: (any CheckInRepository)? = nil,
         sources: [any MetricsSource] = [],
         recordedStrength: (any RecordedStrengthSource)? = nil,
+        activity: [any ActivitySource] = [],
+        cycle: (any CycleSource)? = nil,
         appVersion: String? = nil,
         clock: @escaping @Sendable () -> Date = { Date() },
         calendar: Calendar = .current,
         directory: URL = FileManager.default.temporaryDirectory
     ) {
-        self.workouts = workouts
-        self.exercises = exercises
-        self.progression = progression
+        recordLoader = TrainingRecordLoader(
+            sources: sources, activity: activity, checkIns: checkIns, workouts: workouts, exercises: exercises,
+            recordedStrength: recordedStrength, routines: routines, progression: progression, cycle: cycle
+        )
         self.profiles = profiles
-        self.routines = routines
-        self.checkIns = checkIns
-        self.sources = sources
-        self.recordedStrength = recordedStrength
         self.appVersion = appVersion
         self.clock = clock
         self.calendar = calendar
@@ -127,18 +120,26 @@ public final class AskAIModel {
         let first = today.adding(days: 1 - period.weeks * 7, calendar: calendar)
         let start = first.startDate(in: calendar)
         do {
-            let all = try await workouts.sessions(from: start.addingTimeInterval(-365 * 86_400), to: now)
+            let profile = try? await profiles.profile()
+            let snapshot = await recordLoader.load(now: now, profile: profile, exportFrom: first, calendar: calendar)
+            guard !snapshot.localReadFailed else {
+                clearPreparedData()
+                return
+            }
+            let assessment = snapshot.assessment(profile: profile, now: now, calendar: calendar)
+            let record = snapshot.record
             let input = ContextInput(
-                sessions: all.filter { $0.startedAt >= start },
-                earlierSessions: all.filter { $0.startedAt < start },
-                exercises: try await exercises.allExercises(),
-                settings: try await progression.allProgressionSettings(),
-                routines: try await routines.allRoutines(),
-                profile: try? await profiles.profile(),
-                checkIns: (try? await checkIns?.checkIns(in: first...today)) ?? [],
-                dailyMetrics: await metrics(in: first...today),
-                runs: await runs(from: start, to: now),
-                strengthRecordings: await strengthRecordings(from: start, to: now),
+                sessions: snapshot.allSessions.filter { $0.startedAt >= start },
+                earlierSessions: snapshot.allSessions.filter { $0.startedAt < start },
+                exercises: record.exercises,
+                settings: record.settings,
+                routines: record.routines,
+                profile: profile,
+                checkIns: snapshot.allCheckIns.filter { $0.day >= first },
+                dailyMetrics: snapshot.metricsBySource.filter { $0.day >= first },
+                runs: record.runs.filter { $0.startedAt >= start },
+                strengthRecordings: record.recordings.filter { $0.startedAt >= start },
+                today: .init(assessment),
                 appVersion: appVersion
             )
             let pack = ContextPackBuilder.build(input, period: first...today, now: now, calendar: calendar)
@@ -153,29 +154,19 @@ public final class AskAIModel {
             )
             render()
         } catch {
-            json = nil
-            message = nil
-            fileURL = nil
-            summary = nil
-            errorMessage = L10n.text("Could not prepare your data. Try again.")
+            clearPreparedData()
         }
+    }
+
+    private func clearPreparedData() {
+        json = nil
+        message = nil
+        fileURL = nil
+        summary = nil
+        errorMessage = L10n.text("Could not prepare your data. Try again.")
     }
 
     private func render() {
         message = json.map { ContextMessage.text(json: $0, request: request?.text) }
-    }
-
-    /// Each source's records, unmerged: the context shows every source's values per day (`docs/ai-exchange.md`).
-    private func metrics(in range: ClosedRange<CalendarDay>) async -> [DailyMetrics] {
-        await SourceReader(sources: sources).dailyMetricsBySource(in: range).value
-    }
-
-    private func strengthRecordings(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
-        await recordedStrength?.strengthActivities(from: start, to: end) ?? []
-    }
-
-    /// Garmin and the copy Garmin Connect writes to Apple Health are the same run: shared once.
-    private func runs(from start: Date, to end: Date) async -> [RunActivity] {
-        await SourceReader(sources: sources).runs(from: start, to: end).activities
     }
 }

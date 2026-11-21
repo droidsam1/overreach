@@ -29,6 +29,7 @@ public struct ContextPack: Codable, Hashable, Sendable {
     public var checkIns: [CheckInInfo]
     public var dailyMetrics: [Metrics]
     public var runs: [Run]
+    public var today: Today?
     /// Formats the app can import back. Optional, added after v1 shipped.
     public var imports: [ImportFormat]?
 

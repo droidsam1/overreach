@@ -64,7 +64,7 @@ scripts/                  Local checks, merge drivers and test helpers
 5. `<X>Presentation` depends on `Domain`, `Analytics`, `TrainingServices` and `PresentationKit`
    (`AssistantPresentation` also on `AIExchange`); never on SwiftUI or another presentation module. It reads
    sources and asks shared training questions through `TrainingServices` (ADR-0035). `DesignSystem` takes display
-   values only.
+   values only. `AIExchange` uses `TrainingServices` for the shared daily assessment.
 6. `App` is the only place that knows concrete implementations. It builds `AppContainer` and injects
    protocols into features.
 

@@ -1,6 +1,6 @@
 # Deloads, breaks and stalled lifts
 
-Status: planned (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
+Status: tasks 1–2 implemented (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
 ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-practice`, `deload-recovery-signals`,
 `unplanned-deload`, `stall-heuristics` in [the evidence register](../evidence.md).
 
@@ -8,7 +8,7 @@ ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-pr
 
 Take the first task below whose boxes are not all checked. Each task is one pull request. Task 1 is done by
 [training services task 2](training-services.md#2-recovery-status); build tasks 2–6 on `TrainingServices` once it
-exists. Tasks 1 and 2 fix wrong advice and come first. Task 5 explains the Today card that
+exists. Continue with task 3. Task 5 explains the Today card that
 [#94](https://github.com/droidsam1/overreach/issues/94) then places in the page. Task 6 supplies lift findings
 to [Recovery & Progress](https://github.com/droidsam1/overreach/issues/126). Record checks that need an iPhone
 in [#21](https://github.com/droidsam1/overreach/issues/21).
@@ -27,7 +27,7 @@ Reported with screenshots on 2026-11-21 (Galician UI, hybrid athlete with Garmin
 The athlete could not tell why a deload was proposed two weeks after one, which lifts stalled and since when, what
 to do about a stalled lift, or what evidence supports the proposal.
 
-## Causes found in the code
+## Causes in the previous delivery
 
 1. **Two answers for "last deload".** `DeloadAdvice.make` (TodayPresentation) passes
    `profile.deloads.last?.start` and the confirmed detected periods to `DeloadAdvisor.proposal`. `PlanAnalysis.run`
@@ -81,16 +81,16 @@ Finish line: with the same data, Today and Plan never disagree about the last de
 ### 2. Count only lifts in current training, and say which
 
 - [x] Require an exposure in the last 28 days (`DeloadAdvisor.Settings.lookbackDays`) for lift signals.
-- [ ] When a rotation or routine exists (`SessionRotation`, ADR-0033), count only its exercises.
+- [x] When a rotation or routine exists (`SessionRotation`, ADR-0033), count only its exercises.
 - [x] Say "main lifts" when lifts are marked main and "lifts you train now" otherwise.
-- [ ] Add `StallDetection` output that explains a stall: exercise, the date progress stopped (first exposure of the
+- [x] Add `StallDetection` output that explains a stall: exercise, the date progress stopped (first exposure of the
   flat window), best estimated 1RM and the set behind it, last exposure, and the `StallSuggestion`s.
-- [ ] Rule change: a deload proposal needs at least one fatigue signal (performance drop, RPE creep, weekly load
+- [x] Rule change: a deload proposal needs at least one fatigue signal (performance drop, RPE creep, weekly load
   spike or a sustained recovery signal). Stalls and the interval reinforce it. Stalls alone produce per-lift
-  suggestions (task 6) instead. Record the change in a new ADR (next free number) and update `stall-heuristics`,
+  suggestions (task 6) instead. Record the change in [ADR-0036](../adr/0036-deload-needs-fatigue.md) and update `stall-heuristics`,
   `deload-design` and [progression engine](progression-engine.md#deload-proposals).
 - [x] Tests: a stale lift is excluded from current stalls in Today, Plan, Workout and the AI context.
-- [ ] Tests: three stalled current lifts with no fatigue signal give no proposal. Adding RPE creep gives one.
+- [x] Tests: three stalled current lifts with no fatigue signal give no proposal. Adding RPE creep gives one.
 
 Finish line: every stalled lift Overreach mentions is one the athlete trains now, and Today can name it.
 
@@ -145,7 +145,7 @@ Finish line: the default flow asks about at most two recent periods, both within
   supporting), **Your last rest** (date and kind from task 1, linking to the recovery history),
   **What changes** (the plan text and "See your deload session" with the current preview),
   **Evidence** (one plain sentence per evidence key, its level once, and `FurtherReading` links).
-- [ ] Rename the trend signal so it differs from readiness: "Your 7-day HRV average stayed below your usual range on
+- [x] Rename the trend signal so it differs from readiness: "Your 7-day HRV average stayed below your usual range on
   5 of the last 7 days."
 - [ ] All texts come from `TodayPresentation`; the views only render (ADR-0014). Strings in en, es and gl.
 - [ ] Tests on the model: the summary sentence for each signal combination, and that the detail lists every signal.

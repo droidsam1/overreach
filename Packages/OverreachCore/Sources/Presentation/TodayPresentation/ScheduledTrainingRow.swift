@@ -15,7 +15,7 @@ public struct ScheduledTrainingRow: Identifiable, Hashable, Sendable {
         }
         let completed = sessions.first { session in
             session.routineID == routineID && CalendarDay(session.startedAt, calendar: calendar) == assignment.day
-                && RecentTraining.isCompleted(session, through: now)
+                && session.isCompleted(through: now)
         }
         let name = routine?.name ?? completed?.name
         return Self(

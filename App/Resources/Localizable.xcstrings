@@ -5628,23 +5628,6 @@
         }
       }
     },
-    "HRV below your usual range on {1} of the last 7 days.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VFC por debajo de tu rango habitual en {1} de los últimos 7 días."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VFC por debaixo do teu rango habitual en {1} dos últimos 7 días."
-          }
-        }
-      }
-    },
     "HRV below your usual range.": {
       "extractionState": "manual",
       "localizations": {
@@ -16015,6 +15998,23 @@
         }
       }
     },
+    "Your 7-day HRV average was below your usual range on {1} of the last 7 days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu media de VFC de 7 días estuvo por debajo de tu rango habitual en {1} de los últimos 7 días."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa media de VFC de 7 días estivo por debaixo do teu rango habitual en {1} dos últimos 7 días."
+          }
+        }
+      }
+    },
     "Your Garmin key expires in a week": {
       "extractionState": "manual",
       "localizations": {
@@ -16606,6 +16606,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} ({2})"
+          }
+        }
+      }
+    },
+    "{1} The stalled exercises are {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} Los ejercicios estancados son {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} Os exercicios estancados son {2}."
           }
         }
       }

@@ -247,6 +247,7 @@ struct PlanModelTests {
         let history = sessions().map { original in
             var session = original
             session.startedAt = original.startedAt.addingTimeInterval(-8 * 86_400)
+            session.endedAt = session.startedAt.addingTimeInterval(3_600)
             return session
         }
         let store = TestStore(exercises: [squat], sessions: history)

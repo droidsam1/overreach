@@ -65,20 +65,15 @@ public final class TodayModel {
     public private(set) var movementNotes: [MovementNote] = []
     private var usualSteps: Double?
 
+    private let recordLoader: TrainingRecordLoader
     private let sources: [any MetricsSource]
-    private let activitySources: [any ActivitySource]
     private let garmin: (any GarminAccount)?
     private let profiles: (any ProfileRepository)?
-    private let cycleSource: (any CycleSource)?
     /// Menstrual events and tracking mode of the last load, for phase-aware baselines (`cycle-phase-baselines`).
     private var cycleContext: CycleContext?
     private let checkIns: (any CheckInRepository)?
     private let backup: (any BackupService)?
     private let workouts: (any WorkoutRepository)?
-    private let exercises: (any ExerciseRepository)?
-    private let recordedStrength: (any RecordedStrengthSource)?
-    private let routines: (any RoutineRepository)?
-    private let progression: (any ProgressionSettingsRepository)?
     private let readinessSettings: ReadinessRules.Settings
     private let calendar: Calendar
     private let format: Format
@@ -351,18 +346,16 @@ public final class TodayModel {
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
+        recordLoader = TrainingRecordLoader(
+            sources: sources, activity: activity, checkIns: checkIns, workouts: workouts, exercises: exercises,
+            recordedStrength: recordedStrength, routines: routines, progression: progression, cycle: cycle
+        )
         self.sources = sources
-        self.activitySources = activity
-        self.cycleSource = cycle
         self.garmin = garmin
         self.profiles = profiles
         self.checkIns = checkIns
         self.backup = backup
         self.workouts = workouts
-        self.exercises = exercises
-        self.recordedStrength = recordedStrength
-        self.routines = routines
-        self.progression = progression
         self.readinessSettings = readinessSettings
         self.calendar = calendar
         self.format = format
@@ -388,125 +381,79 @@ public final class TodayModel {
         let today = CalendarDay(now, calendar: calendar)
         if optionalStrengthDay != today { optionalStrengthDay = nil }
         let profile = try? await profiles?.profile()
-        let cycle = await readCycle(profile: profile, today: today)
-        // The readiness baselines and the deload's recovery signals need weeks of history; the screen shows 7 days.
-        let range = ReadinessAssessment.historyRange(
-            today: today, tracksCycle: cycle != nil, settings: readinessSettings, calendar: calendar
+        async let garminConnection = garmin?.connection()
+        let snapshot = await recordLoader.load(
+            now: now, profile: profile, settings: readinessSettings, calendar: calendar
         )
-        let weekStart = today.adding(days: -6, calendar: calendar)
-        let reading = await SourceReader(sources: sources).dailyMetrics(in: range)
-
-        let movementStart = today.adding(
-            days: Workload.usualStartOffset - EverydayMovement.Settings().baselineDays, calendar: calendar
-        )
-        let movementRange = movementStart...today
-        var dailyActivity: [DailyActivity] = []
-        for source in activitySources {
-            // A failed walk read leaves steps and the rest of Today untouched; the metric source reports the outage.
-            dailyActivity += (try? await source.dailyActivity(in: movementRange)) ?? []
-        }
-
-        let checkIn = (try? await checkIns?.checkIn(for: today)).flatMap { $0.day == today ? $0 : nil }
-        let garminConnected = await garmin?.connection() != nil
+        let calendar = calendar
+        let settings = readinessSettings
+        let assessment = await Task.detached(priority: .userInitiated) {
+            snapshot.assessment(profile: profile, now: now, settings: settings, calendar: calendar)
+        }.value
+        let garminConnected = await garminConnection != nil
         guard activeLoad == loadID else { return }
-        cycleContext = cycle
+        cycleContext = snapshot.record.cycle
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         hasRunningGoal = goal?.running.map { $0.distanceMeters > 0 } ?? false
         loadedDay = today
-        let history = reading.value
+        let weekStart = today.adding(days: -6, calendar: calendar)
+        let history = snapshot.record.metrics
         week = history.filter { $0.day >= weekStart }
         recentNights = history.filter { $0.day >= weekStart.adding(days: -7, calendar: calendar) }
         metrics = history.last { $0.day == today }
-        failedSources = reading.failedSources
+        failedSources = snapshot.metrics.failedSources
         failureReasons = Dictionary(
-            reading.failures.map { ($0.source, $0.reason) }, uniquingKeysWith: { first, _ in first }
+            snapshot.metrics.failures.map { ($0.source, $0.reason) }, uniquingKeysWith: { first, _ in first }
         )
-        self.checkIn = checkIn
+        checkIn = snapshot.checkIn
         isGarminConnected = garminConnected
         wearsGarmin = profile?.wearables.contains(.garmin) ?? false
-        readiness = ReadinessAssessment.assess(
-            today: today, history: history, checkIn: checkIn, profile: profile, cycle: cycle,
-            settings: readinessSettings, calendar: calendar
-        )
-        let activity = Self.mergeMovement(history: history, activity: dailyActivity, range: movementRange,
-                                          calendar: calendar, now: now)
-        await loadRecentTraining(in: weekStart...today, now: now, sources: sources, profile: profile,
-                                 loadID: loadID, metricsHistory: history, activity: activity)
+        readiness = assessment.readiness
+        deloadAdvice = workouts == nil ? nil : assessment.deload.map {
+            DeloadAdvice.make($0, exercises: snapshot.record.exercises, calendar: calendar, format: format)
+        }
+        loadRecentTraining(in: weekStart...today, now: now, profile: profile, snapshot: snapshot)
     }
 
     private func loadRecentTraining(
-        in range: ClosedRange<CalendarDay>, now: Date, sources: [any MetricsSource], profile: AthleteProfile?,
-        loadID: UUID, metricsHistory: [DailyMetrics], activity: [DailyActivity]
-    ) async {
-        // Include the previous day so copies across midnight can match before filtering to the visible week.
-        let start = range.lowerBound.adding(days: -1, calendar: calendar).startDate(in: calendar)
-        let deloadStart = range.upperBound.adding(days: -DeloadDetection.historyDays, calendar: calendar)
-            .startDate(in: calendar)
-        let readsDeloadHistory = profile != nil && workouts != nil
-        let runningStart = hasRunningGoal && (readiness.level == .amber || readiness.level == .green)
-            ? range.upperBound.adding(days: -EasyRunAdvisor.historyDays, calendar: calendar).startDate(in: calendar)
-            : start
-        async let logged = try? workouts?.sessions(from: start, to: now)
-        async let catalog = try? exercises?.allExercises()
-        async let watch = recordedStrength?.strengthActivities(from: readsDeloadHistory ? deloadStart : start, to: now)
-        async let checkInHistory = try? checkIns?.checkIns(in: range)
-        async let runs = Self.readRecentRuns(sources: sources, from: readsDeloadHistory ? min(deloadStart, runningStart) : runningStart, to: now)
-        let (sessions, allExercises, recordings, previousCheckIns, runResult) = await (
-            logged, catalog, watch, checkInHistory, runs
-        )
-        guard activeLoad == loadID else { return }
-        trainingReadFailed = runResult.failed || (workouts != nil && sessions == nil)
-        let currentCheckIn = checkIn.map { [$0] } ?? []
-        let recentRecordings = (recordings ?? []).filter { $0.endedAt >= start }
+        in range: ClosedRange<CalendarDay>, now: Date, profile: AthleteProfile?, snapshot: TrainingRecordLoader.Snapshot
+    ) {
+        let record = snapshot.record
+        trainingReadFailed = record.runReadFailed || snapshot.sessionsFailed
         recentTrainingDays = RecentTraining(calendar: calendar, format: format).days(
-            in: range, through: now, metrics: week, checkIns: currentCheckIn + (previousCheckIns ?? []),
-            runs: runResult.activities, sessions: sessions ?? [], recordings: recentRecordings,
-            exercises: allExercises ?? [],
+            in: range, through: now, metrics: week, checkIns: record.checkIns,
+            runs: record.runs, sessions: record.sessions, recordings: record.recordings,
+            exercises: record.exercises,
             races: (profile?.goal?.scheduledRuns ?? []).compactMap { $0.purpose == .race ? $0.completion : nil }
         )
         let today = range.upperBound
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
-        loadRunningPlan(goal: goal, today: today, now: now, runs: runResult.failed ? [] : runResult.activities)
-        await loadWorkoutContext(today: today, now: now, profile: profile, catalog: allExercises ?? [], loadID: loadID)
-        guard activeLoad == loadID else { return }
-        await loadDeloadAdvice(
-            now: now, history: metricsHistory, profile: profile,
-            training: DeloadTraining(
-                runs: runResult.activities, runReadFailed: runResult.failed,
-                recordings: recordings ?? [], catalog: allExercises ?? [], activity: activity
-            ),
-            loadID: loadID
-        )
-        guard activeLoad == loadID else { return }
+        loadRunningPlan(goal: goal, today: today, now: now, runs: record.runReadFailed ? [] : record.runs)
+        loadWorkoutContext(today: today, profile: profile, record: record)
         updateDeloadSession()
+
         let assignment = goal?.scheduledStrength.first { $0.day == today }
-        var assignedRoutine: Routine?
-        if let assignment {
-            if let routineID = assignment.routineID {
-                assignedRoutine = (try? await routines?.allRoutines())?.first { $0.id == routineID }
-            }
-            guard activeLoad == loadID else { return }
-            scheduledStrengthToday = ScheduledTrainingRow.strength(
-                assignment, routine: assignedRoutine, sessions: sessions ?? [], now: now, calendar: calendar
-            )
+        let assignedRoutine = assignment?.routineID.flatMap { id in record.routines.first { $0.id == id } }
+        scheduledStrengthToday = assignment.map {
+            ScheduledTrainingRow.strength($0, routine: assignedRoutine, sessions: record.sessions,
+                                          now: now, calendar: calendar)
         }
         updateMovement(
-            activity, today: today, profile: profile,
+            record.activity, today: today, profile: profile,
             schedule: .init(strength: assignment,
                             routine: scheduledStrengthToday?.status == nil ? assignedRoutine : nil,
-                            exercises: allExercises ?? [],
-                            runs: goal?.scheduledRuns.filter { $0.day == today } ?? [])
+                            exercises: record.exercises, runs: goal?.scheduledRuns.filter { $0.day == today } ?? [])
         )
-        // A rest day or a missing assigned routine suppresses the undated fallback.
-        guard assignment == nil || assignedRoutine != nil else { return }
-        guard readiness.level == .amber, !readiness.reasons.contains(where: \.advisesSkippingTraining),
-              let sessions,
-              !hasStrengthToday(sessions: sessions, recordings: recentRecordings, now: now) else { return }
+        guard assignment == nil || assignedRoutine != nil,
+              readiness.level == .amber, !readiness.reasons.contains(where: \.advisesSkippingTraining),
+              workouts != nil, !snapshot.sessionsFailed,
+              !hasStrengthToday(sessions: snapshot.allSessions, recordings: record.recordings, now: now) else { return }
         if assignment == nil, goal?.scheduledRuns.contains(where: {
             $0.day == today && $0.purpose == .race && $0.completion == nil
         }) == true { return }
-        await loadStrengthOption(today: today, now: now, profile: profile, assignedRoutine: assignedRoutine,
-                                 catalog: allExercises ?? [], loadID: loadID)
+        loadStrengthOption(
+            today: today, now: now, profile: profile, assignedRoutine: assignedRoutine, snapshot: snapshot
+        )
     }
 
     private func loadRunningPlan(goal: TrainingGoal?, today: CalendarDay, now: Date, runs: [RunActivity]) {
@@ -533,7 +480,7 @@ public final class TodayModel {
     public func acceptDeload(now: Date = .now) async {
         guard let profiles, var profile = try? await profiles.profile() else { return }
         let today = CalendarDay(now, calendar: calendar)
-        profile.deloads.append(DeloadRecord(start: today, days: DeloadAdvisor.Settings().plan.durationDays))
+        profile.deloads.append(DeloadRecord(start: today, days: DeloadPlan.standard.durationDays))
         profile.deloadPostponedUntil = nil
         try? await profiles.save(profile)
         await load(now: now)
@@ -560,59 +507,6 @@ public final class TodayModel {
         await load(now: now)
     }
 
-    private struct DeloadTraining {
-        let runs: [RunActivity]
-        let runReadFailed: Bool
-        let recordings: [RecordedStrengthActivity]
-        let catalog: [Exercise]
-        let activity: [DailyActivity]
-    }
-
-    private func loadDeloadAdvice(
-        now: Date, history: [DailyMetrics], profile: AthleteProfile?, training: DeloadTraining, loadID: UUID
-    ) async {
-        guard !readiness.reasons.contains(where: \.advisesSkippingTraining), let profile, let workouts else {
-            deloadAdvice = nil
-            return
-        }
-        let today = CalendarDay(now, calendar: calendar)
-        let weekStart = today.adding(days: -(RecoveryTrend.windowDays - 1), calendar: calendar)
-        let start = today.adding(days: -DeloadDetection.historyDays, calendar: calendar).startDate(in: calendar)
-        async let logged = try? workouts.sessions(from: start, to: now)
-        async let allRoutines = try? routines?.allRoutines()
-        async let allSettings = try? progression?.allProgressionSettings()
-        async let weekCheckIns = try? checkIns?.checkIns(in: weekStart...today)
-        let (sessions, routines, settings, recentCheckIns) = await (logged, allRoutines, allSettings, weekCheckIns)
-        guard activeLoad == loadID else { return }
-        let completed = (sessions ?? []).filter { RecentTraining.isCompleted($0, through: now) }
-        let calendar = calendar
-        let format = format
-        let readinessSettings = readinessSettings
-        let cycle = cycleContext
-        let advice = await Task.detached(priority: .userInitiated) {
-            DeloadAdvice.make(
-                today: today, now: now, sessions: completed, exercises: training.catalog, settings: settings ?? [:],
-                profile: profile, history: history, checkIns: recentCheckIns ?? [],
-                runs: training.runs, runReadFailed: training.runReadFailed, routines: routines ?? [],
-                recordings: training.recordings, cycle: cycle, activity: training.activity,
-                readinessSettings: readinessSettings, calendar: calendar, format: format
-            )
-        }.value
-        guard activeLoad == loadID else { return }
-        deloadAdvice = advice
-    }
-
-    /// Menstrual events of the last year (enough for 6 cycles and the estimates of past days), only for a natural
-    /// cycle. A failed read leaves the overall baselines in place.
-    private func readCycle(profile: AthleteProfile?, today: CalendarDay) async -> CycleContext? {
-        guard let profile, profile.usesCyclePhase, let cycleSource else { return nil }
-        let range = today.adding(days: -Self.cycleHistoryDays, calendar: calendar)...today
-        let events = (try? await cycleSource.menstrualEvents(in: range)) ?? []
-        return CycleContext(mode: profile.cycleTracking, events: events)
-    }
-
-    static let cycleHistoryDays = 365
-
     private func hasStrengthToday(sessions: [StrengthSession], recordings: [RecordedStrengthActivity], now: Date) -> Bool {
         let start = calendar.startOfDay(for: now)
         return sessions.contains { $0.startedAt <= now && ($0.endedAt ?? $0.startedAt) >= start }
@@ -620,28 +514,22 @@ public final class TodayModel {
     }
 
     private func loadStrengthOption(
-        today: CalendarDay, now: Date, profile: AthleteProfile?, assignedRoutine: Routine?, catalog: [Exercise],
-        loadID: UUID
-    ) async {
+        today: CalendarDay, now: Date, profile: AthleteProfile?, assignedRoutine: Routine?,
+        snapshot: TrainingRecordLoader.Snapshot
+    ) {
+        let record = snapshot.record
         let blocks = assignedRoutine == nil ? profile?.declaredBlocks ?? [] : []
         let historyStart = now.addingTimeInterval(-ProgressionTargets.historyWindow)
-        let blockStart = PlanSchedule.runningBlock(blocks, today: today, calendar: calendar)?.start.startDate(in: calendar)
-        async let history = try? workouts?.sessions(from: min(historyStart, blockStart ?? historyStart), to: now)
-        async let allRoutines = assignedRoutine == nil ? try? routines?.allRoutines() : nil
-        async let allSettings = try? progression?.allProgressionSettings()
-        let (sessions, availableRoutines, settings) = await (history, allRoutines, allSettings)
-        guard activeLoad == loadID, let sessions, !hasStrengthToday(sessions: sessions, recordings: [], now: now)
-        else { return }
-        let completed = sessions.filter { RecentTraining.isCompleted($0, through: now) }
-        let planned = PlanSchedule.next(blocks: blocks, routines: availableRoutines ?? [], sessions: completed,
-                                        today: today, calendar: calendar)
+        let planned = PlanSchedule.next(
+            blocks: blocks, routines: record.routines, sessions: record.sessions, today: today, calendar: calendar
+        )
         let familiarityStart = today.adding(days: -EasyStrengthAdjustment.familiarityDays, calendar: calendar)
             .startDate(in: calendar)
-        let settingsUnavailable = progression != nil && settings == nil
         strengthInputs = StrengthInputs(
-            assignedRoutine: assignedRoutine, plannedRoutine: settingsUnavailable ? nil : planned?.routine,
-            sessions: completed, catalog: assignedRoutine != nil && settingsUnavailable ? [] : catalog,
-            settings: settings ?? [:], historyStart: historyStart, familiarityStart: familiarityStart
+            assignedRoutine: assignedRoutine, plannedRoutine: snapshot.settingsFailed ? nil : planned?.routine,
+            sessions: record.sessions,
+            catalog: assignedRoutine != nil && snapshot.settingsFailed ? [] : record.exercises,
+            settings: record.settings, historyStart: historyStart, familiarityStart: familiarityStart
         )
         rebuildStrengthOption()
     }
@@ -673,7 +561,6 @@ public final class TodayModel {
     }
 
     /// Completed sessions in this window are enough to see a rotation of up to six workouts done once or twice a week.
-    static let rotationHistoryDays = 120
 
     private struct WorkoutContext {
         let sessions: [StrengthSession]
@@ -695,38 +582,29 @@ public final class TodayModel {
         let familiarityStart: Date
     }
 
-    private func loadWorkoutContext(
-        today: CalendarDay, now: Date, profile: AthleteProfile?, catalog: [Exercise], loadID: UUID
-    ) async {
-        guard let workouts else {
+    private func loadWorkoutContext(today: CalendarDay, profile: AthleteProfile?, record: TrainingRecord) {
+        guard workouts != nil else {
             recentWorkouts = nil
             updateStrengthChoices()
             return
         }
         let blocks = profile?.declaredBlocks ?? []
-        let rotationStart = today.adding(days: -Self.rotationHistoryDays, calendar: calendar).startDate(in: calendar)
-        let blockStart = PlanSchedule.runningBlock(blocks, today: today, calendar: calendar)?.start
+        let rotationStart = today.adding(days: -LiftStatus.rotationHistoryDays, calendar: calendar)
             .startDate(in: calendar)
-        async let logged = try? workouts.sessions(from: min(rotationStart, blockStart ?? rotationStart), to: now)
-        async let allRoutines = try? routines?.allRoutines()
-        async let allSettings = try? progression?.allProgressionSettings()
-        let (sessions, availableRoutines, settings) = await (logged, allRoutines, allSettings)
-        guard activeLoad == loadID else { return }
-        let completed = (sessions ?? []).filter { RecentTraining.isCompleted($0, through: now) && $0.startedAt < now }
-        let recent = completed.filter { $0.startedAt >= rotationStart }
+        let recent = record.sessions.filter { $0.startedAt >= rotationStart }
         let assignment = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }?.scheduledStrength
             .first { $0.day == today }
         let routine: Routine? = if let id = assignment?.routineID {
-            availableRoutines?.first { $0.id == id }
+            record.routines.first { $0.id == id }
         } else if assignment == nil {
-            PlanSchedule.next(blocks: blocks, routines: availableRoutines ?? [], sessions: completed, today: today,
+            PlanSchedule.next(blocks: blocks, routines: record.routines, sessions: record.sessions, today: today,
                               calendar: calendar)?.routine
         } else {
             nil
         }
         if chosenWorkout?.day != today { chosenWorkout = nil }
         recentWorkouts = WorkoutContext(
-            sessions: recent, catalog: catalog, settings: settings ?? [:],
+            sessions: recent, catalog: record.exercises, settings: record.settings,
             rotation: SessionRotation.detect(in: recent),
             planned: routine.map { SessionRotation.Slot(id: $0.id.uuidString, name: $0.name) },
             recent: SessionRotation.recentWorkouts(in: recent)
@@ -820,13 +698,6 @@ public final class TodayModel {
         )
     }
 
-    nonisolated private static func readRecentRuns(
-        sources: [any MetricsSource], from start: Date, to end: Date
-    ) async -> (activities: [RunActivity], failed: Bool) {
-        let reading = await SourceReader(sources: sources).runs(from: start, to: end)
-        return (reading.activities, reading.failed)
-    }
-
     /// Asks every source for access (the Apple Health permission sheet), then reloads.
     public func connectHealth(now: Date = .now) async {
         accessError = nil
@@ -887,23 +758,6 @@ public final class TodayModel {
     }
 
     /// Use activity-source steps for older walking baselines and prefer merged metric steps where available.
-    private static func mergeMovement(
-        history: [DailyMetrics], activity: [DailyActivity], range: ClosedRange<CalendarDay>, calendar: Calendar,
-        now: Date
-    ) -> [DailyActivity] {
-        let walks = activity.flatMap(\.walks).filter {
-            $0.durationSeconds.isFinite && $0.durationSeconds > 0 && $0.end <= now
-        }
-        let walksByDay = Dictionary(grouping: EverydayMovement.removingDuplicateWalks(walks)) {
-            CalendarDay($0.start, calendar: calendar)
-        }
-        var steps: [CalendarDay: Int] = [:]
-        for entry in activity.reversed() { steps[entry.day] = entry.steps ?? steps[entry.day] }
-        for entry in history { steps[entry.day] = entry.steps ?? steps[entry.day] }
-        let days = Set(steps.keys).union(walksByDay.keys).filter(range.contains)
-        return days.sorted().map { DailyActivity(day: $0, steps: steps[$0], walks: walksByDay[$0] ?? []) }
-    }
-
     private func updateMovement(
         _ activity: [DailyActivity], today: CalendarDay, profile: AthleteProfile?, schedule: MovementNote.Schedule
     ) {
