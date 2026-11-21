@@ -76,6 +76,8 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var targetDate: String?
         public var priorityLifts: [String]
         public var running: RunningObjective?
+        /// `running` or `strength` when the hybrid athlete chose one; absent means balanced.
+        public var priority: String?
         public var nextRun: NextRun?
         public var runningSchedule: [NextRun]?
     }

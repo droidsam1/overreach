@@ -11,12 +11,11 @@ and the logger come before review tools, and work that only a person with an iPh
 ## Ready to implement
 
 1. **One activity log** — [#40](https://github.com/droidsam1/overreach/issues/40), in order
-   [#86](https://github.com/droidsam1/overreach/issues/86)
-   → [#87](https://github.com/droidsam1/overreach/issues/87) → [#88](https://github.com/droidsam1/overreach/issues/88).
+   [#87](https://github.com/droidsam1/overreach/issues/87) → [#88](https://github.com/droidsam1/overreach/issues/88).
    Correct wrong merges and count every activity once.
 2. **Running priority and the shared schedule** —
-   [hybrid backlog tasks 6–8](design/readiness-and-hybrid-planning.md#6-add-a-running-objective-to-hybrid-goals):
-   running/strength priority, dated strength in the calendar, structured runs, then adjusting planned runs.
+   [hybrid backlog tasks 7–8](design/readiness-and-hybrid-planning.md#7-represent-planned-runs-races-and-dates):
+   structured runs in the shared schedule, then adjusting planned runs. The priority control shipped.
 3. **Planned versus completed work for imported plans** — follow-up of
    [#34](https://github.com/droidsam1/overreach/issues/34).
 4. **Schedule-first Plan** — [#126](https://github.com/droidsam1/overreach/issues/126). After #125, bring the

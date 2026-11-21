@@ -34,6 +34,7 @@ struct HistoryCalendarView: View {
                 agenda
             }
             RunMatchReviewLink(history: history, calendar: true)
+            StrengthMatchReviewLink(history: history, calendar: true)
             Section {
                 totals
             } footer: {
@@ -234,6 +235,13 @@ private struct DayDetailRows: View {
                         .accessibilityHidden(true)
                     SessionRow(summary: summary)
                 }
+            }
+        }
+        ForEach(detail.recordings, id: \.recordingID) { recording in
+            NavigationLink {
+                RecordedStrengthDetail(recording: recording, model: history)
+            } label: {
+                RecordedStrengthRow(recording: recording)
             }
         }
         ForEach(detail.runs) { run in

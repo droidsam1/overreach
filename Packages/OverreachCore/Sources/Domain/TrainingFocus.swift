@@ -12,6 +12,13 @@ public enum TrainingFocus: String, Codable, Sendable, CaseIterable {
     case endurance
 }
 
+/// Which discipline wins when a hybrid athlete's running and strength sessions compete for the same days.
+public enum DisciplinePriority: String, Codable, Sendable, CaseIterable {
+    case balanced
+    case running
+    case strength
+}
+
 /// The user's current training goal, which the balance analysis and the block advisor judge against.
 public struct TrainingGoal: Hashable, Codable, Sendable {
     public enum Kind: String, Codable, Sendable, CaseIterable {
@@ -31,6 +38,8 @@ public struct TrainingGoal: Hashable, Codable, Sendable {
     /// Lifts whose 1RM matters most (e.g. squat, bench, deadlift).
     public var priorityLifts: [UUID]
     public var running: RunningGoal?
+    /// Running or strength first in a hybrid plan. `nil` (every profile saved before this existed) means balanced.
+    public var priority: DisciplinePriority?
     /// The single-entry format shipped before the calendar. Prefer `scheduledRuns` for reads.
     public var nextRun: PlannedRun?
     public private(set) var runningSchedule: [PlannedRun]?
@@ -53,14 +62,18 @@ public struct TrainingGoal: Hashable, Codable, Sendable {
 
     public init(
         kind: Kind, targetDate: CalendarDay? = nil, priorityLifts: [UUID] = [],
-        running: RunningGoal? = nil, nextRun: PlannedRun? = nil
+        running: RunningGoal? = nil, nextRun: PlannedRun? = nil, priority: DisciplinePriority? = nil
     ) {
         self.kind = kind
         self.targetDate = targetDate
         self.priorityLifts = priorityLifts
         self.running = running
         self.nextRun = nextRun
+        self.priority = priority
     }
+
+    /// The priority to judge by: balanced unless the athlete chose one.
+    public var effectivePriority: DisciplinePriority { priority ?? .balanced }
 }
 
 /// A period of training with one main focus, declared by the user or inferred from history.

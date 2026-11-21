@@ -430,3 +430,11 @@ Steps 1–4 are the shippable unit for phase 2 (v0.2). `ReleaseNotes.all` gets a
 - `thomascamminady/gcpapi-sync-python`: models generated from Garmin's OpenAPI document (`models/_generated.py`),
   per-endpoint limits and CHANGELOG (unofficial).
 - Garmin Connect Personal API Supplemental Terms (last updated 2026-10-01), shown when creating a key.
+
+### Reviewing strength matches in History
+
+History links a logged session and a Garmin recording automatically when each has only one eligible partner.
+When several pairs are plausible, use **Review strength matches** to link or separate them. **Undo strength
+match** in the session detail restores the watch-only workout. Choices are stored on the device by session UUID
+and recording source and ID. History applies them to the list, calendar and details. Apple Health reconciliation
+continues to follow [ADR-0023](../adr/0023-no-duplicate-strength-workouts-in-health.md).

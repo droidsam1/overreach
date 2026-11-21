@@ -1735,6 +1735,23 @@
         }
       }
     },
+    "Balanced": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equilibrado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equilibrado"
+          }
+        }
+      }
+    },
     "Band": {
       "extractionState": "manual",
       "localizations": {
@@ -7039,6 +7056,23 @@
         }
       }
     },
+    "Keep workouts separate": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantener los entrenamientos separados"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manter os adestramentos separados"
+          }
+        }
+      }
+    },
     "Keep your planned running rest day.": {
       "extractionState": "manual",
       "localizations": {
@@ -7698,6 +7732,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vincular estas carreiras"
+          }
+        }
+      }
+    },
+    "Link these workouts": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vincular estos entrenamientos"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vincular estes adestramentos"
           }
         }
       }
@@ -9436,6 +9487,23 @@
         }
       }
     },
+    "No strength matches to review": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay coincidencias de fuerza que revisar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai coincidencias de forza que revisar"
+          }
+        }
+      }
+    },
     "No strength workouts recorded": {
       "extractionState": "manual",
       "localizations": {
@@ -10588,6 +10656,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Músculos principais"
+          }
+        }
+      }
+    },
+    "Priority": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prioridad"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prioridade"
           }
         }
       }
@@ -12054,6 +12139,23 @@
         }
       }
     },
+    "Review strength matches": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar coincidencias de fuerza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar coincidencias de forza"
+          }
+        }
+      }
+    },
     "Rotate through the rep blocks. The load comes from your estimated 1RM.": {
       "extractionState": "manual",
       "localizations": {
@@ -12254,6 +12356,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Día de carreira"
+          }
+        }
+      }
+    },
+    "Running first": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primero correr"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primeiro correr"
           }
         }
       }
@@ -14281,6 +14400,23 @@
         }
       }
     },
+    "Strength first": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primero fuerza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primeiro forza"
+          }
+        }
+      }
+    },
     "Strength recorded on your watch but not in the app? Log it from History with the watch's times.": {
       "extractionState": "manual",
       "localizations": {
@@ -16130,6 +16266,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Desvincular as carreiras"
+          }
+        }
+      }
+    },
+    "Undo strength match": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deshacer la coincidencia de fuerza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desfacer a coincidencia de forza"
           }
         }
       }

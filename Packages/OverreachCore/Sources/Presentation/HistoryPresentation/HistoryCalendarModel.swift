@@ -46,11 +46,12 @@ public struct CalendarDayDetail: Hashable, Sendable {
     /// "Thursday, 19 November"
     public let title: String
     public let sessions: [SessionSummary]
+    public let recordings: [HistoryStrengthActivity]
     public let runs: [HistoryRunActivity]
     /// "8,412 steps"; `nil` without step data.
     public let steps: String?
 
-    public var isEmpty: Bool { sessions.isEmpty && runs.isEmpty && steps == nil }
+    public var isEmpty: Bool { sessions.isEmpty && recordings.isEmpty && runs.isEmpty && steps == nil }
     public var emptyText: String { L10n.text("Nothing recorded on this day.") }
 }
 
@@ -65,6 +66,17 @@ public final class HistoryCalendarModel {
     public private(set) var selectedDay: CalendarDay?
     public private(set) var isLoading = false
     public private(set) var sessions: [StrengthSession] = []
+    private var strengthMatches = StrengthActivityMatches()
+    private var allStrengthReviews: [HistoryStrengthReview] = []
+
+    public var strengthReviews: [HistoryStrengthReview] {
+        allStrengthReviews.filter { isInMonth($0.sessionStart) || isInMonth($0.recording.startedAt) }
+    }
+
+    private var monthRecordings: [RecordedStrengthActivity] {
+        strengthMatches.unmatched.filter { isInMonth($0.startedAt) }
+    }
+
     private var runRecords: [RunDeduplication.CombinedRun] = []
     private var runOriginals: [RunActivity] = []
     private var loadedRunInterval: DateInterval?
@@ -145,6 +157,7 @@ public final class HistoryCalendarModel {
         let average = averageSteps
         let today = today
         let sessionsByDay = Dictionary(grouping: sessions) { CalendarDay($0.startedAt, calendar: calendar) }
+        let recordingsByDay = Dictionary(grouping: monthRecordings) { CalendarDay($0.startedAt, calendar: calendar) }
         let runsByDay = Dictionary(grouping: runs) { CalendarDay($0.startedAt, calendar: calendar) }
 
         let blanks = { (prefix: String, count: Int) in
@@ -156,7 +169,7 @@ public final class HistoryCalendarModel {
             }
         }
         let dayCells = days.map { day in
-            let strength = sessionsByDay[day]?.count ?? 0
+            let strength = (sessionsByDay[day]?.count ?? 0) + (recordingsByDay[day]?.count ?? 0)
             let runCount = runsByDay[day]?.count ?? 0
             let daySteps = steps[day]
             return CalendarDayCell(
@@ -188,7 +201,9 @@ public final class HistoryCalendarModel {
         let unknown = "–"
         let kilometres = runs.reduce(0) { $0 + $1.distanceMeters } / 1_000
         return [
-            CalendarTotal(id: "sessions", value: String(sessions.count), label: L10n.text("Sessions")),
+            CalendarTotal(
+                id: "sessions", value: String(sessions.count + monthRecordings.count), label: L10n.text("Sessions")
+            ),
             CalendarTotal(id: "runs", value: didReadRuns ? String(runs.count) : unknown, label: L10n.text("Runs")),
             CalendarTotal(
                 id: "km",
@@ -229,7 +244,14 @@ public final class HistoryCalendarModel {
             title: day.startDate(in: calendar).formatted(style.weekday(.wide).day().month(.wide)),
             sessions: sessions
                 .filter { CalendarDay($0.startedAt, calendar: calendar) == day }
-                .map { SessionSummary(session: $0, names: exerciseNames) },
+                .map { session in
+                    var summary = SessionSummary(session: session, names: exerciseNames)
+                    summary.matchedSource = strengthMatches.activity(for: session.id)?.source
+                    return summary
+                },
+            recordings: monthRecordings
+                .filter { CalendarDay($0.startedAt, calendar: calendar) == day }
+                .map { HistoryStrengthActivity($0, format: format) },
             runs: runRecords
                 .filter { CalendarDay($0.activity.startedAt, calendar: calendar) == day }
                 .map { HistoryRunActivity($0, format: format) },
@@ -357,6 +379,15 @@ public final class HistoryCalendarModel {
     static func fraction(steps: Int, average: Double?) -> Double {
         guard let average, average > 0 else { return 0 }
         return min(1, Double(steps) / average)
+    }
+
+    func updateStrength(_ matches: StrengthActivityMatches, reviews: [HistoryStrengthReview]) {
+        strengthMatches = matches
+        allStrengthReviews = reviews
+    }
+
+    private func isInMonth(_ date: Date) -> Bool {
+        Self.firstDay(of: CalendarDay(date, calendar: calendar)) == month
     }
 
     func updateRunChoices(_ choices: [RunMatchPair: RunMatchChoice]) {
