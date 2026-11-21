@@ -1718,6 +1718,23 @@
         }
       }
     },
+    "Balanced": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equilibrado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equilibrado"
+          }
+        }
+      }
+    },
     "Band": {
       "extractionState": "manual",
       "localizations": {
@@ -10490,6 +10507,23 @@
         }
       }
     },
+    "Priority": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prioridad"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prioridade"
+          }
+        }
+      }
+    },
     "Priority lifts": {
       "extractionState": "manual",
       "localizations": {
@@ -12118,6 +12152,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Día de carreira"
+          }
+        }
+      }
+    },
+    "Running first": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primero correr"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primeiro correr"
           }
         }
       }
@@ -14073,6 +14124,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Día de forza"
+          }
+        }
+      }
+    },
+    "Strength first": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primero fuerza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Primeiro forza"
           }
         }
       }

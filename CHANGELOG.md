@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Hybrid goals have a Running first, Strength first or Balanced priority in Plan. It is saved with the goal and
+  shared in the context export.
 - Recent load in Recovery & Progress shows today's walking and how it compares with your usual day. Today
   keeps walking advice relevant to the day's training.
 - The workout logger can fill the open sets of an exercise with last time's weight and reps from its menu, only when

@@ -92,6 +92,16 @@ public struct PlanView<Assistant: View>: View {
                     PriorityLiftsView(model: model)
                 }
             }
+            if model.showsDisciplinePriority {
+                Picker("Priority", selection: Binding(
+                    get: { model.disciplinePriority },
+                    set: { priority in Task { await model.setPriority(priority) } }
+                )) {
+                    ForEach(model.priorityOptions) { option in
+                        Text(option.name).tag(option.value)
+                    }
+                }
+            }
             if model.showsRunningPlan {
                 NavigationLink {
                     RunningPlanView(model: model)
