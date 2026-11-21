@@ -710,7 +710,7 @@ public final class TodayModel {
             .max(by: { $0.startedAt < $1.startedAt }) else { return }
         deloadSession = DeloadSessionPreview.make(
             heading: target.heading, session: session, exercises: context.catalog, settings: context.settings,
-            plan: DeloadAdvisor.Settings().plan, format: format
+            format: format
         )
     }
 
