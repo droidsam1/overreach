@@ -7090,23 +7090,6 @@
         }
       }
     },
-    "Keep your usual training days at a comfortable effort. An easy run, a walk or a light lift may help how you feel.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mantén tus días de entrenamiento habituales con un esfuerzo cómodo. Una carrera suave, un paseo o un levantamiento ligero pueden ayudarte a sentirte mejor."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mantén os teus días de adestramento habituais cun esforzo cómodo. Unha carreira suave, un paseo ou un levantamento lixeiro poden axudarche a sentirte mellor."
-          }
-        }
-      }
-    },
     "Keep your usual walks easy today. Easy movement eases soreness and fatigue a little more than full rest.": {
       "extractionState": "manual",
       "localizations": {
@@ -13737,6 +13720,23 @@
         }
       }
     },
+    "Some lifts have stalled and you reported more stress than usual. A steadier week may suit you better.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algunos ejercicios se han estancado y has indicado más estrés de lo habitual. Una semana más estable puede irte mejor."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algúns exercicios estancáronse e indicaches máis estrés do habitual. Unha semana máis estable pode irche mellor."
+          }
+        }
+      }
+    },
     "Some lifts have stopped progressing and recent recovery signs support a lighter week.": {
       "extractionState": "manual",
       "localizations": {
@@ -13767,23 +13767,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Deixaches de progresar nalgúns exercicios e os mesmos pesos cústanche máis."
-          }
-        }
-      }
-    },
-    "Some lifts have stopped progressing and you reported more stress than usual. A steadier week may help more than a deload.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Algunos ejercicios se han estancado y has indicado más estrés de lo habitual. Una semana más estable puede ayudarte más que una descarga."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Algúns exercicios estancáronse e indicaches máis estrés do habitual. Unha semana máis estable pode axudarche máis que unha descarga."
           }
         }
       }
@@ -14570,24 +14553,24 @@
         }
       }
     },
-    "Stress can lower HRV and slow recovery without any change in your training, so some of the signs above may come from it.": {
+    "Stress can lower HRV and slow recovery, so some signs above may come from it.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El estrés puede bajar la VFC y frenar la recuperación sin que cambie tu entrenamiento, así que parte de las señales de arriba pueden venir de ahí."
+            "value": "El estrés puede bajar la VFC y frenar la recuperación, así que parte de las señales de arriba pueden venir de ahí."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "O estrés pode baixar a VFC e frear a recuperación sen que cambie o teu adestramento, así que parte dos sinais de arriba poden vir de aí."
+            "value": "O estrés pode baixar a VFC e frear a recuperación, así que parte dos sinais de arriba poden vir de aí."
           }
         }
       }
     },
-    "Stress outside training adds to the load your body recovers from, and it can lower HRV on its own.": {
+    "Stress outside training adds to the load your body recovers from and can lower HRV on its own.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
@@ -16045,6 +16028,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Adestra segundo o previsto."
+          }
+        }
+      }
+    },
+    "Train on your usual days at a comfortable effort. A walk, an easy run or a light lift may help.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrena en tus días habituales con un esfuerzo cómodo. Un paseo, una carrera suave o un levantamiento ligero pueden ayudar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestra nos teus días habituais cun esforzo cómodo. Un paseo, unha carreira suave ou un levantamento lixeiro poden axudar."
           }
         }
       }

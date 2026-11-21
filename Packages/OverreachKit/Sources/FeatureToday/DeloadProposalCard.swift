@@ -12,7 +12,7 @@ struct DeloadProposalCard<SessionPreview: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
-            Label(steadier ? DeloadProposalText.steadierTitle : DeloadProposalText.title, systemImage: "arrow.down.right.circle.fill")
+            Label(DeloadProposalText.title(steadier: steadier), systemImage: "arrow.down.right.circle.fill")
                 .font(.headline)
                 .foregroundStyle(.orange)
                 .accessibilityAddTraits(.isHeader)
@@ -36,7 +36,7 @@ struct DeloadProposalCard<SessionPreview: View>: View {
     private var steadier: Bool { explanation.lifeStress == .reported }
 
     private var startButton: some View {
-        Button(steadier ? DeloadProposalText.steadierStart : DeloadProposalText.start) { Task { await model.acceptDeload() } }
+        Button(DeloadProposalText.start(steadier: steadier)) { Task { await model.acceptDeload() } }
             .controlSize(.large)
     }
 

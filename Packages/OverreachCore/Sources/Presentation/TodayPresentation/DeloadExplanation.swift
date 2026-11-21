@@ -55,8 +55,8 @@ public struct DeloadExplanation: Hashable, Sendable {
             lifeStress: proposal.lifeStress,
             stressContext: stressed ? [
                 DeloadAdvice.text(for: .lifeStressReported, format: format),
-                L10n.text("Stress can lower HRV and slow recovery without any change in your training, so some of the signs above may come from it."),
-                L10n.text("Keep your usual training days at a comfortable effort. An easy run, a walk or a light lift may help how you feel."),
+                L10n.text("Stress can lower HRV and slow recovery, so some signs above may come from it."),
+                L10n.text("Train on your usual days at a comfortable effort. A walk, an easy run or a light lift may help."),
                 L10n.text("Leave sets to failure and personal-record attempts for when you feel steadier."),
                 L10n.text("Protect your sleep: stress and short nights add up."),
             ] : []
@@ -64,7 +64,9 @@ public struct DeloadExplanation: Hashable, Sendable {
     }
 
     static var stressSummary: String {
-        L10n.text("Some lifts have stopped progressing and you reported more stress than usual. A steadier week may help more than a deload.")
+        L10n.text(
+            "Some lifts have stalled and you reported more stress than usual. A steadier week may suit you better."
+        )
     }
 
     static func summary(for signals: [DeloadSignal]) -> String {
@@ -122,7 +124,9 @@ public struct DeloadEvidenceLine: Hashable, Sendable, Identifiable {
         case "weekly-load-change":
             text = L10n.text("A sharp rise in weekly load is a rough clue that training has been more demanding.")
         case "deload-life-stress":
-            text = L10n.text("Stress outside training adds to the load your body recovers from, and it can lower HRV on its own.")
+            text = L10n.text(
+                "Stress outside training adds to the load your body recovers from and can lower HRV on its own."
+            )
         case "deload-recovery-signals":
             text = L10n.text("Sleep, heart measurements and how you feel can add context to changes in your training.")
         default:
@@ -134,8 +138,17 @@ public struct DeloadEvidenceLine: Hashable, Sendable, Identifiable {
 public enum DeloadProposalText {
     public static var title: String { L10n.text("Deload week suggested") }
     public static var start: String { L10n.text("Start deload week") }
-    public static var steadierTitle: String { L10n.text("Steadier week suggested") }
-    public static var steadierStart: String { L10n.text("Start steadier week") }
+    public static func title(steadier: Bool) -> String {
+        steadier ? L10n.text("Steadier week suggested") : title
+    }
+
+    public static func start(steadier: Bool) -> String {
+        steadier ? L10n.text("Start steadier week") : start
+    }
+
+    public static func weekInProgress(steadier: Bool) -> String {
+        steadier ? L10n.text("Steadier week") : L10n.text("Deload week")
+    }
     public static var yourStress: String { L10n.text("Your stress") }
     public static var postpone: String { L10n.text("Not now") }
     public static var details: String { L10n.text("Why and what changes") }
