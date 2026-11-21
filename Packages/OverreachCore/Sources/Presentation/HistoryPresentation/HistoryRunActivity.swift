@@ -9,6 +9,7 @@ public struct HistoryRunActivity: Identifiable, Hashable, Sendable {
     public let title: String
     public let startedAt: Date
     public let sources: [DataSourceKind]
+    public let match: RunMatchPair?
     public let distance: String
     public let duration: String
     public let pace: String?
@@ -19,11 +20,15 @@ public struct HistoryRunActivity: Identifiable, Hashable, Sendable {
     public var sourceText: String { sources.map(\.displayName).joined(separator: " · ") }
 
     init(_ combined: RunDeduplication.CombinedRun, format: Format) {
-        let run = combined.activity
+        self.init(combined.activity, sources: combined.sources, match: combined.match, format: format)
+    }
+
+    init(_ run: RunActivity, sources: [DataSourceKind], match: RunMatchPair? = nil, format: Format) {
+        self.match = match
         id = "\(run.source.rawValue):\(run.id)"
         title = run.name ?? L10n.text("Run")
         startedAt = run.startedAt
-        sources = combined.sources
+        self.sources = sources
         distance = format.number(run.distanceMeters / 1_000, maxFractionDigits: 2) + " km"
         duration = Self.clockText(seconds: Int(run.durationSeconds.rounded()), format: format)
         pace = run.paceSecondsPerKm.map { format.minutesAndSeconds(Int($0.rounded())) + " /km" }
@@ -44,7 +49,7 @@ public struct HistoryRunActivity: Identifiable, Hashable, Sendable {
 
 /// Runs for History from `SourceReader` (ADR-0035). A failure in one source leaves the successful reads visible.
 struct HistoryRunReadings: Sendable {
-    let runs: [RunDeduplication.CombinedRun]
+    let runs: [RunActivity]
     let didRead: Bool
     let failedSources: Set<DataSourceKind>
 
@@ -55,7 +60,21 @@ struct HistoryRunReadings: Sendable {
     }
 
     static func load(sources: [any MetricsSource], from start: Date, to end: Date) async -> Self {
-        let reading = await SourceReader(sources: sources).readRuns(from: start, to: end)
+        let reading = await SourceReader(sources: sources).runOriginals(from: start, to: end)
         return Self(runs: reading.value, didRead: reading.didRead, failedSources: Set(reading.failedSources))
+    }
+}
+
+public struct HistoryRunReview: Identifiable, Sendable {
+    public let id: RunMatchPair
+    public let garmin: HistoryRunActivity
+    public let appleHealth: HistoryRunActivity
+    public let isSeparate: Bool
+
+    init(_ candidate: RunMatchCandidate, format: Format) {
+        id = candidate.pair
+        garmin = HistoryRunActivity(candidate.garmin, sources: [.garmin], format: format)
+        appleHealth = HistoryRunActivity(candidate.appleHealth, sources: [.appleHealth], format: format)
+        isSeparate = candidate.isSeparate
     }
 }

@@ -11,7 +11,7 @@ and the logger come before review tools, and work that only a person with an iPh
 ## Ready to implement
 
 1. **One activity log** — [#40](https://github.com/droidsam1/overreach/issues/40), in order
-   [#85](https://github.com/droidsam1/overreach/issues/85) → [#86](https://github.com/droidsam1/overreach/issues/86)
+   [#86](https://github.com/droidsam1/overreach/issues/86)
    → [#87](https://github.com/droidsam1/overreach/issues/87) → [#88](https://github.com/droidsam1/overreach/issues/88).
    Correct wrong merges and count every activity once.
 2. **Running priority and the shared schedule** —
