@@ -1,6 +1,6 @@
 # Training services: one source of truth per question
 
-Status: tasks 1–3 shipped (reviewed 2026-11-21). Decision: ADR-0035.
+Status: tasks 1–3 and part of 4 shipped (reviewed 2026-11-21). Decision: ADR-0035.
 
 ## Continue from here
 
@@ -17,7 +17,7 @@ Found on `main` at 569b67f (2026-11-21). Line numbers move; search for the names
 | Last deload or break | `DeloadAdvice.make` (`profile.deloads.last?.start`), `PlanAnalysis.run` (latest planned deload's end) | Start vs end, `last` vs `max`; see the run reading below. Today showed 51 weeks, Plan 2. |
 | Deload week in progress | `DeloadAdvice.make`, `WorkoutModel` (`deloadPlan`), `PlanAnalysis.run` | Three copies of the same date check; the workout's plan comes from `DeloadAdvisor.Settings()` defaults. |
 | Runs in a range | `TodayModel.readRecentRuns`, `PlanModel.analyse`, `HistoryRunReadings.load`, `AskAIModel.runs` | Today asks unavailable sources and marks any error as failed; Plan and Assistant skip unavailable ones; Assistant drops errors silently; History keeps three states. Deduplication happens in some callers and again inside `DeloadDetection`. |
-| Daily metrics | `TodayModel` (merged per day, source priority), `AskAIModel.metrics` | The Assistant sends one row per source and day, unmerged. |
+| Daily metrics | `TodayModel` (merged per day, source priority), `AskAIModel.metrics` | The Assistant sends one row per source and day, unmerged, as `docs/ai-exchange.md` documents; both now read through `SourceReader`. |
 | Stalled lifts | `WorkoutModel`, `PlanAnalysis.run`, `DeloadAdvisor`, `ContextPackBuilder` | Different settings fallbacks (skip the lift, or a 2.5 kg default) and different lift sets (all, main, any). |
 | Progression settings for an exercise | 13 call sites build `settings[id] ?? ProgressionSettings(for:)` or `ProgressionSettings(incrementKg: 2.5)` | Same as above; routine prescriptions are applied in `DeloadDetection` only. |
 | Recovery signals ("HRV low") | `ReadinessRules` (readings), `RecoveryTrend` (days of 7-day trend) | Same words for two measures. |
@@ -106,11 +106,21 @@ compares with defaults.
 
 ### 4. Readiness and the deload recommendation
 
-- [ ] Move the readiness and deload composition out of `TodayModel`/`DeloadAdvice` (which inputs, which windows)
-  into `TrainingServices`; `DeloadAdvice` keeps only the texts. Today passes only completed sessions to
-  `DeloadDetection` and Plan passes all of them: read them once there.
-- [ ] Give the AI context pack the same readiness and deload answers Today shows.
-- [ ] Distinct names for the per-reading and 7-day-trend HRV counts in the returned types.
+- [x] `ReadinessAssessment` (history window and the readiness call) and `DeloadAssessment` (in progress, proposal or
+  break to confirm, with `TrainingRecord` as its input) live in `TrainingServices`. `TodayModel` and `DeloadAdvice`
+  only format them. The history window now always covers the 7 days the recovery signals judge plus their full
+  baseline; without cycle tracking it used to stop at 60 days.
+- [x] `SourceReader.dailyMetricsBySource` keeps the AI context's documented rows per day and source (task 1 had
+  merged them, which dropped Apple Watch SDNN on days with Garmin HRV).
+- [ ] A `TrainingRecord` loader in `TrainingServices` that reads, for a day, the year of sessions, exercises,
+  settings, routines, runs, watch recordings, merged metrics, the week's check-ins, walks and the cycle context.
+  `TodayModel` and `AskAIModel` use it; `AppContainer` passes `AskAIModel` the activity and cycle sources it lacks.
+  Today passes only completed sessions to `DeloadDetection` and Plan passes all of them: decide once there.
+- [ ] Give the AI context pack the same readiness and deload answers Today shows: an optional `today` field
+  (readiness level and reasons, deload state and signals, as rule names), documented in `docs/ai-exchange.md`
+  (optional field, version stays 1). `AIExchange` may depend on `TrainingServices`.
+- [ ] Distinct names for the per-reading and 7-day-trend HRV counts (`RecoveryTrend.hrvLowDays` and its text);
+  coordinate the wording with [deloads task 5](deloads-and-breaks.md#5-today-deload-card-summary-first-details-on-demand).
 
 Finish line: the AI context and Today state the same readiness level and deload proposal for the same day.
 

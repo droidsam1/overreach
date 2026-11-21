@@ -117,14 +117,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings → Appearance: light, dark or the same as the iPhone (the default).
 
 ### Fixed
+- The recovery signals behind a deload proposal judge each of the last 7 days against a full 60-day baseline; without
+  cycle tracking the oldest days used a shorter one.
 - A lift is stalled or progressing in the same way in the workout, Plan, Today's deload advice and the AI context:
   all use the settings of the routine the lift was last trained in, and Plan no longer counts exercises left
   unfinished (ADR-0035).
 - Today, Plan and the workout count from the same last deload or break. Today no longer says "51 weeks since your
   last deload" when Plan shows one two weeks ago, and proposes no new deload in the week after one. With no deload in
   the history it says how many weeks of training it looked at (ADR-0035).
-- The context shared with an AI app has one row of health metrics per day, merged as Today shows them (Garmin
-  first), instead of one row per source. Every screen now reads Apple Health and Garmin the same way (ADR-0035).
 - Garmin sync counts each activity once when the same activity appears on multiple API pages.
 - The progression engine ignored the kind of set: warm-up sets in the history now no longer count for targets,
   stalls or the working weight.
