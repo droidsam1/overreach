@@ -103,7 +103,8 @@ struct RecoveryReadings {
                 lines.append(L10n.format("Reference: {1} (a fixed threshold)", amount))
             case .personalBaseline, .cyclePhase:
                 lines.append(L10n.format(
-                    "Usual: {1} over {2} days ({3} readings)", amount, String(reference.days), String(reference.readings)
+                    "Usual: {1} over {2} days ({3} readings)", amount,
+                    String(reference.days), String(reference.readings)
                 ))
             }
         }
@@ -130,10 +131,12 @@ struct RecoveryReadings {
                 summary: note, details: lines, isAvailable: true
             )
         }
+        let garmin = L10n.text("Garmin's estimate")
+        let watch = L10n.text("Watch estimate, follow the trend")
         return [
-            latest(.bodyBattery, L10n.text("Body Battery"), \.bodyBatteryHigh, digits: 0, note: L10n.text("Garmin's estimate")),
-            latest(.stress, L10n.text("Stress"), \.averageStress, digits: 0, note: L10n.text("Garmin's estimate")),
-            latest(.vo2Max, L10n.text("VO2max"), \.vo2Max, digits: 1, note: L10n.text("Watch estimate, follow the trend")),
+            latest(.bodyBattery, L10n.text("Body Battery"), \.bodyBatteryHigh, digits: 0, note: garmin),
+            latest(.stress, L10n.text("Stress"), \.averageStress, digits: 0, note: garmin),
+            latest(.vo2Max, L10n.text("VO2max"), \.vo2Max, digits: 1, note: watch),
         ].compactMap { $0 }
     }
 

@@ -35,50 +35,55 @@ struct RecentLoad {
             return nil
         }
         return [
-            strength(record, window), running(record, window), movement(record, today: today), garmin(record, today: today),
+            strength(record, window), running(record, window),
+            movement(record, today: today), garmin(record, today: today),
         ].compactMap { $0 }
     }
 
     private enum Window { case last, usual }
 
     private func strength(_ record: TrainingRecord, _ window: (Date) -> Window?) -> RecentLoadRow? {
-        var last = (count: 0, minutes: 0.0), usual = (count: 0, minutes: 0.0)
+        var last = (sessions: 0, minutes: 0.0), usual = (sessions: 0, minutes: 0.0)
         for session in record.sessions {
             let minutes = (session.durationSeconds ?? 0) / 60
             switch window(session.startedAt) {
-            case .last: last = (last.count + 1, last.minutes + minutes)
-            case .usual: usual = (usual.count + 1, usual.minutes + minutes)
+            case .last: last = (last.sessions + 1, last.minutes + minutes)
+            case .usual: usual = (usual.sessions + 1, usual.minutes + minutes)
             case nil: break
             }
         }
-        guard last.count > 0 || usual.count > 0 else { return nil }
-        let value = last.count == 0 ? L10n.text("No sessions") : L10n.format(
-            "{1} sessions · {2} min", String(last.count), format.number(last.minutes, maxFractionDigits: 0)
+        guard last.sessions > 0 || usual.sessions > 0 else { return nil }
+        let value = last.sessions == 0 ? L10n.text("No sessions") : L10n.format(
+            "{1} sessions · {2} min", String(last.sessions), format.number(last.minutes, maxFractionDigits: 0)
         )
         return RecentLoadRow(
             kind: .strength, title: L10n.text("Strength"), value: value,
-            comparison: usualText(count: Double(usual.count) / 3, noun: L10n.text("sessions"), amount: usual.minutes / 3, unit: "min"),
+            comparison: usualText(
+                count: Double(usual.sessions) / 3, noun: L10n.text("sessions"), amount: usual.minutes / 3, unit: "min"
+            ),
             details: [L10n.text("Logged sessions in the app, last 7 days against the 3 weeks before.")]
         )
     }
 
     private func running(_ record: TrainingRecord, _ window: (Date) -> Window?) -> RecentLoadRow? {
         guard !record.runReadFailed else { return nil }
-        var last = (count: 0, km: 0.0), usual = (count: 0, km: 0.0)
+        var last = (runs: 0, km: 0.0), usual = (runs: 0, km: 0.0)
         for run in record.runs where run.distanceMeters.isFinite {
             switch window(run.startedAt) {
-            case .last: last = (last.count + 1, last.km + run.distanceMeters / 1_000)
-            case .usual: usual = (usual.count + 1, usual.km + run.distanceMeters / 1_000)
+            case .last: last = (last.runs + 1, last.km + run.distanceMeters / 1_000)
+            case .usual: usual = (usual.runs + 1, usual.km + run.distanceMeters / 1_000)
             case nil: break
             }
         }
-        guard last.count > 0 || usual.count > 0 else { return nil }
-        let value = last.count == 0 ? L10n.text("No runs") : L10n.format(
-            "{1} runs · {2} km", String(last.count), format.number(last.km, maxFractionDigits: 1)
+        guard last.runs > 0 || usual.runs > 0 else { return nil }
+        let value = last.runs == 0 ? L10n.text("No runs") : L10n.format(
+            "{1} runs · {2} km", String(last.runs), format.number(last.km, maxFractionDigits: 1)
         )
         return RecentLoadRow(
             kind: .running, title: L10n.text("Running"), value: value,
-            comparison: usualText(count: Double(usual.count) / 3, noun: L10n.text("runs"), amount: usual.km / 3, unit: "km"),
+            comparison: usualText(
+                count: Double(usual.runs) / 3, noun: L10n.text("runs"), amount: usual.km / 3, unit: "km"
+            ),
             details: [L10n.text("Each run counts once, even when several sources recorded it.")]
         )
     }
