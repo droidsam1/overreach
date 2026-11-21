@@ -4,17 +4,11 @@ import Foundation
 import PresentationKit
 import TrainingServices
 
-/// One reason behind a deload proposal, with the strength of its evidence.
-public struct DeloadReasonLine: Hashable, Sendable {
-    public let text: String
-    public let evidence: String
-}
-
 /// What Today shows about deloads: a proposal with its reasons, or the deload week in progress.
 public struct DeloadAdvice: Hashable, Sendable {
     public enum State: Hashable, Sendable {
         /// Training and recovery suggest a deload week now.
-        case proposed(reasons: [DeloadReasonLine])
+        case proposed(DeloadExplanation)
         /// An accepted deload week, until `lastDay`.
         case inProgress(lastDay: Date)
         /// A deload would be proposed, but a recent break the athlete has not confirmed may already have been one.
@@ -55,20 +49,16 @@ public struct DeloadAdvice: Hashable, Sendable {
                 )),
                 planText: planText
             )
-        case let .proposed(proposal, walkingIncluded):
-            let namesByID = Exercise.displayNames(exercises)
-            let names = proposal.stalledExerciseIDs.compactMap { namesByID[$0] }.sorted()
-            let reasons = proposal.signals.map { signal in
-                let summary = text(for: signal, format: format, walkingIncluded: walkingIncluded)
-                if case .liftsStalled = signal, !names.isEmpty {
-                    return DeloadReasonLine(
-                        text: L10n.format("{1} The stalled exercises are {2}.", summary, names.joined(separator: ", ")),
-                        evidence: signal.evidence.level.displayName
-                    )
-                }
-                return DeloadReasonLine(text: summary, evidence: signal.evidence.level.displayName)
-            }
-            return DeloadAdvice(state: .proposed(reasons: reasons), planText: planText)
+        case let .proposed(proposal, walkingIncluded, lastRecovery):
+            let explanation = DeloadExplanation.make(
+                proposal, exercises: exercises, walkingIncluded: walkingIncluded,
+                lastRest: (
+                    text: DeloadExplanation.restText(lastRecovery, calendar: calendar, format: format),
+                    kind: lastRecovery?.kind
+                ),
+                format: format
+            )
+            return DeloadAdvice(state: .proposed(explanation), planText: planText)
         }
     }
 

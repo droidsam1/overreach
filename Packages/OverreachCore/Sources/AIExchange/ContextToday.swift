@@ -17,7 +17,7 @@ extension ContextPack {
                 deload = TodayDeload(state: "inProgress")
             case .confirmBreak:
                 deload = TodayDeload(state: "confirmBreak")
-            case let .proposed(proposal, _):
+            case let .proposed(proposal, _, _):
                 deload = TodayDeload(state: "proposed", signals: proposal.signals.map(Self.signalName))
             case nil:
                 deload = TodayDeload(state: "none")

@@ -10,11 +10,22 @@ public struct TodayView: View {
     @State private var model: TodayModel
     @State private var checkInSheet: CheckInModel?
     private let onConnectGarmin: () -> Void
+    private let recoveryHistory: (() -> AnyView)?
 
-    /// - Parameter onConnectGarmin: opens the Garmin setup (wired by the App: it belongs to Settings).
     public init(model: TodayModel, onConnectGarmin: @escaping () -> Void = {}) {
         _model = State(initialValue: model)
         self.onConnectGarmin = onConnectGarmin
+        recoveryHistory = nil
+    }
+
+    /// - Parameter onConnectGarmin: opens the Garmin setup (wired by the App: it belongs to Settings).
+    public init<RecoveryHistory: View>(
+        model: TodayModel, onConnectGarmin: @escaping () -> Void = {},
+        @ViewBuilder recoveryHistory: @escaping () -> RecoveryHistory
+    ) {
+        _model = State(initialValue: model)
+        self.onConnectGarmin = onConnectGarmin
+        self.recoveryHistory = { AnyView(recoveryHistory()) }
     }
 
     private var columns: [GridItem] {
@@ -114,23 +125,11 @@ public struct TodayView: View {
     private func deload(_ advice: DeloadAdvice) -> some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
             switch advice.state {
-            case let .proposed(reasons):
-                Label("Deload week suggested", systemImage: "arrow.down.right.circle.fill")
-                    .font(.headline)
-                    .foregroundStyle(.orange)
-                ForEach(reasons, id: \.self) { reason in
-                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                        Text(reason.text).font(.subheadline)
-                        Text(reason.evidence).font(.caption).foregroundStyle(.secondary)
-                    }
-                }
-                Text(advice.planText).font(.footnote).foregroundStyle(.secondary)
-                deloadApplication
-                HStack {
-                    Button("Start deload week") { Task { await model.acceptDeload() } }
-                        .buttonStyle(.borderedProminent)
-                    Button("Not now") { Task { await model.postponeDeload() } }
-                        .buttonStyle(.bordered)
+            case let .proposed(explanation):
+                DeloadProposalCard(
+                    model: model, advice: advice, explanation: explanation, recoveryHistory: recoveryHistory
+                ) {
+                    deloadApplication
                 }
             case let .inProgress(lastDay):
                 Label("Deload week", systemImage: "arrow.down.right.circle.fill")

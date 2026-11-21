@@ -140,6 +140,10 @@ public enum FurtherReading {
         "Effects of linear and daily undulating periodized resistance training programs on measures of muscle "
             + "hypertrophy", "Grgic et al., PeerJ", 2017, "https://peerj.com/articles/3695"
     )
+    private static let bell = study(
+        "Integrating deloading into strength and physique sports training programmes",
+        "Bell et al., Sports Medicine Open", 2023, "https://pmc.ncbi.nlm.nih.gov/articles/PMC10511399/"
+    )
     private static let rogerson = study(
         "Deloading practices in strength and physique sports: a cross-sectional survey",
         "Rogerson et al., Sports Medicine – Open", 2024, "https://pmc.ncbi.nlm.nih.gov/articles/PMC10948666"
@@ -195,8 +199,9 @@ public enum FurtherReading {
         "rest-hypertrophy": [singer],
         "periodization": [fiveThreeOne, moesgaard, grgicPeriodization],
         "stall-heuristics": [strengthBasics],
-        "deload-design": [rogerson],
+        "deload-design": [bell],
         "deload-practice": [rogerson],
+        "deload-recovery-signals": [saw],
         "weekly-load-change": [lolli],
         "warm-up-general": [strengthBasics],
         "readiness-hrv": [hrvIntro, hrvGuided],
