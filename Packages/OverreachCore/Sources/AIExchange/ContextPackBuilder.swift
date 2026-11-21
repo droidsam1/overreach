@@ -91,7 +91,7 @@ public enum ContextPackBuilder {
                 shared.watch = watchBySession[session.id].map(watch)
                 return shared
             },
-            exerciseTrends: trends(input, sessions: sessions, byID: byID),
+            exerciseTrends: trends(input, sessions: sessions, byID: byID, now: now),
             checkIns: input.checkIns.sorted { $0.day < $1.day }.map { checkIn in
                 .init(date: checkIn.day.description, isSick: checkIn.isSick, energy: checkIn.energy,
                       soreness: checkIn.soreness, note: checkIn.note)
@@ -206,13 +206,13 @@ public enum ContextPackBuilder {
     }
 
     private static func trends(
-        _ input: ContextInput, sessions: [StrengthSession], byID: [UUID: Exercise]
+        _ input: ContextInput, sessions: [StrengthSession], byID: [UUID: Exercise], now: Date
     ) -> [ContextPack.ExerciseTrend] {
         // The same status the logger, Plan and Today give each lift (ADR-0035).
         let statuses = Dictionary(
             LiftStatus.assessAll(
                 index: ExposureIndex(sessions: input.earlierSessions + sessions), exercises: byID,
-                stored: input.settings, routines: input.routines
+                stored: input.settings, routines: input.routines, now: now
             ).map { ($0.exerciseID, $0.status) },
             uniquingKeysWith: { first, _ in first }
         )

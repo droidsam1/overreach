@@ -14,7 +14,7 @@ and the logger come before review tools, and work that only a person with an iPh
    recovery and lift status are shared; readiness and the deload composition remain.
 2. **Correct deload signals** —
    [deloads and breaks, task 2](design/deloads-and-breaks.md#2-count-only-lifts-in-current-training-and-say-which).
-   Stalls count lifts no longer trained.
+   Check rotation membership, show the lifts behind the signals and require evidence of fatigue.
 3. **Breaks per discipline, counted automatically** —
    [tasks 3–4](design/deloads-and-breaks.md#3-breaks-per-discipline-counted-automatically). A setting that counts a
    week without lifting or running as rest, and Plan asking only about recent periods.

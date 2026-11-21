@@ -80,18 +80,17 @@ Finish line: with the same data, Today and Plan never disagree about the last de
 
 ### 2. Count only lifts in current training, and say which
 
-- [ ] A lift takes part in stall, drop and RPE-creep signals only if it was trained in the last 28 days
-  (`DeloadAdvisor.Settings.lookbackDays`) and, when a rotation or routine exists (`SessionRotation`, ADR-0033), is
-  in it.
-- [ ] Say "main lifts" only when lifts are marked main; otherwise "lifts you train now".
+- [x] Require an exposure in the last 28 days (`DeloadAdvisor.Settings.lookbackDays`) for lift signals.
+- [ ] When a rotation or routine exists (`SessionRotation`, ADR-0033), count only its exercises.
+- [x] Say "main lifts" when lifts are marked main and "lifts you train now" otherwise.
 - [ ] Add `StallDetection` output that explains a stall: exercise, the date progress stopped (first exposure of the
   flat window), best estimated 1RM and the set behind it, last exposure, and the `StallSuggestion`s.
 - [ ] Rule change: a deload proposal needs at least one fatigue signal (performance drop, RPE creep, weekly load
   spike or a sustained recovery signal). Stalls and the interval reinforce it. Stalls alone produce per-lift
   suggestions (task 6) instead. Record the change in a new ADR (next free number) and update `stall-heuristics`,
   `deload-design` and [progression engine](progression-engine.md#deload-proposals).
-- [ ] Tests: a lift last trained 3 months ago is not counted; 3 stalled current lifts with no fatigue signal give no
-  proposal; adding RPE creep gives one.
+- [x] Tests: a stale lift is excluded from current stalls in Today, Plan, Workout and the AI context.
+- [ ] Tests: three stalled current lifts with no fatigue signal give no proposal. Adding RPE creep gives one.
 
 Finish line: every stalled lift Overreach mentions is one the athlete trains now, and Today can name it.
 

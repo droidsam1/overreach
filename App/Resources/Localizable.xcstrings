@@ -16678,6 +16678,23 @@
         }
       }
     },
+    "{1} lifts you train now have stalled.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Te has estancado en {1} de los ejercicios que entrenas ahora."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estancácheste en {1} dos exercicios que adestras agora."
+          }
+        }
+      }
+    },
     "{1} main lifts have stalled.": {
       "extractionState": "manual",
       "localizations": {

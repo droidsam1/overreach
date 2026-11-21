@@ -24,16 +24,16 @@ struct DeloadRecoveryTests {
     }
 
     /// Stalled on 102.5 kg for three sessions: a performance signal (2 points with two lifts).
-    private var stalled: DeloadAdvisor.Lift {
-        DeloadAdvisor.Lift(history: [
+    private var stalled: LiftStatus {
+        LiftStatus.assess(exerciseID: UUID(), history: [
             exposure(-18, 95, [5, 5, 5]), exposure(-15, 97.5, [5, 5, 5]), exposure(-12, 100, [5, 5, 5]),
             exposure(-9, 102.5, [4, 4, 4]), exposure(-6, 102.5, [4, 4, 3]), exposure(-3, 102.5, [4, 3, 3]),
-        ], settings: main)
+        ], settings: main, now: now)
     }
 
-    private var progressing: DeloadAdvisor.Lift {
-        DeloadAdvisor.Lift(history: (0..<6).map { exposure(-18 + $0 * 3, 100 + Double($0) * 2.5, [5, 5, 5]) },
-                           settings: main)
+    private var progressing: LiftStatus {
+        let history = (0..<6).map { exposure(-18 + $0 * 3, 100 + Double($0) * 2.5, [5, 5, 5]) }
+        return LiftStatus.assess(exerciseID: UUID(), history: history, settings: main, now: now)
     }
 
     private let poorRecovery = RecoveryTrend(
@@ -47,7 +47,7 @@ struct DeloadRecoveryTests {
         let proposal = try #require(DeloadAdvisor.proposal(
             lifts: lifts, lastRecovery: deloadEnded(at(-14)), recovery: RecoveryTrend(hrvLowDays: 5), now: now
         ))
-        #expect(proposal.signals == [.liftsStalled(count: 2), .hrvSuppressed(days: 5)])
+        #expect(proposal.signals == [.liftsStalled(count: 2, mainLifts: true), .hrvSuppressed(days: 5)])
         #expect(proposal.score == 3)
         #expect(proposal.signals.last?.evidence.key == "deload-recovery-signals")
     }
