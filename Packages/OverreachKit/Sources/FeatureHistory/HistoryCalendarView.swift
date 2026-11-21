@@ -33,6 +33,7 @@ struct HistoryCalendarView: View {
             if showsAgenda {
                 agenda
             }
+            RunMatchReviewLink(history: history, calendar: true)
             Section {
                 totals
             } footer: {
@@ -237,7 +238,7 @@ private struct DayDetailRows: View {
         }
         ForEach(detail.runs) { run in
             NavigationLink {
-                HistoryRunDetail(run: run)
+                HistoryRunDetail(run: run, history: history)
             } label: {
                 HistoryRunRow(run: run, showsDate: false)
             }

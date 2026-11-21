@@ -42,7 +42,9 @@ struct HistoryRunRow: View {
 }
 
 struct HistoryRunDetail: View {
+    @Environment(\.dismiss) private var dismiss
     let run: HistoryRunActivity
+    let history: HistoryModel
 
     var body: some View {
         List {
@@ -63,6 +65,14 @@ struct HistoryRunDetail: View {
                 }
                 ForEach(run.trainingMetrics) { metric in
                     LabeledContent(metric.label, value: metric.value)
+                }
+            }
+            if let match = run.match {
+                Section {
+                    Button("Undo run link") {
+                        history.chooseRunMatch(.separate, for: match)
+                        dismiss()
+                    }
                 }
             }
         }

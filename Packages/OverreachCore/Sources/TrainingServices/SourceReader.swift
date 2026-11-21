@@ -71,9 +71,17 @@ public struct SourceReader: Sendable {
 
     /// Runs started in the range, each run once with every source that recorded it, oldest first.
     public func readRuns(from start: Date, to end: Date) async -> SourceReading<[RunDeduplication.CombinedRun]> {
+        let results = await runOriginals(from: start, to: end)
+        return SourceReading(
+            value: RunDeduplication.combiningSources(results.value),
+            readSources: results.readSources, failures: results.failures
+        )
+    }
+
+    public func runOriginals(from start: Date, to end: Date) async -> SourceReading<[RunActivity]> {
         let results = await read { try await $0.runs(from: start, to: end) }
         return SourceReading(
-            value: RunDeduplication.combiningSources(results.value.flatMap { $0 }),
+            value: results.value.flatMap { $0 },
             readSources: results.readSources, failures: results.failures
         )
     }

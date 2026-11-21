@@ -35,6 +35,52 @@ struct HistoryModelTests {
         return (model, store)
     }
 
+    @Test func runMatchChoicesUpdateCalendarAndListAndRestoreOnRelaunch() async throws {
+        let day = CalendarDay(year: 2026, month: 11, day: 10)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "UTC"))
+        let start = day.startDate(in: calendar).addingTimeInterval(3_600)
+        let fixedNow = start.addingTimeInterval(7_200)
+        let watch = RunActivity(
+            id: "g", source: .garmin, startedAt: start, durationSeconds: 1_800, distanceMeters: 5_000
+        )
+        let copy = RunActivity(
+            id: "h", source: .appleHealth, startedAt: start, durationSeconds: 1_800, distanceMeters: 5_000
+        )
+        let store = TestStore()
+        var saved: [RunMatchPair: RunMatchChoice] = [:]
+        func launch() async -> HistoryModel {
+            let model = HistoryModel(
+                workouts: store, exercises: store, routines: store, runSources: [
+                    TimelineRuns(kind: .garmin, activities: [watch]),
+                    TimelineRuns(kind: .appleHealth, activities: [copy]),
+                ],
+                calendar: calendar, runChoices: saved, saveRunChoices: { saved = $0 }, clock: { fixedNow }
+            )
+            await model.load()
+            await model.calendar.load()
+            model.calendar.select(day)
+            return model
+        }
+
+        let first = await launch()
+        let pair = RunMatchPair(garminID: watch.id, appleHealthID: copy.id)
+        #expect(first.rows.count == 1)
+        first.chooseRunMatch(.separate, for: pair)
+        #expect(first.rows.count == 2)
+        #expect(first.calendar.selectedDetail?.runs.count == 2)
+
+        let restored = await launch()
+        #expect(restored.runReviews.first?.isSeparate == true)
+        #expect(restored.calendar.runs.count == 2)
+        restored.chooseRunMatch(.linked, for: pair)
+        await restored.load()
+        await restored.calendar.load()
+        #expect(restored.rows.count == 1)
+        #expect(restored.calendar.runs.count == 1)
+        #expect(saved[pair] == .linked)
+    }
+
     @Test func listsNewestFirstWithStats() async {
         let (model, _) = await model([
             session("Old", daysAgo: 5, sets: [WorkoutSet(weightKg: 100, reps: 5)]),

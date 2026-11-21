@@ -21,8 +21,9 @@ public enum RunDeduplication {
 
     /// The canonical record and the sources that contributed to it, preferred source first.
     public struct CombinedRun: Hashable, Sendable {
-        public fileprivate(set) var activity: RunActivity
-        public fileprivate(set) var sources: [DataSourceKind]
+        public internal(set) var activity: RunActivity
+        public internal(set) var sources: [DataSourceKind]
+        public internal(set) var match: RunMatchPair?
     }
 
     /// One record per run, oldest first.
@@ -50,13 +51,15 @@ public enum RunDeduplication {
                 kept.append(CombinedRun(activity: run, sources: [run.source]))
             }
         }
-        return kept.sorted {
-            ($0.activity.startedAt, $0.activity.id, $0.activity.source.rawValue)
-                < ($1.activity.startedAt, $1.activity.id, $1.activity.source.rawValue)
-        }
+        return kept.sorted(by: chronological)
     }
 
-    private static func preferredFirst(_ lhs: RunActivity, _ rhs: RunActivity) -> Bool {
+    static func chronological(_ lhs: CombinedRun, _ rhs: CombinedRun) -> Bool {
+        (lhs.activity.startedAt, lhs.activity.id, lhs.activity.source.rawValue)
+            < (rhs.activity.startedAt, rhs.activity.id, rhs.activity.source.rawValue)
+    }
+
+    static func preferredFirst(_ lhs: RunActivity, _ rhs: RunActivity) -> Bool {
         let leftRank = rank(lhs.source)
         let rightRank = rank(rhs.source)
         if leftRank != rightRank { return leftRank < rightRank }
@@ -74,7 +77,7 @@ public enum RunDeduplication {
         return overlap / shorter >= minimumOverlapFraction
     }
 
-    private static func filling(_ kept: RunActivity, from other: RunActivity) -> RunActivity {
+    static func filling(_ kept: RunActivity, from other: RunActivity) -> RunActivity {
         var run = kept
         run.name = run.name ?? other.name
         run.averageHeartRate = run.averageHeartRate ?? other.averageHeartRate

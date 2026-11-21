@@ -66,6 +66,10 @@ public final class HistoryCalendarModel {
     public private(set) var isLoading = false
     public private(set) var sessions: [StrengthSession] = []
     private var runRecords: [RunDeduplication.CombinedRun] = []
+    private var runOriginals: [RunActivity] = []
+    private var loadedRunInterval: DateInterval?
+    private var runChoices: [RunMatchPair: RunMatchChoice]
+    public private(set) var runReviews: [HistoryRunReview] = []
     public var runs: [RunActivity] { runRecords.map(\.activity) }
     public private(set) var steps: [CalendarDay: Int] = [:]
     /// Whether reading Apple Health failed for the shown month.
@@ -91,6 +95,7 @@ public final class HistoryCalendarModel {
         runSources: [any MetricsSource] = [],
         calendar: Calendar = .current,
         format: Format = Format(),
+        runChoices: [RunMatchPair: RunMatchChoice] = [:],
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
@@ -99,6 +104,7 @@ public final class HistoryCalendarModel {
         self.calendar = calendar
         self.format = format
         self.clock = clock
+        self.runChoices = runChoices
         month = Self.firstDay(of: CalendarDay(clock(), calendar: calendar))
     }
 
@@ -322,7 +328,9 @@ public final class HistoryCalendarModel {
         sessions = loadedSessions ?? []
         sessionsFailed = loadedSessions == nil
         steps = loadedSteps
-        runRecords = runResults.runs.filter { $0.activity.startedAt >= start && $0.activity.startedAt < end }
+        runOriginals = runResults.runs
+        loadedRunInterval = DateInterval(start: start, end: end)
+        resolveRuns()
         didReadRuns = runResults.didRead
         runWarning = runResults.warning(excluding: [.appleHealth])
         activityFailed = failed || runResults.failedSources.contains(.appleHealth)
@@ -349,6 +357,21 @@ public final class HistoryCalendarModel {
     static func fraction(steps: Int, average: Double?) -> Double {
         guard let average, average > 0 else { return 0 }
         return min(1, Double(steps) / average)
+    }
+
+    func updateRunChoices(_ choices: [RunMatchPair: RunMatchChoice]) {
+        runChoices = choices
+        resolveRuns()
+    }
+
+    private func resolveRuns() {
+        guard let interval = loadedRunInterval else { return }
+        let dates = interval.start..<interval.end
+        let result = RunDeduplication.resolve(runOriginals, choices: runChoices)
+        runRecords = result.runs.filter { dates.contains($0.activity.startedAt) }
+        runReviews = result.candidates
+            .filter { dates.contains($0.garmin.startedAt) || dates.contains($0.appleHealth.startedAt) }
+            .map { HistoryRunReview($0, format: format) }
     }
 
     private func accessibilityLabel(day: CalendarDay, strength: Int, runs: Int, steps: Int?) -> String {

@@ -66,6 +66,7 @@ public struct HistoryView: View {
             if let warning = model.runWarning {
                 StatusLabel(title: warning, tone: .caution)
             }
+            RunMatchReviewLink(history: model, calendar: false)
             ForEach(model.rows) { row in
                 switch row {
                 case let .session(summary):
@@ -94,7 +95,7 @@ public struct HistoryView: View {
                     }
                 case let .run(run):
                     NavigationLink {
-                        HistoryRunDetail(run: run)
+                        HistoryRunDetail(run: run, history: model)
                     } label: {
                         HistoryRunRow(run: run)
                     }
