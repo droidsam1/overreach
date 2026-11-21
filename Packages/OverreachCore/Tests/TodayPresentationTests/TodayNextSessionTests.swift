@@ -57,7 +57,8 @@ struct TodayNextSessionTests {
 
         #expect(model.strengthOption?.heading == "Based on a recent session · B")
         #expect(model.strengthChoices.map(\.title) == ["B", "A", "D", "C"])
-        #expect(model.strengthChoiceNote == "Your recent sessions don't follow a fixed order yet. Choose the one you plan to do.")
+        #expect(model.strengthChoiceNote
+            == "Your recent sessions don't follow a fixed order yet. Choose the one you plan to do.")
 
         let chosen = try #require(model.strengthChoices.first { $0.title == "C" })
         model.chooseStrengthSession(chosen.id)

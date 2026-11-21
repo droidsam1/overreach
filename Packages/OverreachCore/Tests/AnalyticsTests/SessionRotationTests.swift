@@ -46,7 +46,8 @@ struct SessionRotationTests {
 
     @Test func oneRepeatedWorkoutNeedsThreeSessions() throws {
         #expect(SessionRotation.detect(in: sessions(["Full body", "Full body"])) == nil)
-        let rotation = try #require(SessionRotation.detect(in: sessions(["Gym", "Full body", "full body", "Full Body"])))
+        let history = sessions(["Gym", "Full body", "full body", "Full Body"])
+        let rotation = try #require(SessionRotation.detect(in: history))
         #expect(rotation.order.count == 1)
     }
 

@@ -618,7 +618,8 @@ public final class TodayModel {
         }
         let blocks = profile?.declaredBlocks ?? []
         let rotationStart = today.adding(days: -Self.rotationHistoryDays, calendar: calendar).startDate(in: calendar)
-        let blockStart = PlanSchedule.runningBlock(blocks, today: today, calendar: calendar)?.start.startDate(in: calendar)
+        let blockStart = PlanSchedule.runningBlock(blocks, today: today, calendar: calendar)?.start
+            .startDate(in: calendar)
         async let logged = try? workouts.sessions(from: min(rotationStart, blockStart ?? rotationStart), to: now)
         async let allRoutines = try? routines?.allRoutines()
         async let allSettings = try? progression?.allProgressionSettings()
@@ -664,12 +665,16 @@ public final class TodayModel {
         let slots = context.rotation?.order ?? context.recent
         strengthChoices = slots.count >= 2 ? slots.map { StrengthChoice(id: $0.id, title: $0.name) } : []
         let selected = chosenWorkout?.id ?? context.rotation?.next.id
-        strengthChoices = strengthChoices.map { StrengthChoice(id: $0.id, title: $0.title, isSelected: $0.id == selected) }
+        strengthChoices = strengthChoices.map {
+            StrengthChoice(id: $0.id, title: $0.title, isSelected: $0.id == selected)
+        }
         if let rotation = context.rotation, rotation.order.count >= 2 {
             let cycle = rotation.order.map(\.name).joined(separator: " → ")
             strengthChoiceNote = L10n.format("You rotate through {1}. Next up: {2}.", cycle, rotation.next.name)
         } else if strengthChoices.count >= 2 {
-            strengthChoiceNote = L10n.text("Your recent sessions don't follow a fixed order yet. Choose the one you plan to do.")
+            strengthChoiceNote = L10n.text(
+                "Your recent sessions don't follow a fixed order yet. Choose the one you plan to do."
+            )
         } else {
             strengthChoiceNote = nil
         }
@@ -716,9 +721,11 @@ public final class TodayModel {
     public var deloadHowTo: String? {
         guard let advice = deloadAdvice else { return nil }
         if case .confirmBreak = advice.state { return nil }
-        if deloadSession != nil { return L10n.text("Apply it to every session of the week, starting with the next one:") }
+        if deloadSession != nil {
+            return L10n.text("Apply it to every session of the week, starting with the next one:")
+        }
         return L10n.text(
-            "Apply it to every session of the week. For example, 4 × 6 with 100 kg becomes 2 × 6 with 90 kg, stopping each set with at least 3 reps left."
+            "Every session this week: for example, 4 × 6 at 100 kg becomes 2 × 6 at 90 kg, with at least 3 reps left."
         )
     }
 

@@ -31,17 +31,20 @@ public struct DeloadSessionPreview: Hashable, Sendable {
             .filter { seen.insert($0.exerciseID).inserted }
             .compactMap { entry -> Row? in
                 guard let exercise = byID[entry.exerciseID],
-                      let exposure = ExerciseExposure.history(of: entry.exerciseID, in: [session]).last else { return nil }
+                      let exposure = ExerciseExposure.history(of: entry.exerciseID, in: [session]).last
+                else { return nil }
                 let increment = settings[exercise.id]?.incrementKg ?? ProgressionSettings(for: exercise).incrementKg
                 let sets = exposure.setsAtWorkingWeight
                 guard let reps = sets.compactMap(\.reps).max() else { return nil }
                 let weight = exposure.workingWeightKg
                 let count = max(1, Int((Double(exposure.sets.count) * plan.setMultiplier).rounded()))
-                let lighter = weight > 0 ? LoadPrescription.round(weight * plan.loadMultiplier, toIncrement: increment) : 0
+                let lighter = weight > 0
+                    ? LoadPrescription.round(weight * plan.loadMultiplier, toIncrement: increment) : 0
                 return Row(
                     id: exercise.id, title: exercise.displayName,
-                    reference: L10n.format("Last time · {1}", text(sets: exposure.sets.count, reps: reps, weight: weight,
-                                                                    format: format)),
+                    reference: L10n.format(
+                        "Last time · {1}", text(sets: exposure.sets.count, reps: reps, weight: weight, format: format)
+                    ),
                     deload: L10n.format("Deload · {1}", text(sets: count, reps: reps, weight: lighter, format: format))
                 )
             }

@@ -68,7 +68,8 @@ public struct SessionRotation: Hashable, Sendable {
             let slot = slot(for: session)
             guard !slot.name.isEmpty || session.routineID != nil else { continue }
             // The same workout twice within a few hours is one session recorded twice or split in two.
-            if result.last?.id == slot.id, let lastStart, session.startedAt.timeIntervalSince(lastStart) < duplicateWindow {
+            if result.last?.id == slot.id, let lastStart,
+               session.startedAt.timeIntervalSince(lastStart) < duplicateWindow {
                 continue
             }
             result.append(slot)

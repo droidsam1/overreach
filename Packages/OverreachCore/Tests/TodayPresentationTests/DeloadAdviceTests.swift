@@ -176,7 +176,7 @@ struct DeloadAdviceTests {
         await model.load(now: now)
 
         #expect(model.deloadSession == nil)
-        #expect(model.deloadHowTo?.hasPrefix("Apply it to every session of the week. For example, 4 × 6") == true)
+        #expect(model.deloadHowTo?.hasPrefix("Every session this week: for example, 4 × 6") == true)
         #expect(model.showsNextSessionInDeload)
         #expect(model.strengthChoices.count == 6)
 
