@@ -829,7 +829,6 @@ public final class TodayModel {
         return (reading.activities, reading.failed)
     }
 
-
     /// Asks every source for access (the Apple Health permission sheet), then reloads.
     public func connectHealth(now: Date = .now) async {
         accessError = nil
