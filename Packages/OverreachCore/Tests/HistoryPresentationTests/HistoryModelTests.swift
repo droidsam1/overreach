@@ -283,6 +283,61 @@ struct LogWatchWorkoutTests {
         #expect(model.detail(for: saved.id)?.recording?.id == "g1")  // the watch's data is on the session
     }
 
+    @Test func strengthChoicesSurviveReloadAndKeepCalendarAndDetailInSync() async throws {
+        let date = now.addingTimeInterval(-60 * 60)
+        let sets = [WorkoutSet(weightKg: 100, reps: 5, rpe: 8)]
+        let first = StrengthSession(
+            name: "Upper", startedAt: date,
+            entries: [ExerciseEntry(exerciseID: squat.id, sets: sets)], notes: "Keep this"
+        )
+        let second = StrengthSession(name: "Lower", startedAt: date)
+        let recording = RecordedStrengthActivity(
+            id: "g1", source: .garmin, startedAt: date, durationSeconds: 1_800, averageHeartRate: 120
+        )
+        let store = TestStore(exercises: [squat], sessions: [first, second])
+        let fixedNow = now
+        var saved: [StrengthMatchPair: StrengthMatchChoice] = [:]
+        let initial = HistoryModel(
+            workouts: store, exercises: store, routines: store,
+            recordedStrength: StrengthRecordings(activities: [recording]),
+            saveStrengthChoices: { saved = $0 }, clock: { fixedNow }
+        )
+        await initial.load()
+        #expect(initial.strengthReviews.count == 2)
+        let candidate = try #require(initial.strengthReviews.first { $0.id.sessionID == first.id })
+        initial.chooseStrengthMatch(.linked, for: candidate.id)
+
+        let restored = HistoryModel(
+            workouts: store, exercises: store, routines: store,
+            recordedStrength: StrengthRecordings(activities: [recording]),
+            strengthChoices: saved, clock: { fixedNow }
+        )
+        await restored.load()
+        await restored.calendar.load()
+        restored.calendar.select(nil)
+        restored.calendar.select(CalendarDay(date))
+        #expect(restored.rows.count == 2)
+        #expect(restored.detail(for: first.id)?.recording?.id == "g1")
+        #expect(restored.calendar.selectedDetail?.recordings.isEmpty == true)
+
+        var edited = first
+        edited.startedAt = date.addingTimeInterval(-86_400)
+        try await store.save(edited)
+        restored.didSave(edited)
+        #expect(restored.detail(for: first.id)?.recording?.id == "g1")
+
+        restored.separateStrengthMatch(for: first.id)
+        #expect(restored.rows.count == 3)
+        #expect(restored.detail(for: first.id)?.recording == nil)
+        #expect(restored.detail(for: first.id)?.notes == "Keep this")
+        #expect(restored.session(id: first.id)?.entries.first?.sets == sets)
+        #expect(restored.calendar.selectedDetail?.recordings.map(\.id) == ["g1"])
+
+        restored.chooseStrengthMatch(.linked, for: candidate.id)
+        await restored.delete(first.id)
+        #expect(restored.detail(for: second.id)?.recording?.id == "g1")
+    }
+
     @Test func garminAndItsAppleHealthCopyAreOneWatchWorkout() async {
         let garmin = RecordedStrengthActivity(
             id: "g1", source: .garmin, startedAt: now.addingTimeInterval(-86_400), durationSeconds: 3_000,

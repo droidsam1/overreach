@@ -90,8 +90,9 @@ public struct HistoryMetric: Identifiable, Hashable, Sendable {
 }
 
 /// Read-only display values from a watch, also shown alongside the matched session's logged sets.
-public struct HistoryStrengthActivity: Identifiable, Sendable {
+public struct HistoryStrengthActivity: Identifiable, Hashable, Sendable {
     public let id: String
+    public let recordingID: StrengthRecordingID
     let sourceKind: DataSourceKind
     public var source: String { sourceKind.displayName }
     public let startedAt: Date
@@ -103,6 +104,7 @@ public struct HistoryStrengthActivity: Identifiable, Sendable {
 
     init(_ activity: RecordedStrengthActivity, format: Format) {
         id = activity.id
+        recordingID = StrengthRecordingID(activity)
         sourceKind = activity.source
         startedAt = activity.startedAt
         durationSeconds = activity.durationSeconds
@@ -121,5 +123,25 @@ public struct HistoryStrengthActivity: Identifiable, Sendable {
             load: activity.trainingLoad, aerobic: activity.aerobicTrainingEffect,
             anaerobic: activity.anaerobicTrainingEffect, format: format
         )
+    }
+}
+
+public struct HistoryStrengthReview: Identifiable, Sendable {
+    public let id: StrengthMatchPair
+    public let sessionName: String
+    public let sessionSource: String
+    public let sessionStart: Date
+    public let sessionDuration: Double?
+    public let recording: HistoryStrengthActivity
+    public let isSeparate: Bool
+
+    init(_ candidate: StrengthMatchCandidate, format: Format) {
+        id = candidate.pair
+        sessionName = candidate.session.name
+        sessionSource = candidate.session.source.displayName
+        sessionStart = candidate.session.startedAt
+        sessionDuration = candidate.session.durationSeconds
+        recording = HistoryStrengthActivity(candidate.recording, format: format)
+        isSeparate = candidate.isSeparate
     }
 }

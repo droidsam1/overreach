@@ -48,7 +48,7 @@ struct RecordedStrengthDetail: View {
             RecordedStrengthMetrics(recording: recording)
             Section {
                 Button("Log this workout", systemImage: "plus.circle.fill") {
-                    editor = model.makeEditor(forRecording: recording.id)
+                    editor = model.makeEditor(forRecording: recording.recordingID)
                 }
             } footer: {
                 Text("Log it with its exercises and sets. The watch's heart rate and load are added to it.")
@@ -57,7 +57,7 @@ struct RecordedStrengthDetail: View {
         .navigationTitle(recording.title)
         .sheet(item: $editor) { editor in
             SessionEditorView(model: editor) { saved in
-                model.didSave(saved)
+                model.didSave(saved, fromRecording: recording.recordingID)
                 dismiss()
             }
         }

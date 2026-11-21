@@ -152,7 +152,7 @@ public enum StrengthActivityMatching {
 
     /// 0.5…1 for overlapping intervals (the overlapped fraction of the shorter one); below 0.5 for a start-time
     /// match.
-    private static func score(_ session: StrengthSession, _ activity: RecordedStrengthActivity) -> Double? {
+    static func score(_ session: StrengthSession, _ activity: RecordedStrengthActivity) -> Double? {
         let startGap = abs(session.startedAt.timeIntervalSince(activity.startedAt))
         if let end = session.endedAt, end > session.startedAt, activity.durationSeconds > 0 {
             let sessionInterval = DateInterval(start: session.startedAt, end: end)

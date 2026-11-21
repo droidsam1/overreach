@@ -111,7 +111,11 @@ public final class HistoryModel {
     private var runChoices: [RunMatchPair: RunMatchChoice]
     private var runLines: [HistoryRunActivity] = []
     private var timeline: [HistoryRow] = []
-    private var timelineMatches = StrengthActivityMatches()
+    private var strengthMatches = StrengthActivityMatches()
+    private var strengthSessions: [StrengthSession] = []
+    private var strengthChoices: [StrengthMatchPair: StrengthMatchChoice]
+    private let saveStrengthChoices: ([StrengthMatchPair: StrengthMatchChoice]) -> Void
+    public private(set) var strengthReviews: [HistoryStrengthReview] = []
 
     /// How far back the list goes.
     static let window: TimeInterval = 365 * 86_400
@@ -131,6 +135,8 @@ public final class HistoryModel {
         format: Format = Format(),
         runChoices: [RunMatchPair: RunMatchChoice] = [:],
         saveRunChoices: @escaping ([RunMatchPair: RunMatchChoice]) -> Void = { _ in },
+        strengthChoices: [StrengthMatchPair: StrengthMatchChoice] = [:],
+        saveStrengthChoices: @escaping ([StrengthMatchPair: StrengthMatchChoice]) -> Void = { _ in },
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
@@ -146,6 +152,8 @@ public final class HistoryModel {
         self.clock = clock
         self.runChoices = runChoices
         self.saveRunChoices = saveRunChoices
+        self.strengthChoices = strengthChoices
+        self.saveStrengthChoices = saveStrengthChoices
         self.calendar = HistoryCalendarModel(
             workouts: workouts, activity: activity, runSources: runSources,
             calendar: calendar, format: format, runChoices: runChoices, clock: clock
@@ -175,8 +183,9 @@ public final class HistoryModel {
             failed = true
         }
         do {
-            let sessions = try await workouts.sessions(from: start, to: now)
-            summaries = sessions.reversed().map(summary)
+            let sessions = try await workouts.sessions(from: recordedStrength == nil ? start : .distantPast, to: now)
+            strengthSessions = sessions
+            summaries = sessions.reversed().filter { $0.startedAt >= start }.map(summary)
         } catch {
             failed = true
         }
@@ -187,6 +196,7 @@ public final class HistoryModel {
         let runReadings = await loadedRuns
         runOriginals = runReadings.runs
         runRange = start...now
+        resolveStrength()
         resolveRuns()
         errorMessage = failed ? L10n.text("Could not load your history.") : nil
         runWarning = runReadings.warning()
@@ -221,7 +231,10 @@ public final class HistoryModel {
             try await workouts.deleteSession(id: sessionID)
             summaries.removeAll { $0.id == sessionID }
             calendar.didDelete(sessionID)
-            rebuildTimeline()
+            strengthSessions.removeAll { $0.id == sessionID }
+            strengthChoices = strengthChoices.filter { $0.key.sessionID != sessionID }
+            saveStrengthChoices(strengthChoices)
+            refreshStrength()
             await backup?.backUpIfConfigured(now: clock())
             await health?.removeWorkout(forSessionID: sessionID)
         } catch {
@@ -276,7 +289,7 @@ public final class HistoryModel {
     /// Detail of a listed session, with set descriptions and estimated 1RMs.
     public func detail(for sessionID: UUID, format: Format = Format()) -> SessionDetail? {
         guard let session = session(id: sessionID) else { return nil }
-        let recording = matchedRecording(for: sessionID)
+        let recording = strengthMatches.activity(for: sessionID)
         var detailsSummary = summary(session)
         detailsSummary.matchedSource = recording?.source
         return SessionDetail(
@@ -366,6 +379,11 @@ public final class HistoryModel {
     /// (ADR-0023). Call `didSave(_:)` with what the editor returns.
     public func makeEditor(forRecording id: String) -> SessionEditorModel? {
         guard let recording = recordings.first(where: { $0.id == id }) else { return nil }
+        return makeEditor(forRecording: StrengthRecordingID(recording))
+    }
+
+    public func makeEditor(forRecording recordingID: StrengthRecordingID) -> SessionEditorModel? {
+        guard let recording = recordings.first(where: { StrengthRecordingID($0) == recordingID }) else { return nil }
         let session = StrengthSession(
             name: L10n.text("Strength"), startedAt: recording.startedAt, endedAt: recording.endedAt, source: .app
         )
@@ -373,14 +391,23 @@ public final class HistoryModel {
     }
 
     /// Replaces an edited session in the list, keeping it sorted newest first, and in the calendar.
-    public func didSave(_ session: StrengthSession) {
+    public func didSave(_ session: StrengthSession, fromRecording recordingID: StrengthRecordingID? = nil) {
         calendar.didSave(session)
+        strengthSessions.removeAll { $0.id == session.id }
+        strengthSessions.append(session)
+        if let recordingID {
+            let pair = StrengthMatchPair(sessionID: session.id, recordingID: recordingID)
+            if !strengthChoices.contains(where: { $0.key.recordingID == recordingID && $0.value == .linked }) {
+                strengthChoices[pair] = .linked
+                saveStrengthChoices(strengthChoices)
+            }
+        }
         summaries.removeAll { $0.id == session.id }
         if session.startedAt >= clock().addingTimeInterval(-Self.window) {
             let position = summaries.firstIndex { $0.session.startedAt < session.startedAt } ?? summaries.endIndex
             summaries.insert(summary(session), at: position)
         }
-        rebuildTimeline()
+        refreshStrength()
     }
 
     public func name(of exerciseID: UUID) -> String {
@@ -394,15 +421,13 @@ public final class HistoryModel {
     private func rebuildTimeline() {
         let now = clock()
         let start = now.addingTimeInterval(-Self.window)
-        let recent = recordings.filter { $0.endedAt >= start && $0.startedAt <= now }
-        timelineMatches = StrengthActivityMatching.match(sessions: summaries.map(\.session), activities: recent)
         let logged = summaries.map { summary in
             var row = summary
-            row.matchedSource = timelineMatches.activity(for: summary.id)?.source
+            row.matchedSource = strengthMatches.activity(for: summary.id)?.source
             return HistoryRow.session(row)
         }
-        let watchOnly = timelineMatches.unmatched
-            .filter { $0.startedAt >= start }
+        let watchOnly = strengthMatches.unmatched
+            .filter { $0.startedAt >= start && $0.startedAt <= now }
             .map { HistoryRow.recording(HistoryStrengthActivity($0, format: format)) }
         timeline = (logged + watchOnly + runLines.map(HistoryRow.run)).sorted {
             if $0.date == $1.date { return $0.sortID < $1.sortID }
@@ -410,15 +435,37 @@ public final class HistoryModel {
         }
     }
 
-    private func matchedRecording(for sessionID: UUID) -> RecordedStrengthActivity? {
-        if summaries.contains(where: { $0.id == sessionID }) {
-            return timelineMatches.activity(for: sessionID)
-        }
-        // Older sessions remain accessible from the calendar. Do not reuse any watch recording already matched
-        // with a session in the timeline.
-        let used = Set(timelineMatches.bySession.values.map(\.id))
-        let activities = recordings.filter { !used.contains($0.id) }
-        let sessions = calendar.sessions.filter { entry in !summaries.contains { $0.id == entry.id } }
-        return StrengthActivityMatching.match(sessions: sessions, activities: activities).activity(for: sessionID)
+    private func resolveStrength() {
+        let result = StrengthActivityMatching.resolve(
+            sessions: strengthSessions, activities: recordings, choices: strengthChoices
+        )
+        strengthMatches = result.matches
+        let reviews = result.candidates.map { HistoryStrengthReview($0, format: format) }
+        let start = clock().addingTimeInterval(-Self.window)
+        strengthReviews = reviews.filter { $0.sessionStart >= start || $0.recording.startedAt >= start }
+        calendar.updateStrength(result.matches, reviews: reviews)
+    }
+
+    private func refreshStrength() {
+        resolveStrength()
+        rebuildTimeline()
+    }
+
+    public func chooseStrengthMatch(_ choice: StrengthMatchChoice?, for pair: StrengthMatchPair) {
+        guard strengthReviews.contains(where: { $0.id == pair }) ||
+                calendar.strengthReviews.contains(where: { $0.id == pair }) else { return }
+        setStrengthChoice(choice, for: pair)
+    }
+
+    public func separateStrengthMatch(for sessionID: UUID) {
+        guard let activity = strengthMatches.activity(for: sessionID) else { return }
+        let pair = StrengthMatchPair(sessionID: sessionID, recordingID: StrengthRecordingID(activity))
+        setStrengthChoice(.separate, for: pair)
+    }
+
+    private func setStrengthChoice(_ choice: StrengthMatchChoice?, for pair: StrengthMatchPair) {
+        strengthChoices[pair] = choice
+        saveStrengthChoices(strengthChoices)
+        refreshStrength()
     }
 }
