@@ -50,18 +50,18 @@ public enum StepWalkDetection {
                 start: walk.start,
                 durationSeconds: end.timeIntervalSince(walk.start),
                 steps: Int(walk.stepsAtLast.rounded()),
-                averageHeartRate: averageHeartRate(heartRate, from: walk.start, to: end),
+                averageHeartRate: averageHeartRate(heartRate, from: walk.start, until: end),
                 source: source
             ))
         }
 
         for minute in stepsPerMinute.sorted(by: { $0.date < $1.date }) {
             if let walk = current, minute.date.timeIntervalSince(walk.last) > maximumGap
-                || workouts.contains(where: { $0.overlaps(from: walk.last, to: minute.date) }) {
+                || workouts.contains(where: { $0.overlaps(from: walk.last, until: minute.date) }) {
                 close()
             }
             let isWalking = minute.value >= settings.minimumStepsPerMinute
-            if workouts.contains(where: { $0.overlaps(from: minute.date, to: minute.date.addingTimeInterval(60)) })
+            if workouts.contains(where: { $0.overlaps(from: minute.date, until: minute.date.addingTimeInterval(60)) })
                 || minute.value > settings.maximumStepsPerMinute {
                 close()
             } else if var walk = current {
@@ -89,7 +89,7 @@ public enum StepWalkDetection {
         var stepsAtLast: Double
     }
 
-    private static func averageHeartRate(_ samples: [TimedValue], from start: Date, to end: Date) -> Double? {
+    private static func averageHeartRate(_ samples: [TimedValue], from start: Date, until end: Date) -> Double? {
         var low = 0
         var high = samples.count
         while low < high {
@@ -102,8 +102,8 @@ public enum StepWalkDetection {
 }
 
 private extension DateInterval {
-    /// Whether `[from, to)` overlaps this interval.
-    func overlaps(from: Date, to: Date) -> Bool {
-        start < to && from < end
+    /// Whether `[from, until)` overlaps this interval.
+    func overlaps(from: Date, until: Date) -> Bool {
+        start < until && from < end
     }
 }
