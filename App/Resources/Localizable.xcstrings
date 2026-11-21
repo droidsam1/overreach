@@ -1854,6 +1854,23 @@
         }
       }
     },
+    "Chest discomfort, unusual breathlessness or dizziness": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Molestias en el pecho, falta de aire inusual o mareo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Molestias no peito, falta de aire inusual ou mareo"
+          }
+        }
+      }
+    },
     "Choose **1 year** as the expiry: one less thing to renew.": {
       "extractionState": "manual",
       "localizations": {
@@ -3741,6 +3758,23 @@
         }
       }
     },
+    "Did the pain get worse or change your stride on your last run?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿El dolor empeoró o cambió tu zancada en tu última carrera?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O dor empeorou ou cambiou a túa zancada na última carreira?"
+          }
+        }
+      }
+    },
     "Did you already take a break?": {
       "extractionState": "manual",
       "localizations": {
@@ -3975,6 +4009,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tes síntomas novos que che fan sentir demasiado mal para adestrar hoxe?"
+          }
+        }
+      }
+    },
+    "Do you feel more fatigued than usual today?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Hoy notas más cansancio de lo habitual?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe notas máis cansazo do habitual?"
           }
         }
       }
@@ -4723,23 +4774,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Muller"
-          }
-        }
-      }
-    },
-    "Fever, flu, a cold or a stomach bug. The light turns red until you feel better.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fiebre, gripe, resfriado o gastroenteritis. El semáforo se pone en rojo hasta que estés mejor."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Febre, gripe, catarro ou gastroenterite. O semáforo ponse en vermello ata que esteas mellor."
           }
         }
       }
@@ -7175,6 +7209,23 @@
         }
       }
     },
+    "Mark sick if you have a fever or feel ill today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marca que estás enfermo si tienes fiebre o te encuentras mal hoy."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marca que estás enfermo se tes febre ou te atopas mal hoxe."
+          }
+        }
+      }
+    },
     "Marked as sick in today's check-in. Rest until the symptoms ease.": {
       "extractionState": "manual",
       "localizations": {
@@ -7375,6 +7426,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mixto"
+          }
+        }
+      }
+    },
+    "More fatigue than usual": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más cansancio de lo habitual"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis cansazo do habitual"
           }
         }
       }
@@ -8208,6 +8276,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen carreira rexistrada vinculada"
+          }
+        }
+      }
+    },
+    "No symptoms affecting training": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ningún síntoma que afecte al entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ningún síntoma que afecte ao adestramento"
           }
         }
       }
@@ -10116,6 +10201,23 @@
         }
       }
     },
+    "Rest today. Ease back into training once you feel well again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descansa hoy. Vuelve a entrenar poco a poco cuando te encuentres bien."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descansa hoxe. Volve adestrar aos poucos cando te atopes ben."
+          }
+        }
+      }
+    },
     "Resting HR": {
       "extractionState": "manual",
       "localizations": {
@@ -10707,6 +10809,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "É posible que as carreiras fosen máis suaves do habitual"
+          }
+        }
+      }
+    },
+    "Running pain worsened or affected your stride": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El dolor al correr empeoró o afectó a tu zancada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O dor ao correr empeorou ou afectou á túa zancada"
           }
         }
       }
@@ -11748,6 +11867,40 @@
         }
       }
     },
+    "Skip today's session and reassess the pain before running again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omite la sesión de hoy y vuelve a valorar el dolor antes de correr de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salta a sesión de hoxe e volve valorar o dor antes de correr de novo."
+          }
+        }
+      }
+    },
+    "Skip training and seek medical advice before returning to exercise.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omite el entrenamiento y consulta con un profesional sanitario antes de volver a hacer ejercicio."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salta o adestramento e consulta cun profesional sanitario antes de volver facer exercicio."
+          }
+        }
+      }
+    },
     "Skip training today and reassess how you feel.": {
       "extractionState": "manual",
       "localizations": {
@@ -12611,6 +12764,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cambia a un rango de repeticións (dobre progresión): sumar repeticións antes que peso dáche máis pasos pequenos para progresar."
+          }
+        }
+      }
+    },
+    "Symptoms to discuss with a clinician": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Síntomas que conviene consultar con un profesional sanitario"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Síntomas que cómpre consultar cun profesional sanitario"
           }
         }
       }
