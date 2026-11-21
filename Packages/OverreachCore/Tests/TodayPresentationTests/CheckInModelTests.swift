@@ -167,7 +167,7 @@ struct CheckInModelTests {
         #expect(await sheet.save())
         await model.load(now: now)
 
-        #expect(model.readiness == original)
+        #expect(model.readiness.level == original.level && model.readiness.reasons == original.reasons)
         #expect(model.checkInSummary == "More stress than usual")
         #expect(model.checkInButtonTitle == "Edit today's check-in")
         #expect(model.makeCheckInModel(now: now)?.contextAnswer == .yes)
@@ -195,7 +195,7 @@ struct CheckInModelTests {
         #expect(await edit.save())
         await model.load(now: now)
 
-        #expect(model.readiness == initialReadiness)
+        #expect(model.readiness.level == initialReadiness.level && model.readiness.reasons == initialReadiness.reasons)
         #expect(model.checkInButtonTitle == "Edit today's check-in")
         #expect(model.makeCheckInModel(now: now.addingTimeInterval(86_400))?.contextQuestionTitle == nil)
     }
@@ -210,7 +210,7 @@ struct CheckInModelTests {
         #expect(await sheet.save())
         await model.load(now: now)
 
-        #expect(model.readiness == original)
+        #expect(model.readiness.level == original.level && model.readiness.reasons == original.reasons)
         #expect(model.checkInSummary == nil)
         #expect(model.checkInButtonTitle == "Edit today's check-in")
     }

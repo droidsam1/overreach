@@ -5288,6 +5288,40 @@
         }
       }
     },
+    "HRV not used today: no recent reading ({1}). The latest was on {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy no se usa la VFC: no hay lecturas recientes ({1}). La última fue el {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe non se usa a VFC: non hai lecturas recentes ({1}). A última foi o {2}."
+          }
+        }
+      }
+    },
+    "HRV not used today: the recent readings ({1}) are outside the plausible range.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy no se usa la VFC: las lecturas recientes ({1}) están fuera del rango plausible."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe non se usa a VFC: as lecturas recentes ({1}) están fóra do rango plausible."
+          }
+        }
+      }
+    },
     "HRV, resting heart rate, sleep and workouts through Apple Health.": {
       "extractionState": "manual",
       "localizations": {

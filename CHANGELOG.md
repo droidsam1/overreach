@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Readiness records every input it read: where it came from, whether it was compared, missing, stale or out of
+  range, the reference it was compared with and the outcome. The AI report lists them, and Today says when HRV
+  was skipped because a watch stopped syncing or its readings were implausible. Daytime and sleep HRV readings
+  are no longer mixed in one baseline, and implausible readings are ignored (ADR-0032).
 - After the first session with an exercise, Train repeats it as a starting point and lets you preview and choose
   how to progress (reps, load or a wave); progression then waits for logged effort before advancing.
 - Built-in exercises show their Spanish name when the app is in Spanish or Galician; search finds exercises by

@@ -40,7 +40,12 @@ struct ReadinessRulesTests {
     }
 
     @Test func noDataIsUnknown() {
-        #expect(readiness([]) == Readiness(level: .unknown, reasons: [.missingData]))
+        let result = readiness([])
+        #expect(result.level == .unknown && result.reasons == [.missingData])
+        #expect(result.hrvInput?.status == .missing)
+        #expect(result.input(.restingHeartRate)?.status == .missing)
+        #expect(result.input(.sleep)?.status == .missing)
+        #expect(result.input(.checkIn)?.status == .missing)
     }
 
     @Test func aFewDaysOfHistoryAreNotEnoughForABaseline() {
@@ -129,7 +134,7 @@ struct ReadinessRulesTests {
     @Test func sickIsRedWhateverTheNumbersSay() {
         let result = readiness(history(), checkIn: CheckIn(day: today, isSick: true))
 
-        #expect(result == Readiness(level: .red, reasons: [.markedSick]))
+        #expect(result.level == .red && result.reasons == [.markedSick])
     }
 
     @Test func aCheckInAloneIsEnoughToJudge() {

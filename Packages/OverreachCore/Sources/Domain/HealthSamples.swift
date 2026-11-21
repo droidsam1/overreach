@@ -85,6 +85,7 @@ public enum HealthAggregation {
             let hrvAsleep = night.map { window in hrvToday.filter { window.window.contains($0.date) } } ?? []
             // Apple Health stores HRV as SDNN (`heartRateVariabilitySDNN`), whichever device wrote it.
             metrics.hrvSDNNMs = mean(hrvAsleep.isEmpty ? hrvToday : hrvAsleep)
+            if metrics.hrvSDNNMs != nil { metrics.hrvSDNNWindow = hrvAsleep.isEmpty ? .daytime : .sleep }
             metrics.restingHeartRate = values(samples.restingHeartRate, on: day, calendar: calendar)
                 .max { $0.date < $1.date }?.value
             metrics.vo2Max = mean(values(samples.vo2Max, on: day, calendar: calendar))

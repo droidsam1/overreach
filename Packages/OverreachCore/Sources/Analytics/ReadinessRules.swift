@@ -25,10 +25,13 @@ public enum ReadinessEvidence {
     public static let hormonalContraception = EvidenceReference(key: "cycle-hormonal-contraception", level: .limited)
     /// How signals combine into green, amber and red: coaching defaults.
     public static let combination = EvidenceReference(key: "readiness-combination", level: .heuristic)
+    /// Plausible ranges, measurement protocol and staleness of the inputs (ADR-0032): data-quality defaults.
+    public static let inputQuality = EvidenceReference(key: "readiness-input-quality", level: .heuristic)
 }
 
 /// The daily traffic light (ADR-0020): today's HRV, resting HR, sleep and check-in against the person's own
-/// baseline. Pure function; every threshold is in `Settings`.
+/// baseline. Pure function; every threshold is in `Settings`. `Readiness.inputs` records what each input
+/// contributed (ADR-0032).
 public enum ReadinessRules {
     public struct Settings: Hashable, Sendable {
         /// Days before today used for the personal baselines.
@@ -57,6 +60,12 @@ public enum ReadinessRules {
         public var minimumPhaseBaselineCycles: Int
         /// Furthest back a phase baseline looks, in days.
         public var maximumPhaseBaselineDays: Int
+        /// Nightly HRV outside this range, in ms, is a measurement error and is ignored (`readiness-input-quality`).
+        public var plausibleHRVMs: ClosedRange<Double>
+        /// Resting HR outside this range, in bpm, is ignored.
+        public var plausibleRestingHeartRate: ClosedRange<Double>
+        /// Sleep longer than this many hours is ignored; zero or less is no measurement.
+        public var maximumSleepHours: Double
 
         public init(
             baselineDays: Int = 60, minimumBaselineNights: Int = 14,
@@ -64,7 +73,8 @@ public enum ReadinessRules {
             hrvBandStandardDeviations: Double = 0.5, restingHeartRateRise: Double = 5, shortSleepHours: Double = 6,
             lowEnergy: Int = 2, highSoreness: Int = 3, redSignals: Int = 2,
             lutealRestingHeartRateRise: Double = 8, minimumPhaseBaselineCycles: Int = 2,
-            maximumPhaseBaselineDays: Int = 120
+            maximumPhaseBaselineDays: Int = 120, plausibleHRVMs: ClosedRange<Double> = 3...300,
+            plausibleRestingHeartRate: ClosedRange<Double> = 25...150, maximumSleepHours: Double = 18
         ) {
             self.baselineDays = baselineDays
             self.minimumBaselineNights = minimumBaselineNights
@@ -79,12 +89,16 @@ public enum ReadinessRules {
             self.lutealRestingHeartRateRise = lutealRestingHeartRateRise
             self.minimumPhaseBaselineCycles = minimumPhaseBaselineCycles
             self.maximumPhaseBaselineDays = maximumPhaseBaselineDays
+            self.plausibleHRVMs = plausibleHRVMs
+            self.plausibleRestingHeartRate = plausibleRestingHeartRate
+            self.maximumSleepHours = maximumSleepHours
         }
     }
 
     /// - Parameters:
     ///   - history: merged daily metrics, in any order. Days after `today` are ignored.
-    ///   - checkIn: today's check-in, if the user filled it in.
+    ///   - checkIn: the latest check-in, if any. Only a check-in from `today` counts; an older one is reported as
+    ///     stale in `Readiness.inputs` and never answers for today.
     ///   - tracksNaturalCycle: the person tracks a natural menstrual cycle but no cycle data is passed: low HRV is
     ///     then reported with the cycle as a possible cause and is not a physiological signal for red.
     ///   - cycle: menstrual events and tracking mode. With a natural cycle and a high-confidence estimate, HRV and
@@ -93,15 +107,12 @@ public enum ReadinessRules {
         today: CalendarDay, history: [DailyMetrics], checkIn: CheckIn?, settings: Settings = Settings(),
         tracksNaturalCycle: Bool = false, cycle: CycleContext? = nil, calendar: Calendar = .current
     ) -> Readiness {
+        let latestCheckIn = checkIn
         let checkIn = checkIn.flatMap { $0.day == today ? $0 : nil }
-        if checkIn?.isSick == true {
-            return Readiness(level: .red, reasons: [.markedSick])
-        }
-        if checkIn?.context == CheckIn.Context(question: .symptoms, answer: .yes) {
-            return Readiness(level: .red, reasons: [.symptomsLimitTraining])
-        }
 
-        let byDay = Dictionary(history.map { ($0.day, $0) }, uniquingKeysWith: { first, _ in first })
+        let byDay = Dictionary(
+            history.filter { $0.day <= today }.map { ($0.day, $0) }, uniquingKeysWith: { first, _ in first }
+        )
         let baselineDays = (1...max(settings.baselineDays, 1)).map { today.adding(days: -$0, calendar: calendar) }
         let rollingDays = (0..<max(settings.rollingDays, 1)).map { today.adding(days: -$0, calendar: calendar) }
         let tracksNaturalCycle = tracksNaturalCycle || cycle?.mode == .naturalCycle
@@ -116,18 +127,21 @@ public enum ReadinessRules {
         var signals = Signals()
         let hrv = judgeHRV(inputs, tracksNaturalCycle: tracksNaturalCycle, into: &signals)
         judgeRestingHeartRate(inputs, into: &signals)
-        var reasons = signals.reasons
-        let physiological = signals.physiological
-        var evaluated = signals.evaluated
-
-        if let sleep = byDay[today]?.sleepSeconds {
-            evaluated = true
-            let hours = sleep / 3_600
-            if hours < settings.shortSleepHours {
-                reasons.append(.shortSleep(hours: hours))
-            }
+        judgeSleep(inputs, into: &signals)
+        signals.audits.append(checkInAudit(latest: latestCheckIn, today: today))
+        let result = { (level: ReadinessLevel, reasons: [ReadinessReason]) in
+            Readiness(level: level, reasons: reasons, hrvCoverage: hrv?.coverage, inputs: signals.audits)
         }
 
+        if checkIn?.isSick == true {
+            return result(.red, [.markedSick])
+        }
+        if checkIn?.context == CheckIn.Context(question: .symptoms, answer: .yes) {
+            return result(.red, [.symptomsLimitTraining])
+        }
+
+        var reasons = signals.reasons
+        var evaluated = signals.evaluated
         if let checkIn {
             evaluated = evaluated || checkIn.energy != nil || checkIn.soreness != nil || checkIn.context == nil
             if let energy = checkIn.energy, energy <= settings.lowEnergy {
@@ -142,12 +156,8 @@ public enum ReadinessRules {
             reasons.append(.phaseBaseline(window: phase.window, cycles: cycles))
         }
 
-        guard evaluated else {
-            return Readiness(level: .unknown, reasons: [.missingData], hrvCoverage: hrv?.coverage)
-        }
-        if reasons.allSatisfy(\.isContext) {
-            return Readiness(level: .green, reasons: reasons, hrvCoverage: hrv?.coverage)
-        }
+        guard evaluated else { return result(.unknown, [.missingData]) }
+        if reasons.allSatisfy(\.isContext) { return result(.green, reasons) }
         // With a natural cycle, low HRV is context: neither it nor its note counts as a signal for red.
         let cycleContext = reasons.contains(.hrvMayReflectCycle)
         let signalCount = reasons.filter { reason in
@@ -155,10 +165,8 @@ public enum ReadinessRules {
             if case .hrvBelowBaseline = reason { return !cycleContext }
             return true
         }.count
-        if signalCount >= settings.redSignals && physiological > 0 {
-            return Readiness(level: .red, reasons: reasons, hrvCoverage: hrv?.coverage)
-        }
-        return Readiness(level: .amber, reasons: reasons, hrvCoverage: hrv?.coverage)
+        if signalCount >= settings.redSignals && signals.physiological > 0 { return result(.red, reasons) }
+        return result(.amber, reasons)
     }
 
     /// The evidence behind one reason, to show next to it.
@@ -209,61 +217,310 @@ public enum ReadinessRules {
         return hasElevatedPulse ? .symptoms : .stress
     }
 
-    /// Each statistic is its own series (RMSSD and SDNN are not interchangeable, `hrv-metrics`, ADR-0025). The rule
-    /// judges one series and never mixes or converts them: RMSSD when both can be compared, as Garmin's whole-night
-    /// RMSSD is the better-supported input (`wearable-hrv-validity`); otherwise the one that can. When neither can,
-    /// the coverage of the series read most recently (the watch being worn) says how many nights are still needed.
-    ///
-    /// With `required` (phase baselines), only a series that passes it and can be compared is judged; otherwise the
-    /// result is `nil` so the caller falls back to the overall baseline.
-    private static func hrvCheck(
-        byDay: [CalendarDay: DailyMetrics], baselineDays: [CalendarDay], rollingDays: [CalendarDay], settings: Settings,
-        required: ((HRVMetric) -> Bool)? = nil
-    ) -> (coverage: HRVCoverage, lowNights: Int?)? {
-        let series = HRVMetric.allCases.compactMap {
-            hrvSeries($0, byDay: byDay, baselineDays: baselineDays, rollingDays: rollingDays, settings: settings)
-        }
-        let chosen = if let required {
-            series.first { $0.coverage.canCompare && $0.coverage.metric.map(required) == true }
-        } else {
-            series.first { $0.coverage.canCompare } ?? series.max { $0.coverage.latestDay < $1.coverage.latestDay }
-        }
-        guard let chosen else { return nil }
-        guard chosen.coverage.canCompare else { return (chosen.coverage, nil) }
-        let lowerBound = mean(chosen.baseline) - settings.hrvBandStandardDeviations * standardDeviation(chosen.baseline)
-        guard mean(chosen.recent) < lowerBound else { return (chosen.coverage, nil) }
-        return (chosen.coverage, chosen.recent.filter { $0 < lowerBound }.count)
+    // MARK: - HRV
+
+    /// One HRV series' ln values and coverage over the windows the rule reads.
+    private struct HRVSeries {
+        var id: HRVSeriesID
+        /// Latest day with a usable reading, in the recent window or the baseline days.
+        var latestDay: CalendarDay?
+        var baseline: [Double]
+        var recent: [Double]
+        /// Baseline readings taken on a day of the recent window.
+        var overlap: Int
+        /// Implausible readings ignored, in both windows.
+        var rejected: Int
+        /// `nil` when the series has no usable reading in the recent window.
+        var coverage: HRVCoverage?
+
+        var canCompare: Bool { coverage?.canCompare == true }
     }
 
-    /// One statistic's ln values and coverage, or `nil` when it has no reading in the rolling window.
+    /// Each statistic and reading window is its own series: RMSSD and SDNN are not interchangeable (`hrv-metrics`,
+    /// ADR-0025), and readings from sleep and from the day are different protocols (ADR-0032). Readings outside
+    /// `Settings.plausibleHRVMs` are ignored and counted.
     private static func hrvSeries(
-        _ metric: HRVMetric, byDay: [CalendarDay: DailyMetrics], baselineDays: [CalendarDay],
+        _ id: HRVSeriesID, byDay: [CalendarDay: DailyMetrics], baselineDays: [CalendarDay],
         rollingDays: [CalendarDay], settings: Settings
-    ) -> (coverage: HRVCoverage, baseline: [Double], recent: [Double])? {
-        let latest = rollingDays.first { validHRV(byDay[$0]?.hrv(metric)) != nil }
-        guard let latest else { return nil }
-        let logHRV = { (days: [CalendarDay]) -> [Double] in
-            days.compactMap { validHRV(byDay[$0]?.hrv(metric)) }.map { log($0) }
+    ) -> HRVSeries {
+        let raw = { (day: CalendarDay) -> Double? in
+            guard let metrics = byDay[day], metrics.hrvWindow(id.metric) == id.window else { return nil }
+            return metrics.hrv(id.metric)
         }
-        let baseline = logHRV(baselineDays)
-        let recent = logHRV(rollingDays)
-        let coverage = HRVCoverage(
-            metric: metric, latestDay: latest,
-            recentDays: rollingDays.count, recentReadings: recent.count,
-            minimumRecentReadings: max(settings.minimumRollingNights, 1),
-            baselineDays: baselineDays.count, baselineReadings: baseline.count,
-            minimumBaselineReadings: max(settings.minimumBaselineNights, 1)
+        let usable = { (day: CalendarDay) -> Double? in
+            raw(day).flatMap { isPlausible($0, in: settings.plausibleHRVMs) ? $0 : nil }
+        }
+        let recentDays = Set(rollingDays)
+        let allDays = recentDays.union(baselineDays)
+        let baselineWithValues = baselineDays.filter { usable($0) != nil }
+        let recent = rollingDays.compactMap(usable).map { log($0) }
+        let coverage = rollingDays.first { usable($0) != nil }.map { latest in
+            HRVCoverage(
+                metric: id.metric, window: id.window, latestDay: latest,
+                recentDays: rollingDays.count, recentReadings: recent.count,
+                minimumRecentReadings: max(settings.minimumRollingNights, 1),
+                baselineDays: baselineDays.count, baselineReadings: baselineWithValues.count,
+                minimumBaselineReadings: max(settings.minimumBaselineNights, 1)
+            )
+        }
+        return HRVSeries(
+            id: id, latestDay: allDays.filter { usable($0) != nil }.max(),
+            baseline: baselineWithValues.compactMap(usable).map { log($0) }, recent: recent,
+            overlap: baselineWithValues.filter { recentDays.contains($0) }.count,
+            rejected: allDays.filter { raw($0) != nil && usable($0) == nil }.count, coverage: coverage
         )
-        return (coverage, baseline, recent)
     }
 
-    /// What the HRV and resting-HR checks found, before sleep and the check-in are added.
+    /// The rule judges one series and never mixes or converts them: the first of `HRVSeriesID.all` that can be
+    /// compared, as Garmin's whole-night RMSSD is the better-supported input (`wearable-hrv-validity`). When none
+    /// can, the coverage of the series read most recently (the watch being worn) says how many nights are still
+    /// needed.
+    private static func chooseSeries(_ series: [HRVSeries]) -> HRVSeries? {
+        let current = series.filter { $0.coverage != nil }
+        if let comparable = current.first(where: \.canCompare) { return comparable }
+        return current.max { lhs, rhs in
+            guard let left = lhs.coverage?.latestDay, let right = rhs.coverage?.latestDay else { return false }
+            return left < right
+        }
+    }
+
+    /// HRV against the same window of previous cycles when there is enough, otherwise against the overall baseline.
+    private static func judgeHRV(
+        _ inputs: Inputs, tracksNaturalCycle: Bool, into signals: inout Signals
+    ) -> (coverage: HRVCoverage, lowNights: Int?)? {
+        let (byDay, rollingDays, settings) = (inputs.byDay, inputs.rollingDays, inputs.settings)
+        let overall = HRVSeriesID.all.map {
+            hrvSeries($0, byDay: byDay, baselineDays: inputs.baselineDays, rollingDays: rollingDays, settings: settings)
+        }
+        var chosen: HRVSeries?
+        var reference = ReadinessReference.Kind.personalBaseline
+        var referenceDays = inputs.baselineDays.count
+        if let phase = inputs.phase {
+            let cycles = { (id: HRVSeriesID) in
+                phase.cycles { day in
+                    guard let metrics = byDay[day], metrics.hrvWindow(id.metric) == id.window,
+                          let value = metrics.hrv(id.metric) else { return false }
+                    return isPlausible(value, in: settings.plausibleHRVMs)
+                }
+            }
+            let phaseSeries = HRVSeriesID.all.map {
+                hrvSeries($0, byDay: byDay, baselineDays: phase.days, rollingDays: rollingDays, settings: settings)
+            }
+            if var found = phaseSeries.first(where: {
+                $0.canCompare && cycles($0.id) >= settings.minimumPhaseBaselineCycles
+            }) {
+                signals.phaseCycles.append(cycles(found.id))
+                // The phase baseline's readings come from the whole span looked back over, not consecutive days.
+                found.coverage = found.coverage.map { spanning($0, days: phase.span) }
+                chosen = found
+                reference = .cyclePhase(phase.window)
+                referenceDays = phase.span
+            }
+        }
+        // Garmin's own HRV range is whole-cycle; the rule compares with personal series only, so it stays context.
+        let usedPhase = chosen != nil
+        chosen = chosen ?? chooseSeries(overall)
+
+        var lowNights: Int?
+        var outcome: ReadinessComparison?
+        if let chosen, chosen.canCompare {
+            signals.evaluated = true
+            let center = mean(chosen.baseline)
+            let band = settings.hrvBandStandardDeviations * standardDeviation(chosen.baseline)
+            let recentMean = mean(chosen.recent)
+            if recentMean < center - band {
+                outcome = .below
+                // The denominator is the recent window's eligible measured nights.
+                lowNights = chosen.recent.filter { $0 < center - band }.count
+            } else {
+                outcome = recentMean > center + band ? .above : .within
+            }
+        }
+
+        signals.audits += hrvAudits(
+            overall: overall, chosen: chosen, outcome: outcome,
+            reference: (reference, referenceDays), settings: settings
+        )
+
+        guard let chosen, let coverage = chosen.coverage else { return nil }
+        guard let lowNights else { return (coverage, nil) }
+        signals.reasons.append(.hrvBelowBaseline(nights: lowNights))
+        // Against the same window of previous cycles, or in a confident follicular window, low HRV counts.
+        if !usedPhase && tracksNaturalCycle && inputs.window != .follicular {
+            signals.reasons.append(.hrvMayReflectCycle)
+        } else {
+            signals.physiological += 1
+        }
+        return (coverage, lowNights)
+    }
+
+    /// One audit per HRV series with data: the one judged first, then the others in preference order. Without
+    /// any reading in the baseline period, a single `.hrv(nil)` entry says HRV is missing.
+    private static func hrvAudits(
+        overall: [HRVSeries], chosen: HRVSeries?, outcome: ReadinessComparison?,
+        reference: (kind: ReadinessReference.Kind, days: Int), settings: Settings
+    ) -> [ReadinessInputAudit] {
+        var audits: [ReadinessInputAudit] = []
+        let recentDays = max(settings.rollingDays, 1)
+        if let chosen, let coverage = chosen.coverage {
+            let status: ReadinessInputStatus = if coverage.canCompare {
+                .compared
+            } else if coverage.baselineReadings < coverage.minimumBaselineReadings {
+                .buildingBaseline
+            } else {
+                .tooFewRecent
+            }
+            audits.append(ReadinessInputAudit(
+                input: .hrv(chosen.id), status: status, source: chosen.id.metric.source,
+                latestDay: chosen.latestDay, value: chosen.recent.isEmpty ? nil : exp(mean(chosen.recent)),
+                recentDays: coverage.recentDays, recentReadings: coverage.recentReadings,
+                rejectedReadings: chosen.rejected,
+                reference: ReadinessReference(
+                    kind: reference.kind, days: reference.days, readings: coverage.baselineReadings,
+                    minimumReadings: coverage.minimumBaselineReadings, overlappingReadings: chosen.overlap,
+                    value: chosen.baseline.isEmpty ? nil : exp(mean(chosen.baseline))
+                ),
+                outcome: outcome
+            ))
+        }
+        for series in overall where series.id != chosen?.id {
+            let status: ReadinessInputStatus
+            if series.coverage != nil {
+                status = .anotherSeriesUsed
+            } else if series.latestDay != nil {
+                status = .stale
+            } else if series.rejected > 0 {
+                status = .outOfRange
+            } else {
+                continue
+            }
+            audits.append(ReadinessInputAudit(
+                input: .hrv(series.id), status: status, source: series.id.metric.source, latestDay: series.latestDay,
+                recentDays: recentDays, recentReadings: series.recent.count, rejectedReadings: series.rejected
+            ))
+        }
+        if audits.isEmpty {
+            audits.append(ReadinessInputAudit(input: .hrv(nil), status: .missing, recentDays: recentDays))
+        }
+        return audits
+    }
+
+    // MARK: - Resting HR, sleep and check-in
+
+    /// Resting HR against the same window of previous cycles when there is enough; otherwise against the overall
+    /// baseline, with a wider threshold in a confident luteal window. Only today's value is judged.
+    private static func judgeRestingHeartRate(_ inputs: Inputs, into signals: inout Signals) {
+        let (byDay, phase, settings) = (inputs.byDay, inputs.phase, inputs.settings)
+        let range = settings.plausibleRestingHeartRate
+        let usable = { (day: CalendarDay) -> Double? in
+            byDay[day]?.restingHeartRate.flatMap { isPlausible($0, in: range) ? $0 : nil }
+        }
+        let read = [inputs.today] + inputs.baselineDays
+        let rejected = read.filter { byDay[$0]?.restingHeartRate != nil && usable($0) == nil }.count
+        let latestDay = read.first { usable($0) != nil }
+        let audit = { (status: ReadinessInputStatus, reference: ReadinessReference?, outcome: ReadinessComparison?) in
+            ReadinessInputAudit(
+                input: .restingHeartRate, status: status,
+                source: latestDay.flatMap { byDay[$0]?.restingHeartRateOrigin }, latestDay: latestDay,
+                value: usable(inputs.today), recentReadings: usable(inputs.today) == nil ? 0 : 1,
+                rejectedReadings: rejected, reference: reference, outcome: outcome
+            )
+        }
+        guard let todayResting = usable(inputs.today) else {
+            let status: ReadinessInputStatus = if byDay[inputs.today]?.restingHeartRate != nil {
+                .outOfRange
+            } else {
+                latestDay == nil ? .missing : .stale
+            }
+            signals.audits.append(audit(status, nil, nil))
+            return
+        }
+
+        let phaseResting = phase?.days.compactMap(usable) ?? []
+        let phaseCycles = phase?.cycles { usable($0) != nil } ?? 0
+        let usesPhase = phaseResting.count >= settings.minimumBaselineNights
+            && phaseCycles >= settings.minimumPhaseBaselineCycles
+        let baseline = usesPhase ? phaseResting : inputs.baselineDays.compactMap(usable)
+        let reference = { (value: Double?) in
+            ReadinessReference(
+                kind: usesPhase ? phase.map { .cyclePhase($0.window) } ?? .personalBaseline : .personalBaseline,
+                days: usesPhase ? phase?.span ?? 0 : inputs.baselineDays.count, readings: baseline.count,
+                minimumReadings: settings.minimumBaselineNights, value: value
+            )
+        }
+        guard baseline.count >= settings.minimumBaselineNights else {
+            signals.audits.append(audit(.buildingBaseline, reference(nil), nil))
+            return
+        }
+        signals.evaluated = true
+        if usesPhase { signals.phaseCycles.append(phaseCycles) }
+        let widened = !usesPhase && inputs.window == .luteal
+        let threshold = widened ? settings.lutealRestingHeartRateRise : settings.restingHeartRateRise
+        let rise = todayResting - mean(baseline)
+        let outcome: ReadinessComparison = rise >= threshold ? .above : (rise <= -threshold ? .below : .within)
+        signals.audits.append(audit(.compared, reference(mean(baseline)), outcome))
+        if rise >= threshold {
+            signals.reasons.append(.restingHeartRateElevated(bpmAboveBaseline: rise))
+            signals.physiological += 1
+        } else if widened && rise >= settings.restingHeartRateRise {
+            signals.reasons.append(.possibleLutealShift)
+        }
+    }
+
+    /// Last night's sleep against the fixed short-sleep threshold. An earlier night never stands in for it.
+    private static func judgeSleep(_ inputs: Inputs, into signals: inout Signals) {
+        let settings = inputs.settings
+        let usable = { (day: CalendarDay) -> Double? in
+            guard let seconds = inputs.byDay[day]?.sleepSeconds, seconds.isFinite, seconds > 0,
+                  seconds / 3_600 <= settings.maximumSleepHours else { return nil }
+            return seconds / 3_600
+        }
+        let rejected = inputs.rollingDays.filter { inputs.byDay[$0]?.sleepSeconds != nil && usable($0) == nil }.count
+        let latestDay = inputs.rollingDays.first { usable($0) != nil }
+        let hours = usable(inputs.today)
+        let status: ReadinessInputStatus = if hours != nil {
+            .compared
+        } else if inputs.byDay[inputs.today]?.sleepSeconds != nil {
+            .outOfRange
+        } else {
+            latestDay == nil ? .missing : .stale
+        }
+        let outcome: ReadinessComparison? = hours.map { $0 < settings.shortSleepHours ? .below : .within }
+        signals.audits.append(ReadinessInputAudit(
+            input: .sleep, status: status, source: latestDay.flatMap { inputs.byDay[$0]?.sleepOrigin },
+            latestDay: latestDay, value: hours, recentReadings: hours == nil ? 0 : 1, rejectedReadings: rejected,
+            reference: hours == nil ? nil : ReadinessReference(
+                kind: .fixedThreshold, days: 0, readings: 0, minimumReadings: 0, value: settings.shortSleepHours
+            ),
+            outcome: outcome
+        ))
+        guard let hours else { return }
+        signals.evaluated = true
+        if hours < settings.shortSleepHours {
+            signals.reasons.append(.shortSleep(hours: hours))
+        }
+    }
+
+    /// Whether today's check-in exists. An older one is stale: it never answers for today.
+    private static func checkInAudit(latest: CheckIn?, today: CalendarDay) -> ReadinessInputAudit {
+        guard let latest else { return ReadinessInputAudit(input: .checkIn, status: .missing) }
+        let isToday = latest.day == today
+        return ReadinessInputAudit(
+            input: .checkIn, status: isToday ? .compared : .stale, source: .manual, latestDay: latest.day,
+            recentReadings: isToday ? 1 : 0
+        )
+    }
+
+    // MARK: - Shared
+
+    /// What the HRV, resting-HR and sleep checks found, before the check-in is added.
     private struct Signals {
         var reasons: [ReadinessReason] = []
         var physiological = 0
         var evaluated = false
         /// Previous cycles behind each phase baseline used.
         var phaseCycles: [Int] = []
+        var audits: [ReadinessInputAudit] = []
     }
 
     /// What the HRV and resting-HR checks compare.
@@ -277,61 +534,6 @@ public enum ReadinessRules {
         /// Today's baseline window, with a high-confidence estimate.
         var window: CycleBaselineWindow?
         var settings: Settings
-    }
-
-    /// HRV against the same window of previous cycles when there is enough, otherwise against the overall baseline.
-    private static func judgeHRV(
-        _ inputs: Inputs, tracksNaturalCycle: Bool, into signals: inout Signals
-    ) -> (coverage: HRVCoverage, lowNights: Int?)? {
-        let (byDay, rollingDays, settings) = (inputs.byDay, inputs.rollingDays, inputs.settings)
-        var phaseHRV: (coverage: HRVCoverage, lowNights: Int?)?
-        if let phase = inputs.phase {
-            let cycles = { (metric: HRVMetric) in phase.cycles { validHRV(byDay[$0]?.hrv(metric)) != nil } }
-            phaseHRV = hrvCheck(
-                byDay: byDay, baselineDays: phase.days, rollingDays: rollingDays, settings: settings
-            ) { cycles($0) >= settings.minimumPhaseBaselineCycles }
-            if let metric = phaseHRV?.coverage.metric { signals.phaseCycles.append(cycles(metric)) }
-            // The phase baseline's readings come from the whole span looked back over, not consecutive days.
-            phaseHRV = phaseHRV.map { (spanning($0.coverage, days: phase.span), $0.lowNights) }
-        }
-        // Garmin's own HRV range is whole-cycle; the rule compares with personal series only, so it stays context.
-        let hrv = phaseHRV
-            ?? hrvCheck(byDay: byDay, baselineDays: inputs.baselineDays, rollingDays: rollingDays, settings: settings)
-        guard let hrv, hrv.coverage.canCompare else { return hrv }
-        signals.evaluated = true
-        guard let lowNights = hrv.lowNights else { return hrv }
-        signals.reasons.append(.hrvBelowBaseline(nights: lowNights))
-        // Against the same window of previous cycles, or in a confident follicular window, low HRV counts.
-        if phaseHRV == nil && tracksNaturalCycle && inputs.window != .follicular {
-            signals.reasons.append(.hrvMayReflectCycle)
-        } else {
-            signals.physiological += 1
-        }
-        return hrv
-    }
-
-    /// Resting HR against the same window of previous cycles when there is enough; otherwise against the overall
-    /// baseline, with a wider threshold in a confident luteal window.
-    private static func judgeRestingHeartRate(_ inputs: Inputs, into signals: inout Signals) {
-        let (byDay, phase, settings) = (inputs.byDay, inputs.phase, inputs.settings)
-        guard let todayResting = byDay[inputs.today]?.restingHeartRate else { return }
-        let phaseResting = phase?.days.compactMap { byDay[$0]?.restingHeartRate } ?? []
-        let phaseCycles = phase?.cycles { byDay[$0]?.restingHeartRate != nil } ?? 0
-        let usesPhase = phaseResting.count >= settings.minimumBaselineNights
-            && phaseCycles >= settings.minimumPhaseBaselineCycles
-        let baseline = usesPhase ? phaseResting : inputs.baselineDays.compactMap { byDay[$0]?.restingHeartRate }
-        guard baseline.count >= settings.minimumBaselineNights else { return }
-        signals.evaluated = true
-        if usesPhase { signals.phaseCycles.append(phaseCycles) }
-        let widened = !usesPhase && inputs.window == .luteal
-        let threshold = widened ? settings.lutealRestingHeartRateRise : settings.restingHeartRateRise
-        let rise = todayResting - mean(baseline)
-        if rise >= threshold {
-            signals.reasons.append(.restingHeartRateElevated(bpmAboveBaseline: rise))
-            signals.physiological += 1
-        } else if widened && rise >= settings.restingHeartRateRise {
-            signals.reasons.append(.possibleLutealShift)
-        }
     }
 
     /// Previous days in today's baseline window, each with the start of its cycle (`cycle-phase-baselines`).
@@ -377,16 +579,15 @@ public enum ReadinessRules {
 
     private static func spanning(_ coverage: HRVCoverage, days: Int) -> HRVCoverage {
         HRVCoverage(
-            metric: coverage.metric, latestDay: coverage.latestDay, recentDays: coverage.recentDays,
-            recentReadings: coverage.recentReadings, minimumRecentReadings: coverage.minimumRecentReadings,
-            baselineDays: days, baselineReadings: coverage.baselineReadings,
-            minimumBaselineReadings: coverage.minimumBaselineReadings
+            metric: coverage.metric, window: coverage.window, latestDay: coverage.latestDay,
+            recentDays: coverage.recentDays, recentReadings: coverage.recentReadings,
+            minimumRecentReadings: coverage.minimumRecentReadings, baselineDays: days,
+            baselineReadings: coverage.baselineReadings, minimumBaselineReadings: coverage.minimumBaselineReadings
         )
     }
 
-    private static func validHRV(_ value: Double?) -> Double? {
-        guard let value, value.isFinite, value > 0 else { return nil }
-        return value
+    private static func isPlausible(_ value: Double, in range: ClosedRange<Double>) -> Bool {
+        value.isFinite && range.contains(value)
     }
 
     private static func mean(_ values: [Double]) -> Double {

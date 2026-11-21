@@ -54,6 +54,10 @@ public enum MarkdownReportRenderer {
                     + "Recent readings available: \(coverage.recentReadings) (minimum \(coverage.minimumRecentReadings)). "
                     + "Baseline readings available: \(coverage.baselineReadings) (minimum \(coverage.minimumBaselineReadings)).")
             }
+            if !readiness.inputs.isEmpty {
+                lines.append("  - Inputs read by the rule:")
+                lines += readiness.inputs.map { "    - \(describe($0))" }
+            }
         }
         if let today = report.today {
             lines.append("- HRV last night: \(format(today.hrvNightlyAverageMs, decimals: 0)) ms\(statisticSuffix(today.hrvMetric)) "
@@ -161,14 +165,99 @@ public enum MarkdownReportRenderer {
         metric.map { " \($0.rawValue.uppercased())" } ?? ""
     }
 
+    /// One input of the readiness rule: series and source, status, recent coverage, reference and outcome
+    /// (ADR-0032).
+    static func describe(_ audit: ReadinessInputAudit) -> String {
+        let label = inputLabel(audit.input)
+        let source = audit.source.map { " from \(sourceName($0))" } ?? ""
+        var parts = [label.name + source + ": " + statusText(audit.status)]
+        if let latest = audit.latestDay, audit.status != .compared || audit.recentDays > 1 {
+            parts.append("latest \(latest)")
+        }
+        if let value = audit.value, !label.unit.isEmpty {
+            let kind = audit.recentDays > 1 ? "recent mean" : "today"
+            parts.append("\(kind) \(format(value, decimals: label.decimals)) \(label.unit)")
+        }
+        if audit.recentDays > 1, audit.status != .anotherSeriesUsed {
+            parts.append("\(audit.recentReadings) usable readings in the last \(audit.recentDays) days")
+        }
+        if let reference = audit.reference {
+            parts.append(describe(reference, label: label))
+        }
+        if audit.rejectedReadings > 0 {
+            parts.append("\(audit.rejectedReadings) implausible readings ignored")
+        }
+        if let outcome = audit.outcome {
+            parts.append("\(outcome.rawValue) the reference")
+        }
+        return parts.joined(separator: "; ")
+    }
+
+    private struct InputLabel {
+        var name: String
+        var unit: String
+        var decimals: Int
+    }
+
+    private static func inputLabel(_ input: ReadinessInput) -> InputLabel {
+        switch input {
+        case .hrv(let series?):
+            InputLabel(
+                name: "HRV (\(series.metric.rawValue.uppercased()), \(series.window.rawValue))", unit: "ms", decimals: 0
+            )
+        case .hrv(nil): InputLabel(name: "HRV", unit: "ms", decimals: 0)
+        case .restingHeartRate: InputLabel(name: "Resting HR", unit: "bpm", decimals: 0)
+        case .sleep: InputLabel(name: "Sleep", unit: "h", decimals: 1)
+        case .checkIn: InputLabel(name: "Check-in", unit: "", decimals: 0)
+        }
+    }
+
+    private static func describe(_ reference: ReadinessReference, label: InputLabel) -> String {
+        let (value, unit) = (format(reference.value, decimals: label.decimals), label.unit)
+        switch reference.kind {
+        case .fixedThreshold:
+            return "threshold \(value) \(unit)"
+        case .personalBaseline, .cyclePhase:
+            let kind = if case .cyclePhase(let window) = reference.kind {
+                "\(window.rawValue) baseline"
+            } else {
+                "baseline"
+            }
+            var text = "\(kind) \(value) \(unit) from \(reference.readings) readings over \(reference.days) days "
+                + "(minimum \(reference.minimumReadings))"
+            if reference.overlappingReadings > 0 {
+                text += ", \(reference.overlappingReadings) of them inside the recent window"
+            }
+            return text
+        }
+    }
+
+    private static func statusText(_ status: ReadinessInputStatus) -> String {
+        switch status {
+        case .compared: "compared"
+        case .missing: "no data"
+        case .stale: "no recent data, not used"
+        case .outOfRange: "only implausible values, not used"
+        case .buildingBaseline: "baseline still building, not used"
+        case .tooFewRecent: "too few recent readings, not used"
+        case .anotherSeriesUsed: "not used, another HRV series was judged"
+        }
+    }
+
+    private static func sourceName(_ source: DataSourceKind) -> String {
+        switch source {
+        case .garmin: "Garmin"
+        case .appleHealth: "Apple Health"
+        case .manual: "the athlete"
+        case .app: "Overreach"
+        case .strongImport: "Strong import"
+        }
+    }
+
     /// " (RMSSD, Garmin)": which HRV series the rule judged (ADR-0025).
     static func seriesNote(_ metric: HRVMetric?) -> String {
         guard let metric else { return "" }
-        let source = switch metric.source {
-        case .garmin: "Garmin"
-        default: "Apple Health"
-        }
-        return " (\(metric.rawValue.uppercased()), \(source))"
+        return " (\(metric.rawValue.uppercased()), \(sourceName(metric.source)))"
     }
 
     static func describe(_ reason: ReadinessReason, hrvCoverage: HRVCoverage?) -> String {

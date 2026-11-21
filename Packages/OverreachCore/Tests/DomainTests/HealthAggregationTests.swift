@@ -56,6 +56,7 @@ struct HealthAggregationTests {
         #expect(day.hrvNightlyAverageMs == 45)
         #expect(day.hrvMetric == .sdnn)
         #expect(day.hrv(.sdnn) == 45 && day.hrv(.rmssd) == nil)
+        #expect(day.hrvWindow(.sdnn) == .sleep)
         #expect(day.restingHeartRate == 52)
         #expect(day.spo2Average == 97)
         #expect(day.steps == 8_412)
@@ -68,6 +69,7 @@ struct HealthAggregationTests {
         )
         #expect(day.hrvNightlyAverageMs == 40)
         #expect(day.sleepSeconds == nil)
+        #expect(day.hrvWindow(.sdnn) == .daytime)  // a different protocol: its own series (ADR-0032)
     }
 
     @Test func noSamplesMeansNoDays() {
