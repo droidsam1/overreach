@@ -10,6 +10,13 @@ public struct DetectedDeload: Hashable, Sendable {
     public var evidence: EvidenceReference {
         EvidenceReference(key: "unplanned-deload", level: .heuristic)
     }
+
+    public init(start: CalendarDay, end: CalendarDay, reason: DeloadReason, needsConfirmation: Bool) {
+        self.start = start
+        self.end = end
+        self.reason = reason
+        self.needsConfirmation = needsConfirmation
+    }
 }
 
 /// Detects recovery from complete local days. Strength and running are assessed separately so continued

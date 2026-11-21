@@ -16,6 +16,17 @@ public struct DeloadAdvice: Hashable, Sendable {
         case proposed(reasons: [DeloadReasonLine])
         /// An accepted deload week, until `lastDay`.
         case inProgress(lastDay: Date)
+        /// A deload would be proposed, but a recent break the athlete has not confirmed may already have been one.
+        case confirmBreak(DetectedBreak)
+    }
+
+    /// A period of no or much lighter training that only the athlete can confirm (`unplanned-deload`).
+    public struct DetectedBreak: Hashable, Sendable {
+        public let start: CalendarDay
+        public let end: CalendarDay
+        public let reason: DeloadReason
+        /// "No training logged from Mon 3 Nov to Tue 11 Nov."
+        public let text: String
     }
 
     public let state: State
@@ -66,14 +77,45 @@ public struct DeloadAdvice: Hashable, Sendable {
             settings: settings, runReadFailed: runReadFailed, recordings: recordings, today: today, calendar: calendar
         )
         let lastDeload = profile.deloads.last.map { $0.start.startDate(in: calendar) }
-        guard let proposal = DeloadAdvisor.proposal(
-            lifts: lifts, lastDeload: lastDeload, recovery: recovery, now: now, settings: advisorSettings,
-            detectedDeloads: detected, calendar: calendar
-        ) else { return nil }
+        func propose(_ periods: [DetectedDeload]) -> DeloadProposal? {
+            DeloadAdvisor.proposal(
+                lifts: lifts, lastDeload: lastDeload, recovery: recovery, now: now, settings: advisorSettings,
+                detectedDeloads: periods, calendar: calendar
+            )
+        }
+        guard let proposal = propose(detected) else { return nil }
+        if let pending = unconfirmedBreak(in: detected, lastDeload: profile.deloads.last?.start, today: today),
+           propose(detected + [DetectedDeload(start: pending.start, end: pending.end, reason: pending.reason,
+                                              needsConfirmation: false)]) == nil {
+            // Ask first: if the break was the rest the signals call for, a deload now would repeat it.
+            let style = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
+                .weekday(.abbreviated).day().month(.abbreviated)
+            let start = pending.start.startDate(in: calendar).formatted(style)
+            let end = pending.end.startDate(in: calendar).formatted(style)
+            let text = pending.reason == .noTraining
+                ? L10n.format("No training logged from {1} to {2}.", start, end)
+                : L10n.format("Much lighter training than usual from {1} to {2}.", start, end)
+            return DeloadAdvice(
+                state: .confirmBreak(DetectedBreak(start: pending.start, end: pending.end, reason: pending.reason,
+                                                   text: text)),
+                planText: planText
+            )
+        }
         let reasons = proposal.signals.map {
             DeloadReasonLine(text: text(for: $0, format: format), evidence: $0.evidence.level.displayName)
         }
         return DeloadAdvice(state: .proposed(reasons: reasons), planText: planText)
+    }
+
+    /// The latest unconfirmed period after the last deload or confirmed break, within the planned interval.
+    private static func unconfirmedBreak(
+        in detected: [DetectedDeload], lastDeload: CalendarDay?, today: CalendarDay
+    ) -> DetectedDeload? {
+        let confirmedEnd = detected.filter { !$0.needsConfirmation }.map(\.end).max()
+        let lastRecovery = [confirmedEnd, lastDeload].compactMap { $0 }.max()
+        return detected.filter { period in
+            period.needsConfirmation && period.end < today && lastRecovery.map { period.start > $0 } ?? true
+        }.max { $0.end < $1.end }
     }
 
     static func text(for signal: DeloadSignal, format: Format) -> String {

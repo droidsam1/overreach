@@ -1327,6 +1327,23 @@
         }
       }
     },
+    "Apply it to every session of the week, starting with the next one:": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplícala a todas las sesiones de la semana, empezando por la siguiente:"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplícaa a todas as sesións da semana, empezando pola seguinte:"
+          }
+        }
+      }
+    },
     "Ask AI": {
       "extractionState": "manual",
       "localizations": {
@@ -2037,6 +2054,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Escolle o esforzo: cantas repeticións che quedaban, como RPE ou como repeticións en reserva."
+          }
+        }
+      }
+    },
+    "Choose your next session": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige tu próxima sesión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolle a túa próxima sesión"
           }
         }
       }
@@ -3622,6 +3656,23 @@
         }
       }
     },
+    "Deload · {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descarga · {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descarga · {1}"
+          }
+        }
+      }
+    },
     "Deloads and rest periods": {
       "extractionState": "manual",
       "localizations": {
@@ -3669,6 +3720,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "O dor empeorou ou cambiou a túa zancada na última carreira?"
+          }
+        }
+      }
+    },
+    "Did you already take a break?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Ya hiciste un descanso?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xa fixeches un descanso?"
           }
         }
       }
@@ -4417,6 +4485,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Os máximos estimados baixaron en {1} exercicios este mes."
+          }
+        }
+      }
+    },
+    "Every session this week: for example, 4 × 6 at 100 kg becomes 2 × 6 at 90 kg, with at least 3 reps left.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todas las sesiones de esta semana: por ejemplo, 4 × 6 con 100 kg pasa a 2 × 6 con 90 kg, con al menos 3 repeticiones en reserva."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todas as sesións desta semana: por exemplo, 4 × 6 con 100 kg pasa a 2 × 6 con 90 kg, con polo menos 3 repeticións en reserva."
           }
         }
       }
@@ -5730,6 +5815,23 @@
         }
       }
     },
+    "If it was a rest or an easier week, it counts as your deload and no new one is needed yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si fue un descanso o una semana más suave, cuenta como tu descarga y aún no necesitas otra."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se foi un descanso ou unha semana máis suave, conta como a túa descarga e aínda non precisas outra."
+          }
+        }
+      }
+    },
     "If you want to lift today": {
       "extractionState": "manual",
       "localizations": {
@@ -6580,6 +6682,23 @@
         }
       }
     },
+    "Last time · {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La última vez · {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A última vez · {1}"
+          }
+        }
+      }
+    },
     "Learn more": {
       "extractionState": "manual",
       "localizations": {
@@ -7362,6 +7481,23 @@
         }
       }
     },
+    "Much lighter training than usual from {1} to {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamiento mucho más ligero de lo habitual del {1} al {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramento moito máis lixeiro do habitual do {1} ao {2}."
+          }
+        }
+      }
+    },
     "Muscle": {
       "extractionState": "manual",
       "localizations": {
@@ -7596,6 +7732,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seguinte"
+          }
+        }
+      }
+    },
+    "Next in your plan: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siguiente en tu plan: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguinte no teu plan: {1}"
+          }
+        }
+      }
+    },
+    "Next in your rotation · {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siguiente en tu rotación · {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguinte na túa rotación · {1}"
+          }
+        }
+      }
+    },
+    "Next in your rotation: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siguiente en tu rotación: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguinte na túa rotación: {1}"
           }
         }
       }
@@ -7889,23 +8076,6 @@
         }
       }
     },
-    "No completed workouts found in the last 7 days.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No se encontraron entrenamientos completados en los últimos 7 días."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Non se atoparon adestramentos completados nos últimos 7 días."
-          }
-        }
-      }
-    },
     "No exercises": {
       "extractionState": "manual",
       "localizations": {
@@ -8072,6 +8242,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ningún síntoma que afecte ao adestramento"
+          }
+        }
+      }
+    },
+    "No training logged from {1} to {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay entrenamientos registrados del {1} al {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai adestramentos rexistrados do {1} ao {2}."
           }
         }
       }
@@ -9483,23 +9670,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Semáforo de recuperación"
-          }
-        }
-      }
-    },
-    "Recent training and recovery": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Entrenamiento y recuperación recientes"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Adestramento e recuperación recentes"
           }
         }
       }
@@ -15029,6 +15199,23 @@
         }
       }
     },
+    "Yes, count it": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sí, cuéntalo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si, cóntao"
+          }
+        }
+      }
+    },
     "You can import it as it is, or send the correction and bring the new answer.": {
       "extractionState": "manual",
       "localizations": {
@@ -15110,6 +15297,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Indicaches que os síntomas che fan sentir demasiado mal para adestrar."
+          }
+        }
+      }
+    },
+    "You rotate through {1}. Next up: {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vas rotando {1}. Te toca: {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vas rotando {1}. Tócache: {2}."
           }
         }
       }
@@ -15212,6 +15416,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "A túa VFC leva varios días por debaixo do teu rango habitual."
+          }
+        }
+      }
+    },
+    "Your choice · {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu elección · {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa elección · {1}"
+          }
+        }
+      }
+    },
+    "Your choice: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu elección: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa elección: {1}"
           }
         }
       }
@@ -15331,6 +15569,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "A túa competición ou data obxectivo é hoxe ou mañá. Deixa a carreira extra para outro día."
+          }
+        }
+      }
+    },
+    "Your recent sessions don't follow a fixed order yet. Choose the one you plan to do.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus sesiones recientes aún no siguen un orden fijo. Elige la que vas a hacer."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As túas sesións recentes aínda non seguen unha orde fixa. Escolle a que vas facer."
           }
         }
       }

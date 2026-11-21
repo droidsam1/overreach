@@ -40,6 +40,15 @@ public final class TodayModel {
     private var hasRunningGoal = false
     /// A deload proposal (training reinforced by recovery, `deload-recovery-signals`) or the deload week in progress.
     public private(set) var deloadAdvice: DeloadAdvice?
+    /// The next session with the deload applied, when the app knows which session comes next.
+    public private(set) var deloadSession: DeloadSessionPreview?
+    /// Workouts the athlete can say they will do next, when there is no plan (most recent first, or rotation order).
+    public private(set) var strengthChoices: [StrengthChoice] = []
+    /// What the app knows about the next session: the detected rotation, or that it cannot tell.
+    public private(set) var strengthChoiceNote: String?
+    private var recentWorkouts: WorkoutContext?
+    private var strengthInputs: StrengthInputs?
+    private var chosenWorkout: (day: CalendarDay, id: String)?
     private var trainingReadFailed = false
     private var activeLoad: UUID?
     private var loadedDay: CalendarDay?
@@ -162,15 +171,10 @@ public final class TodayModel {
                              calendar: calendar, format: format)
     }
 
-    public var trainingTimelineNote: String? {
-        if trainingReadFailed { return L10n.text("Some recent workouts could not be loaded.") }
-        if !recentTrainingDays.isEmpty && recentTrainingDays.allSatisfy({ $0.workouts.isEmpty }) {
-            return L10n.text("No completed workouts found in the last 7 days.")
-        }
-        return nil
+    /// Recent workouts feed the readiness explanation, the deload and the strength option; History lists them.
+    public var trainingReadNote: String? {
+        trainingReadFailed ? L10n.text("Some recent workouts could not be loaded.") : nil
     }
-
-    public var showsTrainingTimeline: Bool { !recentTrainingDays.isEmpty || trainingReadFailed }
 
     /// The check-in button only shows when check-ins can be stored.
     public var showsCheckIn: Bool { checkIns != nil }
@@ -339,6 +343,7 @@ public final class TodayModel {
         scheduledStrengthToday = nil
         scheduledRunsToday = []
         strengthOption = nil
+        strengthInputs = nil
         runningOption = nil
         recentRunPain = false
         defer {
@@ -430,6 +435,8 @@ public final class TodayModel {
         let today = range.upperBound
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         loadRunningPlan(goal: goal, today: today, now: now, runs: runResult.failed ? [] : runResult.activities)
+        await loadWorkoutContext(today: today, now: now, profile: profile, catalog: allExercises ?? [], loadID: loadID)
+        guard activeLoad == loadID else { return }
         await loadDeloadAdvice(
             now: now, history: metricsHistory, profile: profile,
             training: DeloadTraining(
@@ -439,6 +446,7 @@ public final class TodayModel {
             loadID: loadID
         )
         guard activeLoad == loadID else { return }
+        updateDeloadSession()
         let assignment = goal?.scheduledStrength.first { $0.day == today }
         var assignedRoutine: Routine?
         if let assignment {
@@ -494,6 +502,19 @@ public final class TodayModel {
         profile.deloadPostponedUntil = CalendarDay(now, calendar: calendar).adding(days: 6, calendar: calendar)
         try? await profiles.save(profile)
         deloadAdvice = nil
+    }
+
+    /// Answers whether a detected break counted as a deload, as Plan does (ADR-0029). A yes resets the deload
+    /// interval; a no lets the proposal through.
+    public func reviewBreak(accepted: Bool, now: Date = .now) async {
+        guard let profiles, case let .confirmBreak(period) = deloadAdvice?.state,
+              var profile = try? await profiles.profile() else { return }
+        profile.deloadDecisions.removeAll { $0.start == period.start }
+        profile.deloadDecisions.append(
+            DeloadDecision(start: period.start, end: period.end, reason: period.reason, accepted: accepted)
+        )
+        try? await profiles.save(profile)
+        await load(now: now)
     }
 
     private struct DeloadTraining {
@@ -573,11 +594,166 @@ public final class TodayModel {
         let familiarityStart = today.adding(days: -EasyStrengthAdjustment.familiarityDays, calendar: calendar)
             .startDate(in: calendar)
         let settingsUnavailable = progression != nil && settings == nil
-        strengthOption = StrengthOption.make(
-            routine: assignedRoutine ?? (settingsUnavailable ? nil : planned?.routine),
-            isDated: assignedRoutine != nil, sessions: completed,
-            exercises: assignedRoutine != nil && settingsUnavailable ? [] : catalog,
+        strengthInputs = StrengthInputs(
+            assignedRoutine: assignedRoutine, plannedRoutine: settingsUnavailable ? nil : planned?.routine,
+            sessions: completed, catalog: assignedRoutine != nil && settingsUnavailable ? [] : catalog,
             settings: settings ?? [:], historyStart: historyStart, familiarityStart: familiarityStart
+        )
+        rebuildStrengthOption()
+    }
+
+    // MARK: Next strength session
+
+    /// Says which workout the athlete will do next, when the app could not tell or guessed wrong. It lasts for today.
+    public func chooseStrengthSession(_ id: String) {
+        guard let day = loadedDay, strengthChoices.contains(where: { $0.id == id }) else { return }
+        chosenWorkout = (day, id)
+        updateStrengthChoices()
+        rebuildStrengthOption()
+        updateDeloadSession()
+    }
+
+    /// Completed sessions in this window are enough to see a rotation of up to six workouts done once or twice a week.
+    static let rotationHistoryDays = 120
+
+    private struct WorkoutContext {
+        let sessions: [StrengthSession]
+        let catalog: [Exercise]
+        let settings: [UUID: ProgressionSettings]
+        let rotation: SessionRotation?
+        /// The routine a declared plan or today's assignment has next. It wins over a detected rotation.
+        let planned: SessionRotation.Slot?
+        let recent: [SessionRotation.Slot]
+    }
+
+    private struct StrengthInputs {
+        let assignedRoutine: Routine?
+        let plannedRoutine: Routine?
+        let sessions: [StrengthSession]
+        let catalog: [Exercise]
+        let settings: [UUID: ProgressionSettings]
+        let historyStart: Date
+        let familiarityStart: Date
+    }
+
+    private func loadWorkoutContext(
+        today: CalendarDay, now: Date, profile: AthleteProfile?, catalog: [Exercise], loadID: UUID
+    ) async {
+        guard let workouts else {
+            recentWorkouts = nil
+            updateStrengthChoices()
+            return
+        }
+        let blocks = profile?.declaredBlocks ?? []
+        let rotationStart = today.adding(days: -Self.rotationHistoryDays, calendar: calendar).startDate(in: calendar)
+        let blockStart = PlanSchedule.runningBlock(blocks, today: today, calendar: calendar)?.start
+            .startDate(in: calendar)
+        async let logged = try? workouts.sessions(from: min(rotationStart, blockStart ?? rotationStart), to: now)
+        async let allRoutines = try? routines?.allRoutines()
+        async let allSettings = try? progression?.allProgressionSettings()
+        let (sessions, availableRoutines, settings) = await (logged, allRoutines, allSettings)
+        guard activeLoad == loadID else { return }
+        let completed = (sessions ?? []).filter { RecentTraining.isCompleted($0, through: now) && $0.startedAt < now }
+        let recent = completed.filter { $0.startedAt >= rotationStart }
+        let assignment = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }?.scheduledStrength
+            .first { $0.day == today }
+        let routine: Routine? = if let id = assignment?.routineID {
+            availableRoutines?.first { $0.id == id }
+        } else if assignment == nil {
+            PlanSchedule.next(blocks: blocks, routines: availableRoutines ?? [], sessions: completed, today: today,
+                              calendar: calendar)?.routine
+        } else {
+            nil
+        }
+        if chosenWorkout?.day != today { chosenWorkout = nil }
+        recentWorkouts = WorkoutContext(
+            sessions: recent, catalog: catalog, settings: settings ?? [:],
+            rotation: SessionRotation.detect(in: recent),
+            planned: routine.map { SessionRotation.Slot(id: $0.id.uuidString, name: $0.name) },
+            recent: SessionRotation.recentWorkouts(in: recent)
+        )
+        updateStrengthChoices()
+    }
+
+    /// The workout that comes next: the athlete's choice for today, the plan's next routine, or the rotation's next.
+    private var nextWorkout: StrengthOption.Basis? {
+        guard let context = recentWorkouts, context.planned == nil else { return nil }
+        if let chosen = chosenWorkout, let slot = strengthChoices.first(where: { $0.id == chosen.id }) {
+            return .chosen(SessionRotation.Slot(id: slot.id, name: slot.title))
+        }
+        return context.rotation.map { .rotation($0.next) }
+    }
+
+    private func updateStrengthChoices() {
+        guard let context = recentWorkouts, context.planned == nil else {
+            strengthChoices = []
+            strengthChoiceNote = nil
+            return
+        }
+        let slots = context.rotation?.order ?? context.recent
+        strengthChoices = slots.count >= 2 ? slots.map { StrengthChoice(id: $0.id, title: $0.name) } : []
+        let selected = chosenWorkout?.id ?? context.rotation?.next.id
+        strengthChoices = strengthChoices.map {
+            StrengthChoice(id: $0.id, title: $0.title, isSelected: $0.id == selected)
+        }
+        if let rotation = context.rotation, rotation.order.count >= 2 {
+            let cycle = rotation.order.map(\.name).joined(separator: " → ")
+            strengthChoiceNote = L10n.format("You rotate through {1}. Next up: {2}.", cycle, rotation.next.name)
+        } else if strengthChoices.count >= 2 {
+            strengthChoiceNote = L10n.text(
+                "Your recent sessions don't follow a fixed order yet. Choose the one you plan to do."
+            )
+        } else {
+            strengthChoiceNote = nil
+        }
+    }
+
+    private func rebuildStrengthOption() {
+        guard let inputs = strengthInputs else { return }
+        let routine = inputs.assignedRoutine ?? inputs.plannedRoutine
+        strengthOption = StrengthOption.make(
+            routine: routine, isDated: inputs.assignedRoutine != nil, sessions: inputs.sessions,
+            exercises: inputs.catalog, settings: inputs.settings, historyStart: inputs.historyStart,
+            familiarityStart: inputs.familiarityStart, basis: routine == nil ? nextWorkout : nil
+        )
+    }
+
+    /// The deload applied to the session that comes next. Without one, Today explains it in general terms.
+    private func updateDeloadSession() {
+        deloadSession = nil
+        guard let advice = deloadAdvice, let context = recentWorkouts else { return }
+        if case .confirmBreak = advice.state { return }
+        let target: (slot: SessionRotation.Slot, heading: String)
+        if let planned = context.planned {
+            target = (planned, L10n.format("Next in your plan: {1}", planned.name))
+        } else if let basis = nextWorkout {
+            switch basis {
+            case let .rotation(slot): target = (slot, L10n.format("Next in your rotation: {1}", slot.name))
+            case let .chosen(slot): target = (slot, L10n.format("Your choice: {1}", slot.name))
+            }
+        } else {
+            return
+        }
+        guard let session = context.sessions.filter({ SessionRotation.slot(for: $0).id == target.slot.id })
+            .max(by: { $0.startedAt < $1.startedAt }) else { return }
+        deloadSession = DeloadSessionPreview.make(
+            heading: target.heading, session: session, exercises: context.catalog, settings: context.settings,
+            format: format
+        )
+    }
+
+    /// The deload card holds the next-session choice when it shows; the strength option has it otherwise.
+    public var showsNextSessionInDeload: Bool { deloadHowTo != nil }
+
+    /// How to apply the deload: to the next session shown below, or to any session when the app cannot tell which.
+    public var deloadHowTo: String? {
+        guard let advice = deloadAdvice else { return nil }
+        if case .confirmBreak = advice.state { return nil }
+        if deloadSession != nil {
+            return L10n.text("Apply it to every session of the week, starting with the next one:")
+        }
+        return L10n.text(
+            "Every session this week: for example, 4 × 6 at 100 kg becomes 2 × 6 at 90 kg, with at least 3 reps left."
         )
     }
 

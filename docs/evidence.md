@@ -201,7 +201,8 @@ of reduced training stress and volume. Retrospective detection in hybrid athlete
 Overreach checks seven complete calendar days against recent training and, for matched strength routines,
 reconstructed progression targets. The 50% and 65% load ratios, effort cutoffs, running-duration fallback,
 and one-week grace period for repeat advice are product heuristics. A break in logging can require
-confirmation before it counts as recovery. Reviewed 2026-11-20.
+confirmation before it counts as recovery; Today asks when the answer would change a deload proposal, and
+performance drops only compare sessions since the last recovery period (ADR-0033). Reviewed 2026-11-21.
 
 ### `stall-heuristics` — heuristic
 Stall = no e1RM gain > 1 % over the last 3 exposures vs the 6 before, with ≥ 2 missed targets. Linear reset
@@ -355,7 +356,8 @@ The defaults are up to three exercises performed in the last 42 days, up to two 
 (roughly half the reference, with one as the minimum), repetitions within the reference and recent exposure,
 and at least four repetitions in reserve. A lower reference effort is respected. A qualitative load cue avoids
 assuming a specific weight will feel light today. The opt-in example creates no session and has no effect on
-the rotation. Reduced volume and effort are used in deload practice. The studies support neither these exact
+the rotation. Without a plan, the reference is the next workout of the athlete's own rotation or the workout they
+choose (ADR-0033). Reduced volume and effort are used in deload practice. The studies support neither these exact
 numbers nor prescribing this example from HRV. Reviewed 2026-11-20. [Deload consensus](https://doi.org/10.1186/s40798-023-00633-0) · [Athlete survey](https://pubmed.ncbi.nlm.nih.gov/38499934/) · [Repetitions in reserve](https://pubmed.ncbi.nlm.nih.gov/27531969/)
 
 ### `plan-adherence` — heuristic

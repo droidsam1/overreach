@@ -82,7 +82,7 @@ struct RecentTrainingTests {
         await model.load(now: now)
 
         #expect(model.recentTrainingDays.first?.workouts.count == 1)
-        #expect(model.trainingTimelineNote == "Some recent workouts could not be loaded.")
+        #expect(model.trainingReadNote == "Some recent workouts could not be loaded.")
     }
 
     @Test func recoveryWithoutRecordedExerciseRemainsVisible() async throws {
@@ -92,9 +92,8 @@ struct RecentTrainingTests {
         let model = TodayModel(sources: [TimelineSource(kind: .appleHealth, metrics: [metrics])], calendar: calendar)
         await model.load(now: today.startDate(in: calendar))
 
-        #expect(model.showsTrainingTimeline)
         #expect(model.recentTrainingDays.first?.workouts.isEmpty == true)
-        #expect(model.trainingTimelineNote == "No completed workouts found in the last 7 days.")
+        #expect(model.trainingReadNote == nil)
     }
 }
 

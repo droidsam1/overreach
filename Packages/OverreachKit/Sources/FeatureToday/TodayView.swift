@@ -46,9 +46,6 @@ public struct TodayView: View {
                     if model.showsCheckIn {
                         checkIn
                     }
-                    if model.showsTrainingTimeline {
-                        recentTraining
-                    }
                     if model.showsMetrics {
                         metrics
                     }
@@ -65,6 +62,12 @@ public struct TodayView: View {
                             .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
                         }
                         .buttonStyle(.plain)
+                    }
+
+                    if let note = model.trainingReadNote {
+                        Label(note, systemImage: "exclamationmark.triangle")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
                     }
 
                     if model.showsSourceWarning {
@@ -109,6 +112,7 @@ public struct TodayView: View {
                     }
                 }
                 Text(advice.planText).font(.footnote).foregroundStyle(.secondary)
+                deloadApplication
                 HStack {
                     Button("Start deload week") { Task { await model.acceptDeload() } }
                         .buttonStyle(.borderedProminent)
@@ -123,11 +127,75 @@ public struct TodayView: View {
                 Text("Until \(lastDay.formatted(.dateTime.weekday(.wide).day().month()))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                deloadApplication
+            case let .confirmBreak(period):
+                Label("Did you already take a break?", systemImage: "questionmark.circle.fill")
+                    .font(.headline)
+                    .foregroundStyle(.orange)
+                Text(period.text).font(.subheadline)
+                Text("If it was a rest or an easier week, it counts as your deload and no new one is needed yet.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                HStack {
+                    Button("Yes, count it") { Task { await model.reviewBreak(accepted: true) } }
+                        .buttonStyle(.borderedProminent)
+                    Button("No") { Task { await model.reviewBreak(accepted: false) } }
+                        .buttonStyle(.bordered)
+                }
             }
         }
         .padding(Spacing.medium)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
+    }
+
+    /// How to apply the deload: the next session with fewer sets and less load, or a general example.
+    @ViewBuilder private var deloadApplication: some View {
+        if let howTo = model.deloadHowTo {
+            Text(howTo).font(.subheadline)
+        }
+        if let session = model.deloadSession {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                Text(session.heading).font(.subheadline.weight(.semibold))
+                ForEach(session.rows) { row in
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        Text(row.title).font(.subheadline.weight(.medium))
+                        Text(row.reference).foregroundStyle(.secondary)
+                        Text(row.deload)
+                    }
+                    .font(.subheadline)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+        }
+        nextSessionPicker
+    }
+
+    /// Lets the athlete say which workout comes next when there is no plan.
+    @ViewBuilder private var nextSessionPicker: some View {
+        if !model.strengthChoices.isEmpty {
+            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                if let note = model.strengthChoiceNote {
+                    Text(note).font(.footnote).foregroundStyle(.secondary)
+                }
+                Menu {
+                    ForEach(model.strengthChoices) { choice in
+                        Button {
+                            model.chooseStrengthSession(choice.id)
+                        } label: {
+                            if choice.isSelected {
+                                Label(choice.title, systemImage: "checkmark")
+                            } else {
+                                Text(choice.title)
+                            }
+                        }
+                    }
+                } label: {
+                    Label("Choose your next session", systemImage: "list.bullet")
+                        .font(.subheadline)
+                }
+            }
+        }
     }
 
     private var connectHealth: some View {
@@ -247,6 +315,9 @@ public struct TodayView: View {
             if let heading = option.heading {
                 Text(heading).font(.subheadline)
             }
+            if !model.showsNextSessionInDeload {
+                nextSessionPicker
+            }
             ForEach(option.exerciseRows) { row in
                 VStack(alignment: .leading, spacing: Spacing.xSmall) {
                     Text(row.title).font(.subheadline.weight(.semibold))
@@ -260,29 +331,6 @@ public struct TodayView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, Spacing.small)
-    }
-
-    private var recentTraining: some View {
-        DisclosureGroup("Recent training and recovery") {
-            VStack(alignment: .leading, spacing: Spacing.medium) {
-                if let note = model.trainingTimelineNote {
-                    Text(note).font(.footnote).foregroundStyle(.secondary)
-                }
-                ForEach(model.recentTrainingDays) { day in
-                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                        Text(day.date).font(.subheadline.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                        if let recovery = day.recovery {
-                            Text(recovery).font(.footnote).foregroundStyle(.secondary)
-                        }
-                        ForEach(Array(day.workouts.enumerated()), id: \.offset) { _, workout in
-                            Text(workout).font(.subheadline)
-                        }
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.top, Spacing.small)
-        }
     }
 
     private var checkIn: some View {
