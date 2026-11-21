@@ -50,7 +50,7 @@ public struct ReleaseNotes: Hashable, Sendable {
                 ),
                 ReleaseHighlight(
                     symbol: "calendar.badge.checkmark", title: L10n.text("Recovery history"),
-                    detail: L10n.text("Plan detects unplanned deloads from your training history.")
+                    detail: L10n.text("Plan counts breaks from strength training and running separately.")
                 ),
                 ReleaseHighlight(
                     symbol: "arrow.down.right.circle.fill", title: L10n.text("Deloads when you need them"),

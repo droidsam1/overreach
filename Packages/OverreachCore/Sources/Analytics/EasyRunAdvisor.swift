@@ -6,18 +6,24 @@ public enum EasyRunAdvisor {
     public static let historyDays = 28
     public static let evidence = EvidenceReference(key: "easy-run-example", level: .heuristic)
 
+    public static let returnEvidence = EvidenceReference(key: "training-breaks", level: .heuristic)
+
     public enum Decision: Hashable, Sendable {
         case plannedRest
         case nearEvent
         case multipleToday
+        case returningFromBreak(replacePlanned: Bool)
         case example(minutes: Int, plan: PlannedRun?, isToday: Bool, recentRuns: Int)
     }
 
     public static func advise(
-        goal: RunningGoal, targetDay: CalendarDay?, schedule: [PlannedRun], readiness: Readiness,
-        metrics: DailyMetrics?, runs: [RunActivity], now: Date, calendar: Calendar = .current
+        goal: RunningGoal?, targetDay: CalendarDay?, schedule: [PlannedRun], readiness: Readiness,
+        metrics: DailyMetrics?, runs: [RunActivity], now: Date, calendar: Calendar = .current,
+        runningBreak: DetectedDeload? = nil
     ) -> Decision? {
-        guard goal.distanceMeters > 0, readiness.level == .green || readiness.level == .amber else { return nil }
+        guard (goal?.distanceMeters ?? 0) > 0 || runningBreak != nil,
+              readiness.level == .green || readiness.level == .amber,
+              !readiness.reasons.contains(where: \.advisesSkippingTraining) else { return nil }
         let today = CalendarDay(now, calendar: calendar)
         let tomorrow = today.adding(days: 1, calendar: calendar)
         let pending = schedule.filter { $0.day >= today && $0.completion == nil }
@@ -29,20 +35,27 @@ public enum EasyRunAdvisor {
         if due.count > 1 { return .multipleToday }
         let next = due.first ?? pending.min { $0.day < $1.day }
         let scheduledToday = next?.day == today
-        if scheduledToday, readiness.level == .green, next?.purpose != .easy { return nil }
         guard hasBiometricSupport(readiness, metrics: metrics, today: today, calendar: calendar) else { return nil }
 
         let start = today.adding(days: -(historyDays - 1), calendar: calendar).startDate(in: calendar)
+        let resumed = runningBreak?.end.adding(days: 1, calendar: calendar).startDate(in: calendar)
         // Include a mirrored recording just outside the window before filtering by the preferred record's day.
         let completed = RunDeduplication.removingDuplicates(runs.filter { run in
             run.startedAt <= now && run.durationSeconds.isFinite && run.durationSeconds >= 0
                 && run.startedAt.addingTimeInterval(run.durationSeconds) <= now
-        }).filter { $0.startedAt >= start }
+        }).filter { $0.startedAt >= min(start, resumed ?? start) }
         // A run with unknown duration still counts as activity when deciding whether to offer another today.
         let dayStart = today.startDate(in: calendar)
         guard !completed.contains(where: { $0.startedAt.addingTimeInterval($0.durationSeconds) >= dayStart })
         else { return nil }
-        let recent = completed.filter { $0.durationSeconds > 0 }.suffix(5)
+        let returnRuns = DeloadDetection.BreakSettings().runningReturnRuns
+        if let resumed, completed.lazy.filter({ $0.startedAt >= resumed }).prefix(returnRuns).count < returnRuns {
+            return .returningFromBreak(replacePlanned: scheduledToday && next?.purpose != .easy)
+        }
+        guard let goal, goal.distanceMeters > 0 else { return nil }
+        if scheduledToday, readiness.level == .green, next?.purpose != .easy { return nil }
+
+        let recent = completed.filter { $0.startedAt >= start && $0.durationSeconds > 0 }.suffix(5)
         let fresh = today.adding(days: -14, calendar: calendar).startDate(in: calendar)
         guard let latest = recent.last, latest.startedAt >= fresh else { return nil }
         let durations = recent.map { $0.durationSeconds / 60 }.sorted()

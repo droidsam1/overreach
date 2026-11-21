@@ -30,6 +30,7 @@ struct RootView: View {
     @State private var planModel: PlanModel
     @State private var importModel: ImportModel
     @State private var backupModel: BackupModel
+    @State private var trainingSettingsModel: TrainingSettingsModel
     @State private var garminModel: GarminSetupModel
     @State private var exercisesModel: ExercisesModel
     @State private var onboardingModel: OnboardingModel
@@ -68,6 +69,7 @@ struct RootView: View {
         _planModel = State(initialValue: container.makePlanModel())
         _importModel = State(initialValue: container.makeImportModel())
         _backupModel = State(initialValue: container.makeBackupModel())
+        _trainingSettingsModel = State(initialValue: container.makeTrainingSettingsModel())
         _garminModel = State(initialValue: container.makeGarminSetupModel())
         _exercisesModel = State(initialValue: container.makeExercisesModel())
         _onboardingModel = State(initialValue: container.makeOnboardingModel())
@@ -99,7 +101,7 @@ struct RootView: View {
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
                 SettingsView(
                     importModel: importModel, backupModel: backupModel, garminModel: garminModel,
-                    showsStrongImport: $showsStrongImport
+                    trainingModel: trainingSettingsModel, showsStrongImport: $showsStrongImport
                 ) {
                     NavigationLink {
                         ExercisesView(model: exercisesModel)

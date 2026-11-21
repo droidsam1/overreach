@@ -33,6 +33,7 @@ public enum ReadinessAssessment {
 public struct DailyAssessment: Sendable {
     public let readiness: Readiness
     public let deload: DeloadAssessment?
+    public let runningBreak: DetectedDeload?
 
     public init(
         record: TrainingRecord, profile: AthleteProfile?, checkIn: CheckIn?, now: Date,
@@ -43,10 +44,16 @@ public struct DailyAssessment: Sendable {
             today: today, history: record.metrics, checkIn: checkIn, profile: profile, cycle: record.cycle,
             settings: settings, calendar: calendar
         )
+        let periods = profile.map {
+            record.recoveryPeriods(profile: $0, today: today, calendar: calendar)
+        } ?? []
+        runningBreak = profile?.countsBreaksAutomatically == true && !record.runReadFailed && !record.runs.isEmpty
+            ? RecoveryHistory.lastLongBreak(in: periods, discipline: .running, before: today, calendar: calendar)
+            : nil
         if let profile, !readiness.reasons.contains(where: \.advisesSkippingTraining) {
             deload = DeloadAssessment.assess(
                 today: today, now: now, profile: profile, record: record,
-                readinessSettings: settings, calendar: calendar
+                readinessSettings: settings, calendar: calendar, recoveryPeriods: periods
             )
         } else {
             deload = nil
@@ -56,7 +63,7 @@ public struct DailyAssessment: Sendable {
 
 /// Everything the deload decision reads, gathered once.
 public struct TrainingRecord: Sendable {
-    /// Completed sessions of the last year.
+    /// Completed sessions, including older history when automatic breaks are enabled.
     public var sessions: [StrengthSession]
     public var exercises: [Exercise]
     public var settings: [UUID: ProgressionSettings]
@@ -91,6 +98,19 @@ public struct TrainingRecord: Sendable {
     }
 }
 
+extension TrainingRecord {
+    fileprivate func recoveryPeriods(
+        profile: AthleteProfile, today: CalendarDay, calendar: Calendar
+    ) -> [DetectedDeload] {
+        DeloadDetection.periods(
+            sessions: sessions, runs: runs, profile: profile, routines: routines,
+            exercises: Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first }),
+            settings: settings, runReadFailed: runReadFailed, recordings: recordings, today: today,
+            calendar: calendar
+        )
+    }
+}
+
 /// The deload decision for a day: a week in progress, a proposal, or a break to confirm first (ADR-0027, ADR-0029,
 /// ADR-0035). Screens and the AI context turn it into text; none of them decides it again.
 public enum DeloadAssessment: Hashable, Sendable {
@@ -105,15 +125,26 @@ public enum DeloadAssessment: Hashable, Sendable {
     public static func assess(
         today: CalendarDay, now: Date, profile: AthleteProfile, record: TrainingRecord,
         readinessSettings: ReadinessRules.Settings = .init(), settings: DeloadAdvisor.Settings = .init(),
-        calendar: Calendar = .current
+        calendar: Calendar = .current, recoveryPeriods: [DetectedDeload]? = nil
     ) -> Self? {
         if let current = RecoveryHistory.deloadInProgress(profile, on: today, calendar: calendar) {
             return .inProgress(lastDay: RecoveryHistory.lastDay(of: current, calendar: calendar))
         }
         if let postponed = profile.deloadPostponedUntil, today <= postponed { return nil }
 
-        let start = today.adding(days: -TrainingRecordLoader.historyDays, calendar: calendar).startDate(in: calendar)
-        let sessions = record.sessions.filter { $0.startedAt >= start }
+        let detected = recoveryPeriods ?? record.recoveryPeriods(profile: profile, today: today, calendar: calendar)
+        let trainingStart = today.adding(days: -TrainingRecordLoader.historyDays, calendar: calendar)
+        var start = trainingStart
+        if profile.countsBreaksAutomatically, let period = RecoveryHistory.lastLongBreak(
+            in: detected, discipline: .strength, before: today, calendar: calendar
+        ) {
+            guard !RecoveryHistory.isRebuildingStrength(after: period, on: today, calendar: calendar) else {
+                return nil
+            }
+            start = max(trainingStart, period.end.adding(days: 1, calendar: calendar))
+        }
+        let startDate = start.startDate(in: calendar)
+        let sessions = record.sessions.filter { $0.startedAt >= startDate }
         let byID = Dictionary(record.exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let lifts = LiftStatus.assessAll(
             index: ExposureIndex(sessions: sessions), exercises: byID, stored: record.settings,
@@ -122,11 +153,6 @@ public enum DeloadAssessment: Hashable, Sendable {
         let recovery = RecoveryTrend.assess(
             today: today, history: record.metrics, checkIns: record.checkIns, settings: readinessSettings,
             cycle: record.cycle, calendar: calendar
-        )
-        let detected = DeloadDetection.periods(
-            sessions: sessions, runs: record.runs, profile: profile, routines: record.routines,
-            exercises: byID, settings: record.settings, runReadFailed: record.runReadFailed,
-            recordings: record.recordings, today: today, calendar: calendar
         )
         let weeklyLoad = weeklyLoad(record: record, profile: profile, today: today, calendar: calendar)
         let currentExerciseIDs = LiftStatus.currentExerciseIDs(
@@ -143,8 +169,10 @@ public enum DeloadAssessment: Hashable, Sendable {
         }
         guard let proposal = propose(detected) else { return nil }
         if let pending = unconfirmedBreak(in: detected, after: lastRecovery(detected), today: today),
-           propose(detected + [DetectedDeload(start: pending.start, end: pending.end, reason: pending.reason,
-                                              needsConfirmation: false)]) == nil {
+           propose(detected + [DetectedDeload(
+               start: pending.start, end: pending.end, reason: pending.reason, needsConfirmation: false,
+               discipline: pending.discipline
+           )]) == nil {
             // Ask first: if the break was the rest the signals call for, a deload now would repeat it.
             return .confirmBreak(pending)
         }
@@ -168,7 +196,8 @@ public enum DeloadAssessment: Hashable, Sendable {
         in detected: [DetectedDeload], after lastRecovery: LastRecovery?, today: CalendarDay
     ) -> DetectedDeload? {
         detected.filter { period in
-            period.needsConfirmation && period.end < today && lastRecovery.map { period.start > $0.lastDay } ?? true
+            period.needsConfirmation && period.discipline != .running && period.end < today
+                && (lastRecovery.map { period.start > $0.lastDay } ?? true)
         }.max { $0.end < $1.end }
     }
 }

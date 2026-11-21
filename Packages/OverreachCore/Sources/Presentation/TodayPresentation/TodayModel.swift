@@ -412,11 +412,14 @@ public final class TodayModel {
         deloadAdvice = workouts == nil ? nil : assessment.deload.map {
             DeloadAdvice.make($0, exercises: snapshot.record.exercises, calendar: calendar, format: format)
         }
-        loadRecentTraining(in: weekStart...today, now: now, profile: profile, snapshot: snapshot)
+        loadRecentTraining(
+            in: weekStart...today, now: now, profile: profile, snapshot: snapshot, runningBreak: assessment.runningBreak
+        )
     }
 
     private func loadRecentTraining(
-        in range: ClosedRange<CalendarDay>, now: Date, profile: AthleteProfile?, snapshot: TrainingRecordLoader.Snapshot
+        in range: ClosedRange<CalendarDay>, now: Date, profile: AthleteProfile?,
+        snapshot: TrainingRecordLoader.Snapshot, runningBreak: DetectedDeload?
     ) {
         let record = snapshot.record
         trainingReadFailed = record.runReadFailed || snapshot.sessionsFailed
@@ -428,7 +431,10 @@ public final class TodayModel {
         )
         let today = range.upperBound
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
-        loadRunningPlan(goal: goal, today: today, now: now, runs: record.runReadFailed ? [] : record.runs)
+        loadRunningPlan(
+            goal: goal, today: today, now: now, runs: record.runReadFailed ? [] : record.runs,
+            runningBreak: runningBreak
+        )
         loadWorkoutContext(today: today, profile: profile, record: record)
         updateDeloadSession()
 
@@ -456,9 +462,12 @@ public final class TodayModel {
         )
     }
 
-    private func loadRunningPlan(goal: TrainingGoal?, today: CalendarDay, now: Date, runs: [RunActivity]) {
-        guard let goal, let running = goal.running else { return }
-        let schedule = goal.scheduledRuns
+    private func loadRunningPlan(
+        goal: TrainingGoal?, today: CalendarDay, now: Date, runs: [RunActivity], runningBreak: DetectedDeload?
+    ) {
+        let running = goal?.running
+        guard running != nil || runningBreak != nil else { return }
+        let schedule = goal?.scheduledRuns ?? []
         let yesterday = today.adding(days: -1, calendar: calendar).startDate(in: calendar)
         let latestRun = schedule.compactMap(\.completion).filter {
             $0.durationSeconds.isFinite && $0.durationSeconds > 0
@@ -467,8 +476,8 @@ public final class TodayModel {
         recentRunPain = latestRun?.painDuring == true || latestRun?.painAfter == true
         scheduledRunsToday = schedule.filter { $0.day == today }.map { ScheduledTrainingRow.run($0, format: format) }
         if let decision = EasyRunAdvisor.advise(
-            goal: running, targetDay: goal.targetDate, schedule: schedule, readiness: readiness, metrics: metrics,
-            runs: runs, now: now, calendar: calendar
+            goal: running, targetDay: goal?.targetDate, schedule: schedule, readiness: readiness, metrics: metrics,
+            runs: runs, now: now, calendar: calendar, runningBreak: runningBreak
         ), decision != .plannedRest {
             runningOption = RunningOption(goal: running, decision: decision, calendar: calendar, format: format)
         }
@@ -499,10 +508,10 @@ public final class TodayModel {
     public func reviewBreak(accepted: Bool, now: Date = .now) async {
         guard let profiles, case let .confirmBreak(period) = deloadAdvice?.state,
               var profile = try? await profiles.profile() else { return }
-        profile.deloadDecisions.removeAll { $0.start == period.start }
-        profile.deloadDecisions.append(
-            DeloadDecision(start: period.start, end: period.end, reason: period.reason, accepted: accepted)
-        )
+        profile.recordDeloadDecision(DeloadDecision(
+            start: period.start, end: period.end, reason: period.reason, accepted: accepted,
+            discipline: period.discipline
+        ))
         try? await profiles.save(profile)
         await load(now: now)
     }

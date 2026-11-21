@@ -16,14 +16,15 @@ struct EasyRunAdvisorTests {
 
     private func decision(
         level: ReadinessLevel = .amber, reasons: [ReadinessReason] = [.shortSleep(hours: 5)],
-        schedule: [PlannedRun] = [], runs: [RunActivity], withMetrics: Bool = true, painFree: Bool = false
+        schedule: [PlannedRun] = [], runs: [RunActivity], withMetrics: Bool = true, painFree: Bool = false,
+        runningBreak: DetectedDeload? = nil
     ) -> EasyRunAdvisor.Decision? {
         var metrics = DailyMetrics(day: today)
         metrics.sleepSeconds = (level == .green ? 8 : 5) * 3_600
         return EasyRunAdvisor.advise(
             goal: RunningGoal(distanceMeters: 5_000, targetSeconds: 900, aimsForPainFree: painFree),
             targetDay: nil, schedule: schedule, readiness: Readiness(level: level, reasons: reasons),
-            metrics: withMetrics ? metrics : nil, runs: runs, now: now, calendar: calendar
+            metrics: withMetrics ? metrics : nil, runs: runs, now: now, calendar: calendar, runningBreak: runningBreak
         )
     }
 
@@ -58,6 +59,25 @@ struct EasyRunAdvisorTests {
         #expect(decision(schedule: [easy, tempo], runs: [previous]) == .multipleToday)
         let done = PlannedRun(day: today, purpose: .easy, completion: PlannedRunCompletion(run(daysAgo: 0, minutes: 25)))
         #expect(decision(schedule: [done, tempo], runs: [previous]) == nil)
+    }
+
+    @Test func returnSuggestsEasyRunsAndDoesNotCountMirrorsTwice() {
+        let rest = DetectedDeload(
+            start: today.adding(days: -24, calendar: calendar), end: today.adding(days: -4, calendar: calendar),
+            reason: .noTraining, needsConfirmation: false, discipline: .running
+        )
+        let first = run(daysAgo: 3, minutes: 25)
+        let mirror = run(daysAgo: 3, minutes: 25, source: .appleHealth, id: "mirror")
+        let second = run(daysAgo: 1, minutes: 25, id: "second")
+        let plan = PlannedRun(day: today, purpose: .intervals, durationMinutes: 40)
+        #expect(decision(level: .green, reasons: [], schedule: [plan], runs: [], runningBreak: rest)
+            == .returningFromBreak(replacePlanned: true))
+        #expect(decision(runs: [first, mirror], runningBreak: rest) == .returningFromBreak(replacePlanned: false))
+        #expect(decision(level: .green, reasons: [], schedule: [plan],
+                         runs: [first, mirror, second], runningBreak: rest) == nil)
+        let race = PlannedRun(day: today, purpose: .race)
+        #expect(decision(schedule: [race], runs: [], runningBreak: rest) == .nearEvent)
+        #expect(decision(level: .red, runs: [], runningBreak: rest) == nil)
     }
 
     @Test func asksForUsableRecoveryAndRecentRunningBeforeSuggestingMinutes() {

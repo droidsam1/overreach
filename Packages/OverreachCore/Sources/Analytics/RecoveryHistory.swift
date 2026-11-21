@@ -34,13 +34,33 @@ public enum RecoveryHistory {
         profile.deloads.last { $0.contains(day, calendar: calendar) }
     }
 
+    /// The latest qualifying inactivity period before returning to a discipline.
+    public static func lastLongBreak(
+        in periods: [DetectedDeload], discipline: TrainingDiscipline, before today: CalendarDay,
+        calendar: Calendar = .current, settings: DeloadDetection.BreakSettings = .init()
+    ) -> DetectedDeload? {
+        periods.filter {
+            !$0.needsConfirmation && $0.reason == .noTraining && $0.end < today
+                && ($0.discipline == nil || $0.discipline == discipline)
+                && $0.start.adding(days: settings.returnDays - 1, calendar: calendar) <= $0.end
+        }.max { ($0.end, $0.start) < ($1.end, $1.start) }
+    }
+
+    public static func isRebuildingStrength(
+        after period: DetectedDeload, on day: CalendarDay,
+        calendar: Calendar = .current, settings: DeloadDetection.BreakSettings = .init()
+    ) -> Bool {
+        let resumed = period.end.adding(days: 1, calendar: calendar)
+        return day < resumed.adding(days: 7 * settings.strengthReturnWeeks, calendar: calendar)
+    }
+
     /// The latest recovery that ended before `day`: an accepted deload week, or a detected period that counts
     /// (`needsConfirmation` false). A deload week still in progress is not finished yet and is left out.
     public static func lastRecovery(
         deloads: [DeloadRecord], detected: [DetectedDeload], before day: CalendarDay, calendar: Calendar = .current
     ) -> LastRecovery? {
         let weeks = deloads.map { LastRecovery(lastDay: lastDay(of: $0, calendar: calendar), kind: .deloadWeek) }
-        let breaks = detected.filter { !$0.needsConfirmation }.map {
+        let breaks = detected.filter { !$0.needsConfirmation && $0.discipline != .running }.map {
             LastRecovery(lastDay: $0.end, kind: .detectedBreak)
         }
         // On the same last day, an accepted deload week is the clearer answer.

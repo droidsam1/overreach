@@ -42,7 +42,7 @@ public struct PlanView<Assistant: View>: View {
                     }
                 }
                 currentBlockSection
-                if model.lastDeloadSummary != nil || !model.pendingDeloadRows.isEmpty { deloadSection }
+                if model.hasRecoveryHistory { deloadSection }
                 planSection
                 if !model.findingLines.isEmpty {
                     Section("Worth a look") {
@@ -76,10 +76,10 @@ public struct PlanView<Assistant: View>: View {
                     Text("Count this period as a deload?").bold()
                     deloadDetails(row)
                     Button("Count as deload") {
-                        Task { await model.reviewDeload(start: row.id, accepted: true) }
+                        Task { await model.reviewDeload(id: row.id, accepted: true) }
                     }
                     Button("Dismiss") {
-                        Task { await model.reviewDeload(start: row.id, accepted: false) }
+                        Task { await model.reviewDeload(id: row.id, accepted: false) }
                     }
                 }
                 .buttonStyle(.borderless)

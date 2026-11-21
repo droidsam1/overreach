@@ -26,6 +26,7 @@ public struct SettingsView<Library: View>: View {
     @Binding private var showsStrongImport: Bool
     @State private var importModel: ImportModel
     @State private var backupModel: BackupModel
+    @State private var trainingModel: TrainingSettingsModel
     @State private var garminModel: GarminSetupModel
     @State private var isConfirmingDisconnect = false
     @State private var isPickingFile = false
@@ -37,12 +38,13 @@ public struct SettingsView<Library: View>: View {
 
     public init(
         importModel: ImportModel, backupModel: BackupModel, garminModel: GarminSetupModel,
-        showsStrongImport: Binding<Bool> = .constant(false),
+        trainingModel: TrainingSettingsModel, showsStrongImport: Binding<Bool> = .constant(false),
         @ViewBuilder library: () -> Library
     ) {
         _showsStrongImport = showsStrongImport
         _importModel = State(initialValue: importModel)
         _backupModel = State(initialValue: backupModel)
+        _trainingModel = State(initialValue: trainingModel)
         _garminModel = State(initialValue: garminModel)
         self.library = library()
     }
@@ -51,6 +53,7 @@ public struct SettingsView<Library: View>: View {
         NavigationStack {
             Form {
                 Section("Library") { library }
+                trainingSection
                 garminSection
                 Section("Appearance") {
                     Picker("Appearance", selection: $appearance) {
@@ -77,7 +80,12 @@ public struct SettingsView<Library: View>: View {
                 isPresented: $backupModel.isConfirmingRestore,
                 titleVisibility: .visible
             ) {
-                Button("Restore", role: .destructive) { Task { await backupModel.confirmRestore() } }
+                Button("Restore", role: .destructive) {
+                    Task {
+                        await backupModel.confirmRestore()
+                        await trainingModel.load()
+                    }
+                }
                 Button("Cancel", role: .cancel) { backupModel.cancelRestore() }
             } message: {
                 if let message = backupModel.pendingRestoreMessage {
@@ -86,6 +94,7 @@ public struct SettingsView<Library: View>: View {
             }
             .task { await backupModel.load() }
             .task { await garminModel.load() }
+            .task { await trainingModel.load() }
             .confirmationDialog(
                 "Disconnect Garmin?", isPresented: $isConfirmingDisconnect, titleVisibility: .visible
             ) {
@@ -103,6 +112,23 @@ public struct SettingsView<Library: View>: View {
         }
         .fileImporter(isPresented: $isPickingFile, allowedContentTypes: filePick.contentTypes) { result in
             handlePicked(result)
+        }
+    }
+
+    private var trainingSection: some View {
+        Section {
+            Toggle(trainingModel.breaksTitle, isOn: Binding(
+                get: { trainingModel.countsBreaksAutomatically },
+                set: { enabled in Task { await trainingModel.setCountsBreaksAutomatically(enabled) } }
+            ))
+            .disabled(!trainingModel.canEditBreaks)
+            if let error = trainingModel.errorMessage {
+                Label(error, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+            }
+        } header: {
+            Text(trainingModel.sectionTitle)
+        } footer: {
+            Text(trainingModel.breaksDetail)
         }
     }
 
@@ -302,7 +328,12 @@ public struct SettingsView<Library: View>: View {
 }
 
 extension SettingsView where Library == EmptyView {
-    public init(importModel: ImportModel, backupModel: BackupModel, garminModel: GarminSetupModel) {
-        self.init(importModel: importModel, backupModel: backupModel, garminModel: garminModel) { EmptyView() }
+    public init(
+        importModel: ImportModel, backupModel: BackupModel, garminModel: GarminSetupModel,
+        trainingModel: TrainingSettingsModel
+    ) {
+        self.init(
+            importModel: importModel, backupModel: backupModel, garminModel: garminModel, trainingModel: trainingModel
+        ) { EmptyView() }
     }
 }

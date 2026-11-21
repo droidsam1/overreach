@@ -477,6 +477,23 @@
         }
       }
     },
+    "A week without recorded strength workouts or runs counts as rest for that discipline.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una semana sin entrenamientos de fuerza o carreras registrados cuenta como descanso para esa disciplina."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unha semana sen adestramentos de forza ou carreiras rexistrados conta como descanso para esa disciplina."
+          }
+        }
+      }
+    },
     "A {1} session was trained as {2}.": {
       "extractionState": "manual",
       "localizations": {
@@ -2908,6 +2925,23 @@
         }
       }
     },
+    "Could not load training settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo cargar la configuración de entrenamiento."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido cargar a configuración de adestramento."
+          }
+        }
+      }
+    },
     "Could not load your exercises.": {
       "extractionState": "manual",
       "localizations": {
@@ -3350,6 +3384,23 @@
         }
       }
     },
+    "Could not save training settings. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo guardar la configuración de entrenamiento. Inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido gardar a configuración de adestramento. Téntao de novo."
+          }
+        }
+      }
+    },
     "Could not save your answers. Try again or skip the setup.": {
       "extractionState": "manual",
       "localizations": {
@@ -3448,6 +3499,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Contar como descarga"
+          }
+        }
+      }
+    },
+    "Count breaks as rest automatically": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contar las pausas como descanso automáticamente"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contar as pausas como descanso automaticamente"
           }
         }
       }
@@ -4672,6 +4740,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Resistencia"
+          }
+        }
+      }
+    },
+    "Endurance can change during a break. Keeping the first runs easy is a coaching estimate.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La resistencia puede cambiar durante una pausa. Volver con rodajes suaves es una pauta orientativa."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A resistencia pode cambiar durante unha pausa. Volver con rodaxes suaves é unha pauta orientativa."
           }
         }
       }
@@ -6121,6 +6206,23 @@
         }
       }
     },
+    "If you run today, keep it easy and at a conversational pace.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si corres hoy, hazlo suave, a un ritmo que te permita conversar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se corres hoxe, faino suave, a un ritmo que che permita conversar."
+          }
+        }
+      }
+    },
     "If you want to run today, try {1} min at a conversational pace.": {
       "extractionState": "manual",
       "localizations": {
@@ -6882,6 +6984,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sesión de referencia · {1} × {2}"
+          }
+        }
+      }
+    },
+    "Last strength rest period 1 week ago": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última pausa de fuerza hace 1 semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última pausa de forza hai 1 semana"
+          }
+        }
+      }
+    },
+    "Last strength rest period less than a week ago": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última pausa de fuerza hace menos de una semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última pausa de forza hai menos dunha semana"
+          }
+        }
+      }
+    },
+    "Last strength rest period {1} weeks ago": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última pausa de fuerza hace {1} semanas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última pausa de forza hai {1} semanas"
           }
         }
       }
@@ -8603,6 +8756,40 @@
         }
       }
     },
+    "No runs recorded": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay carreras registradas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai carreiras rexistradas"
+          }
+        }
+      }
+    },
+    "No strength workouts recorded": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay entrenamientos de fuerza registrados"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai adestramentos de forza rexistrados"
+          }
+        }
+      }
+    },
     "No symptoms affecting training": {
       "extractionState": "manual",
       "localizations": {
@@ -9453,19 +9640,19 @@
         }
       }
     },
-    "Plan detects unplanned deloads from your training history.": {
+    "Plan counts breaks from strength training and running separately.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plan detecta descargas no planificadas en tu historial de entrenamiento."
+            "value": "Plan cuenta por separado las pausas de fuerza y de carrera."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Plan detecta descargas non planificadas no teu historial de adestramento."
+            "value": "Plan conta por separado as pausas de forza e de carreira."
           }
         }
       }
@@ -10439,6 +10626,23 @@
         }
       }
     },
+    "Replace today's planned run with an easy run at a conversational pace.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambia la sesión de carrera de hoy por un rodaje suave a un ritmo que te permita conversar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambia a sesión de carreira de hoxe por unha rodaxe suave a un ritmo que che permita conversar."
+          }
+        }
+      }
+    },
     "Reps in reserve (RIR)": {
       "extractionState": "manual",
       "localizations": {
@@ -11132,6 +11336,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Correr {1} km sen dor"
+          }
+        }
+      }
+    },
+    "Running": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira"
           }
         }
       }
@@ -14519,6 +14740,23 @@
         }
       }
     },
+    "Training": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramento"
+          }
+        }
+      }
+    },
     "Training blocks": {
       "extractionState": "manual",
       "localizations": {
@@ -15994,6 +16232,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vas rotando {1}. Tócache: {2}."
+          }
+        }
+      }
+    },
+    "You're returning from a running break.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuelves a correr después de una pausa."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volves correr despois dunha pausa."
           }
         }
       }

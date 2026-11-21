@@ -1,6 +1,6 @@
 # Deloads, breaks and stalled lifts
 
-Status: tasks 1–2 implemented (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
+Status: tasks 1–3 implemented (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
 ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-practice`, `deload-recovery-signals`,
 `unplanned-deload`, `stall-heuristics` in [the evidence register](../evidence.md).
 
@@ -8,7 +8,7 @@ ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-pr
 
 Take the first task below whose boxes are not all checked. Each task is one pull request. Task 1 is done by
 [training services task 2](training-services.md#2-recovery-status); build tasks 2–6 on `TrainingServices` once it
-exists. Continue with task 3. Task 5 explains the Today card that
+exists. Continue with task 4. Task 5 explains the Today card that
 [#94](https://github.com/droidsam1/overreach/issues/94) then places in the page. Task 6 supplies lift findings
 to [Recovery & Progress](https://github.com/droidsam1/overreach/issues/126). Record checks that need an iPhone
 in [#21](https://github.com/droidsam1/overreach/issues/21).
@@ -61,7 +61,7 @@ to do about a stalled lift, or what evidence supports the proposal.
 | In trained endurance athletes VO2max and blood volume fall within the first weeks without training. | Mujika & Padilla 2000, Sports Med 30:79 (review) | Running breaks beyond about 2 weeks call for an easy return, not a deload. |
 
 No study tests deloads or breaks in concurrent training. Treating strength and running breaks separately, and the
-7-day and 14-day limits below, are product heuristics. Task 3 records them as a new evidence entry.
+7-day and 14-day limits below, are product heuristics. See [training-breaks](../evidence.md#training-breaks--heuristic).
 
 ## Implementation backlog
 
@@ -107,21 +107,9 @@ Rules (heuristics, configurable in `DeloadDetection`):
   performance signals compare only sessions after it (already the case for drops). A running break of 14 days or
   more makes the next runs easy (`EasyRunAdvisor`).
 
-Work:
-
-- [ ] Add `discipline` (strength, running) to `DetectedDeload`; detect gaps per discipline. Reduced-load weeks stay
-  ambiguous and keep asking (task 4).
-- [ ] Add a profile setting, e.g. `AthleteProfile.countsBreaksAutomatically`, decoded with a default so older
-  backups load (ADR-0018). Default on. When on, every gap that meets the rules counts without asking, over all
-  imported and logged history. When off, today's behaviour.
-- [ ] Settings → Training: a toggle "Count breaks as rest automatically" with one line of explanation. Logic and
-  texts in a presentation model (ADR-0014); strings in en, es and gl (ADR-0015).
-- [ ] Old `DeloadDecision`s, which have no discipline, keep applying to both.
-- [ ] Add the `training-breaks` evidence entry from the table above, and an ADR that extends ADR-0029.
-- [ ] Tests: a week of runs and no lifting is a strength break only; with the setting off it asks as before; a
-  20-day gap gives a return and no deload proposal.
-
-Finish line: with the setting on, a week without lifting counts as strength recovery without any question.
+Shipped in [ADR-0037](../adr/0037-training-breaks-by-discipline.md). Settings → Training controls automatic
+counting. Plan lists strength and running breaks in Recovery history. A strength break resets the deload interval.
+Long breaks trigger a return period, and lower-load weeks remain available for review.
 
 ### 4. Ask about the latest periods only
 
