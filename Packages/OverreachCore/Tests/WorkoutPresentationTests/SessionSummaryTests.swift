@@ -34,6 +34,7 @@ struct SessionSummaryTests {
         #expect(summary.headline.contains("3 working sets"))
         #expect(summary.adherence == "On target or better in 1 of 1 exercises.")
         #expect(summary.comparison?.hasPrefix("Volume +22 % compared with the last “Workout”") == true)
+        #expect(summary.achievement?.hasPrefix("Bench Press: New best estimated 1RM:") == true)
         let row = try #require(summary.rows.first)
         #expect(row.outcome == .above)
         #expect(row.outcomeText == "Above target: 60 kg × 11/11/11 vs 60 kg × 9/9/9")

@@ -89,4 +89,44 @@ struct TargetSummaryTests {
         #expect(model.sessionFocus == .strength)
         #expect(model.exercises[0].sets == before)
     }
+
+    @Test func lastTimeShowsTheLatestSetsNextToTheTarget() async throws {
+        let older = session(daysAgo: 7, weight: 55, reps: [10, 10, 10])
+        // The latest session counts even when it was left out of progression, and warm-ups are not shown.
+        let latest = StrengthSession(
+            name: "Push", startedAt: now.addingTimeInterval(-2 * 86_400),
+            entries: [ExerciseEntry(
+                exerciseID: bench.id,
+                sets: [
+                    WorkoutSet(kind: .warmup, weightKg: 40, reps: 5),
+                    WorkoutSet(weightKg: 60, reps: 8, rpe: 8),
+                    WorkoutSet(weightKg: 60, reps: 8, rpe: 8.5),
+                    WorkoutSet(weightKg: 62.5, reps: 6, rpe: 9),
+                ],
+                countsForProgression: false
+            )]
+        )
+        let model = await model(history: [older, latest])
+        await model.add(exerciseID: bench.id)
+
+        let line = try #require(model.exercises.first).summary(format: format).lastTimeLine
+        #expect(line.hasPrefix("Last time ("))
+        #expect(line.hasSuffix("): 60 kg × 8/8 · 62.5 kg × 6"))
+    }
+
+    @Test func lastTimeShowsTheEffortWhenEverySetSharesIt() async throws {
+        let model = await model(history: [session(daysAgo: 3, weight: 60, reps: [12, 12, 11])])
+        await model.add(exerciseID: bench.id)
+
+        let line = try #require(model.exercises.first).summary(format: format).lastTimeLine
+        #expect(line.hasSuffix("): 60 kg × 12/12/11 @ RPE 8"))
+    }
+
+    @Test func withoutHistoryLastTimeSaysSo() async throws {
+        let model = await model()
+        await model.add(exerciseID: bench.id)
+
+        let summary = try #require(model.exercises.first).summary(format: format)
+        #expect(summary.lastTimeLine == "Last time: no sets logged yet")
+    }
 }

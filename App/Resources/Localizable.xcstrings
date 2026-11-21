@@ -6920,6 +6920,23 @@
         }
       }
     },
+    "Last time ({1}): {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La última vez ({1}): {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A última vez ({1}): {2}"
+          }
+        }
+      }
+    },
     "Last time every set reached {1} reps.": {
       "extractionState": "manual",
       "localizations": {
@@ -7001,6 +7018,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "A última vez · {1}"
+          }
+        }
+      }
+    },
+    "Last time: no sets logged yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La última vez: aún no hay series registradas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A última vez: aínda non hai series rexistradas"
           }
         }
       }
@@ -15705,6 +15739,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Adestramento"
+          }
+        }
+      }
+    },
+    "Workout saved to History": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamiento guardado en Historial"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramento gardado no Historial"
           }
         }
       }
