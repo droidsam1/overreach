@@ -8,8 +8,9 @@ public struct PlanAnalysis: Hashable, Sendable {
     public var suggestion: BlockSuggestion
     public var plan: [PlannedBlock]
     public var findings: [BalanceFinding]
-    /// Exercises whose progression is stalled (feeds the block suggestion).
-    public var stalledLifts: Int
+    /// Current lifts whose progression is stalled, with their next step (feeds the block suggestion).
+    public var liftsToUnblock: [StalledLift]
+    public var stalledLifts: Int { liftsToUnblock.count }
     public var deloads: [DetectedDeload]
     public var recentDeloadQuestions: [DetectedDeload]
     public var weeksSinceDeload: Int?
@@ -57,9 +58,11 @@ public struct PlanAnalysis: Hashable, Sendable {
         let currentIDs = LiftStatus.currentExerciseIDs(
             sessions: recentSessions, routines: routines, profile: profile, now: now, calendar: calendar
         )
-        let stalled = LiftStatus.assessAll(
-            index: index, exercises: exercises, stored: settings, routines: routines, now: now
-        ).filter { $0.isStalled && (currentIDs?.contains($0.exerciseID) ?? true) }.count
+        let liftsToUnblock = LiftsToUnblock.find(
+            index: index, exercises: exercises, stored: settings, routines: routines, currentExerciseIDs: currentIDs,
+            now: now
+        )
+        let stalled = liftsToUnblock.count
 
         return PlanAnalysis(
             currentBlock: current,
@@ -74,7 +77,7 @@ public struct PlanAnalysis: Hashable, Sendable {
             findings: FocusBalance.findings(
                 index: index, exercises: exercises, exerciseSettings: settings, profile: profile, now: now
             ),
-            stalledLifts: stalled,
+            liftsToUnblock: liftsToUnblock,
             deloads: deloads,
             recentDeloadQuestions: RecoveryHistory.recentQuestions(
                 in: deloads, after: lastRecovery, today: today, calendar: calendar

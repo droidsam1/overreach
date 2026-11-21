@@ -147,7 +147,8 @@ public enum StallDetection {
         weeklyFractionalSets: Double?, range: ClosedRange<Double>
     ) -> [StallSuggestion] {
         var result: [StallSuggestion] = []
-        if let lastShortfall, lastShortfall <= 1, settings.incrementKg > 0 {
+        // Half the step, down to 1 kg: smaller plates are rare, and a repeated suggestion would keep halving it.
+        if let lastShortfall, lastShortfall <= 1, settings.incrementKg >= 2 {
             result.append(.microload(incrementKg: settings.incrementKg / 2))
         }
         if case .linearLoad = settings.scheme {
