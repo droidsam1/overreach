@@ -1,3 +1,5 @@
+Task: <!-- link to the task anchor in docs/priorities.md or a design doc, or the issue (#94); "none — <reason>" for work outside the backlog -->
+
 ## What and why
 
 <!-- What does this change and why is it needed? Link the issue: Closes #123 -->

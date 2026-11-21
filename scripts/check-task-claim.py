@@ -1,0 +1,157 @@
+#!/usr/bin/env python3
+"""Detect two agents working on the same task.
+
+Every PR body starts with `Task: <link to the priorities item, design-doc task anchor or issue>` (or
+`Task: none — <reason>` for work outside the backlog). This script reads the claim of the branch's PR and fails when
+another open PR, or a PR merged since this branch started, claims the same task. Locally it also lists what landed on
+origin/main meanwhile and which design docs it shares with this branch.
+
+Usage:
+  scripts/check-task-claim.py          # local: the open PR of the current branch (gh needed; skips without it)
+  scripts/check-task-claim.py --ci     # CI on pull_request: reads the PR from GITHUB_EVENT_PATH, needs GH_TOKEN
+"""
+import argparse
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+TASK_LINE = re.compile(r"^\s*Task:\s*(.*?)\s*$", re.M | re.I)
+LINK = re.compile(r"\]\(([^)]+)\)|(https?://\S+|[\w./-]+\.md#[\w-]+|#\d+)")
+NO_TASK = re.compile(r"^none\b", re.I)
+
+
+def task_key(body):
+    """The claimed task as a comparable key, "none" for work outside the backlog, or None without a Task line."""
+    match = TASK_LINE.search(body or "")
+    if not match or not match.group(1) or match.group(1).startswith("<!--"):
+        return None
+    value = match.group(1)
+    if NO_TASK.match(value):
+        return "none"
+    link = LINK.search(value)
+    target = (link.group(1) or link.group(2)) if link else value
+    target = re.sub(r"^https://github\.com/[^/]+/[^/]+/(?:blob/[^/]+/)?", "", target)
+    target = re.sub(r"^(?:\.\./|\./)*(?:docs/)?", "", target)
+    target = re.sub(r"^(?:issues|pull)/(\d+)$", r"#\1", target)
+    return target.strip().lower()
+
+
+def gh(path):
+    output = subprocess.run(["gh", "api", path], cwd=ROOT, capture_output=True, text=True)
+    if output.returncode != 0:
+        raise RuntimeError(output.stderr.strip() or f"gh api {path} failed")
+    return json.loads(output.stdout)
+
+
+def repository():
+    url = subprocess.check_output(["git", "remote", "get-url", "origin"], cwd=ROOT, text=True).strip()
+    match = re.search(r"github\.com[:/]([^/]+)/([^/.]+)", url)
+    if not match:
+        raise RuntimeError(f"origin is not a GitHub repository: {url}")
+    return match.group(1), match.group(2)
+
+
+def timestamp(value):
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def conflicts(owner, repo, number, key, since):
+    """Other PRs, open or merged after `since`, that claim the same task."""
+    found = []
+    for pull in gh(f"repos/{owner}/{repo}/pulls?state=open&per_page=100"):
+        if pull["number"] != number and task_key(pull.get("body")) == key:
+            found.append(f"#{pull['number']} (open) {pull['title']}")
+    for pull in gh(f"repos/{owner}/{repo}/pulls?state=closed&sort=updated&direction=desc&per_page=50"):
+        merged = pull.get("merged_at")
+        if pull["number"] != number and merged and timestamp(merged) > since and task_key(pull.get("body")) == key:
+            found.append(f"#{pull['number']} (merged {merged[:16]}) {pull['title']}")
+    return found
+
+
+def report(number, key, found):
+    if key is None:
+        print(f"FAIL task-claim - PR #{number} has no `Task:` line. Start the description with "
+              "`Task: <link to the task anchor or issue>`, or `Task: none — <reason>`.")
+        return 1
+    if found:
+        print(f"FAIL task-claim - another PR claims {key}: " + "; ".join(found)
+              + ". Stop and take the next item in docs/priorities.md, or ask the user.")
+        return 1
+    if key == "none":
+        print(f"PASS task-claim - #{number} is outside the backlog (Task: none).")
+    else:
+        print(f"PASS task-claim - #{number} claims {key}; no other PR does.")
+    return 0
+
+
+def landed_meanwhile():
+    """Commits that reached origin/main since this branch started, and the design docs both sides touched."""
+    subprocess.run(["git", "fetch", "--quiet", "origin", "main"], cwd=ROOT, capture_output=True)
+    base = subprocess.run(["git", "merge-base", "HEAD", "origin/main"], cwd=ROOT, capture_output=True, text=True)
+    if base.returncode != 0:
+        return
+    base = base.stdout.strip()
+    subjects = subprocess.check_output(["git", "log", "--format=%s", f"{base}..origin/main"], cwd=ROOT, text=True)
+    if not subjects.strip():
+        return
+
+    def docs(range_):
+        names = subprocess.check_output(["git", "diff", "--name-only", range_, "--", "docs/design"], cwd=ROOT, text=True)
+        return set(names.split())
+
+    shared = docs(f"{base}..origin/main") & docs(f"{base}...HEAD")
+    print("WARN origin/main moved since this branch started: " + "; ".join(subjects.strip().splitlines()))
+    if shared:
+        print("WARN both sides changed " + ", ".join(sorted(shared)) + ": check the task is still open.")
+
+
+def local():
+    if not shutil.which("gh"):
+        print("SKIP task-claim - gh is not installed.")
+        return 0
+    try:
+        owner, repo = repository()
+        branch = subprocess.check_output(["git", "branch", "--show-current"], cwd=ROOT, text=True).strip()
+        pulls = gh(f"repos/{owner}/{repo}/pulls?state=open&head={owner}:{branch}")
+        if not pulls:
+            print("WARN task-claim - no open PR for this branch. Claim the task before writing code: push and open a "
+                  "draft PR that starts with `Task: <link>`.")
+            landed_meanwhile()
+            return 0
+        pull = pulls[0]
+        base = subprocess.check_output(["git", "merge-base", "HEAD", "origin/main"], cwd=ROOT, text=True).strip()
+        since = timestamp(subprocess.check_output(["git", "show", "-s", "--format=%cI", base], cwd=ROOT, text=True)
+                          .strip())
+        key = task_key(pull.get("body"))
+        status = report(pull["number"], key, [] if key in (None, "none") else
+                        conflicts(owner, repo, pull["number"], key, since))
+    except (RuntimeError, subprocess.CalledProcessError, OSError) as error:
+        print(f"SKIP task-claim - {error}")
+        return 0
+    landed_meanwhile()
+    return status
+
+
+def ci():
+    event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+    pull = event.get("pull_request")
+    if not pull:
+        print("SKIP task-claim - not a pull request.")
+        return 0
+    owner, repo = os.environ["GITHUB_REPOSITORY"].split("/")
+    number = pull["number"]
+    key = task_key(gh(f"repos/{owner}/{repo}/pulls/{number}").get("body"))
+    since = timestamp(gh(f"repos/{owner}/{repo}/commits/{pull['base']['sha']}")["commit"]["committer"]["date"])
+    return report(number, key, [] if key in (None, "none") else conflicts(owner, repo, number, key, since))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--ci", action="store_true", help="read the pull request from the GitHub Actions event")
+    sys.exit(ci() if parser.parse_args().ci else local())
