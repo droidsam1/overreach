@@ -11,6 +11,7 @@ public struct PlanAnalysis: Hashable, Sendable {
     /// Exercises whose progression is stalled (feeds the block suggestion).
     public var stalledLifts: Int
     public var deloads: [DetectedDeload]
+    public var recentDeloadQuestions: [DetectedDeload]
     public var weeksSinceDeload: Int?
     public var lastRecoveryKind: LastRecovery.Kind?
 
@@ -75,6 +76,9 @@ public struct PlanAnalysis: Hashable, Sendable {
             ),
             stalledLifts: stalled,
             deloads: deloads,
+            recentDeloadQuestions: RecoveryHistory.recentQuestions(
+                in: deloads, after: lastRecovery, today: today, calendar: calendar
+            ),
             weeksSinceDeload: deloadAge.map { $0 / 7 },
             lastRecoveryKind: lastRecovery?.kind
         )

@@ -72,20 +72,34 @@ public struct PlanView<Assistant: View>: View {
                 }
             }
             ForEach(model.pendingDeloadRows) { row in
-                VStack(alignment: .leading, spacing: Spacing.small) {
-                    Text("Count this period as a deload?").bold()
-                    deloadDetails(row)
-                    Button("Count as deload") {
-                        Task { await model.reviewDeload(id: row.id, accepted: true) }
-                    }
-                    Button("Dismiss") {
-                        Task { await model.reviewDeload(id: row.id, accepted: false) }
+                deloadQuestion(row)
+            }
+            if !model.olderDeloadRows.isEmpty {
+                DisclosureGroup("Older periods") {
+                    ForEach(model.olderDeloadRows) { row in
+                        deloadQuestion(row)
                     }
                 }
-                .buttonStyle(.borderless)
-                .disabled(model.isReviewingDeload)
             }
         }
+    }
+
+    private func deloadQuestion(_ row: DeloadQuestionRow) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            Text("Was this a rest period?").font(.headline)
+            Text(row.details.dates)
+            if let strength = row.details.strength { Text(strength) }
+            if let running = row.details.running { Text(running) }
+            Text(row.details.reason).font(.footnote).foregroundStyle(.secondary)
+            Button("Yes, it was rest") {
+                Task { await model.reviewDeload(id: row.id, accepted: true) }
+            }
+            Button("No") {
+                Task { await model.reviewDeload(id: row.id, accepted: false) }
+            }
+        }
+        .buttonStyle(.borderless)
+        .disabled(model.isReviewingDeload)
     }
 
     private func deloadDetails(_ row: DeloadRow) -> some View {

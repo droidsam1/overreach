@@ -54,6 +54,21 @@ public enum RecoveryHistory {
         return day < resumed.adding(days: 7 * settings.strengthReturnWeeks, calendar: calendar)
     }
 
+    /// The two newest completed, unanswered periods entirely within 12 weeks and after strength recovery.
+    public static func recentQuestions(
+        in periods: [DetectedDeload], after lastRecovery: LastRecovery?, today: CalendarDay,
+        calendar: Calendar = .current
+    ) -> [DetectedDeload] {
+        let earliest = today.adding(days: -12 * 7, calendar: calendar)
+        let eligible = periods.filter { period in
+            period.needsConfirmation && period.start >= earliest && period.end < today
+                && (lastRecovery.map { period.start > $0.lastDay } ?? true)
+        }
+        return Array(eligible.sorted {
+            ($0.end, $0.start, $0.discipline?.rawValue ?? "") > ($1.end, $1.start, $1.discipline?.rawValue ?? "")
+        }.prefix(2))
+    }
+
     /// The latest recovery that ended before `day`: an accepted deload week, or a detected period that counts
     /// (`needsConfirmation` false). A deload week still in progress is not finished yet and is left out.
     public static func lastRecovery(

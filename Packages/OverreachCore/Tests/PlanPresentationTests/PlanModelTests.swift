@@ -269,6 +269,32 @@ struct PlanModelTests {
         #expect(await store.profile().deloadDecisions.first?.accepted == accepted)
     }
 
+    @Test func olderUnansweredPeriodsStayAvailableForManualReview() async throws {
+        let today = CalendarDay(now, calendar: calendar)
+        let original = try #require(sessions().first)
+        let history = [-115, -101, -73, -59, -45, -31, -17, -3].map { offset in
+            let start = today.adding(days: offset, calendar: calendar).startDate(in: calendar)
+            return StrengthSession(
+                name: original.name, startedAt: start, endedAt: start.addingTimeInterval(3_600),
+                entries: original.entries
+            )
+        }
+        let (model, store) = await model(history: history)
+        try await store.save(AthleteProfile(goal: TrainingGoal(kind: .hybrid), countsBreaksAutomatically: false))
+        await model.load()
+
+        let recent = [today.adding(days: -16, calendar: calendar), today.adding(days: -30, calendar: calendar)]
+        #expect(model.pendingDeloadRows.map(\.id.start) == recent)
+        #expect(model.olderDeloadRows.count == 5)
+        #expect(model.lastDeloadSummary == nil)
+
+        let oldest = try #require(model.olderDeloadRows.last)
+        await model.reviewDeload(id: oldest.id, accepted: true)
+        #expect(model.pendingDeloadRows.map(\.id.start) == recent)
+        #expect(model.olderDeloadRows.count == 4)
+        #expect(model.deloadRows.map(\.id) == [oldest.id])
+    }
+
     @Test func withoutTrainingThereIsNoCurrentBlock() async {
         let (model, _) = await model()
         #expect(model.currentBlockTitle == nil)

@@ -168,7 +168,10 @@ public enum DeloadAssessment: Hashable, Sendable {
             )
         }
         guard let proposal = propose(detected) else { return nil }
-        if let pending = unconfirmedBreak(in: detected, after: lastRecovery(detected), today: today),
+        let questions = RecoveryHistory.recentQuestions(
+            in: detected, after: lastRecovery(detected), today: today, calendar: calendar
+        )
+        if let pending = questions.first(where: { $0.discipline != .running }),
            propose(detected + [DetectedDeload(
                start: pending.start, end: pending.end, reason: pending.reason, needsConfirmation: false,
                discipline: pending.discipline
@@ -189,15 +192,5 @@ public enum DeloadAssessment: Hashable, Sendable {
         guard loads.count == training.count else { return nil }
         let walking = EverydayMovement.walkingLoads(record.activity, in: range, profile: profile, calendar: calendar)
         return Workload.weeklyLoadChange(loads: loads, on: today, calendar: calendar, walking: walking)
-    }
-
-    /// The latest unconfirmed period after the last recovery.
-    private static func unconfirmedBreak(
-        in detected: [DetectedDeload], after lastRecovery: LastRecovery?, today: CalendarDay
-    ) -> DetectedDeload? {
-        detected.filter { period in
-            period.needsConfirmation && period.discipline != .running && period.end < today
-                && (lastRecovery.map { period.start > $0.lastDay } ?? true)
-        }.max { $0.end < $1.end }
     }
 }

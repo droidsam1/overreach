@@ -47,6 +47,11 @@ public struct DeloadRow: Identifiable, Hashable, Sendable {
     public let reason: ExplainedLine
 }
 
+public struct DeloadQuestionRow: Identifiable, Hashable, Sendable {
+    public let id: DeloadRow.Identifier
+    public let details: DeloadQuestionDetails
+}
+
 /// An exercise in the priority-lift picker.
 public struct PriorityLiftRow: Identifiable, Hashable, Sendable {
     public let id: UUID
@@ -70,6 +75,7 @@ public final class PlanModel {
     public private(set) var isAnalysing = false
     public private(set) var isReviewingDeload = false
     private var deloads: [DetectedDeload] = []
+    private var recentDeloadQuestions: [DetectedDeload] = []
     private var weeksSinceDeload: Int?
     private var lastRecoveryKind: LastRecovery.Kind?
 
@@ -199,20 +205,29 @@ public final class PlanModel {
 
     public var hasRecoveryHistory: Bool { weeksSinceDeload != nil || !deloads.isEmpty }
 
-    public var deloadRows: [DeloadRow] { deloadRows(needsConfirmation: false) }
-    public var pendingDeloadRows: [DeloadRow] { deloadRows(needsConfirmation: true) }
+    public var pendingDeloadRows: [DeloadQuestionRow] {
+        recentDeloadQuestions.map(questionRow)
+    }
 
-    private func deloadRows(needsConfirmation: Bool) -> [DeloadRow] {
-        deloads.reversed().filter { $0.needsConfirmation == needsConfirmation }.map { period in
+    public var olderDeloadRows: [DeloadQuestionRow] {
+        deloads.reversed().filter { $0.needsConfirmation && !recentDeloadQuestions.contains($0) }.map(questionRow)
+    }
+
+    private func questionRow(_ period: DetectedDeload) -> DeloadQuestionRow {
+        DeloadQuestionRow(
+            id: DeloadRow.Identifier(start: period.start, discipline: period.discipline),
+            details: DeloadQuestionDetails(period: period, calendar: calendar)
+        )
+    }
+
+    public var deloadRows: [DeloadRow] {
+        deloads.reversed().filter { !$0.needsConfirmation }.map { period in
             let text: String
             switch (period.reason, period.discipline) {
             case (.noTraining, .strength): text = L10n.text("No strength workouts recorded")
             case (.noTraining, .running): text = L10n.text("No runs recorded")
             case (.noTraining, nil): text = L10n.text("No training recorded")
-            case (.easyRuns, _):
-                text = period.needsConfirmation
-                    ? L10n.text("Running may have been lighter than usual")
-                    : L10n.text("Only light running recorded")
+            case (.easyRuns, _): text = L10n.text("Only light running recorded")
             case (.reducedStrength, _): text = L10n.text("Strength training load was well below usual or planned")
             }
             return DeloadRow(
@@ -393,6 +408,7 @@ public final class PlanModel {
         plan = analysis.plan
         findings = analysis.findings
         deloads = analysis.deloads
+        recentDeloadQuestions = analysis.recentDeloadQuestions
         weeksSinceDeload = analysis.weeksSinceDeload
         lastRecoveryKind = analysis.lastRecoveryKind
     }
