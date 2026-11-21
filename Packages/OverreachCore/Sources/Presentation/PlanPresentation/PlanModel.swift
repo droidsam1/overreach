@@ -188,15 +188,22 @@ public final class PlanModel {
     public var pendingDeloadRows: [DeloadRow] { deloadRows(needsConfirmation: true) }
 
     private func deloadRows(needsConfirmation: Bool) -> [DeloadRow] {
-        deloads.reversed().filter { $0.needsConfirmation == needsConfirmation }.map { period in
+        var seen = Set<CalendarDay>()
+        // A strength and a running break can start on the same day: list the first (the newest end) once.
+        let periods = deloads.reversed().filter {
+            $0.needsConfirmation == needsConfirmation && seen.insert($0.start).inserted
+        }
+        return periods.map { period in
             let text: String
-            switch period.reason {
-            case .noTraining: text = L10n.text("No training recorded")
-            case .easyRuns:
+            switch (period.reason, period.discipline) {
+            case (.noTraining, .strength): text = L10n.text("No strength training recorded")
+            case (.noTraining, .running): text = L10n.text("No runs recorded")
+            case (.noTraining, nil): text = L10n.text("No training recorded")
+            case (.easyRuns, _):
                 text = period.needsConfirmation
                     ? L10n.text("Running may have been lighter than usual")
                     : L10n.text("Only light running recorded")
-            case .reducedStrength: text = L10n.text("Strength training load was well below usual or planned")
+            case (.reducedStrength, _): text = L10n.text("Strength training load was well below usual or planned")
             }
             return DeloadRow(
                 id: period.start, start: period.start.startDate(in: calendar), end: period.end.startDate(in: calendar),

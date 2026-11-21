@@ -27,6 +27,7 @@ public struct SettingsView<Library: View>: View {
     @State private var importModel: ImportModel
     @State private var backupModel: BackupModel
     @State private var garminModel: GarminSetupModel
+    @State private var trainingModel: TrainingPreferencesModel
     @State private var isConfirmingDisconnect = false
     @State private var isPickingFile = false
     @State private var filePick: FilePick = .strongCSV
@@ -37,13 +38,14 @@ public struct SettingsView<Library: View>: View {
 
     public init(
         importModel: ImportModel, backupModel: BackupModel, garminModel: GarminSetupModel,
-        showsStrongImport: Binding<Bool> = .constant(false),
+        trainingModel: TrainingPreferencesModel, showsStrongImport: Binding<Bool> = .constant(false),
         @ViewBuilder library: () -> Library
     ) {
         _showsStrongImport = showsStrongImport
         _importModel = State(initialValue: importModel)
         _backupModel = State(initialValue: backupModel)
         _garminModel = State(initialValue: garminModel)
+        _trainingModel = State(initialValue: trainingModel)
         self.library = library()
     }
 
@@ -51,6 +53,7 @@ public struct SettingsView<Library: View>: View {
         NavigationStack {
             Form {
                 Section("Library") { library }
+                trainingSection
                 garminSection
                 Section("Appearance") {
                     Picker("Appearance", selection: $appearance) {
@@ -86,6 +89,7 @@ public struct SettingsView<Library: View>: View {
             }
             .task { await backupModel.load() }
             .task { await garminModel.load() }
+            .task { await trainingModel.load() }
             .confirmationDialog(
                 "Disconnect Garmin?", isPresented: $isConfirmingDisconnect, titleVisibility: .visible
             ) {
@@ -162,6 +166,30 @@ public struct SettingsView<Library: View>: View {
     }
 
     @ViewBuilder
+    private var trainingSection: some View {
+        Section {
+            Toggle(
+                "Count breaks as rest automatically",
+                isOn: Binding(
+                    get: { trainingModel.countsBreaksAutomatically },
+                    set: { value in Task { await trainingModel.setCountsBreaksAutomatically(value) } }
+                )
+            )
+            if let message = trainingModel.errorMessage {
+                Text(message).foregroundStyle(.red)
+            }
+        } header: {
+            Text("Training")
+        } footer: {
+            Text(
+                """
+                A week or more without lifting counts as rest for strength, and without running as rest for \
+                running, so the next deload is suggested later. Turn off to confirm each break yourself.
+                """
+            )
+        }
+    }
+
     private var garminSection: some View {
         Section {
             if garminModel.isConnected {

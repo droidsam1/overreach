@@ -102,9 +102,40 @@ struct DeloadDetectionTests {
         #expect(noRecovery.isEmpty)
     }
 
-    @Test func missingRunningDataRequiresAStoredDecision() throws {
+    @Test func withBreaksCountedAutomaticallyAWeekWithoutLiftingIsAStrengthBreak() throws {
         let sessions = [session(22), session(25), session(28), session(32)]
-        var profile = AthleteProfile(goal: TrainingGoal(kind: .hybrid))
+        let profile = AthleteProfile(goal: TrainingGoal(kind: .hybrid))
+        let analysis = PlanAnalysis.run(
+            profile: profile, sessions: sessions, exercises: [:], settings: [:], now: day(40).startDate(in: calendar),
+            calendar: calendar
+        )
+
+        let period = try #require(analysis.deloads.last)
+        #expect(!period.needsConfirmation)
+        #expect(period.discipline == .strength)
+        #expect(period.start == day(33))
+        #expect(analysis.weeksSinceDeload == 0)
+    }
+
+    @Test func runningOnWhileNotLiftingRestsStrengthOnly() throws {
+        let sessions = [session(1), session(4), session(7), session(10)]
+        let runs = [3, 6, 9, 12, 14, 16, 18, 20, 22].map { run($0) }
+        let detected = DeloadDetection.periods(
+            sessions: sessions, runs: runs, profile: AthleteProfile(), today: day(24), calendar: calendar
+        )
+
+        let strength = try #require(detected.first { $0.discipline == .strength })
+        #expect(strength.start == day(11))
+        #expect(strength.end == day(23))
+        #expect(!detected.contains { $0.rests(.running) })
+        #expect(RecoveryHistory.lastRecovery(
+            deloads: [], detected: detected, before: day(24), for: .running, calendar: calendar
+        ) == nil)
+    }
+
+    @Test func missingRunningDataRequiresAStoredDecisionWhenBreaksAreNotCountedAutomatically() throws {
+        let sessions = [session(22), session(25), session(28), session(32)]
+        var profile = AthleteProfile(goal: TrainingGoal(kind: .hybrid), countsBreaksAutomatically: false)
         let now = day(40).startDate(in: calendar)
         func analyse() -> PlanAnalysis {
             PlanAnalysis.run(profile: profile, sessions: sessions, exercises: [:], settings: [:], now: now, calendar: calendar)

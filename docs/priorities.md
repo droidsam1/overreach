@@ -8,9 +8,9 @@ and the logger come before review tools, and work that only a person with an iPh
 
 ## Ready to implement
 
-1. **Breaks per discipline, counted automatically** —
-   [tasks 3–4](design/deloads-and-breaks.md#3-breaks-per-discipline-counted-automatically). A setting that counts a
-   week without lifting or running as rest, and Plan asking only about recent periods.
+1. **Fewer break questions** —
+   [deloads and breaks task 4](design/deloads-and-breaks.md#4-ask-about-the-latest-periods-only), then the running
+   return left in task 3. Breaks per discipline and the automatic setting shipped (ADR-0037).
 2. **Explain deloads and stalled lifts step by step** —
    [tasks 5–6](design/deloads-and-breaks.md#5-today-deload-card-summary-first-details-on-demand).
    Before [#94](https://github.com/droidsam1/overreach/issues/94), which places this card in Today.

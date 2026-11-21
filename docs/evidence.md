@@ -209,6 +209,20 @@ and meta-analysis); Manresa-Rocamora et al. 2021, Scand J Med Sci Sports 31:1164
 Gastin 2016, Br J Sports Med 50:281 (systematic review); Craven et al. 2022, Sports Med 52:2669 (meta-analysis).
 Reviewed 2026-11-20.
 
+### `training-breaks` — heuristic
+Stopping resistance training lowers strength with a dose-response on duration, and trained young adults lose little
+in the first weeks (Bosquet et al. 2013, meta-analysis); three-week breaks every six weeks gave hypertrophy similar
+to continuous training over 24 weeks in untrained men (Ogasawara et al. 2013); a 1-week break mid-programme slightly
+reduced lower-body strength gains without changing hypertrophy (Coleman et al. 2024, `deload-cost`). In trained
+endurance athletes VO2max and blood volume fall within the first weeks without training (Mujika & Padilla 2000).
+No study tests breaks in concurrent training.
+→ With "Count breaks as rest automatically" on (default), 7 complete days without strength work count as strength
+rest and 7 without runs as running rest for someone who runs, each for its own discipline (ADR-0037). A break of 14
+days or more is a return: no deload proposal for 28 days. Treating the disciplines separately and the 7, 14 and 28
+day limits are product heuristics. Refs: Bosquet et al. 2013, Scand J Med Sci Sports 23:e140; Ogasawara et al. 2013,
+Eur J Appl Physiol 113:975; Coleman et al. 2024, PeerJ 12:e16777; Mujika & Padilla 2000, Sports Med 30:79.
+Reviewed 2026-11-21.
+
 ### `unplanned-deload` — heuristic
 
 Bell et al. [2023 Delphi](https://pmc.ncbi.nlm.nih.gov/articles/PMC10511399/) and

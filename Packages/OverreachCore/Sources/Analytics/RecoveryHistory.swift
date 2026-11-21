@@ -14,10 +14,18 @@ public struct LastRecovery: Hashable, Sendable {
     /// Its last day.
     public let lastDay: CalendarDay
     public let kind: Kind
+    /// Its first day, when known.
+    public let firstDay: CalendarDay?
 
-    public init(lastDay: CalendarDay, kind: Kind) {
+    public init(lastDay: CalendarDay, kind: Kind, firstDay: CalendarDay? = nil) {
         self.lastDay = lastDay
         self.kind = kind
+        self.firstDay = firstDay
+    }
+
+    /// Days from its first to its last day, inclusive; `nil` when the first day is unknown.
+    public func days(calendar: Calendar = .current) -> Int? {
+        firstDay.map { PlanReviewer.days(from: $0, to: lastDay, calendar: calendar) + 1 }
     }
 }
 
@@ -34,14 +42,18 @@ public enum RecoveryHistory {
         profile.deloads.last { $0.contains(day, calendar: calendar) }
     }
 
-    /// The latest recovery that ended before `day`: an accepted deload week, or a detected period that counts
-    /// (`needsConfirmation` false). A deload week still in progress is not finished yet and is left out.
+    /// The latest recovery of `discipline` that ended before `day`: an accepted deload week (a strength deload), or a
+    /// detected period that counts (`needsConfirmation` false) and rested that discipline. A deload week still in
+    /// progress is not finished yet and is left out.
     public static func lastRecovery(
-        deloads: [DeloadRecord], detected: [DetectedDeload], before day: CalendarDay, calendar: Calendar = .current
+        deloads: [DeloadRecord], detected: [DetectedDeload], before day: CalendarDay,
+        for discipline: TrainingDiscipline = .strength, calendar: Calendar = .current
     ) -> LastRecovery? {
-        let weeks = deloads.map { LastRecovery(lastDay: lastDay(of: $0, calendar: calendar), kind: .deloadWeek) }
-        let breaks = detected.filter { !$0.needsConfirmation }.map {
-            LastRecovery(lastDay: $0.end, kind: .detectedBreak)
+        let weeks = discipline == .strength ? deloads.map {
+            LastRecovery(lastDay: lastDay(of: $0, calendar: calendar), kind: .deloadWeek, firstDay: $0.start)
+        } : []
+        let breaks = detected.filter { !$0.needsConfirmation && $0.rests(discipline) }.map {
+            LastRecovery(lastDay: $0.end, kind: .detectedBreak, firstDay: $0.start)
         }
         // On the same last day, an accepted deload week is the clearer answer.
         func rank(_ recovery: LastRecovery) -> (CalendarDay, Int) {

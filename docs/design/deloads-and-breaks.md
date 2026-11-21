@@ -107,19 +107,21 @@ Rules (heuristics, configurable in `DeloadDetection`):
   performance signals compare only sessions after it (already the case for drops). A running break of 14 days or
   more makes the next runs easy (`EasyRunAdvisor`).
 
-Work:
+Work (ADR-0037):
 
-- [ ] Add `discipline` (strength, running) to `DetectedDeload`; detect gaps per discipline. Reduced-load weeks stay
-  ambiguous and keep asking (task 4).
-- [ ] Add a profile setting, e.g. `AthleteProfile.countsBreaksAutomatically`, decoded with a default so older
-  backups load (ADR-0018). Default on. When on, every gap that meets the rules counts without asking, over all
-  imported and logged history. When off, today's behaviour.
-- [ ] Settings → Training: a toggle "Count breaks as rest automatically" with one line of explanation. Logic and
-  texts in a presentation model (ADR-0014); strings in en, es and gl (ADR-0015).
-- [ ] Old `DeloadDecision`s, which have no discipline, keep applying to both.
-- [ ] Add the `training-breaks` evidence entry from the table above, and an ADR that extends ADR-0029.
-- [ ] Tests: a week of runs and no lifting is a strength break only; with the setting off it asks as before; a
-  20-day gap gives a return and no deload proposal.
+- [x] `discipline` (strength, running, `nil` for both) on `DetectedDeload`; gaps are detected per discipline.
+  Reduced-load weeks stay ambiguous and keep asking (task 4).
+- [x] `AthleteProfile.countsBreaksAutomatically`, decoded as on for older profiles and backups. When on, every gap
+  that meets the rules counts without asking, over all history; a week without any training counts for both unless
+  run data could not be read. When off, ADR-0029's behaviour.
+- [x] Settings → Training: "Count breaks as rest automatically" (`TrainingPreferencesModel`), en/es/gl.
+- [x] Old `DeloadDecision`s have no discipline and keep applying to both; a period declared not rest stays out.
+- [x] `training-breaks` evidence entry and ADR-0037.
+- [x] Strength return: a break of 14 days or more gives no deload proposal for 28 days (`DeloadAdvisor`).
+- [x] Tests: running on while not lifting rests strength only; with the setting off it asks as before; a 20-day
+  break gives no proposal; older profiles count breaks automatically.
+- [ ] Running return: a running break of 14 days or more makes the next runs easy (`EasyRunAdvisor`), reading
+  `RecoveryHistory.lastRecovery(for: .running)`.
 
 Finish line: with the setting on, a week without lifting counts as strength recovery without any question.
 

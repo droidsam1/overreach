@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- A week or more without lifting now counts as strength rest, and without running as running rest, without asking.
+  Running on while not lifting still resets when the next strength deload is due, and after two weeks or more off,
+  no deload is suggested for four weeks. Turn it off in Settings → Training to confirm each break yourself
+  (ADR-0037).
 - Walking beyond the usual day can contribute to the weekly strength load comparison used for deload advice.
   Today shows walking minutes against the usual day and suggests an easy warm-up after a walking spike if a
   leg session or run is scheduled (ADR-0010).

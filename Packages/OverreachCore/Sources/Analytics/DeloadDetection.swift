@@ -6,16 +6,29 @@ public struct DetectedDeload: Hashable, Sendable {
     public let end: CalendarDay
     public let reason: DeloadReason
     public let needsConfirmation: Bool
+    /// The discipline that rested; `nil` for both (a period judged on all training).
+    public let discipline: TrainingDiscipline?
 
     public var evidence: EvidenceReference {
-        EvidenceReference(key: "unplanned-deload", level: .heuristic)
+        discipline == nil
+            ? EvidenceReference(key: "unplanned-deload", level: .heuristic)
+            : EvidenceReference(key: "training-breaks", level: .heuristic)
     }
 
-    public init(start: CalendarDay, end: CalendarDay, reason: DeloadReason, needsConfirmation: Bool) {
+    public init(
+        start: CalendarDay, end: CalendarDay, reason: DeloadReason, needsConfirmation: Bool,
+        discipline: TrainingDiscipline? = nil
+    ) {
         self.start = start
         self.end = end
         self.reason = reason
         self.needsConfirmation = needsConfirmation
+        self.discipline = discipline
+    }
+
+    /// Whether this period rested `discipline`.
+    public func rests(_ discipline: TrainingDiscipline) -> Bool {
+        self.discipline == nil || self.discipline == discipline
     }
 }
 
@@ -60,9 +73,12 @@ public enum DeloadDetection {
             guard start.adding(days: week, calendar: calendar) <= next else { continue }
             let recent = last.adding(days: -27, calendar: calendar)
             let hasPattern = activeDays.lazy.filter { $0 >= recent && $0 < last }.prefix(3).count == 3
+            // Counting breaks automatically (`training-breaks`): a week without any training is rest. Without run
+            // data the running side is unknown, so only the strength break below counts.
+            if profile.countsBreaksAutomatically && missingRuns { continue }
             periods.append(DetectedDeload(
-                start: start, end: next.adding(days: -1, calendar: calendar),
-                reason: .noTraining, needsConfirmation: missingRuns || !hasPattern
+                start: start, end: next.adding(days: -1, calendar: calendar), reason: .noTraining,
+                needsConfirmation: !profile.countsBreaksAutomatically && (missingRuns || !hasPattern)
             ))
         }
 
@@ -110,7 +126,55 @@ public enum DeloadDetection {
                 result.append(period)
             }
         }
+        if profile.countsBreaksAutomatically {
+            result += disciplineBreaks(
+                history: history, profile: profile, runReadFailed: runReadFailed, counted: result, today: today,
+                calendar: calendar
+            )
+        }
         return result.sorted { ($0.end, $0.start) < ($1.end, $1.start) }
+    }
+
+    /// At least 7 complete days without strength work, or without runs for someone who runs: rest for that discipline
+    /// only (`training-breaks`). A period the athlete said was not rest stays out; one already counted for all
+    /// training is not repeated.
+    private static func disciplineBreaks(
+        history: [CalendarDay: Day], profile: AthleteProfile, runReadFailed: Bool, counted: [DetectedDeload],
+        today: CalendarDay, calendar: Calendar
+    ) -> [DetectedDeload] {
+        let strengthDays = history.filter { !$0.value.strength.isEmpty }.keys.sorted()
+        var breaks = gaps(between: strengthDays, discipline: .strength, today: today, calendar: calendar)
+        if !runReadFailed {
+            let runDays = history.filter { !$0.value.runs.isEmpty }.keys.sorted()
+            let hasRunningGoal = (profile.goal?.running?.distanceMeters ?? 0) > 0
+            breaks += gaps(between: runDays, discipline: .running, today: today, calendar: calendar).filter { gap in
+                hasRunningGoal || (1...4).filter { week in
+                    let start = gap.start.adding(days: -week * self.week, calendar: calendar)
+                    let end = start.adding(days: self.week, calendar: calendar)
+                    return runDays.contains { $0 >= start && $0 < end }
+                }.count >= 2
+            }
+        }
+        return breaks.filter { gap in
+            !profile.deloadDecisions.contains { !$0.accepted && $0.start == gap.start }
+                && !counted.contains {
+                    !$0.needsConfirmation && $0.discipline == nil && $0.start == gap.start && $0.end == gap.end
+                }
+        }
+    }
+
+    /// Runs of at least 7 complete days with no entry in `days`, after the first one and up to yesterday.
+    private static func gaps(
+        between days: [CalendarDay], discipline: TrainingDiscipline, today: CalendarDay, calendar: Calendar
+    ) -> [DetectedDeload] {
+        zip(days, Array(days.dropFirst()) + [today]).compactMap { last, next in
+            let start = last.adding(days: 1, calendar: calendar)
+            guard start.adding(days: week, calendar: calendar) <= next else { return nil }
+            return DetectedDeload(
+                start: start, end: next.adding(days: -1, calendar: calendar), reason: .noTraining,
+                needsConfirmation: false, discipline: discipline
+            )
+        }
     }
 
     private static func confirmed(_ profile: AthleteProfile, before today: CalendarDay) -> [DetectedDeload] {

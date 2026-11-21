@@ -477,6 +477,23 @@
         }
       }
     },
+    "A week or more without lifting counts as rest for strength, and without running as rest for running, so the next deload is suggested later. Turn off to confirm each break yourself.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una semana o más sin levantar cuenta como descanso de fuerza, y sin correr como descanso de carrera, así que la próxima descarga se sugiere más tarde. Desactívalo para confirmar tú cada descanso."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unha semana ou máis sen levantar conta como descanso de forza, e sen correr como descanso de carreira, así que a próxima descarga suxírese máis tarde. Desactívao para confirmar ti cada descanso."
+          }
+        }
+      }
+    },
     "A {1} session was trained as {2}.": {
       "extractionState": "manual",
       "localizations": {
@@ -3010,6 +3027,23 @@
         }
       }
     },
+    "Could not load your training preferences.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudieron cargar tus preferencias de entrenamiento."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puideron cargar as túas preferencias de adestramento."
+          }
+        }
+      }
+    },
     "Could not merge the exercises. Nothing was lost; try again.": {
       "extractionState": "manual",
       "localizations": {
@@ -3418,6 +3452,23 @@
         }
       }
     },
+    "Could not save your training preferences. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudieron guardar tus preferencias de entrenamiento. Inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puideron gardar as túas preferencias de adestramento. Téntao de novo."
+          }
+        }
+      }
+    },
     "Could not use that folder.": {
       "extractionState": "manual",
       "localizations": {
@@ -3448,6 +3499,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Contar como descarga"
+          }
+        }
+      }
+    },
+    "Count breaks as rest automatically": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contar los descansos automáticamente"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contar os descansos automaticamente"
           }
         }
       }
@@ -8599,6 +8667,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen carreira rexistrada vinculada"
+          }
+        }
+      }
+    },
+    "No runs recorded": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin carreras registradas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen carreiras rexistradas"
+          }
+        }
+      }
+    },
+    "No strength training recorded": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin entrenamiento de fuerza registrado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen adestramento de forza rexistrado"
           }
         }
       }
@@ -14515,6 +14617,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Adestra o teu plan"
+          }
+        }
+      }
+    },
+    "Training": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramento"
           }
         }
       }

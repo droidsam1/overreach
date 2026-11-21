@@ -91,6 +91,9 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
     /// A deload proposal was postponed until this day (inclusive).
     public var deloadPostponedUntil: CalendarDay?
     public var deloadDecisions: [DeloadDecision]
+    /// Whether a week or more without lifting (or without running, for someone who runs) counts as rest for that
+    /// discipline without asking (`training-breaks`). On by default.
+    public var countsBreaksAutomatically: Bool
 
     public init(
         sex: BiologicalSex? = nil,
@@ -106,7 +109,8 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         wearables: Set<Wearable> = [],
         deloads: [DeloadRecord] = [],
         deloadPostponedUntil: CalendarDay? = nil,
-        deloadDecisions: [DeloadDecision] = []
+        deloadDecisions: [DeloadDecision] = [],
+        countsBreaksAutomatically: Bool = true
     ) {
         self.sex = sex
         self.birthYear = birthYear
@@ -122,6 +126,7 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         self.deloads = deloads
         self.deloadPostponedUntil = deloadPostponedUntil
         self.deloadDecisions = deloadDecisions
+        self.countsBreaksAutomatically = countsBreaksAutomatically
     }
 
     /// Whether cycle-aware logic applies: only when the user chose a natural cycle explicitly.
@@ -132,6 +137,7 @@ extension AthleteProfile {
     private enum CodingKeys: String, CodingKey {
         case sex, birthYear, bodyMassKg, maxHeartRate, restingHeartRate, cycleTracking, walkingRoutine, goal
         case declaredBlocks, effortScale, wearables, deloads, deloadPostponedUntil, deloadDecisions
+        case countsBreaksAutomatically
     }
 
     /// Tolerant decoding: fields added in later versions fall back to their defaults, so older stores and
@@ -156,7 +162,9 @@ extension AthleteProfile {
             ),
             deloads: try container.decodeIfPresent([DeloadRecord].self, forKey: .deloads) ?? [],
             deloadPostponedUntil: try container.decodeIfPresent(CalendarDay.self, forKey: .deloadPostponedUntil),
-            deloadDecisions: try container.decodeIfPresent([DeloadDecision].self, forKey: .deloadDecisions) ?? []
+            deloadDecisions: try container.decodeIfPresent([DeloadDecision].self, forKey: .deloadDecisions) ?? [],
+            countsBreaksAutomatically: try container.decodeIfPresent(Bool.self, forKey: .countsBreaksAutomatically)
+                ?? true
         )
     }
 }

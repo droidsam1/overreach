@@ -122,6 +122,10 @@ public enum DeloadAdvisor {
         public var shortSleepNights = 4
         public var poorWellbeingCheckIns = 3
         public var plan = DeloadPlan.standard
+        /// A break at least this long is a return to training, not a recovery to build on (`training-breaks`)…
+        public var returnBreakDays = 14
+        /// …and no deload is proposed in this many days after it.
+        public var daysAfterReturn = 28
 
         public init() {}
     }
@@ -140,8 +144,15 @@ public enum DeloadAdvisor {
         if recovery?.sickRecently == true { return nil }
         let today = CalendarDay(now, calendar: calendar)
         // No repeat advice in the week after a deload or a break (ADR-0029).
-        if let lastRecovery, PlanReviewer.days(from: lastRecovery.lastDay, to: today, calendar: calendar) <= 7 {
-            return nil
+        if let lastRecovery {
+            let daysSince = PlanReviewer.days(from: lastRecovery.lastDay, to: today, calendar: calendar)
+            if daysSince <= 7 { return nil }
+            // After a long break the athlete is building back up, not accumulating fatigue (`training-breaks`).
+            let length = lastRecovery.days(calendar: calendar) ?? 0
+            if lastRecovery.kind == .detectedBreak, length >= settings.returnBreakDays,
+               daysSince <= settings.daysAfterReturn {
+                return nil
+            }
         }
         let recoveryEnd = lastRecovery.map { $0.lastDay.adding(days: 1, calendar: calendar).startDate(in: calendar) }
         let current = lifts.filter { lift in

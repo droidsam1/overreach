@@ -16,3 +16,8 @@ public struct DeloadDecision: Hashable, Codable, Sendable {
         self.accepted = accepted
     }
 }
+
+/// A training discipline whose breaks are judged on their own (`training-breaks`).
+public enum TrainingDiscipline: String, Codable, Hashable, Sendable, CaseIterable {
+    case strength, running
+}

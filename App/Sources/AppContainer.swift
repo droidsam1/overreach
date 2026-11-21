@@ -206,6 +206,10 @@ final class AppContainer {
         GarminSetupModel(account: garmin ?? NoGarminAccount(), reminders: LocalReminders())
     }
 
+    func makeTrainingPreferencesModel() -> TrainingPreferencesModel {
+        TrainingPreferencesModel(profiles: profiles)
+    }
+
     func makeBackupModel() -> BackupModel {
         BackupModel(service: backup)
     }

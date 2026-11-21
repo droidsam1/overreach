@@ -22,7 +22,7 @@ struct RecoveryHistoryTests {
         let last = RecoveryHistory.lastRecovery(
             deloads: [DeloadRecord(start: day(-20), days: 7)], detected: [], before: today, calendar: calendar
         )
-        #expect(last == LastRecovery(lastDay: day(-14), kind: .deloadWeek))
+        #expect(last == LastRecovery(lastDay: day(-14), kind: .deloadWeek, firstDay: day(-20)))
     }
 
     @Test func theLatestOfADeloadWeekAndAConfirmedBreakWins() {
@@ -31,7 +31,7 @@ struct RecoveryHistoryTests {
             deloads: deloads, detected: [period(-20, -12, confirmed: true), period(-9, -3, confirmed: false)],
             before: today, calendar: calendar
         )
-        #expect(last == LastRecovery(lastDay: day(-12), kind: .detectedBreak))
+        #expect(last == LastRecovery(lastDay: day(-12), kind: .detectedBreak, firstDay: day(-20)))
     }
 
     @Test func aDeloadWeekInProgressIsNotFinishedYet() {

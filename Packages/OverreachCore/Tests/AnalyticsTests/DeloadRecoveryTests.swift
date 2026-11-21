@@ -100,7 +100,7 @@ struct DeloadRecoveryTests {
             deloads: [DeloadRecord(start: CalendarDay(at(-76), calendar: calendar), days: 7)], detected: [detected],
             before: CalendarDay(now, calendar: calendar), calendar: calendar
         )
-        #expect(last == LastRecovery(lastDay: detected.end, kind: .detectedBreak))
+        #expect(last == LastRecovery(lastDay: detected.end, kind: .detectedBreak, firstDay: detected.start))
         let updated = try #require(DeloadAdvisor.proposal(
             lifts: lifts, lastRecovery: last, recovery: recovery, now: now, calendar: calendar
         ))
@@ -115,6 +115,24 @@ struct DeloadRecoveryTests {
             now: now
         )
         #expect(proposal == nil)
+    }
+
+    @Test func aLongBreakIsAReturnWithNoDeloadForFourWeeks() {
+        func breakEnded(daysAgo: Int, length: Int) -> LastRecovery {
+            let last = CalendarDay(at(-daysAgo), calendar: .current)
+            return LastRecovery(lastDay: last, kind: .detectedBreak, firstDay: last.adding(days: 1 - length))
+        }
+        let lifts = [stalled(), stalled()]
+
+        #expect(DeloadAdvisor.proposal(
+            lifts: lifts, lastRecovery: breakEnded(daysAgo: 20, length: 20), recovery: poorRecovery, now: now
+        ) == nil)
+        #expect(DeloadAdvisor.proposal(
+            lifts: lifts, lastRecovery: breakEnded(daysAgo: 20, length: 9), recovery: poorRecovery, now: now
+        ) != nil)
+        #expect(DeloadAdvisor.proposal(
+            lifts: lifts, lastRecovery: breakEnded(daysAgo: 30, length: 20), recovery: poorRecovery, now: now
+        ) != nil)
     }
 
     @Test func recoveryAddsAtMostTwoPoints() throws {

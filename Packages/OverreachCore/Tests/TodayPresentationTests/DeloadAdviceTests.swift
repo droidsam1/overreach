@@ -374,7 +374,7 @@ struct DeloadAdviceTests {
     }
 
     /// A hybrid athlete whose runs could not be read: a week without lifting needs their confirmation (ADR-0029).
-    private func breakStore() async throws -> TestStore {
+    private func breakStore(automatic: Bool = false) async throws -> TestStore {
         let sessions = stalledSessions.map { original in
             var session = original
             session.startedAt = original.startedAt.addingTimeInterval(-5 * 86_400)
@@ -384,8 +384,19 @@ struct DeloadAdviceTests {
         let store = TestStore(exercises: [squat, bench], sessions: sessions)
         try await store.save(mainLift, for: squat.id)
         try await store.save(mainLift, for: bench.id)
-        try await store.save(AthleteProfile(goal: TrainingGoal(kind: .hybrid)))
+        try await store.save(AthleteProfile(goal: TrainingGoal(kind: .hybrid), countsBreaksAutomatically: automatic))
         return store
+    }
+
+    @Test func aBreakCountedAutomaticallyNeedsNoQuestionAndDelaysTheDeload() async throws {
+        let store = try await breakStore(automatic: true)
+        let model = TodayModel(
+            sources: [DayMetrics(days: metrics(poorWeek: true))], profiles: store, workouts: store, exercises: store,
+            progression: store, calendar: calendar, format: format
+        )
+        await model.load(now: now)
+
+        #expect(model.deloadAdvice == nil)
     }
 
     @Test func anUnconfirmedBreakIsAskedAboutBeforeProposingADeload() async throws {
