@@ -82,7 +82,7 @@ struct RootView: View {
         _planImportModel = State(initialValue: container.makePlanImportModel())
     }
 
-    private var workoutContinuation: TodayView.WorkoutContinuation? {
+    private var workoutContinuation: TodayModel.WorkoutContinuation? {
         if workoutModel.isSessionActive { return .resume(workoutModel.sessionName) }
         if let name = workoutModel.recoverableWorkoutName { return .resume(name) }
         if workoutModel.needsDraftRecovery { return .reviewDraft }

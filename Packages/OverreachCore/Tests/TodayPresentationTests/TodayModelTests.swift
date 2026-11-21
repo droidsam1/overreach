@@ -96,6 +96,18 @@ struct TodayModelTests {
         #expect(model.readiness.level == .unknown)
     }
 
+    @Test func workoutContinuationTakesPrecedenceWhileLoadingAndWithMissingData() async {
+        let model = TodayModel(sources: [])
+        let workout = TodayModel.WorkoutContinuation.resume("Strength A")
+
+        #expect(model.nextAction(continuing: workout) == .continueWorkout(workout))
+
+        await model.load()
+
+        #expect(model.nextAction == .connectHealth)
+        #expect(model.nextAction(continuing: .reviewDraft) == .continueWorkout(.reviewDraft))
+    }
+
     @Test func readinessIsReadyToDisplay() {
         let model = TodayModel(sources: [])
 
