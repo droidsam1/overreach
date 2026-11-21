@@ -151,8 +151,10 @@ final class AppContainer {
     func makeAskAIModel() -> AskAIModel {
         AskAIModel(
             workouts: workouts, exercises: exercises, progression: progression, profiles: profiles,
-            routines: routines, checkIns: checkIns, sources: metricsSources, recordedStrength: recordedStrength,
-            activity: activitySources, cycle: cycleSource, appVersion: Self.appVersion
+            routines: routines, checkIns: checkIns, sources: metricsSources,
+            recordedStrength: historyRecordedStrength, activity: activitySources, cycle: cycleSource,
+            activityMatchChoices: readActivityMatchChoices,
+            appVersion: Self.appVersion
         )
     }
 
@@ -160,8 +162,8 @@ final class AppContainer {
         TodayModel(
             sources: metricsSources, activity: activitySources,
             checkIns: checkIns, backup: backup, garmin: garmin, profiles: profiles, workouts: workouts,
-            exercises: exercises, recordedStrength: recordedStrength, routines: routines, progression: progression,
-            cycle: cycleSource
+            exercises: exercises, recordedStrength: historyRecordedStrength, routines: routines,
+            progression: progression, cycle: cycleSource, activityMatchChoices: readActivityMatchChoices
         )
     }
 
@@ -187,29 +189,36 @@ final class AppContainer {
         )
     }
 
-    func makeHistoryModel() -> HistoryModel {
-        let key = "history.runMatchChoices"
-        let strengthKey = "history.strengthMatchChoices"
+    private static let runChoicesKey = "history.runMatchChoices"
+    private static let strengthChoicesKey = "history.strengthMatchChoices"
+
+    private func readActivityMatchChoices() -> ActivityMatchChoices {
         let defaults = UserDefaults.standard
-        let choices = defaults.data(forKey: key).flatMap {
+        let choices = defaults.data(forKey: Self.runChoicesKey).flatMap {
             try? JSONDecoder().decode([RunMatchPair: RunMatchChoice].self, from: $0)
         } ?? [:]
-        let strengthChoices = defaults.data(forKey: strengthKey).flatMap {
+        let strengthChoices = defaults.data(forKey: Self.strengthChoicesKey).flatMap {
             try? JSONDecoder().decode([StrengthMatchPair: StrengthMatchChoice].self, from: $0)
         } ?? [:]
+        return ActivityMatchChoices(runs: choices, strength: strengthChoices)
+    }
+
+    func makeHistoryModel() -> HistoryModel {
+        let choices = readActivityMatchChoices()
+        let defaults = UserDefaults.standard
         return HistoryModel(
             workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
             profiles: profiles, progression: progression, activity: healthSource, runSources: metricsSources,
-            recordedStrength: historyRecordedStrength, runChoices: choices,
+            recordedStrength: historyRecordedStrength, runChoices: choices.runs,
             saveRunChoices: { choices in
                 if let data = try? JSONEncoder().encode(choices) {
-                    defaults.set(data, forKey: key)
+                    defaults.set(data, forKey: Self.runChoicesKey)
                 }
             },
-            strengthChoices: strengthChoices,
+            strengthChoices: choices.strength,
             saveStrengthChoices: { choices in
                 if let data = try? JSONEncoder().encode(choices) {
-                    defaults.set(data, forKey: strengthKey)
+                    defaults.set(data, forKey: Self.strengthChoicesKey)
                 }
             }
         )

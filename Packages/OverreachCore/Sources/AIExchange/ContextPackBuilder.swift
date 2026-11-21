@@ -58,14 +58,15 @@ public enum ContextPackBuilder {
         """
 
     public static func build(
-        _ input: ContextInput, period: ClosedRange<CalendarDay>, now: Date, calendar: Calendar = .current
+        _ input: ContextInput, period: ClosedRange<CalendarDay>, now: Date, calendar: Calendar = .current,
+        matchedStrength: StrengthActivityMatches? = nil
     ) -> ContextPack {
         let byID = Dictionary(input.exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let name = { (id: UUID) in byID[id]?.name ?? "Unknown exercise" }
         let sessions = input.sessions.sorted { $0.startedAt < $1.startedAt }
-        let watchBySession = StrengthActivityMatching.match(
+        let watchBySession = (matchedStrength ?? StrengthActivityMatching.match(
             sessions: sessions, activities: StrengthActivityMatching.removingDuplicates(input.strengthRecordings)
-        ).bySession
+        )).bySession
 
         var usedIDs = Set(sessions.flatMap { $0.entries.map(\.exerciseID) })
         usedIDs.formUnion(input.routines.flatMap(\.exerciseIDs))

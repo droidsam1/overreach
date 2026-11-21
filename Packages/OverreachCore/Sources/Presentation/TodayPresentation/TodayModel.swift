@@ -66,6 +66,7 @@ public final class TodayModel {
     private var usualSteps: Double?
 
     private let recordLoader: TrainingRecordLoader
+    private let activityMatchChoices: @MainActor () -> ActivityMatchChoices
     private let sources: [any MetricsSource]
     private let garmin: (any GarminAccount)?
     private let profiles: (any ProfileRepository)?
@@ -378,9 +379,11 @@ public final class TodayModel {
         workouts: (any WorkoutRepository)? = nil, exercises: (any ExerciseRepository)? = nil,
         recordedStrength: (any RecordedStrengthSource)? = nil, routines: (any RoutineRepository)? = nil,
         progression: (any ProgressionSettingsRepository)? = nil, cycle: (any CycleSource)? = nil,
+        activityMatchChoices: @escaping @MainActor () -> ActivityMatchChoices = { .init() },
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
+        self.activityMatchChoices = activityMatchChoices
         recordLoader = TrainingRecordLoader(
             sources: sources, activity: activity, checkIns: checkIns, workouts: workouts, exercises: exercises,
             recordedStrength: recordedStrength, routines: routines, progression: progression, cycle: cycle
@@ -460,8 +463,8 @@ public final class TodayModel {
         trainingReadFailed = record.runReadFailed || snapshot.sessionsFailed
         recentTrainingDays = RecentTraining(calendar: calendar, format: format).days(
             in: range, through: now, metrics: week, checkIns: record.checkIns,
-            runs: record.runs, sessions: record.sessions, recordings: record.recordings,
-            exercises: record.exercises,
+            runs: snapshot.runOriginals, sessions: record.sessions, recordings: snapshot.strengthOriginals,
+            exercises: record.exercises, choices: activityMatchChoices(),
             races: (profile?.goal?.scheduledRuns ?? []).compactMap { $0.purpose == .race ? $0.completion : nil }
         )
         let today = range.upperBound
