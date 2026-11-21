@@ -224,8 +224,8 @@ public struct TodayView: View {
 
     private var readiness: some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
+            Text(model.readinessAdvice).font(.headline).accessibilityAddTraits(.isHeader)
             StatusBadge(title: model.readinessTitle, tone: model.readinessLevel.tone)
-            Text(model.readinessAdvice).font(.headline)
             if let summary = model.readinessSummary {
                 Text(summary).font(.subheadline)
             }
@@ -235,6 +235,7 @@ public struct TodayView: View {
                         ForEach(model.readinessLines, id: \.self) { line in
                             VStack(alignment: .leading, spacing: Spacing.xSmall) {
                                 Text(line.text).font(.subheadline)
+                                    .foregroundStyle(line.kind == .unavailable ? .secondary : .primary)
                                 if let source = line.source {
                                     Text(line.evidence).font(.caption).foregroundStyle(.secondary)
                                     Link("Research source", destination: source).font(.caption)
@@ -242,8 +243,9 @@ public struct TodayView: View {
                                 ReadingLinks(items: line.readings.map(ReadingLinkItem.init))
                             }
                         }
-                        ForEach(model.readinessContext, id: \.self) { text in
-                            Text(text).font(.subheadline)
+                        ForEach(model.readinessObservations, id: \.self) { observation in
+                            Text(observation.text).font(.subheadline)
+                                .foregroundStyle(observation.kind == .unavailable ? .secondary : .primary)
                         }
                         if let context = model.readinessTrainingContext {
                             VStack(alignment: .leading, spacing: Spacing.xSmall) {
@@ -256,11 +258,32 @@ public struct TodayView: View {
                         if let note = model.hrvCoverageNote {
                             Text(note).font(.subheadline).foregroundStyle(.secondary)
                         }
+                        if !model.readinessSources.isEmpty {
+                            readinessSourceDetails
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, Spacing.small)
                 }
             }
+        }
+    }
+
+    private var readinessSourceDetails: some View {
+        DisclosureGroup("Data sources and coverage") {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                ForEach(model.readinessSources) { source in
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        Text(source.title).font(.subheadline.weight(.medium))
+                        ForEach(source.details, id: \.self) { detail in
+                            Text(detail).font(.subheadline).foregroundStyle(.secondary)
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, Spacing.small)
         }
     }
 
