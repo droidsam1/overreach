@@ -136,7 +136,7 @@ public struct TodayView: View {
             .navigationTitle("Today")
             .toolbar {
                 if settingsDestination != nil {
-                    ToolbarItem(placement: .topBarTrailing) {
+                    ToolbarItem(placement: .primaryAction) {
                         Button {
                             showsSettings.wrappedValue = true
                         } label: {
