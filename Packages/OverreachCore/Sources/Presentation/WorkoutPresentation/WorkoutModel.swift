@@ -360,7 +360,7 @@ public final class WorkoutModel {
         guard let profile = try? await profiles?.profile() else { return }
         applyEffortScale(profile.effortScale)
         let today = CalendarDay(clock())
-        deloadPlan = profile.deloads.last?.contains(today) == true ? DeloadAdvisor.Settings().plan : nil
+        deloadPlan = RecoveryHistory.deloadInProgress(profile, on: today) != nil ? DeloadAdvisor.Settings().plan : nil
     }
 
     private func applyEffortScale(_ scale: EffortScale) {

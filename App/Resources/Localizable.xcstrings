@@ -8399,6 +8399,23 @@
         }
       }
     },
+    "No deload or break in the {1} weeks of training logged.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ninguna descarga ni descanso en las {1} semanas de entrenamiento registradas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ningunha descarga nin descanso nas {1} semanas de adestramento rexistradas."
+          }
+        }
+      }
+    },
     "No exercises": {
       "extractionState": "manual",
       "localizations": {

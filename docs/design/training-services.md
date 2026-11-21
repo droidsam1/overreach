@@ -1,6 +1,6 @@
 # Training services: one source of truth per question
 
-Status: task 1 shipped (reviewed 2026-11-21). Decision: ADR-0035.
+Status: tasks 1–2 shipped (reviewed 2026-11-21). Decision: ADR-0035.
 
 ## Continue from here
 
@@ -75,15 +75,16 @@ Finish line: presentation modules call `runs(from:to:)` and `dailyMetrics(in:)` 
 
 ### 2. Recovery status
 
-- [ ] `RecoveryStatus`: the last recovery (day, kind, and discipline once deloads task 3 lands), the deload week in
-  progress with its plan, and the breaks waiting for an answer.
-- [ ] Use it in `DeloadAdvice`, `PlanModel`/`PlanAnalysis` and `WorkoutModel`; `DeloadAdvisor.proposal` takes the
-  last recovery instead of `lastDeload` plus `detectedDeloads`.
-- [ ] Without any recovery, the interval signal says how much history there is, not weeks since the first session.
-- [ ] Tests: one fixture gives the same last recovery to Today, Plan and Workout; an accepted deload two weeks ago
-  gives no interval signal.
+Shipped as pure rules in `Analytics` (`RecoveryHistory`), since they need no reading of their own; the inputs to
+`DeloadDetection` move into `TrainingServices` with task 4.
 
-Finish line: [deloads task 1](deloads-and-breaks.md#1-one-last-recovery-for-today-and-plan) is checked.
+- [x] `RecoveryHistory.lastRecovery` (last day and kind; discipline once deloads task 3 lands) and
+  `RecoveryHistory.deloadInProgress`.
+- [x] Use them in `DeloadAdvice`, `PlanAnalysis` and `WorkoutModel`; `DeloadAdvisor.proposal` takes the last
+  recovery instead of `lastDeload` plus `detectedDeloads`. The week without repeat advice follows any recovery.
+- [x] Without any recovery, the interval signal says how much history there is (`noDeloadInHistory`).
+- [x] Tests: `RecoveryHistoryTests`; in `DeloadAdviceTests`, Today and `PlanAnalysis` count from the same deload,
+  and an accepted deload gives no interval signal.
 
 ### 3. Lift status and progression settings
 
@@ -99,7 +100,8 @@ Finish line: `StallDetection.status` and `ProgressionSettings(for:)` are called 
 ### 4. Readiness and the deload recommendation
 
 - [ ] Move the readiness and deload composition out of `TodayModel`/`DeloadAdvice` (which inputs, which windows)
-  into `TrainingServices`; `DeloadAdvice` keeps only the texts.
+  into `TrainingServices`; `DeloadAdvice` keeps only the texts. Today passes only completed sessions to
+  `DeloadDetection` and Plan passes all of them: read them once there.
 - [ ] Give the AI context pack the same readiness and deload answers Today shows.
 - [ ] Distinct names for the per-reading and 7-day-trend HRV counts in the returned types.
 
