@@ -100,10 +100,9 @@ struct RootView: View {
     private func recoveryProgress(section: RecoveryProgressModel.Section?) -> some View {
         TrendsView(
             model: recoveryModel, section: section, progressSummary: planModel.progressSummary,
-            onConnectGarmin: { garminModel.start() }
-        ) {
-            PlanProgressView(model: planModel)
-        }
+            onConnectGarmin: { garminModel.start() },
+            progress: { PlanProgressView(model: planModel) }
+        )
     }
 
     var body: some View {
