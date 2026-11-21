@@ -83,7 +83,10 @@ def report(number, key, found):
         print(f"FAIL task-claim - another PR claims {key}: " + "; ".join(found)
               + ". Stop and take the next item in docs/priorities.md, or ask the user.")
         return 1
-    print(f"PASS task-claim - #{number} claims {key}; no other PR does.")
+    if key == "none":
+        print(f"PASS task-claim - #{number} is outside the backlog (Task: none).")
+    else:
+        print(f"PASS task-claim - #{number} claims {key}; no other PR does.")
     return 0
 
 
