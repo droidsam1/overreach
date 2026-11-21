@@ -51,6 +51,7 @@ public final class TodayModel {
     public private(set) var strengthChoiceNote: String?
     private var recentWorkouts: WorkoutContext?
     private var strengthInputs: StrengthInputs?
+    private var optionalStrengthDay: CalendarDay?
     private var chosenWorkout: (day: CalendarDay, id: String)?
     private var trainingReadFailed = false
     private var activeLoad: UUID?
@@ -384,6 +385,7 @@ public final class TodayModel {
         }
 
         let today = CalendarDay(now, calendar: calendar)
+        if optionalStrengthDay != today { optionalStrengthDay = nil }
         let profile = try? await profiles?.profile()
         let cycle = await readCycle(profile: profile, today: today)
         // The readiness baselines need weeks of history (months for phase baselines, plus the 7 days the deload
@@ -501,8 +503,12 @@ public final class TodayModel {
             // A rest day or a missing assigned routine suppresses the undated fallback.
             guard assignedRoutine != nil else { return }
         }
-        guard readiness.level == .amber, let sessions,
+        guard readiness.level == .amber, !readiness.reasons.contains(where: \.advisesSkippingTraining),
+              let sessions,
               !hasStrengthToday(sessions: sessions, recordings: recentRecordings, now: now) else { return }
+        if assignment == nil, goal?.scheduledRuns.contains(where: {
+            $0.day == today && $0.purpose == .race && $0.completion == nil
+        }) == true { return }
         await loadStrengthOption(today: today, now: now, profile: profile, assignedRoutine: assignedRoutine,
                                  catalog: allExercises ?? [], loadID: loadID)
     }
@@ -645,6 +651,21 @@ public final class TodayModel {
 
     // MARK: Next strength session
 
+    /// Only a dated strength session gets a comparison without asking.
+    public var canRequestStrengthOption: Bool {
+        strengthInputs != nil && strengthInputs?.assignedRoutine == nil
+    }
+
+    public var showsOptionalStrength: Bool {
+        canRequestStrengthOption && optionalStrengthDay != nil && optionalStrengthDay == loadedDay
+    }
+
+    public func setShowsOptionalStrength(_ show: Bool) {
+        guard canRequestStrengthOption else { return }
+        optionalStrengthDay = show ? loadedDay : nil
+        rebuildStrengthOption()
+    }
+
     /// Says which workout the athlete will do next, when the app could not tell or guessed wrong. It lasts for today.
     public func chooseStrengthSession(_ id: String) {
         guard let day = loadedDay, strengthChoices.contains(where: { $0.id == id }) else { return }
@@ -751,12 +772,15 @@ public final class TodayModel {
     }
 
     private func rebuildStrengthOption() {
-        guard let inputs = strengthInputs else { return }
+        guard let inputs = strengthInputs, inputs.assignedRoutine != nil || showsOptionalStrength else {
+            strengthOption = nil
+            return
+        }
         let routine = inputs.assignedRoutine ?? inputs.plannedRoutine
         strengthOption = StrengthOption.make(
             routine: routine, isDated: inputs.assignedRoutine != nil, sessions: inputs.sessions,
             exercises: inputs.catalog, settings: inputs.settings, historyStart: inputs.historyStart,
-            familiarityStart: inputs.familiarityStart, basis: routine == nil ? nextWorkout : nil
+            familiarityStart: inputs.familiarityStart, format: format, basis: routine == nil ? nextWorkout : nil
         )
     }
 

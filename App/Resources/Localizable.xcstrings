@@ -2330,6 +2330,23 @@
         }
       }
     },
+    "Compare your planned lift with an easy option on amber days, including a starting weight when recent easy sets support it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En días ámbar, compara la sesión de fuerza prevista con una opción ligera. Si has hecho series suaves recientemente, verás un peso inicial cuando sean comparables."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nos días ámbar, compara a sesión de forza prevista cunha opción lixeira. Se fixeches series suaves hai pouco, verás un peso inicial cando sexan comparables."
+          }
+        }
+      }
+    },
     "Compared with its reference.": {
       "extractionState": "manual",
       "localizations": {
@@ -4438,6 +4455,23 @@
         }
       }
     },
+    "Easy option · {1} × {2}, start at {3} with at least {4} reps left": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opción ligera · {1} × {2}, empieza con {3} y deja al menos {4} repeticiones en reserva"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opción lixeira · {1} × {2}, comeza con {3} e deixa polo menos {4} repeticións en reserva"
+          }
+        }
+      }
+    },
     "Easy option · {1} × {2}, with at least {3} reps left": {
       "extractionState": "manual",
       "localizations": {
@@ -6053,6 +6087,23 @@
         }
       }
     },
+    "I want to lift today": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quiero hacer fuerza hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quero facer forza hoxe"
+          }
+        }
+      }
+    },
     "I'm sick": {
       "extractionState": "manual",
       "localizations": {
@@ -6083,23 +6134,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Se foi un descanso ou unha semana máis suave, conta como a túa descarga e aínda non precisas outra."
-          }
-        }
-      }
-    },
-    "If you want to lift today": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Si quieres hacer fuerza hoy"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Se queres facer forza hoxe"
           }
         }
       }
@@ -11408,23 +11442,6 @@
         }
       }
     },
-    "Schedule strength alongside running and compare an easier option on amber days.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Planifica fuerza junto con carrera y compara una variante suave los días en ámbar."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Planifica forza xunto coa carreira e compara unha variante suave nos días en ámbar."
-          }
-        }
-      }
-    },
     "Scheduled routine unavailable": {
       "extractionState": "manual",
       "localizations": {
@@ -16470,6 +16487,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} ({2})"
+          }
+        }
+      }
+    },
+    "{1} at {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} con {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} con {2}"
           }
         }
       }

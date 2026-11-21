@@ -39,7 +39,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   rise before a period. Hormonal contraception and menopause keep the overall baseline. The app never estimates
   ovulation or fertility (ADR-0009).
 - Assign a routine or strength rest day alongside running in the hybrid calendar.
-  On amber days, Today can compare the scheduled routine with a lighter option.
+  On amber days, Today compares a scheduled routine with a lighter option and shows a starting weight when
+  recent easy sets support it. With no strength session due, ask for an example with **I want to lift today**.
 - The hybrid running calendar supports several dated runs, races and rest days, with optional links to recorded runs.
 - Hybrid goals can include a running distance, time or pain-free target and the next planned running day.
 - In Plan, linked runs show progress toward a hybrid running goal and can record pain during or after the run.

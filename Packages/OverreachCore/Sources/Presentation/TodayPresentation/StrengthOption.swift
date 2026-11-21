@@ -38,11 +38,12 @@ public struct StrengthOption: Hashable, Sendable {
 
     static func make(
         routine: Routine?, isDated: Bool, sessions: [StrengthSession], exercises: [Exercise],
-        settings: [UUID: ProgressionSettings], historyStart: Date, familiarityStart: Date, basis: Basis? = nil
+        settings: [UUID: ProgressionSettings], historyStart: Date, familiarityStart: Date, format: Format,
+        basis: Basis? = nil
     ) -> StrengthOption {
         let context = StrengthOptionContext(
             progressionSessions: sessions.filter { $0.startedAt >= historyStart },
-            exercises: exercises, settings: settings, familiarityStart: familiarityStart
+            exercises: exercises, settings: settings, familiarityStart: familiarityStart, format: format
         )
         if let routine {
             let rows = Array(routine.exerciseIDs.lazy.compactMap { context.row(for: $0, routine: routine) }
@@ -52,7 +53,9 @@ public struct StrengthOption: Hashable, Sendable {
                 return option(heading: L10n.format("Up next in your plan · {1}", routine.name), rows: rows)
             }
         }
-        if let basis, let session = sessions.filter({ SessionRotation.slot(for: $0).id == basis.slot.id })
+        if let basis, let session = sessions.filter({
+            $0.startedAt >= familiarityStart && SessionRotation.slot(for: $0).id == basis.slot.id
+        })
             .max(by: { $0.startedAt < $1.startedAt }) {
             var seen: Set<UUID> = []
             let entries = session.entries.filter { seen.insert($0.exerciseID).inserted }
@@ -102,6 +105,7 @@ private struct StrengthOptionContext {
     let exercises: [Exercise]
     let settings: [UUID: ProgressionSettings]
     let familiarityStart: Date
+    let format: Format
 
     func row(for id: UUID, routine: Routine) -> StrengthOption.ExerciseRow? {
         guard let exercise = exercises.first(where: { $0.id == id }) else { return nil }
@@ -111,32 +115,53 @@ private struct StrengthOptionContext {
         let resolved = ProgressionTargets.settings(for: exercise, stored: stored, focus: stored?.focus ?? routine.focus,
                                                    prescription: routine.prescription(for: id))
         let target = ProgressionTargets.next(history: history, settings: resolved)
-        return row(exercise: exercise, referenceReps: target.sets.map(\.reps), referenceRPE: resolved.scheme.targetRPE,
-                   recent: recent, fromPlan: true)
+        return row(exercise: exercise, referenceSets: target.sets, recent: recent, history: history, fromPlan: true)
     }
 
     func row(for id: UUID, previous: StrengthSession) -> StrengthOption.ExerciseRow? {
         guard let exercise = exercises.first(where: { $0.id == id }),
               let exposure = ExerciseExposure.history(of: id, in: [previous]).last else { return nil }
-        let reps = exposure.sets.compactMap(\.reps)
         let easiest = exposure.sets.compactMap(\.rpe).filter(\.isFinite).min()
-        return row(exercise: exercise, referenceReps: reps, referenceRPE: easiest, recent: exposure, fromPlan: false)
+        let sets = exposure.sets.compactMap { set in
+            set.reps.map { PlannedSet(weightKg: set.weightKg, reps: $0, targetRPE: easiest ?? 6) }
+        }
+        let history = ExerciseExposure.history(of: id, in: progressionSessions)
+        return row(exercise: exercise, referenceSets: sets, recent: exposure, history: history, fromPlan: false)
     }
 
     private func row(
-        exercise: Exercise, referenceReps: [Int], referenceRPE: Double?, recent: ExerciseExposure, fromPlan: Bool
+        exercise: Exercise, referenceSets: [PlannedSet], recent: ExerciseExposure, history: [ExerciseExposure],
+        fromPlan: Bool
     ) -> StrengthOption.ExerciseRow? {
-        guard let adjustment = EasyStrengthAdjustment.suggest(referenceReps: referenceReps, referenceRPE: referenceRPE,
-                                                              recent: recent) else { return nil }
+        guard let adjustment = EasyStrengthAdjustment.suggest(
+            referenceReps: referenceSets.map(\.reps), referenceRPE: referenceSets.map(\.targetRPE).min(), recent: recent
+        ) else { return nil }
         let range = adjustment.referenceReps
         let reps = range.lowerBound == range.upperBound ? String(range.lowerBound) : "\(range.lowerBound)–\(range.upperBound)"
         let count = String(adjustment.referenceSets)
-        let reference = fromPlan ? L10n.format("Usual target · {1} × {2}", count, reps)
+        let weights = referenceSets.compactMap(\.weightKg).filter { $0.isFinite && $0 > 0 }
+        let referenceLoad = weights.count == referenceSets.count ? weights.min() : nil
+        var reference = fromPlan ? L10n.format("Usual target · {1} × {2}", count, reps)
             : L10n.format("Last session · {1} × {2}", count, reps)
+        if let lower = referenceLoad, let upper = weights.max() {
+            let load = lower == upper ? format.kilograms(lower)
+                : "\(format.number(lower))–\(format.kilograms(upper))"
+            reference = L10n.format("{1} at {2}", reference, load)
+        }
+        let easyLoad = adjustment.startingLoad(referenceLoadKg: referenceLoad, recent: history.filter {
+            $0.date >= familiarityStart
+        })
+        let sets = String(adjustment.sets)
+        let easyReps = String(adjustment.reps)
+        let reserve = String(adjustment.repsInReserve)
+        let suggestion = if let easyLoad {
+            L10n.format("Easy option · {1} × {2}, start at {3} with at least {4} reps left",
+                        sets, easyReps, format.kilograms(easyLoad), reserve)
+        } else {
+            L10n.format("Easy option · {1} × {2}, with at least {3} reps left", sets, easyReps, reserve)
+        }
         return StrengthOption.ExerciseRow(
-            id: exercise.id, title: exercise.displayName, reference: reference,
-            suggestion: L10n.format("Easy option · {1} × {2}, with at least {3} reps left",
-                                    String(adjustment.sets), String(adjustment.reps), String(adjustment.repsInReserve))
+            id: exercise.id, title: exercise.displayName, reference: reference, suggestion: suggestion
         )
     }
 }

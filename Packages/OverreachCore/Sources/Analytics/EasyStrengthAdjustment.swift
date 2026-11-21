@@ -13,6 +13,21 @@ public struct EasyStrengthAdjustment: Hashable, Sendable {
     public let reps: Int
     public let repsInReserve: Int
 
+    /// Use an observed easy load for the full number of sets. Today's effort still takes precedence.
+    public func startingLoad(referenceLoadKg: Double?, recent: [ExerciseExposure]) -> Double? {
+        guard let referenceLoadKg, referenceLoadKg.isFinite, referenceLoadKg > 0 else { return nil }
+        for exposure in recent.reversed() {
+            let weights = exposure.sets.compactMap { set -> Double? in
+                guard set.kind == .working, (set.reps ?? 0) >= reps,
+                      let rpe = set.rpe, rpe >= 1, rpe <= Double(10 - repsInReserve),
+                      let weight = set.weightKg, weight > 0, weight <= referenceLoadKg else { return nil }
+                return weight
+            }
+            if weights.count >= sets { return weights.min() }
+        }
+        return nil
+    }
+
     public static func suggest(
         referenceReps: [Int], referenceRPE: Double?, recent: ExerciseExposure
     ) -> EasyStrengthAdjustment? {

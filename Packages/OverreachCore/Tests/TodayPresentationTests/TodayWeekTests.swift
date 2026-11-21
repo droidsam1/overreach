@@ -285,10 +285,12 @@ struct TodayWeekTests {
 
         await model.load(now: now)
 
+        #expect(model.strengthOption == nil)
+        model.setShowsOptionalStrength(true)
         let option = try #require(model.strengthOption)
         #expect(option.heading == "Up next in your plan · Lower body")
         #expect(option.exerciseRows.map(\.title) == ["Squat"])
-        #expect(option.exerciseRows.first?.reference == "Usual target · 4 × 6")
+        #expect(option.exerciseRows.first?.reference == "Usual target · 4 × 6 at 70 kg")
         #expect(option.exerciseRows.first?.suggestion == "Easy option · 2 × 6, with at least 4 reps left")
         #expect(await store.sessions(from: .distantPast, to: now) == [previous])
     }
@@ -304,6 +306,7 @@ struct TodayWeekTests {
                                workouts: store, exercises: store, calendar: calendar)
         await model.load(now: now)
 
+        model.setShowsOptionalStrength(true)
         let option = try #require(model.strengthOption)
         #expect(option.heading == "Based on a recent session · Gym")
         #expect(option.exerciseRows.first?.suggestion == "Easy option · 1 × 8, with at least 5 reps left")
@@ -320,12 +323,14 @@ struct TodayWeekTests {
                                  recordedStrength: OneStrengthRecording(activity: recording), calendar: calendar)
         await trained.load(now: now)
         #expect(trained.readinessLevel == .amber)
+        #expect(!trained.canRequestStrengthOption)
         #expect(trained.strengthOption == nil)
 
         let sick = TodayModel(sources: [source], checkIns: OneCheckIn(stored: CheckIn(day: today, isSick: true)),
                               workouts: store, calendar: calendar)
         await sick.load(now: now)
         #expect(sick.readinessLevel == .red)
+        #expect(!sick.canRequestStrengthOption)
         #expect(sick.strengthOption == nil)
 
         let overnight = StrengthSession(name: "Late lift", startedAt: now.addingTimeInterval(-45_000),
@@ -333,6 +338,7 @@ struct TodayWeekTests {
         let logged = TodayModel(sources: [source], workouts: TestStore(sessions: [overnight]), calendar: calendar)
         await logged.load(now: now)
         #expect(logged.readinessLevel == .amber)
+        #expect(!logged.canRequestStrengthOption)
         #expect(logged.strengthOption == nil)
     }
 
@@ -341,13 +347,15 @@ struct TodayWeekTests {
         let model = TodayModel(sources: [source], workouts: TestStore(), calendar: calendar)
         await model.load(now: now)
 
+        model.setShowsOptionalStrength(true)
         let option = try #require(model.strengthOption)
         #expect(option.heading == nil)
         #expect(option.exerciseRows.isEmpty)
         #expect(option.guidance.contains("at least four reps left"))
     }
 
-    @Test func amberDoubleDayUsesTheDatedRoutineAlongsideTheRun() async throws {
+    @Test(arguments: [6.0, 7.0, nil] as [Double?])
+    func amberDoubleDayUsesComparableEasySetsAlongsideTheRun(rpe: Double?) async throws {
         let squat = Exercise(name: "Squat", primaryMuscles: [.quadriceps])
         let routine = Routine(name: "Lower", exerciseIDs: [squat.id], prescriptions: [
             RoutinePrescription(exerciseID: squat.id, scheme: .linearLoad(sets: 4, reps: 6, targetRPE: 8)),
@@ -357,7 +365,13 @@ struct TodayWeekTests {
             name: rotation.name, startedAt: now.addingTimeInterval(-86_400), endedAt: now.addingTimeInterval(-82_800),
             entries: [ExerciseEntry(exerciseID: squat.id, sets: [WorkoutSet(weightKg: 70, reps: 6, rpe: 8)])]
         )
-        let store = TestStore(exercises: [squat], sessions: [previous], routines: [routine, rotation])
+        let easySets = Array(repeating: WorkoutSet(weightKg: 60, reps: 6, rpe: rpe), count: 2)
+        let easyStart = now.addingTimeInterval(-3 * 86_400)
+        let easySession = StrengthSession(
+            name: routine.name, startedAt: easyStart, endedAt: easyStart.addingTimeInterval(3_600),
+            entries: [ExerciseEntry(exerciseID: squat.id, sets: easySets)]
+        )
+        let store = TestStore(exercises: [squat], sessions: [easySession, previous], routines: [routine, rotation])
         let today = CalendarDay(now, calendar: calendar)
         let run = PlannedRun(day: today, purpose: .intervals, durationMinutes: 40)
         let assignment = PlannedStrength(day: today, routineID: routine.id)
@@ -380,12 +394,15 @@ struct TodayWeekTests {
         #expect(model.scheduledStrengthToday?.title == "Strength · Lower")
         #expect(model.scheduledRunsToday.map(\.id) == [run.id])
         #expect(model.runningOption?.advice == "Try 30 min at a conversational pace in place of the planned session.")
+        #expect(!model.canRequestStrengthOption)
         let comparison = try #require(model.strengthOption)
         #expect(comparison.heading == nil)
-        #expect(comparison.exerciseRows.first?.reference == "Usual target · 4 × 6")
-        #expect(comparison.exerciseRows.first?.suggestion == "Easy option · 2 × 6, with at least 4 reps left")
+        #expect(comparison.exerciseRows.first?.reference == "Usual target · 4 × 6 at 70 kg")
+        let suggestion = rpe == 6 ? "Easy option · 2 × 6, start at 60 kg with at least 4 reps left"
+            : "Easy option · 2 × 6, with at least 4 reps left"
+        #expect(comparison.exerciseRows.first?.suggestion == suggestion)
         #expect(await store.profile() == profile)
-        #expect(await store.sessions(from: .distantPast, to: now) == [previous])
+        #expect(Set(await store.sessions(from: .distantPast, to: now).map(\.id)) == [previous.id, easySession.id])
     }
 
     @Test func aDatedStrengthRestDaySuppressesTheUndatedSuggestion() async throws {
@@ -403,8 +420,24 @@ struct TodayWeekTests {
         #expect(model.readinessLevel == .amber)
         #expect(model.scheduledStrengthToday?.title == "Strength rest day")
         #expect(model.scheduledRunsToday.first?.title == "Running rest day")
+        #expect(!model.canRequestStrengthOption)
         #expect(model.strengthOption == nil)
         #expect(model.runningOption == nil)
+    }
+
+    @Test func aPendingRaceSuppressesTheOptionalLift() async throws {
+        let today = CalendarDay(now, calendar: calendar)
+        let goal = TrainingGoal(kind: .hybrid, nextRun: PlannedRun(day: today, purpose: .race))
+        let store = TestStore()
+        try await store.save(AthleteProfile(goal: goal))
+        let source = WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)])
+        let model = TodayModel(sources: [source], profiles: store, workouts: store, calendar: calendar)
+
+        await model.load(now: now)
+
+        #expect(model.readinessLevel == .amber)
+        #expect(!model.canRequestStrengthOption)
+        #expect(model.strengthOption == nil)
     }
 
     @Test(arguments: [true, false])

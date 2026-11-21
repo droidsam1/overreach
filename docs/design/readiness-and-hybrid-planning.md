@@ -6,8 +6,8 @@ Today should tell the athlete what to do, which signals matter, and how the sugg
 
 ## Continue from here
 
-**Next implementation in this area: compare today's strength session with an optional alternative.**
-See [task 5](#5-compare-against-todays-strength-session-and-offer-an-optional-alternative) for the remaining work.
+**Next implementation in this area: running and strength priorities.**
+See [tasks 6–8](#6-add-a-running-objective-to-hybrid-goals) for the remaining work.
 [Priorities](../priorities.md) ranks it against the rest of the open work.
 [Task 3](#3-ask-a-question-that-changes-the-decision) still needs clinical review before release.
 
@@ -86,12 +86,17 @@ the rule compared. The shared report uses the same rule result and research link
 
 ### 5. Compare against today's strength session and offer an optional alternative
 
-The first delivery ([#79](https://github.com/droidsam1/overreach/pull/79)) offers a light example on amber days using the next
-undated routine or a recent completed session. It suppresses the example after recorded strength work today.
-Calendar assignments, explicit rest days and accepting or moving a dated session remain open for task 7.
+The initial light example shipped in [#79](https://github.com/droidsam1/overreach/pull/79). A dated routine and
+strength rest days shipped in [#99](https://github.com/droidsam1/overreach/pull/99).
 
-- [ ] After task 4, resolve explicit plans for today, rest, an undated next routine, already completed sessions and unknown scheduling separately. If a dated strength assignment is needed, define its minimal representation with task 7's calendar semantics. Show original versus suggested sets, reps, effort or exercise when supportable. Reuse routine prescriptions and progression targets with a clear effort ceiling. When nothing is due and the athlete opts in, use the next routine as a reference and recent tolerated training to choose an example.
-- **Done when** an undated rotation is labelled “up next”, an optional session cannot silently advance it, and proposals for already completed sessions are suppressed. Applying or moving a planned session requires an explicit user action. Saving and retrying preserve identity and avoid duplicate activities. Cover planned rest, no active block, two sessions on one day and safety precedence.
+- [x] On amber days, compare a dated routine's progression target with lighter sets, reps and effort. Show a
+  starting weight when recent easy sets support it. Keep the comparison available alongside a scheduled run.
+- [x] With no strength session due, offer **I want to lift today**. Use the next undated routine, the athlete's
+  rotation or a familiar recent session as a reference. The example never starts a workout or advances the rotation.
+- [x] Suppress the example on strength rest days, after strength work recorded today and when readiness advises
+  skipping training. A race due today suppresses an optional lift.
+
+Applying or moving a dated session belongs to the calendar and adjustment flows in tasks 7 and 8.
 
 ### 6. Add a running objective to hybrid goals
 

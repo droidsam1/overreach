@@ -360,11 +360,17 @@ to an effort cue. Workouts already logged today or captured by the watch suppres
 
 The defaults are up to three exercises performed in the last 42 days, up to two working sets per exercise
 (roughly half the reference, with one as the minimum), repetitions within the reference and recent exposure,
-and at least four repetitions in reserve. A lower reference effort is respected. A qualitative load cue avoids
-assuming a specific weight will feel light today. The opt-in example creates no session and has no effect on
-the rotation. Without a plan, the reference is the next workout of the athlete's own rotation or the workout they
-choose (ADR-0033). Reduced volume and effort are used in deload practice. The studies support neither these exact
-numbers nor prescribing this example from HRV. Reviewed 2026-11-20. [Deload consensus](https://doi.org/10.1186/s40798-023-00633-0) · [Athlete survey](https://pubmed.ncbi.nlm.nih.gov/38499934/) · [Repetitions in reserve](https://pubmed.ncbi.nlm.nih.gov/27531969/)
+and at least four repetitions in reserve. A lower reference effort is respected. A starting load requires a
+recent session with enough working sets at or below the effort ceiling, at least as many reps per set, and
+recorded weights at or below the lowest reference weight. Use the lightest qualifying weight in that session.
+When those data are missing, use the effort cue. Today's effort takes precedence over the starting load.
+
+Today compares a dated routine on amber days. Without one, the athlete asks for the example and can use the next
+routine, the next workout in their rotation or a recent workout (ADR-0033). The example creates no session and
+leaves the rotation in place. An explicit strength rest day, a pending race today without a dated lift, or
+strength work already recorded today suppresses the opt-in. Reduced volume and effort are used in deload practice.
+The studies support neither the exact thresholds nor prescribing this example from HRV. Reviewed 2026-11-21.
+[Deload consensus](https://doi.org/10.1186/s40798-023-00633-0) · [Athlete survey](https://pubmed.ncbi.nlm.nih.gov/38499934/) · [Repetitions in reserve](https://pubmed.ncbi.nlm.nih.gov/27531969/)
 
 ### `plan-adherence` — heuristic
 A break is 14 days without strength sessions; low adherence is under two thirds of planned sessions over the last

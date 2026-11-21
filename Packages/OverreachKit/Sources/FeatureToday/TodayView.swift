@@ -40,8 +40,18 @@ public struct TodayView: View {
                     if let advice = model.deloadAdvice {
                         deload(advice)
                     }
-                    if model.scheduledStrengthToday == nil, let option = model.strengthOption {
-                        DisclosureGroup("If you want to lift today") { strengthDetails(option) }
+                    if model.canRequestStrengthOption {
+                        DisclosureGroup(
+                            "I want to lift today",
+                            isExpanded: Binding(
+                                get: { model.showsOptionalStrength },
+                                set: { model.setShowsOptionalStrength($0) }
+                            )
+                        ) {
+                            if let option = model.strengthOption {
+                                strengthDetails(option)
+                            }
+                        }
                     }
                     if model.showsCheckIn {
                         checkIn
