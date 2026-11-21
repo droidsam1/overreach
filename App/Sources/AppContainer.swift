@@ -184,9 +184,13 @@ final class AppContainer {
 
     func makeHistoryModel() -> HistoryModel {
         let key = "history.runMatchChoices"
+        let strengthKey = "history.strengthMatchChoices"
         let defaults = UserDefaults.standard
         let choices = defaults.data(forKey: key).flatMap {
             try? JSONDecoder().decode([RunMatchPair: RunMatchChoice].self, from: $0)
+        } ?? [:]
+        let strengthChoices = defaults.data(forKey: strengthKey).flatMap {
+            try? JSONDecoder().decode([StrengthMatchPair: StrengthMatchChoice].self, from: $0)
         } ?? [:]
         return HistoryModel(
             workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
@@ -195,6 +199,12 @@ final class AppContainer {
             saveRunChoices: { choices in
                 if let data = try? JSONEncoder().encode(choices) {
                     defaults.set(data, forKey: key)
+                }
+            },
+            strengthChoices: strengthChoices,
+            saveStrengthChoices: { choices in
+                if let data = try? JSONEncoder().encode(choices) {
+                    defaults.set(data, forKey: strengthKey)
                 }
             }
         )

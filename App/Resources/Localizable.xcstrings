@@ -7056,6 +7056,23 @@
         }
       }
     },
+    "Keep workouts separate": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantener los entrenamientos separados"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manter os adestramentos separados"
+          }
+        }
+      }
+    },
     "Keep your planned running rest day.": {
       "extractionState": "manual",
       "localizations": {
@@ -7681,6 +7698,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vincular estas carreiras"
+          }
+        }
+      }
+    },
+    "Link these workouts": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vincular estos entrenamientos"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vincular estes adestramentos"
           }
         }
       }
@@ -9415,6 +9449,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non hai ningunha descarga nin pausa de forza no teu historial."
+          }
+        }
+      }
+    },
+    "No strength matches to review": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay coincidencias de fuerza que revisar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai coincidencias de forza que revisar"
           }
         }
       }
@@ -12033,6 +12084,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Revisar o adestramento gardado"
+          }
+        }
+      }
+    },
+    "Review strength matches": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar coincidencias de fuerza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar coincidencias de forza"
           }
         }
       }
@@ -16045,6 +16113,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Desvincular as carreiras"
+          }
+        }
+      }
+    },
+    "Undo strength match": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deshacer la coincidencia de fuerza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desfacer a coincidencia de forza"
           }
         }
       }

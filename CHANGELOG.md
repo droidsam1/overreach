@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Review ambiguous Garmin strength matches in History, link or separate workouts, and undo matches from session details.
 - Hybrid goals have a Running first, Strength first or Balanced priority in Plan. It is saved with the goal and
   shared in the context export.
 - History lets you review competing Garmin and Apple Health run matches, link originals and undo a link.

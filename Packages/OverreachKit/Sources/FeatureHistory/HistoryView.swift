@@ -67,6 +67,7 @@ public struct HistoryView: View {
                 StatusLabel(title: warning, tone: .caution)
             }
             RunMatchReviewLink(history: model, calendar: false)
+            StrengthMatchReviewLink(history: model, calendar: false)
             ForEach(model.rows) { row in
                 switch row {
                 case let .session(summary):
@@ -225,6 +226,11 @@ struct SessionDetailView: View {
             SessionInfo(detail: detail)
             if let recording = detail.recording {
                 RecordedStrengthMetrics(recording: recording)
+                Section {
+                    Button("Undo strength match") {
+                        model.separateStrengthMatch(for: sessionID)
+                    }
+                }
             }
             ForEach(detail.entries) { entry in
                 Section(entry.name) {
