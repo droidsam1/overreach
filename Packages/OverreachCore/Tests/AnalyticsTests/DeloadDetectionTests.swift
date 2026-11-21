@@ -175,6 +175,26 @@ struct DeloadDetectionTests {
         #expect(decoded.deloadDecisions.first?.discipline == nil)
     }
 
+    @Test func anUnansweredPeriodShowsRecordedActivityAndTypicalWeeklySets() throws {
+        var light = session(32, rpe: 6)
+        light.entries[0].sets.removeLast(2)
+        let sessions = [0, 7, 14, 21, 28, 36].map { session($0) } + [light]
+        let recordedRun = run(33, minutes: 20, effect: 2)
+        var mirroredRun = recordedRun
+        mirroredRun.source = .garmin
+        let periods = DeloadDetection.periods(
+            sessions: sessions, runs: [recordedRun, mirroredRun], profile: .init(), today: day(37), calendar: calendar
+        )
+        let period = try #require(periods.first { $0.needsConfirmation })
+        let activity = try #require(period.recordedActivity)
+        #expect(period.start == day(29))
+        #expect(period.end == day(35))
+        #expect(activity.strengthSessions == 1)
+        #expect(activity.relativeSets == 1.0 / 3)
+        #expect(activity.runs == 1)
+        #expect(!activity.hasIncompleteRunData)
+    }
+
     @Test func missingRunningDataRequiresAStoredDecision() throws {
         let sessions = [session(22), session(25), session(28), session(32)]
         var profile = AthleteProfile(goal: TrainingGoal(kind: .hybrid), countsBreaksAutomatically: false)
@@ -184,6 +204,9 @@ struct DeloadDetectionTests {
         }
         let period = try #require(analyse().deloads.last)
         #expect(period.needsConfirmation)
+        #expect(period.recordedActivity?.strengthSessions == 0)
+        #expect(period.recordedActivity?.runs == 0)
+        #expect(period.recordedActivity?.hasIncompleteRunData == true)
         #expect(analyse().weeksSinceDeload == nil)
         profile.deloadDecisions = [
             DeloadDecision(start: period.start, end: period.end, reason: period.reason, accepted: false),

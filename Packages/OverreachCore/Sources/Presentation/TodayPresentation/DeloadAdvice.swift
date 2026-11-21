@@ -27,8 +27,7 @@ public struct DeloadAdvice: Hashable, Sendable {
         public let end: CalendarDay
         public let reason: DeloadReason
         public let discipline: TrainingDiscipline?
-        /// "No training logged from Mon 3 Nov to Tue 11 Nov."
-        public let text: String
+        public let details: DeloadQuestionDetails
     }
 
     public let state: State
@@ -49,16 +48,11 @@ public struct DeloadAdvice: Hashable, Sendable {
         case let .inProgress(lastDay):
             return DeloadAdvice(state: .inProgress(lastDay: lastDay.startDate(in: calendar)), planText: planText)
         case let .confirmBreak(pending):
-            let style = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
-                .weekday(.abbreviated).day().month(.abbreviated)
-            let start = pending.start.startDate(in: calendar).formatted(style)
-            let end = pending.end.startDate(in: calendar).formatted(style)
-            let text = pending.reason == .noTraining
-                ? L10n.format("No training logged from {1} to {2}.", start, end)
-                : L10n.format("Much lighter training than usual from {1} to {2}.", start, end)
             return DeloadAdvice(
-                state: .confirmBreak(DetectedBreak(start: pending.start, end: pending.end, reason: pending.reason,
-                                                   discipline: pending.discipline, text: text)),
+                state: .confirmBreak(DetectedBreak(
+                    start: pending.start, end: pending.end, reason: pending.reason, discipline: pending.discipline,
+                    details: DeloadQuestionDetails(period: pending, calendar: calendar, format: format)
+                )),
                 planText: planText
             )
         case let .proposed(proposal, walkingIncluded):

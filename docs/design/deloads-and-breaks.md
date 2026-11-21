@@ -1,6 +1,6 @@
 # Deloads, breaks and stalled lifts
 
-Status: tasks 1–3 implemented (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
+Status: tasks 1–4 implemented (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
 ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-practice`, `deload-recovery-signals`,
 `unplanned-deload`, `stall-heuristics` in [the evidence register](../evidence.md).
 
@@ -8,7 +8,7 @@ ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-pr
 
 Take the first task below whose boxes are not all checked. Each task is one pull request. Task 1 is done by
 [training services task 2](training-services.md#2-recovery-status); build tasks 2–6 on `TrainingServices` once it
-exists. Continue with task 4. Task 5 explains the Today card that
+exists. Continue with task 5. It explains the Today card that
 [#94](https://github.com/droidsam1/overreach/issues/94) then places in the page. Task 6 supplies lift findings
 to [Recovery & Progress](https://github.com/droidsam1/overreach/issues/126). Record checks that need an iPhone
 in [#21](https://github.com/droidsam1/overreach/issues/21).
@@ -113,14 +113,15 @@ Long breaks trigger a return period, and lower-load weeks remain available for r
 
 ### 4. Ask about the latest periods only
 
-- [ ] Ask about at most the two newest ambiguous periods after the last recovery (task 1) and within
-  12 weeks. Keep older unreviewed periods out of the calculation and available under "Older periods".
-- [ ] Each question shows what was logged, so the athlete can answer without remembering: "8–14 Oct: 2 strength
-  sessions, about 40 % of your usual sets; no runs." Buttons: "Yes, it was rest" and "No".
-- [ ] One line says why the app asks: the answer sets when the next deload is due.
-- [ ] Today's “Did you already take a break?” and any Plan prompt use the same selection. Link older periods
-  from the recovery history once [#126](https://github.com/droidsam1/overreach/issues/126) moves it.
-- [ ] Tests: five ambiguous periods in a year give at most two questions, newest first.
+- [x] Ask about the two newest unanswered periods that fall entirely within 12 weeks and start after the last
+  strength recovery. Keep the other unanswered periods under **Older periods** in Plan's recovery history.
+- [x] Show the dates, recorded strength sessions and runs, and the share of usual weekly working sets when
+  comparable set counts are available. Flag incomplete run data. Offer **Yes, it was rest** and **No**.
+- [x] Explain how the answer affects deload timing or, for a running-only period, running recovery history.
+- [x] Today and Plan use the same selection. Today asks about the latest strength candidate if the answer would
+  change a proposed deload. Keep the **Older periods** entry when [#126](https://github.com/droidsam1/overreach/issues/126)
+  moves recovery history.
+- [x] Tests cover five ambiguous periods, the 12-week boundary, and a more recent recovery.
 
 Finish line: the default flow asks about at most two recent periods, both within the last 12 weeks.
 

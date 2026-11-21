@@ -145,12 +145,14 @@ public struct TodayView: View {
                 Label("Did you already take a break?", systemImage: "questionmark.circle.fill")
                     .font(.headline)
                     .foregroundStyle(.orange)
-                Text(period.text).font(.subheadline)
-                Text("If it was a rest or an easier week, it counts as your deload and no new one is needed yet.")
+                Text(period.details.dates).font(.subheadline)
+                if let strength = period.details.strength { Text(strength).font(.subheadline) }
+                if let running = period.details.running { Text(running).font(.subheadline) }
+                Text(period.details.reason)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                 HStack {
-                    Button("Yes, count it") { Task { await model.reviewBreak(accepted: true) } }
+                    Button("Yes, it was rest") { Task { await model.reviewBreak(accepted: true) } }
                         .buttonStyle(.borderedProminent)
                     Button("No") { Task { await model.reviewBreak(accepted: false) } }
                         .buttonStyle(.bordered)

@@ -2,11 +2,19 @@ import Domain
 import Foundation
 
 public struct DetectedDeload: Hashable, Sendable {
+    public struct RecordedActivity: Hashable, Sendable {
+        public let strengthSessions: Int
+        public let relativeSets: Double?
+        public let runs: Int
+        public let hasIncompleteRunData: Bool
+    }
+
     public let start: CalendarDay
     public let end: CalendarDay
     public let reason: DeloadReason
     public let needsConfirmation: Bool
     public let discipline: TrainingDiscipline?
+    public let recordedActivity: RecordedActivity?
 
     public var evidence: EvidenceReference {
         EvidenceReference(
@@ -17,13 +25,14 @@ public struct DetectedDeload: Hashable, Sendable {
 
     public init(
         start: CalendarDay, end: CalendarDay, reason: DeloadReason, needsConfirmation: Bool,
-        discipline: TrainingDiscipline? = nil
+        discipline: TrainingDiscipline? = nil, recordedActivity: RecordedActivity? = nil
     ) {
         self.start = start
         self.end = end
         self.reason = reason
         self.needsConfirmation = needsConfirmation
         self.discipline = discipline
+        self.recordedActivity = recordedActivity
     }
 }
 
@@ -52,6 +61,7 @@ public enum DeloadDetection {
 
     private struct Strength {
         let sets: Int
+        let hasRecordedSets: Bool
         let hasEffort: Bool
         let hard: Bool
         let planFraction: Double?
@@ -105,7 +115,42 @@ public enum DeloadDetection {
                 separateDisciplines: profile.countsBreaksAutomatically
             ), today: today, calendar: calendar
         )
-        return reviewed(breaks + lightWeeks, profile: profile, today: today, calendar: calendar)
+        return reviewed(breaks + lightWeeks, profile: profile, today: today, calendar: calendar).map { period in
+            guard period.needsConfirmation else { return period }
+            return DetectedDeload(
+                start: period.start, end: period.end, reason: period.reason, needsConfirmation: true,
+                discipline: period.discipline, recordedActivity: recordedActivity(
+                    in: period.start...period.end, history: recent, missingRuns: missingRuns, calendar: calendar
+                )
+            )
+        }
+    }
+
+    private static func recordedActivity(
+        in range: ClosedRange<CalendarDay>, history: [CalendarDay: Day], missingRuns: Bool, calendar: Calendar
+    ) -> DetectedDeload.RecordedActivity {
+        let entries = history.filter { range.contains($0.key) }.map(\.value)
+        let strength = entries.flatMap(\.strength)
+        let priorWeeks = (1...4).map { weeksAgo in
+            (0..<week).compactMap { offset in
+                history[range.lowerBound.adding(days: offset - weeksAgo * week, calendar: calendar)]
+            }.flatMap(\.strength)
+        }
+        let usualSets = baseline(priorWeeks.compactMap { sessions in
+            guard sessions.allSatisfy(\.hasRecordedSets) else { return nil }
+            return Double(totalSets(sessions))
+        })
+        let days = PlanReviewer.days(from: range.lowerBound, to: range.upperBound, calendar: calendar) + 1
+        let relativeSets = strength.isEmpty || !strength.allSatisfy(\.hasRecordedSets) ? nil
+            : usualSets.map { Double(totalSets(strength)) / Double(days) * Double(week) / $0 }
+        return DetectedDeload.RecordedActivity(
+            strengthSessions: strength.count, relativeSets: relativeSets,
+            runs: entries.reduce(0) { $0 + $1.runs.count }, hasIncompleteRunData: missingRuns
+        )
+    }
+
+    private static func totalSets(_ sessions: [Strength]) -> Int {
+        sessions.reduce(0) { $0 + $1.sets }
     }
 
     private static func runningBreaks(
@@ -271,9 +316,9 @@ public enum DeloadDetection {
         let runs = active.flatMap(\.runs)
         guard !active.isEmpty, !strength.contains(where: \.hard) else { return nil }
         let prior = (1...4).map(entries)
-        let usualSets = baseline(prior.map { Double($0.flatMap(\.strength).reduce(0) { $0 + $1.sets }) })
+        let usualSets = baseline(prior.map { Double(totalSets($0.flatMap(\.strength))) })
         let usualRunSeconds = baseline(prior.map { $0.flatMap(\.runs).reduce(0) { $0 + $1.durationSeconds } })
-        let relativeSets = usualSets.map { Double(strength.reduce(0) { $0 + $1.sets }) / $0 }
+        let relativeSets = usualSets.map { Double(totalSets(strength)) / $0 }
         let fractions = strength.compactMap(\.planFraction)
         let relativePlan = !fractions.isEmpty && fractions.count == strength.count
             ? fractions.reduce(0, +) / Double(fractions.count) : nil
@@ -341,6 +386,7 @@ public enum DeloadDetection {
             }
             days[day, default: Day()].strength.append(Strength(
                 sets: max(1, working.count),
+                hasRecordedSets: !working.isEmpty,
                 hasEffort: session.sessionRPE != nil || (!working.isEmpty && working.allSatisfy { $0.rpe != nil }),
                 hard: effort.contains { $0 > 7 } || working.contains { $0.kind == .failure || ($0.rpe ?? 0) > 7 },
                 planFraction: ratio
@@ -358,7 +404,9 @@ public enum DeloadDetection {
             let day = CalendarDay(recording.startedAt, calendar: calendar)
             guard day < today else { continue }
             // A watch-only session proves training took place. Its lifting effort and volume are unknown.
-            days[day, default: Day()].strength.append(Strength(sets: 0, hasEffort: false, hard: true, planFraction: nil))
+            days[day, default: Day()].strength.append(
+                Strength(sets: 0, hasRecordedSets: false, hasEffort: false, hard: true, planFraction: nil)
+            )
         }
         let validRuns = runs.filter { $0.durationSeconds.isFinite && $0.durationSeconds > 0 }
         for run in RunDeduplication.removingDuplicates(validRuns) {

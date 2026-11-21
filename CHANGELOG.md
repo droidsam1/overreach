@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today and Plan ask about the latest lighter training periods, with the strength and running activity recorded
+  for those dates. Plan offers up to two recent questions and keeps the rest under Older periods.
 - Count weeks without recorded training as rest separately for strength and running. After longer breaks, Today
   allows time to rebuild strength training before proposing a deload and suggests an easy return to running (ADR-0037).
 - Walking beyond the usual day can contribute to the weekly strength load comparison used for deload advice.

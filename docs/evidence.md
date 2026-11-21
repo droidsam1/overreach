@@ -217,8 +217,10 @@ of reduced training stress and volume. Retrospective detection in hybrid athlete
 Overreach checks seven complete calendar days against recent training and, for matched strength routines,
 reconstructed progression targets. The 50% and 65% load ratios, effort cutoffs, running-duration fallback,
 and one-week grace period for repeat advice are product heuristics. A break in logging can require
-confirmation before it counts as recovery; Today asks when the answer would change a deload proposal, and
-performance drops only compare sessions since the last recovery period (ADR-0033). The last recovery is the latest
+confirmation before it counts as recovery. Plan prioritizes up to two unanswered periods from the last 12 weeks
+after the last strength recovery. Today uses the same selection and asks when the answer would change a deload
+proposal. The display limit and review window are product heuristics. Performance drops only compare sessions
+since the last recovery period (ADR-0033). The last recovery is the latest
 accepted deload week or counted period (`RecoveryHistory`), and no deload is proposed in the 7 days after it.
 Reviewed 2026-11-21.
 

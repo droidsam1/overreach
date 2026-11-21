@@ -44,6 +44,30 @@ struct RecoveryHistoryTests {
         )?.lastDay == day(-24))
     }
 
+    @Test func asksAboutOnlyTheTwoNewestUnansweredPeriods() {
+        let five = [
+            period(-64, -58, confirmed: false), period(-210, -204, confirmed: false),
+            period(-31, -25, confirmed: false), period(-15, -9, confirmed: false),
+            period(-45, -39, confirmed: false),
+        ]
+        let questions = RecoveryHistory.recentQuestions(in: five, after: nil, today: today, calendar: calendar)
+        #expect(questions.map(\.start) == [day(-15), day(-31)])
+    }
+
+    @Test func requiresCompletePeriodsWithinTwelveWeeksAndAfterRecovery() {
+        let boundary = period(-84, -78, confirmed: false)
+        let old = period(-85, -79, confirmed: false)
+        let unfinished = period(-6, 0, confirmed: false)
+        let confirmed = period(-25, -19, confirmed: true)
+        let periods = [boundary, old, unfinished, confirmed]
+        let withoutRecovery = RecoveryHistory.recentQuestions(in: periods, after: nil, today: today, calendar: calendar)
+        #expect(withoutRecovery == [boundary])
+
+        let recovery = LastRecovery(lastDay: day(-84), kind: .deloadWeek)
+        let questions = RecoveryHistory.recentQuestions(in: periods, after: recovery, today: today, calendar: calendar)
+        #expect(questions.isEmpty)
+    }
+
     @Test func nothingBeforeTodayMeansNoRecovery() {
         #expect(RecoveryHistory.lastRecovery(deloads: [], detected: [], before: today, calendar: calendar) == nil)
     }

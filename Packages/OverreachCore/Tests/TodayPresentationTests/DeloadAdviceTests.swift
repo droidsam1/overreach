@@ -426,8 +426,14 @@ struct DeloadAdviceTests {
             Issue.record("expected the break question")
             return
         }
-        #expect(period.text.hasPrefix("No training logged from "))
+        let plan = PlanAnalysis.run(
+            profile: try await store.profile(), sessions: try await store.sessions(from: .distantPast, to: now),
+            exercises: [:], settings: [:], now: now, calendar: calendar
+        )
+        #expect(period.start == plan.recentDeloadQuestions.first?.start)
         #expect(period.end == today.adding(days: -1, calendar: calendar))
+        #expect(period.details.strength == "Strength sessions: 0.")
+        #expect(period.details.running == "Runs recorded: 0. Running data may be incomplete.")
         #expect(model.deloadSession == nil)
         #expect(model.deloadHowTo == nil)
 

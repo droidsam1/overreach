@@ -3486,23 +3486,6 @@
         }
       }
     },
-    "Count as deload": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Contar como descarga"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Contar como descarga"
-          }
-        }
-      }
-    },
     "Count breaks as rest automatically": {
       "extractionState": "manual",
       "localizations": {
@@ -3533,23 +3516,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Contalos igualmente"
-          }
-        }
-      }
-    },
-    "Count this period as a deload?": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "¿Contar este periodo como descarga?"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Contar este período como descarga?"
           }
         }
       }
@@ -6189,23 +6155,6 @@
         }
       }
     },
-    "If it was a rest or an easier week, it counts as your deload and no new one is needed yet.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Si fue un descanso o una semana más suave, cuenta como tu descarga y aún no necesitas otra."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Se foi un descanso ou unha semana máis suave, conta como a túa descarga e aínda non precisas outra."
-          }
-        }
-      }
-    },
     "If you run today, keep it easy and at a conversational pace.": {
       "extractionState": "manual",
       "localizations": {
@@ -7974,23 +7923,6 @@
         }
       }
     },
-    "Much lighter training than usual from {1} to {2}.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Entrenamiento mucho más ligero de lo habitual del {1} al {2}."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Adestramento moito máis lixeiro do habitual do {1} ao {2}."
-          }
-        }
-      }
-    },
     "Muscle": {
       "extractionState": "manual",
       "localizations": {
@@ -8807,23 +8739,6 @@
         }
       }
     },
-    "No training logged from {1} to {2}.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No hay entrenamientos registrados del {1} al {2}."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Non hai adestramentos rexistrados do {1} ao {2}."
-          }
-        }
-      }
-    },
     "No training logged yet.": {
       "extractionState": "manual",
       "localizations": {
@@ -9092,6 +9007,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aceptar"
+          }
+        }
+      }
+    },
+    "Older periods": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Periodos anteriores"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Períodos anteriores"
           }
         }
       }
@@ -11408,23 +11340,6 @@
         }
       }
     },
-    "Running may have been lighter than usual": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Es posible que las carreras fueran más suaves de lo habitual"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "É posible que as carreiras fosen máis suaves do habitual"
-          }
-        }
-      }
-    },
     "Running pain worsened or affected your stride": {
       "extractionState": "manual",
       "localizations": {
@@ -11489,6 +11404,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carreiras e forza do reloxo"
+          }
+        }
+      }
+    },
+    "Runs recorded: {1}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreras registradas: {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreiras rexistradas: {1}."
           }
         }
       }
@@ -13240,6 +13172,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Día de descanso de forza"
+          }
+        }
+      }
+    },
+    "Strength sessions: {1}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesiones de fuerza: {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesións de forza: {1}."
+          }
+        }
+      }
+    },
+    "Strength sessions: {1}. About {2} of your usual weekly working sets.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesiones de fuerza: {1}. Hiciste cerca del {2} de tus series de trabajo semanales habituales."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesións de forza: {1}. Fixeches preto do {2} das túas series de traballo semanais habituais."
           }
         }
       }
@@ -15573,6 +15539,23 @@
         }
       }
     },
+    "Was this a rest period?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Fue un periodo de descanso?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foi un período de descanso?"
+          }
+        }
+      }
+    },
     "Watch estimate, follow the trend": {
       "extractionState": "manual",
       "localizations": {
@@ -16083,19 +16066,19 @@
         }
       }
     },
-    "Yes, count it": {
+    "Yes, it was rest": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sí, cuéntalo"
+            "value": "Sí, descansé"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Si, cóntao"
+            "value": "Si, descansei"
           }
         }
       }
@@ -16334,6 +16317,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "A túa chave de Garmin caducou. Crea unha nova para seguir importando."
+          }
+        }
+      }
+    },
+    "Your answer helps set when the next deload is due.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu respuesta ayuda a decidir cuándo toca la próxima descarga."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa resposta axuda a decidir cando toca a próxima descarga."
+          }
+        }
+      }
+    },
+    "Your answer updates your running recovery history.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu respuesta actualiza tu historial de recuperación en carrera."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa resposta actualiza o teu historial de recuperación na carreira."
           }
         }
       }
@@ -16861,6 +16878,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} ({2})"
+          }
+        }
+      }
+    },
+    "{1} Running data may be incomplete.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} Puede que falten datos de carrera."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} Pode que falten datos de carreira."
           }
         }
       }
