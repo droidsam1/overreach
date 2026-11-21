@@ -36,6 +36,7 @@ struct HealthAggregationTests {
         #expect(night.remSleepSeconds == 1.25 * 3_600)
         #expect(abs((night.awakeSeconds ?? 0) - 15 * 60) < 0.001)
         #expect(night.sources == [.appleHealth])
+        #expect(night.sleepInterval == date(18, 23, 30)...date(19, 6, 30))  // the asleep span, not time in bed
         #expect(!days.contains { $0.day == CalendarDay(year: 2026, month: 11, day: 18) })
     }
 

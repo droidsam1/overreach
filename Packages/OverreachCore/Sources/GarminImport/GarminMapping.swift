@@ -30,6 +30,10 @@ public enum GarminMapping {
         for night in sleep where night.sleepSeconds != nil {
             update(night.day) {
                 $0.sleepSeconds = night.sleepSeconds
+                if let start = night.start, let end = night.end, start < end {
+                    $0.sleepStart = start
+                    $0.sleepEnd = end
+                }
                 $0.deepSleepSeconds = night.deepSeconds
                 $0.lightSleepSeconds = night.lightSeconds
                 $0.remSleepSeconds = night.remSeconds

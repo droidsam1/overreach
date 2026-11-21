@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today's HRV explanation uses when you actually slept: a run that ends after midnight still counts before last
+  night's reading. A recorded run you linked to a planned race is marked as a race, and the explanation shows your
+  comparable HRV before and after it (ADR-0034).
 - Today asks one optional check-in question about symptoms, fatigue, running pain or unusual stress when the
   answer can inform the session. Editing the response updates today's advice, and the new answers stay local.
 - Readiness records every input it read: where it came from, whether it was compared, missing, stale or out of
