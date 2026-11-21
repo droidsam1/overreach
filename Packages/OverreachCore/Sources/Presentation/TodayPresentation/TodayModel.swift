@@ -21,6 +21,8 @@ public final class TodayModel {
     public private(set) var metrics: DailyMetrics?
     /// The last 7 days (today included), merged across sources, oldest first. Days without data are left out.
     public private(set) var week: [DailyMetrics] = []
+    /// The week plus the week before it, so readings before an early race in the week can be compared.
+    private var recentNights: [DailyMetrics] = []
     public private(set) var readiness = Readiness(level: .unknown, reasons: [.missingData])
     public private(set) var isLoading = false
     /// Sources that failed during the last load. The screen still shows whatever the others returned.
@@ -153,7 +155,8 @@ public final class TodayModel {
     public var readinessTrainingContext: ReadinessTrainingContext? { isLoading ? nil : explanation.trainingContext }
 
     private var explanation: ReadinessExplanation {
-        ReadinessExplanation(readiness: readiness, today: metrics, week: week, training: recentTrainingDays,
+        ReadinessExplanation(readiness: readiness, today: metrics, week: week, nights: recentNights,
+                             training: recentTrainingDays,
                              calendar: calendar, format: format)
     }
 
@@ -368,6 +371,7 @@ public final class TodayModel {
         loadedDay = today
         let history = byDay.values.filter { !$0.sources.isEmpty }.sorted { $0.day < $1.day }
         week = history.filter { $0.day >= weekStart }
+        recentNights = history.filter { $0.day >= weekStart.adding(days: -7, calendar: calendar) }
         metrics = byDay[today].flatMap { $0.sources.isEmpty ? nil : $0 }
         failedSources = failures
         failureReasons = reasons
@@ -408,7 +412,9 @@ public final class TodayModel {
         let recentRecordings = (recordings ?? []).filter { $0.endedAt >= start }
         recentTrainingDays = RecentTraining(calendar: calendar, format: format).days(
             in: range, through: now, metrics: week, checkIns: currentCheckIn + (previousCheckIns ?? []),
-            runs: runResult.activities, sessions: sessions ?? [], recordings: recentRecordings, exercises: allExercises ?? []
+            runs: runResult.activities, sessions: sessions ?? [], recordings: recentRecordings,
+            exercises: allExercises ?? [],
+            races: (profile?.goal?.scheduledRuns ?? []).compactMap { $0.purpose == .race ? $0.completion : nil }
         )
         let today = range.upperBound
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }

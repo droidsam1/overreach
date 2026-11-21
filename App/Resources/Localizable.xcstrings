@@ -2228,6 +2228,57 @@
         }
       }
     },
+    "Confirmed race on {1}. Comparable HRV ({2}) before it: {3}. After it: {4}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición confirmada el {1}. VFC comparable ({2}) antes: {3}. Después: {4}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición confirmada o {1}. VFC comparable ({2}) antes: {3}. Despois: {4}."
+          }
+        }
+      }
+    },
+    "Confirmed race on {1}. Comparable HRV ({2}) before it: {3}. No comparable reading after it yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición confirmada el {1}. VFC comparable ({2}) antes: {3}. Aún no hay ninguna medición comparable después."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición confirmada o {1}. VFC comparable ({2}) antes: {3}. Aínda non hai ningunha medición comparable despois."
+          }
+        }
+      }
+    },
+    "Confirmed race on {1}. No comparable HRV ({2}) reading before it. After it: {3}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición confirmada el {1}. No hay ninguna medición comparable de VFC ({2}) antes. Después: {3}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición confirmada o {1}. Non hai ningunha medición comparable de VFC ({2}) antes. Despois: {3}."
+          }
+        }
+      }
+    },
     "Connect": {
       "extractionState": "manual",
       "localizations": {
@@ -9555,6 +9606,23 @@
         }
       }
     },
+    "Race: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición: {1}"
+          }
+        }
+      }
+    },
     "Raw data, no hidden instructions": {
       "extractionState": "manual",
       "localizations": {
@@ -14961,6 +15029,23 @@
         }
       }
     },
+    "Workouts in the 24 hours before the night of your latest comparable HRV reading ({1}).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamientos de las 24 horas anteriores a la noche de tu última medición comparable de VFC ({1})."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramentos das 24 horas anteriores á noite da túa última medición comparable de VFC ({1})."
+          }
+        }
+      }
+    },
     "Workouts recorded on {1}, the day before your latest comparable HRV reading.": {
       "extractionState": "manual",
       "localizations": {
@@ -14974,6 +15059,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Adestramentos rexistrados o {1}, o día anterior á túa última medición comparable de VFC."
+          }
+        }
+      }
+    },
+    "Workouts since your last sleep, before the night of your latest comparable HRV reading ({1}).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamientos desde que te despertaste hasta la noche de tu última medición comparable de VFC ({1})."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramentos desde que espertaches ata a noite da túa última medición comparable de VFC ({1})."
           }
         }
       }
@@ -15909,6 +16011,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} min · {2} series de traballo · {3}"
+          }
+        }
+      }
+    },
+    "{1} ms on {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} ms el {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} ms o {2}"
           }
         }
       }

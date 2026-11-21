@@ -76,6 +76,8 @@ public enum HealthAggregation {
             let night = nights[day]
             if let night {
                 metrics.sleepSeconds = night.asleep
+                metrics.sleepStart = night.window.lowerBound
+                metrics.sleepEnd = night.window.upperBound
                 metrics.deepSleepSeconds = night.deep
                 metrics.remSleepSeconds = night.rem
                 metrics.lightSleepSeconds = night.light

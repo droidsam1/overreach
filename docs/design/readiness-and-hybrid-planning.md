@@ -6,7 +6,7 @@ Today should tell the athlete what to do, which signals matter, and how the sugg
 
 ## Continue from here
 
-**Next delivery: ask a question that changes the decision.** Task 1 is done, so [task 3](#3-ask-a-question-that-changes-the-decision) can extend the check-in from the audited inputs. `Readiness.inputs` says which signals were compared, stale or missing, so a question can target the input that would change today's action. [Task 2](#2-join-recovery-with-completed-training) is also unblocked and can run in parallel.
+**Next delivery: ask a question that changes the decision.** Task 1 is done, so [task 3](#3-ask-a-question-that-changes-the-decision) can extend the check-in from the audited inputs. `Readiness.inputs` says which signals were compared, stale or missing, so a question can target the input that would change today's action. [Task 2](#2-join-recovery-with-completed-training) is done ([ADR-0034](../adr/0034-reading-timing-and-race-tags.md)); after task 3, continue with [task 4](#4-ship-the-explanatory-card-in-today).
 
 Start with `ReadinessRules.contextQuestion`, `CheckIn.Context` and the check-in flow in `TodayModel`. Keep the old check-in format readable (ADR-0018). [Input audit](../adr/0032-auditable-readiness-inputs.md) · [HRV series](../adr/0025-hrv-one-series-per-metric.md)
 
@@ -53,10 +53,11 @@ Coverage counts and missing-data reasons shipped in [#73](https://github.com/dro
 ### 2. Join recovery with completed training
 
 The first delivery ([#75](https://github.com/droidsam1/overreach/pull/75)) groups seven days of completed runs, strength workouts,
-recovery and check-ins by local date. Confirmed race tags and comparisons based on the actual sleep or reading
-interval remain open. Calendar-day order alone supports a visual comparison across days.
+recovery and check-ins by local date. [ADR-0034](../adr/0034-reading-timing-and-race-tags.md) orders workouts by
+the night behind each sleep reading, tags runs the athlete linked to a planned race, and compares the closest
+comparable readings before and after the latest race. Within-person patterns across repeated bouts remain open.
 
-- [ ] After task 1, build a calendar-aligned timeline from metrics, check-ins, logged/imported strength and runs. Reuse History's source-matching behavior where applicable so mirrored workouts are counted once. Capture local start/end timing, run time/distance/effort where available and leg work from known muscle mappings and recorded sets/effort. Represent unclassified activities explicitly and allow confirmed race tags. Keep planned sessions out of completed load.
+- [x] After task 1, build a calendar-aligned timeline from metrics, check-ins, logged/imported strength and runs. Reuse History's source-matching behavior where applicable so mirrored workouts are counted once. Capture local start/end timing, run time/distance/effort where available and leg work from known muscle mappings and recorded sets/effort. Represent unclassified activities explicitly and allow confirmed race tags. Keep planned sessions out of completed load.
 - **Done when** fixtures cover duplicate exports, indoor runs, missing RPE, overnight/time-zone boundaries, an actual race before a dip, a dip before a race and an empty training history. Show simple before/after comparisons first. A later within-person pattern requires repeated comparable bouts, lag and sample counts, and an uncertainty estimate. Evaluate confounders and sparse data before adding correlation coefficients. Avoid injury thresholds from coupled ACWR and avoid adding incomparable load units.
 
 ### 3. Ask a question that changes the decision
