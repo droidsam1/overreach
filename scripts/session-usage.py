@@ -62,6 +62,7 @@ class Session:
         self.requests = 0
         self.peak_context = 0
         self.prompts = 0
+        self.first_prompt = ""
         self.cost = defaultdict(float)  # read, write, output, input, other_models
         self.tokens = defaultdict(int)
 
@@ -85,6 +86,7 @@ def add_claude_file(session, path, main_model_costs):
             session.title = entry.get("aiTitle", session.title)
         elif kind == "user" and not entry.get("isSidechain") and isinstance(entry.get("message", {}).get("content"), str):
             session.prompts += 1
+            session.first_prompt = session.first_prompt or " ".join(entry["message"]["content"].split())
         elif kind == "assistant":
             message = entry.get("message", {})
             if message.get("usage"):
@@ -139,6 +141,7 @@ def codex_sessions(root, match, since):
             continue
         session = Session("codex", path.stem.removeprefix("rollout-"))
         totals = {}
+        turns = 0
         for entry in read_lines(path):
             session.seen(parse_time(entry.get("timestamp")))
             payload = entry.get("payload") or {}
@@ -152,6 +155,9 @@ def codex_sessions(root, match, since):
                 session.peak_context = max(session.peak_context, last.get("input_tokens", 0))
             elif payload.get("type") == "user_message":
                 session.prompts += 1
+            elif entry.get("type") == "turn_context":
+                turns += 1
+        session.prompts = session.prompts or turns
         if match in session.cwd.lower() and totals:
             session.tokens["read"] = totals.get("cached_input_tokens", 0)
             session.tokens["input"] = totals.get("input_tokens", 0) - session.tokens["read"]
@@ -192,7 +198,7 @@ def main():
             print(f"{s.start:%Y-%m-%d %H:%M} {hours(s):5.1f} {s.prompts:7} {s.requests:5} {s.peak_context // 1000:7}k "
                   f"{s.total:7.2f} {share(s.cost['read'], s.total):>6} {share(s.cost['write'], s.total):>6} "
                   f"{share(s.cost['output'], s.total):>6} {share(s.cost['other_models'], s.total):>6}  "
-                  f"{(s.title or s.key)[:50]}")
+                  f"{(s.title or s.first_prompt or s.key)[:50]}")
         total = sum(totals.values())
         print(f"Total {len(claude)} sessions: ${total:.2f}; reread {share(totals['read'], total).strip()}, "
               f"cache writes {share(totals['write'], total).strip()}, output {share(totals['output'], total).strip()}, "
