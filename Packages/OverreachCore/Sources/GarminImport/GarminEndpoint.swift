@@ -94,11 +94,13 @@ public enum GarminSyncPlan {
 
     /// Every request for `range`, split to Garmin's limits. Activity pages after the first are requested only when a
     /// page comes back full, so this returns the first page of each window.
+    /// `activityDays`: how many days back activities are fetched at least (`activityRefetchDays` by default).
     public static func requests(
-        for range: ClosedRange<CalendarDay>, calendar: Calendar = .current
+        for range: ClosedRange<CalendarDay>, activityDays: Int = activityRefetchDays, calendar: Calendar = .current
     ) -> [GarminEndpoint] {
         GarminEndpoint.Kind.allCases.flatMap { kind in
-            let windowRange = kind == .activities ? activityRange(including: range, calendar: calendar) : range
+            let windowRange = kind == .activities
+                ? activityRange(including: range, days: activityDays, calendar: calendar) : range
             return windows(windowRange, maximumDays: GarminEndpoint.maximumDays(for: kind), calendar: calendar)
                 .map { window in
                     switch kind {
@@ -112,9 +114,9 @@ public enum GarminSyncPlan {
         }
     }
 
-    private static func activityRange(including range: ClosedRange<CalendarDay>, calendar: Calendar)
+    private static func activityRange(including range: ClosedRange<CalendarDay>, days: Int, calendar: Calendar)
         -> ClosedRange<CalendarDay> {
-        let earliest = range.upperBound.adding(days: -(activityRefetchDays - 1), calendar: calendar)
+        let earliest = range.upperBound.adding(days: -(max(1, days) - 1), calendar: calendar)
         return min(earliest, range.lowerBound)...range.upperBound
     }
 }

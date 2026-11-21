@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Everyday movement counts walks and hikes recorded on a Garmin watch and walks nobody started on a watch, found in
+  Apple Health's minute-by-minute steps (at least 10 minutes of steady walking outside any workout). The usual day
+  now includes the dog walks and the commute, so only real departures from it stand out (ADR-0010).
 - Today compares your steps with your usual day over the last four weeks. A walk or hike from Apple Health that is
   an hour or more above your usual walking is mentioned before leg work or a run, three very quiet days suggest a
   walk, and a red day suggests an easy walk, or keeping your usual dog walks easy (ADR-0010).

@@ -40,6 +40,8 @@ final class AppContainer {
     let metricsSources: [any MetricsSource]
     /// Apple Health: steps for the History calendar.
     let healthSource: (any MetricsSource & ActivitySource)?
+    /// Walks for Today (ADR-0010): Garmin's walking activities and Apple Health's walks, each walk once.
+    let activitySources: [any ActivitySource]
     /// Apple Health: menstrual flow for phase-aware baselines (ADR-0009).
     let cycleSource: (any CycleSource)?
     /// The person's Garmin account (ADR-0022). Also in `metricsSources`.
@@ -61,6 +63,7 @@ final class AppContainer {
         onboardingStatus: any OnboardingStatusStore = DefaultsOnboardingStatus(),
         metricsSources: [any MetricsSource],
         healthSource: (any MetricsSource & ActivitySource)? = nil,
+        activitySources: [any ActivitySource]? = nil,
         cycleSource: (any CycleSource)? = nil,
         garmin: (any GarminAccount)? = nil,
         recordedStrength: (any RecordedStrengthSource)? = nil
@@ -82,6 +85,7 @@ final class AppContainer {
         )
         self.metricsSources = metricsSources
         self.healthSource = healthSource
+        self.activitySources = activitySources ?? healthSource.map { [$0 as any ActivitySource] } ?? []
         self.cycleSource = cycleSource
         self.garmin = garmin
         self.recordedStrength = recordedStrength
@@ -101,7 +105,8 @@ final class AppContainer {
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store, workoutDraftStore: FileWorkoutDraftStore(),
-                metricsSources: sources, healthSource: healthKit, cycleSource: healthKit, garmin: garmin,
+                metricsSources: sources, healthSource: healthKit, activitySources: [garmin, healthKit],
+                cycleSource: healthKit, garmin: garmin,
                 recordedStrength: recordedStrength
             )
         } catch {
@@ -109,7 +114,8 @@ final class AppContainer {
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store,
-                metricsSources: sources, healthSource: healthKit, cycleSource: healthKit, garmin: garmin,
+                metricsSources: sources, healthSource: healthKit, activitySources: [garmin, healthKit],
+                cycleSource: healthKit, garmin: garmin,
                 recordedStrength: recordedStrength
             )
         }
@@ -146,7 +152,7 @@ final class AppContainer {
 
     func makeTodayModel() -> TodayModel {
         TodayModel(
-            sources: metricsSources, activity: healthSource.map { [$0 as any ActivitySource] } ?? [],
+            sources: metricsSources, activity: activitySources,
             checkIns: checkIns, backup: backup, garmin: garmin, profiles: profiles, workouts: workouts,
             exercises: exercises, recordedStrength: recordedStrength, routines: routines, progression: progression,
             cycle: cycleSource

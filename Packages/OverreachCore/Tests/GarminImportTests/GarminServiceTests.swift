@@ -101,16 +101,16 @@ final class TestClock: @unchecked Sendable {
     func advance(_ seconds: TimeInterval) { lock.withLock { current += seconds } }
 }
 
-private let utcCalendar: Calendar = {
+let utcCalendar: Calendar = {
     var calendar = Calendar(identifier: .gregorian)
     calendar.timeZone = TimeZone(identifier: "UTC")!  // swiftlint:disable:this force_unwrapping
     return calendar
 }()
 
 /// 2026-01-08 12:00 UTC: the last day of the fixtures.
-private let fixtureNow = Date(timeIntervalSince1970: 1_767_873_600)
+let fixtureNow = Date(timeIntervalSince1970: 1_767_873_600)
 
-private func makeService(
+func makeService(
     garmin: FakeGarmin = FakeGarmin(), secrets: MemorySecrets = MemorySecrets(), cache: MemoryCache = MemoryCache(),
     clock: TestClock = TestClock(fixtureNow)
 ) -> GarminService {
@@ -531,4 +531,3 @@ struct GarminKeyContainmentTests {
         }
     }
 }
-

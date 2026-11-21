@@ -135,7 +135,8 @@ public enum GarminDecoding {
                 aerobicTrainingEffect: nonNegative(item["aerobicTrainingEffect"]),
                 anaerobicTrainingEffect: nonNegative(item["anaerobicTrainingEffect"]),
                 totalSets: nonNegative(item["totalSets"]).map { Int($0) },
-                totalReps: nonNegative(item["totalReps"]).map { Int($0) }
+                totalReps: nonNegative(item["totalReps"]).map { Int($0) },
+                steps: nonNegative(item["steps"]).map { Int($0) }
             )
         }
     }

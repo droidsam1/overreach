@@ -31,23 +31,27 @@ public struct GarminCache: Codable, Hashable, Sendable {
     public var metrics: [DailyMetrics]
     public var runs: [RunActivity]
     public var strength: [RecordedStrengthActivity]
+    /// Walking and hiking activities (ADR-0010). `nil` in a cache written before walks were imported: the next sync
+    /// then fetches the activities of the whole first-sync window again, so the walking baseline has its history.
+    public var walks: [GarminWalk]?
 
     public init(
         lastSync: Date? = nil, lastSyncedDay: CalendarDay? = nil, metrics: [DailyMetrics] = [],
-        runs: [RunActivity] = [], strength: [RecordedStrengthActivity] = []
+        runs: [RunActivity] = [], strength: [RecordedStrengthActivity] = [], walks: [GarminWalk]? = []
     ) {
         self.lastSync = lastSync
         self.lastSyncedDay = lastSyncedDay
         self.metrics = metrics
         self.runs = runs
         self.strength = strength
+        self.walks = walks
     }
 
     /// Days older than this are dropped: enough for the readiness baselines and a year of trends.
     public static let retentionDays = 400
 
     private enum CodingKeys: String, CodingKey {
-        case lastSync, lastSyncedDay, metrics, runs, strength
+        case lastSync, lastSyncedDay, metrics, runs, strength, walks
     }
 
     /// The HRV fields of a cache written before ADR-0025, which kept one value per night in `hrvNightlyAverageMs`,
@@ -63,6 +67,7 @@ public struct GarminCache: Codable, Hashable, Sendable {
         lastSyncedDay = try container.decodeIfPresent(CalendarDay.self, forKey: .lastSyncedDay)
         runs = try container.decodeIfPresent([RunActivity].self, forKey: .runs) ?? []
         strength = try container.decodeIfPresent([RecordedStrengthActivity].self, forKey: .strength) ?? []
+        walks = try container.decodeIfPresent([GarminWalk].self, forKey: .walks)
         var metrics = try container.decodeIfPresent([DailyMetrics].self, forKey: .metrics) ?? []
         let legacy = (try? container.decodeIfPresent([LegacyHRV].self, forKey: .metrics)) ?? []
         // Only Garmin fills this cache, and Garmin only ever reported RMSSD, labelled or not.
@@ -76,7 +81,7 @@ public struct GarminCache: Codable, Hashable, Sendable {
 
     /// The cache with `range` replaced by a fresh sync. Activities are merged by id, the fresh copy winning.
     func merging(
-        _ metrics: [DailyMetrics], runs: [RunActivity], strength: [RecordedStrengthActivity],
+        _ metrics: [DailyMetrics], runs: [RunActivity], strength: [RecordedStrengthActivity], walks: [GarminWalk] = [],
         range: ClosedRange<CalendarDay>, at date: Date, calendar: Calendar
     ) -> GarminCache {
         let oldest = range.upperBound.adding(days: -Self.retentionDays, calendar: calendar)
@@ -87,6 +92,7 @@ public struct GarminCache: Codable, Hashable, Sendable {
             .sorted { $0.day < $1.day }
         merged.runs = Self.merge(self.runs, runs, id: \.id).filter { $0.startedAt >= oldestDate }
         merged.strength = Self.merge(self.strength, strength, id: \.id).filter { $0.startedAt >= oldestDate }
+        merged.walks = Self.merge(self.walks ?? [], walks, id: \.id).filter { $0.walk.start >= oldestDate }
         merged.lastSync = date
         merged.lastSyncedDay = max(range.upperBound, lastSyncedDay ?? range.upperBound)
         return merged
@@ -102,6 +108,7 @@ public struct GarminCache: Codable, Hashable, Sendable {
     mutating func removeDuplicateActivities() {
         runs = Self.unique(runs)
         strength = Self.unique(strength)
+        walks = walks.map(Self.unique)
     }
 
     private static func unique<T: Identifiable>(_ records: [T]) -> [T] {
@@ -117,7 +124,7 @@ public protocol GarminCacheStore: Sendable {
 
 /// The Garmin account and the Garmin metrics source in one place (ADR-0022). Pure Swift: the iPhone supplies the
 /// Keychain, URLSession and a file; tests supply fakes.
-public actor GarminService: GarminAccount, MetricsSource, RecordedStrengthSource {
+public actor GarminService: GarminAccount, MetricsSource, ActivitySource, RecordedStrengthSource {
     public nonisolated let kind: DataSourceKind = .garmin
     /// A sync older than this runs again when the app reads metrics (launch, foreground, Today).
     public static let autoSyncInterval: TimeInterval = 30 * 60
@@ -222,6 +229,20 @@ public actor GarminService: GarminAccount, MetricsSource, RecordedStrengthSource
         return await loadCache().strength.filter { $0.startedAt >= start && $0.startedAt <= end }
     }
 
+    // MARK: ActivitySource
+
+    /// Walking and hiking activities by the day they started. Steps stay in `dailyMetrics`, where Garmin's count
+    /// already wins over Apple Health's.
+    public func dailyActivity(in range: ClosedRange<CalendarDay>) async throws -> [DailyActivity] {
+        let failure = await syncIfDue()
+        let cache = await loadCache()
+        if cache.walks == nil, let failure { throw failure }
+        let walks = Dictionary(grouping: (cache.walks ?? []).map(\.walk)) { CalendarDay($0.start, calendar: calendar) }
+        return walks.filter { range.contains($0.key) }
+            .map { DailyActivity(day: $0.key, walks: $0.value.sorted { $0.start < $1.start }) }
+            .sorted { $0.day < $1.day }
+    }
+
     // MARK: Sync
 
     @discardableResult
@@ -250,7 +271,9 @@ public actor GarminService: GarminAccount, MetricsSource, RecordedStrengthSource
         let cache = await loadCache()
         let today = CalendarDay(clock(), calendar: calendar)
         let range = GarminSyncPlan.range(lastSynced: cache.lastSyncedDay, today: today, calendar: calendar)
-        var requests = GarminSyncPlan.requests(for: range, calendar: calendar)
+        // A cache from before walks were imported fetches the activities of the first-sync window once more.
+        let activityDays = cache.walks == nil ? GarminSyncPlan.firstSyncDays : GarminSyncPlan.activityRefetchDays
+        var requests = GarminSyncPlan.requests(for: range, activityDays: activityDays, calendar: calendar)
         var done = 0
         progress(GarminSyncProgress(completed: 0, total: requests.count))
 
@@ -306,8 +329,9 @@ public actor GarminService: GarminAccount, MetricsSource, RecordedStrengthSource
         let activities = Array(activitiesByID.values)
         let runs = GarminMapping.runs(activities)
         let strength = GarminMapping.strengthActivities(activities)
+        let walks = GarminMapping.walks(activities)
         let updated = cache.merging(
-            metrics, runs: runs, strength: strength, range: range, at: clock(), calendar: calendar
+            metrics, runs: runs, strength: strength, walks: walks, range: range, at: clock(), calendar: calendar
         )
         self.cache = updated
         await cacheStore.save(updated)
