@@ -21,7 +21,14 @@ and the logger come before review tools, and work that only a person with an iPh
    Runs in parallel. Integrate after the shared schedule work.
 5. **Longer trends** — [#127](https://github.com/droidsam1/overreach/issues/127). Add 30- and
    90-day views inside the relevant details. Use the activity matching from #40 for combined-source totals.
-6. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
+6. **Dog walks from a pet tracker** — [#154](https://github.com/droidsam1/overreach/issues/154), one task at a time:
+   [#155](https://github.com/droidsam1/overreach/issues/155) (tag and matcher), then
+   [#163](https://github.com/droidsam1/overreach/issues/163) (one-tap "With Nanoq?"), then
+   [#159](https://github.com/droidsam1/overreach/issues/159), then the optional GPX backfill:
+   [#158](https://github.com/droidsam1/overreach/issues/158) (parser), then
+   [#165](https://github.com/droidsam1/overreach/issues/165) (guided import) once #164 is done. Design:
+   [companion walks](design/companion-walks.md).
+7. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
 
 ## Needs a person or an iPhone
 
@@ -35,3 +42,5 @@ Agents can prepare these but not finish them.
 - Clinical review of symptom wording —
   [hybrid backlog task 3](design/readiness-and-hybrid-planning.md#3-ask-a-question-that-changes-the-decision).
 - Release v0.1.0 and the beta guide — [#22](https://github.com/droidsam1/overreach/issues/22).
+- Download the Tractive GPX export on an iPhone — [#164](https://github.com/droidsam1/overreach/issues/164). Shapes
+  the guided import (#165).
