@@ -100,6 +100,8 @@ Shipped as pure rules in `Analytics`, as in task 2.
   unfinished exercises, as the logger does; Plan used to count them. `WorkoutModel`, `PlanAnalysis`,
   `DeloadAdvice` and `ContextPackBuilder` use it. "Trained recently" comes with deloads task 2.
 - [x] Tests: `LiftStatusTests` (unfinished exercises, routine prescription, missing exercise).
+  `DeloadAdviceTests` checks the same routine in Today, Plan, Workout and the AI context with recent and stale
+  history. Each surface requires an eligible exposure in the last 28 days for a current stall.
 
 Finish line: outside `Analytics`, `StallDetection.status` has no callers and `ProgressionSettings(for:)` only
 compares with defaults.

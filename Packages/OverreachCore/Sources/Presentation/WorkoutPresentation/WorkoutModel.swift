@@ -547,7 +547,8 @@ public final class WorkoutModel {
     /// Target, status, focus and rest for `exercise`. A declared exercise focus wins over the session focus;
     /// without stored settings, the focus picks the default scheme (`FocusPrescription`).
     private func prepare(_ exercise: Exercise, id: UUID) async -> DraftExercise {
-        let history = await history(of: exercise.id)
+        let now = clock()
+        let history = await history(of: exercise.id, now: now)
         let stored: ProgressionSettings?
         let readSettings: Bool
         do {
@@ -577,7 +578,7 @@ public final class WorkoutModel {
         } else {
             choices = []
         }
-        let status = LiftStatus.assess(exerciseID: exercise.id, history: history, settings: settings).status
+        let lift = LiftStatus.assess(exerciseID: exercise.id, history: history, settings: settings, now: now)
         let primed = isPrimed(exercise, before: id)
         let fallbackWeightKg = history.last?.workingWeightKg
         let plan = Self.warmUpPlan(
@@ -587,14 +588,14 @@ public final class WorkoutModel {
             for: target, warmUps: plan, settings: settings, primed: primed, fallbackWeightKg: fallbackWeightKg
         )
         return DraftExercise(
-            id: id, exercise: exercise, target: target, status: status, sets: sets, focus: focus,
+            id: id, exercise: exercise, target: target, status: lift.status, sets: sets, focus: focus,
             isFocusInferred: declaredFocus == nil && focus != nil,
             restSeconds: FocusPrescription.for(focus ?? .hypertrophy).restSeconds,
             appliedSettings: stored,
             scheme: settings.scheme,
             warmUpPlan: plan,
             isPrimed: primed,
-            stallFacts: StallDetection.facts(history: history, settings: settings),
+            stallFacts: lift.facts,
             effortScale: effortScale,
             isPrescribedByRoutine: prescribed != nil,
             firstProgressionChoices: choices,
@@ -862,8 +863,7 @@ public final class WorkoutModel {
         }
     }
 
-    private func history(of exerciseID: UUID) async -> [ExerciseExposure] {
-        let now = clock()
+    private func history(of exerciseID: UUID, now: Date) async -> [ExerciseExposure] {
         do {
             let sessions = try await workouts.sessions(from: now.addingTimeInterval(-Self.historyWindow), to: now)
             return ExerciseExposure.history(of: exerciseID, in: sessions)

@@ -62,8 +62,9 @@ public struct DeloadAdvice: Hashable, Sendable {
 
         let byID = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let lifts = LiftStatus.assessAll(
-            index: ExposureIndex(sessions: sessions), exercises: byID, stored: settings, routines: routines
-        ).map { DeloadAdvisor.Lift(history: $0.history, settings: $0.settings) }
+            index: ExposureIndex(sessions: sessions), exercises: byID, stored: settings, routines: routines,
+            now: now, lookbackDays: advisorSettings.lookbackDays
+        )
         let recovery = RecoveryTrend.assess(
             today: today, history: history, checkIns: checkIns, settings: readinessSettings, cycle: cycle,
             calendar: calendar
@@ -133,8 +134,12 @@ public struct DeloadAdvice: Hashable, Sendable {
 
     static func text(for signal: DeloadSignal, format: Format, walkingIncluded: Bool = false) -> String {
         switch signal {
-        case let .liftsStalled(count):
-            L10n.format("{1} main lifts have stalled.", count)
+        case let .liftsStalled(count, mainLifts):
+            if mainLifts {
+                L10n.format("{1} main lifts have stalled.", count)
+            } else {
+                L10n.format("{1} lifts you train now have stalled.", count)
+            }
         case let .performanceDrop(lifts):
             L10n.format("Estimated maxes dropped on {1} lifts this month.", lifts)
         case let .rpeCreep(lifts):

@@ -24,7 +24,8 @@ struct LiftStatusTests {
         let sessions = [session(0, 100, [5, 5, 5]), session(3, 60, [2], counts: false), session(6, 102.5, [5, 5, 5])]
 
         let status = try #require(LiftStatus.assessAll(
-            index: ExposureIndex(sessions: sessions), exercises: [squat.id: squat], stored: [:], routines: []
+            index: ExposureIndex(sessions: sessions), exercises: [squat.id: squat], stored: [:], routines: [],
+            now: start.addingTimeInterval(6 * 86_400)
         ).first)
 
         #expect(status.history == ExerciseExposure.history(of: squat.id, in: sessions))
@@ -40,7 +41,8 @@ struct LiftStatusTests {
         let sessions = [session(0, 80, [10, 10, 10]), session(3, 80, [11, 10, 10], routine: routine)]
 
         let status = try #require(LiftStatus.assessAll(
-            index: ExposureIndex(sessions: sessions), exercises: [squat.id: squat], stored: [:], routines: [routine]
+            index: ExposureIndex(sessions: sessions), exercises: [squat.id: squat], stored: [:], routines: [routine],
+            now: start.addingTimeInterval(3 * 86_400)
         ).first)
 
         #expect(status.settings == ProgressionTargets.settings(for: squat, stored: nil, prescription: scheme))

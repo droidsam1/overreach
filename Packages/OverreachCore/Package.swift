@@ -125,7 +125,9 @@ let package = Package(
         ),
         .testTarget(
             name: "TodayPresentationTests",
-            dependencies: ["TodayPresentation", "PresentationKit", "Domain", "Fixtures"]
+            dependencies: [
+                "TodayPresentation", "PresentationKit", "Domain", "Fixtures", "AIExchange", "WorkoutPresentation",
+            ]
         ),
         .testTarget(
             name: "OnboardingPresentationTests",

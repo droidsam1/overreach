@@ -221,7 +221,10 @@ Reviewed 2026-11-21.
 ### `stall-heuristics` — heuristic
 Stall = no e1RM gain > 1 % over the last 3 exposures vs the 6 before, with ≥ 2 missed targets. Linear reset
 −10 % after 3 misses; microload at half the increment when the miss was by 1 rep; variation swap 3–4 weeks.
-All configurable. Reviewed 2026-11-16.
+Current stall assessments require a progression-eligible exposure in the last 28 days. This is an Overreach
+heuristic for deciding which lifts still have current evidence. The [2026 ACSM position stand](https://pubmed.ncbi.nlm.nih.gov/41843416/)
+reviews prescription variables for strength and hypertrophy. The thresholds above are product choices.
+Reviewed 2026-11-21.
 
 ### `rpe-creep` — heuristic
 Same load and reps over 3 exposures with RPE up ≥ 1 point → accumulated fatigue signal (weight 1).
