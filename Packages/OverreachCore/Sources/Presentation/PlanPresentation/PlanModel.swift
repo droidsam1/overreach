@@ -144,6 +144,10 @@ public final class PlanModel {
     }
     public let focusOptions: [Option<TrainingFocus>] = Option.trainingFocuses
     public let runningSessionOptions = PlannedRun.Purpose.allCases.map { Option(value: $0, name: $0.displayName) }
+    public let priorityOptions = DisciplinePriority.allCases.map { Option(value: $0, name: $0.displayName) }
+    public var disciplinePriority: DisciplinePriority { profile.goal?.effectivePriority ?? .balanced }
+    /// Only a hybrid goal has two disciplines to rank.
+    public var showsDisciplinePriority: Bool { goalKind == .hybrid }
     public var showsRunningPlan: Bool { goalKind == .hybrid }
     public var showsHybridCalendar: Bool { showsRunningPlan }
     public var showsRunningCalendar: Bool { showsHybridCalendar && profile.goal?.running != nil }
@@ -312,6 +316,13 @@ public final class PlanModel {
         guard kind != goalKind else { return }
         var goal = profile.goal ?? TrainingGoal(kind: kind)
         goal.kind = kind
+        await save(goal: goal)
+    }
+
+    public func setPriority(_ priority: DisciplinePriority) async {
+        guard !isSavingProfile, priority != disciplinePriority else { return }
+        var goal = profile.goal ?? TrainingGoal(kind: goalKind)
+        goal.priority = priority == .balanced ? nil : priority
         await save(goal: goal)
     }
 

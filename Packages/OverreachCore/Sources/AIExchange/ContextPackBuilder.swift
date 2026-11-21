@@ -130,6 +130,8 @@ public enum ContextPackBuilder {
                         .init(distanceMeters: $0.distanceMeters, targetSeconds: $0.targetSeconds,
                               aimsForPainFree: $0.aimsForPainFree)
                     } : nil,
+                    priority: goal.kind == .hybrid && goal.effectivePriority != .balanced
+                        ? goal.effectivePriority.rawValue : nil,
                     nextRun: schedule.first { $0.day >= today && $0.completion == nil }.map(runningEntry),
                     runningSchedule: schedule.isEmpty ? nil : schedule.map(runningEntry)
                 )

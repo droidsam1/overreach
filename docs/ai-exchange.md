@@ -22,7 +22,7 @@ Shared from **Plan → Ask AI**. It is raw data with no instructions. Its top-le
 | `format`, `version`, `about` | `overreach.context`, `1`, and a sentence saying what the data is |
 | `generatedAt`, `app`, `units` | When it was made, by which app version, and in which units |
 | `period` | `from` / `to` days the sessions, check-ins and metrics cover (4 weeks, 12 weeks or 6 months) |
-| `athlete` | `sex`, `birthYear`, `bodyMassKg`, `maxHeartRate`, `restingHeartRate`, `cycleTracking`; `goal` (`kind`: `strength`, `hypertrophy`, `general` or `hybrid`; `targetDate`; `priorityLifts` by name); `declaredBlocks` (`focus`, `start`, `plannedWeeks`, `name`, `routines` by name, `sessionsPerWeek`) |
+| `athlete` | `sex`, `birthYear`, `bodyMassKg`, `maxHeartRate`, `restingHeartRate`, `cycleTracking`; `goal` (`kind`: `strength`, `hypertrophy`, `general` or `hybrid`; `targetDate`; `priorityLifts` by name; `priority`: `running` or `strength` for a hybrid goal, absent when balanced); `declaredBlocks` (`focus`, `start`, `plannedWeeks`, `name`, `routines` by name, `sessionsPerWeek`) |
 | `catalog` | Names of every exercise in the app. Proposals should use these names. |
 | `exercises` | Exercises used in the period, in routines or with their own settings: `name`, `equipment`, `primaryMuscles`, `secondaryMuscles`, `isCustom`, and `progression` when the user changed the defaults |
 | `routines` | `id`, `name`, `focus`, `exercises` (names, in order), `prescriptions` (`exercise`, `scheme`) when the routine has its own sets and reps |

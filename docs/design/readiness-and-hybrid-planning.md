@@ -105,9 +105,9 @@ criterion to hybrid goals. Optional goal fields round-trip through backup and ap
 shows progress from explicitly linked recordings and lets the athlete report pain during and after each run.
 Confirmation requires one linked run to satisfy every selected criterion. A timed goal uses the recorded total
 duration. A pain-free goal requires a clear response for both periods. An older link without measured distance can
-still carry a pain report. Running and strength priority controls remain open.
+still carry a pain report. The running and strength priority control shipped; recommendations do not use it until tasks 7 and 8.
 
-- [ ] Can start independently. Extend `TrainingGoal` with optional distance, completion/time target, symptom-free criterion, optional target event/date and running/strength priority. Allow completion plus symptom-free and time plus symptom-free where desired. Add edit and progress surfaces in Plan and an optional onboarding path. Preserve priority lifts. Use recent performance or a recent tolerated run to ground progress and show uncertainty for ambitious targets.
+- [x] Can start independently. Extend `TrainingGoal` with optional distance, completion/time target, symptom-free criterion, optional target event/date and running/strength priority. Allow completion plus symptom-free and time plus symptom-free where desired. Add edit and progress surfaces in Plan and an optional onboarding path. Preserve priority lifts. Use recent performance or a recent tolerated run to ground progress and show uncertainty for ambitious targets.
 - **Done when** “finish 5 km”, “run 5 km without pain” and “5 km in 15 min” round-trip in app storage, backup and the relevant versioned plan/context exchange. The last example displays a goal pace of 3:00/km and uses current performance to set training intensity. A pain-free goal tracks athlete-reported symptoms during and after runs and never promises a symptom-free outcome. Old hybrid profiles can continue with no running objective.
 
 ### 7. Represent planned runs, races and dates

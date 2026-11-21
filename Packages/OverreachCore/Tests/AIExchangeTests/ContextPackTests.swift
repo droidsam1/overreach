@@ -75,6 +75,16 @@ struct ContextPackTests {
         #expect(pack.athlete.goal?.runningSchedule?.map(\.id) == [next.id])
     }
 
+    @Test func aChosenPriorityIsSharedAndBalancedIsOmitted() {
+        func priority(_ goal: TrainingGoal) -> String? {
+            let input = ContextInput(sessions: [], profile: AthleteProfile(goal: goal), appVersion: "0.1.0")
+            return ContextPackBuilder.build(input, period: period, now: now, calendar: calendar).athlete.goal?.priority
+        }
+        #expect(priority(TrainingGoal(kind: .hybrid, priority: .running)) == "running")
+        #expect(priority(TrainingGoal(kind: .hybrid)) == nil)
+        #expect(priority(TrainingGoal(kind: .strength, priority: .running)) == nil)
+    }
+
     @Test func sessionsAreRawDataWithNotesAndExerciseNames() throws {
         let pack = pack()
         #expect(pack.sessions.map(\.notes) == [nil, "Slept badly"])  // oldest first

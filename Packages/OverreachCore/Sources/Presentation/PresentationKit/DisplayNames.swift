@@ -51,6 +51,16 @@ extension MuscleGroup {
     }
 }
 
+extension DisciplinePriority {
+    public var displayName: String {
+        switch self {
+        case .balanced: L10n.text("Balanced")
+        case .running: L10n.text("Running first")
+        case .strength: L10n.text("Strength first")
+        }
+    }
+}
+
 extension Equipment {
     public var displayName: String {
         switch self {

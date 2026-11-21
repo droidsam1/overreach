@@ -81,6 +81,31 @@ struct PlanModelTests {
         #expect(try await store.profile().goal?.targetDate == CalendarDay(chosen, calendar: calendar))
     }
 
+    @Test func runningOrStrengthPriorityIsOnlyOfferedToHybridGoalsAndPersists() async throws {
+        let (model, store) = await model()
+        #expect(!model.showsDisciplinePriority)
+        await model.setGoal(kind: .hybrid)
+        #expect(model.showsDisciplinePriority)
+        #expect(model.disciplinePriority == .balanced)
+
+        await model.setPriority(.running)
+        #expect(model.disciplinePriority == .running)
+        #expect(try await store.profile().goal?.priority == .running)
+
+        await model.setPriority(.balanced)
+        #expect(try await store.profile().goal?.priority == nil)
+    }
+
+    @Test func aGoalSavedBeforePriorityExistedDecodesAsBalanced() throws {
+        let old = #"{"kind":"hybrid","priorityLifts":[]}"#
+        let goal = try JSONDecoder().decode(TrainingGoal.self, from: Data(old.utf8))
+        #expect(goal.priority == nil)
+        #expect(goal.effectivePriority == .balanced)
+        let saved = TrainingGoal(kind: .hybrid, priority: .strength)
+        let decoded = try JSONDecoder().decode(TrainingGoal.self, from: JSONEncoder().encode(saved))
+        #expect(decoded.priority == .strength)
+    }
+
     @Test func aHybridRunningGoalAndDatedSessionSurviveBackupAndReload() async throws {
         let (model, store) = await model()
         #expect(!model.showsRunningPlan)
