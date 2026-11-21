@@ -80,8 +80,17 @@ public final class TodayModel {
 
     // MARK: Screen state
 
+    public enum WorkoutContinuation: Equatable {
+        case resume(String), reviewDraft
+    }
+
     public enum NextAction: Equatable {
+        case continueWorkout(WorkoutContinuation)
         case loading, readiness, checkIn, deload, retry, connectHealth, connectGarmin, train
+    }
+
+    public func nextAction(continuing workout: WorkoutContinuation?) -> NextAction {
+        workout.map(NextAction.continueWorkout) ?? nextAction
     }
 
     /// Orders existing actions for the first viewport. Readiness can advise an action without a button.

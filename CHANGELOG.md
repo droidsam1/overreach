@@ -162,6 +162,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   stalls or the working weight.
 
 ### Changed
+- Today puts the next action first and shows planned training before the detailed recovery explanation.
 - The workout logger leads with the first exercise and its sets. "How to log sets" and the session focus moved to
   the session options menu, and the optional warm-up advice now follows the first exercise. Each exercise shows
   what you did last time, with its date, under today's target, completing a set gives a haptic confirmation, and
