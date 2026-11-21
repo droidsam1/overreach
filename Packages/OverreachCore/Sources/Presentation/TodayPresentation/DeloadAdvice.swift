@@ -93,8 +93,12 @@ public struct DeloadAdvice: Hashable, Sendable {
 
     static func text(for signal: DeloadSignal, format: Format, walkingIncluded: Bool = false) -> String {
         switch signal {
-        case let .liftsStalled(count):
-            L10n.format("{1} main lifts have stalled.", count)
+        case let .liftsStalled(count, mainLifts):
+            if mainLifts {
+                L10n.format("{1} main lifts have stalled.", count)
+            } else {
+                L10n.format("{1} lifts you train now have stalled.", count)
+            }
         case let .performanceDrop(lifts):
             L10n.format("Estimated maxes dropped on {1} lifts this month.", lifts)
         case let .rpeCreep(lifts):

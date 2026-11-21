@@ -43,7 +43,7 @@ public struct PlanAnalysis: Hashable, Sendable {
         let deloadAge = lastRecovery.map { PlanReviewer.days(from: $0.lastDay, to: today, calendar: calendar) }
 
         let stalled = LiftStatus.assessAll(
-            index: index, exercises: exercises, stored: settings, routines: routines
+            index: index, exercises: exercises, stored: settings, routines: routines, now: now
         ).filter(\.isStalled).count
 
         return PlanAnalysis(

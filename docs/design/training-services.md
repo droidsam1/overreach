@@ -67,8 +67,8 @@ it to every model that needs it.
   failed, remove duplicates with `RunDeduplication`. Same for daily metrics (merged per day in source order, as
   `TodayModel` did). Watch strength recordings and walks (`ActivitySource`) are read in one call each and move with
   the services that use them (tasks 2–4).
-- [x] Switch `TodayModel`, `PlanModel`, `HistoryRunReadings` and `AskAIModel` to it. The Assistant now sends one
-  merged row per day.
+- [x] Switch `TodayModel`, `PlanModel`, `HistoryRunReadings` and `AskAIModel` to it. Task 4 preserves the
+  Assistant's rows per source.
 - [x] Tests with fake sources: unavailable, failing, duplicated runs, two sources for one day.
 
 Finish line: presentation modules call `runs(from:to:)` and `dailyMetrics(in:)` only on `SourceReader`.
@@ -100,6 +100,8 @@ Shipped as pure rules in `Analytics`, as in task 2.
   unfinished exercises, as the logger does; Plan used to count them. `WorkoutModel`, `PlanAnalysis`,
   `DeloadAdvice` and `ContextPackBuilder` use it. "Trained recently" comes with deloads task 2.
 - [x] Tests: `LiftStatusTests` (unfinished exercises, routine prescription, missing exercise).
+  `DeloadAdviceTests` checks the same routine in Today, Plan, Workout and the AI context with recent and stale
+  history. Each surface requires an eligible exposure in the last 28 days for a current stall.
 
 Finish line: outside `Analytics`, `StallDetection.status` has no callers and `ProgressionSettings(for:)` only
 compares with defaults.

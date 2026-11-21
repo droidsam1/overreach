@@ -90,8 +90,8 @@ public enum DeloadAssessment: Hashable, Sendable {
         let byID = Dictionary(record.exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let lifts = LiftStatus.assessAll(
             index: ExposureIndex(sessions: record.sessions), exercises: byID, stored: record.settings,
-            routines: record.routines
-        ).map { DeloadAdvisor.Lift(history: $0.history, settings: $0.settings) }
+            routines: record.routines, now: now, lookbackDays: settings.lookbackDays
+        )
         let recovery = RecoveryTrend.assess(
             today: today, history: record.metrics, checkIns: record.checkIns, settings: readinessSettings,
             cycle: record.cycle, calendar: calendar

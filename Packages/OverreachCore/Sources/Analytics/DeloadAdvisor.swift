@@ -3,7 +3,7 @@ import Foundation
 
 /// A signal that contributed to a deload proposal.
 public enum DeloadSignal: Hashable, Sendable {
-    case liftsStalled(count: Int)
+    case liftsStalled(count: Int, mainLifts: Bool)
     case rpeCreep(lifts: Int)
     case performanceDrop(lifts: Int)
     case weeksSinceDeload(Int)
@@ -104,7 +104,7 @@ public enum DeloadAdvisor {
         /// e1RM below the recent best by more than this counts as a drop.
         public var performanceDropFraction = 0.03
         /// Window for RPE creep and performance drops.
-        public var lookbackDays = 28
+        public var lookbackDays = LiftStatus.recentDays
         /// Points per sustained recovery signal, and the most they add together.
         public var recoveryWeight = 1.0
         public var recoveryWeightCap = 2.0
@@ -118,19 +118,9 @@ public enum DeloadAdvisor {
         public init() {}
     }
 
-    public struct Lift: Hashable, Sendable {
-        public var history: [ExerciseExposure]
-        public var settings: ProgressionSettings
-
-        public init(history: [ExerciseExposure], settings: ProgressionSettings) {
-            self.history = history
-            self.settings = settings
-        }
-    }
-
     /// - Parameter lastRecovery: from `RecoveryHistory.lastRecovery`, so every screen counts from the same day.
     public static func proposal(
-        lifts: [Lift],
+        lifts: [LiftStatus],
         lastRecovery: LastRecovery?,
         weeklyLoad: WeeklyLoadChange? = nil,
         recovery: RecoveryTrend? = nil,
@@ -145,16 +135,15 @@ public enum DeloadAdvisor {
             return nil
         }
         let recoveryEnd = lastRecovery.map { $0.lastDay.adding(days: 1, calendar: calendar).startDate(in: calendar) }
-        let mainLifts = lifts.filter(\.settings.isMainLift)
-        let considered = mainLifts.isEmpty ? lifts : mainLifts
+        let current = lifts.filter(\.trainedRecently)
+        let mainLifts = current.filter(\.settings.isMainLift)
+        let considered = mainLifts.isEmpty ? current : mainLifts
         var signals: [DeloadSignal] = []
         var score = 0.0
 
-        let stalled = considered.filter {
-            StallDetection.status(history: $0.history, settings: $0.settings).isStalled
-        }.count
+        let stalled = considered.filter { $0.status.isStalled }.count
         if stalled >= 2 {
-            signals.append(.liftsStalled(count: stalled))
+            signals.append(.liftsStalled(count: stalled, mainLifts: !mainLifts.isEmpty))
             score += settings.stalledWeight
         }
 

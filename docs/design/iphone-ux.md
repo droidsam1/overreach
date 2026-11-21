@@ -25,6 +25,24 @@ recommendations explainable and its advanced controls easy to find.
 | **Active logger** | Keep the current exercise, actionable set, last result and today’s target together. Keep completion and the compact countdown reachable with the keyboard open. | Keep notes, help and focus easy to find. Explain missing history in place. If training is interrupted, preserve the draft and offer to resume. Offer the full report after confirming the save. |
 | **History** | Make activity type, date and key result easy to scan. Show active filters. Provide a direct route to an exercise’s last logged result. | Open metrics and provenance in the activity detail. Distinguish an empty history from an empty filtered result. Give the filtered state a clear reset. |
 
+## Today, Plan and Recovery & Progress
+
+| Destination | The user's question | Keep here |
+| --- | --- | --- |
+| Today | What should I do today? | Resume or the next useful action, the leading reason, and any missing data or check-in answer that could change the decision. Explain the specific decision under **Why this recommendation?**. |
+| Plan | What is coming up, and how do I change it? | Upcoming sessions, calendar, current block and goals. Keep schedule changes and goal editing here. Surface a recent break question next to the decision it affects. |
+| Recovery & Progress | What has changed in my recovery, training and progress? | Recovery readings, recent load, past breaks and deloads, lift findings and progress toward the running goal. Keep coverage, sources and charts in the relevant detail. |
+| History | What did I actually log? | Completed activities and their original details. Link to specific records from supporting analysis where available. |
+
+Use the existing Trends destination for Recovery & Progress. Start with one row per available section
+(Recovery, Recent load, Progress) and a short summary. **View recovery** from Today and **View progress**
+from Plan open the relevant section directly. When moving content, ship its new route in the same
+change. Use shared training results so today's explanation and the supporting readings agree.
+Keep the current tab bar for the first release. Revisit placement after the device review identifies
+whether people need to reach this view as a frequent task of its own.
+
+See [Priorities](../priorities.md) for the implementation order.
+
 ## Research and evidence
 
 Reviewed **2026-11-20**. The first-party references describe guidelines or published product
@@ -68,6 +86,8 @@ the controls. Start timing on the prompt and stop at the listed result.
 | Decide what to do today and find out why | Today, with a recommendation available | The person states the next action and opens or identifies its reason. |
 | Start or resume a workout | Today, once with the routine available and once with a saved draft | The correct workout opens for editing. Record the two runs separately. |
 | Edit and complete the first set of an exercise during rest | Active workout, countdown running from the prior exercise and numeric keyboard open on the next exercise’s first set | The new value is retained and the intended set is marked complete. |
+| Find the latest recovery period and the source of a recovery reading | Today and Plan, with a confirmed break and a comparable reading | From Today, the person finds the reading and identifies its source. From Plan, the person finds the break and identifies its date. Record the paths separately. |
+| Move the next scheduled session | Plan, with a dated session | The person finds the session in the calendar, moves it and sees it on the intended day. |
 | Find the latest Garmin run | Mixed History with filters cleared | The person opens the latest Garmin run and identifies its date. |
 | Find the last logged weight for an exercise | App launch with a named exercise and prior sessions loaded | The person identifies the expected weight, reps and date. |
 
@@ -80,6 +100,7 @@ and one-handed use where relevant. [Record results in #21](https://github.com/dr
 ## UI pull request checklist
 
 - [ ] State the frequent user goal, the primary action and the information visible by default.
+- [ ] For content moved between screens, verify its new route from the original flow.
 - [ ] Name the route to supporting details and describe the relevant empty, error or recovery state.
 - [ ] List how the affected flow was checked. Include the before/after observations or link the
   pending device checks in #21, with build and runtime results identified separately.

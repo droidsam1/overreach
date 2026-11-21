@@ -119,6 +119,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Fixed
 - The recovery signals behind a deload proposal judge each of the last 7 days against a full 60-day baseline; without
   cycle tracking the oldest days used a shorter one.
+- Current stalls require progression-eligible work in the last 28 days. Today labels stall signals as
+  main lifts only when those lifts are marked main.
 - A lift is stalled or progressing in the same way in the workout, Plan, Today's deload advice and the AI context:
   all use the settings of the routine the lift was last trained in, and Plan no longer counts exercises left
   unfinished (ADR-0035).
