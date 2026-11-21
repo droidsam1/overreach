@@ -3,6 +3,7 @@ import Domain
 import Foundation
 import Observation
 import PresentationKit
+import TrainingServices
 
 /// A rule explanation with the strength of its evidence, as shown on the Plan screen.
 public struct ExplainedLine: Hashable, Sendable {
@@ -357,15 +358,9 @@ public final class PlanModel {
         let profile = profile
         let calendar = calendar
         let routines = (try? await routines?.allRoutines()) ?? []
-        var runs: [RunActivity] = []
-        var runReadFailed = false
-        for source in runSources where await source.isAvailable() {
-            do {
-                runs += try await source.runs(from: start, to: now)
-            } catch {
-                runReadFailed = true
-            }
-        }
+        let runReading = await SourceReader(sources: runSources).runs(from: start, to: now)
+        let runs = runReading.activities
+        let runReadFailed = runReading.failed
         let recordings = (try? await recordedStrength?.strengthActivities(from: start, to: now)) ?? []
         let analysis = await Task.detached(priority: .userInitiated) {
             PlanAnalysis.run(
@@ -455,20 +450,10 @@ extension PlanModel {
             RunningCompletionChoice(completion: $0, title: L10n.text("Linked run"))
         }
         guard selectedDay <= CalendarDay(now, calendar: calendar) else { return [] }
-        let activities = await withTaskGroup(of: [RunActivity].self) { group in
-            for source in runSources {
-                group.addTask {
-                    guard await source.isAvailable() else { return [] }
-                    return (try? await source.runs(from: start, to: end)) ?? []
-                }
-            }
-            var combined: [RunActivity] = []
-            for await batch in group { combined += batch }
-            return combined
-        }
+        let activities = await SourceReader(sources: runSources).runs(from: start, to: end).activities
         let otherLinks = (profile.goal?.scheduledRuns ?? []).filter { $0.id != draft.id }.compactMap(\.completion)
         let style = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).hour().minute()
-        let choices = RunDeduplication.removingDuplicates(activities).filter { activity in
+        let choices = activities.filter { activity in
             CalendarDay(activity.startedAt, calendar: calendar) == selectedDay
                 && activity.durationSeconds.isFinite && activity.durationSeconds >= 0
                 && activity.startedAt.addingTimeInterval(activity.durationSeconds) <= now

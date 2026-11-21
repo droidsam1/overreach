@@ -36,6 +36,7 @@ Packages/
     GarminImport          Garmin Personal API responses → domain values, endpoints, sync plan (ADR-0022)
     Reports               Markdown report for sharing with ChatGPT/Claude
     AIExchange            Versioned messages exchanged with AI chat apps (ADR-0017, docs/ai-exchange.md)
+    TrainingServices      Application layer: reads sources once, answers shared training questions (ADR-0035)
     Presentation/         Per-feature screen state, intents and texts (ADR-0014). Linux-testable.
       PresentationKit     Display names, search, L10n
       <X>Presentation     @Observable models, screen state and intents of feature X
@@ -61,8 +62,10 @@ scripts/                  Local checks, merge drivers and test helpers
    (+ `Reports` for `AIKit`) and implement its protocols.
 4. `FeatureX` depends on `XPresentation`, `PresentationKit`, `DesignSystem` and `Domain` (value types only;
    `AIKit` only for Today and Assistant). It imports no `Analytics`, no other feature and no concrete data module.
-5. `<X>Presentation` depends on `Domain`, `Analytics` and `PresentationKit` (`AssistantPresentation` also on
-   `AIExchange`); never on SwiftUI or another presentation module. `DesignSystem` takes display values only.
+5. `<X>Presentation` depends on `Domain`, `Analytics`, `TrainingServices` and `PresentationKit`
+   (`AssistantPresentation` also on `AIExchange`); never on SwiftUI or another presentation module. It reads
+   sources and asks shared training questions through `TrainingServices` (ADR-0035). `DesignSystem` takes display
+   values only.
 6. `App` is the only place that knows concrete implementations. It builds `AppContainer` and injects
    protocols into features.
 

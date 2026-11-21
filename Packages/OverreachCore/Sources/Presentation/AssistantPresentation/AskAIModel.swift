@@ -3,6 +3,7 @@ import Domain
 import Foundation
 import Observation
 import PresentationKit
+import TrainingServices
 
 /// How far back the shared context goes.
 public enum ContextPeriod: Int, CaseIterable, Sendable {
@@ -164,24 +165,17 @@ public final class AskAIModel {
         message = json.map { ContextMessage.text(json: $0, request: request?.text) }
     }
 
+    /// One merged record per day, as Today shows it (ADR-0035).
     private func metrics(in range: ClosedRange<CalendarDay>) async -> [DailyMetrics] {
-        var all: [DailyMetrics] = []
-        for source in sources where await source.isAvailable() {
-            all += (try? await source.dailyMetrics(in: range)) ?? []
-        }
-        return all
+        await SourceReader(sources: sources).dailyMetrics(in: range).value
     }
 
     private func strengthRecordings(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
         await recordedStrength?.strengthActivities(from: start, to: end) ?? []
     }
 
+    /// Garmin and the copy Garmin Connect writes to Apple Health are the same run: shared once.
     private func runs(from start: Date, to end: Date) async -> [RunActivity] {
-        var all: [RunActivity] = []
-        for source in sources where await source.isAvailable() {
-            all += (try? await source.runs(from: start, to: end)) ?? []
-        }
-        // Garmin and the copy Garmin Connect writes to Apple Health are the same run: share it once.
-        return RunDeduplication.removingDuplicates(all)
+        await SourceReader(sources: sources).runs(from: start, to: end).activities
     }
 }

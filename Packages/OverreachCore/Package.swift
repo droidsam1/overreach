@@ -12,6 +12,8 @@ let package = Package(
         .library(name: "GarminImport", targets: ["GarminImport"]),
         .library(name: "Reports", targets: ["Reports"]),
         .library(name: "AIExchange", targets: ["AIExchange"]),
+        // Application layer (ADR-0035): reads sources once and answers questions several screens share.
+        .library(name: "TrainingServices", targets: ["TrainingServices"]),
         // Presentation (ADR-0014): screen state, intents and texts. SwiftUI views in OverreachKit only render them.
         .library(name: "PresentationKit", targets: ["PresentationKit"]),
         .library(name: "ExercisesPresentation", targets: ["ExercisesPresentation"]),
@@ -38,6 +40,8 @@ let package = Package(
         .target(name: "Reports", dependencies: ["Domain", "Analytics"]),
         // Versioned messages exchanged with AI chat apps (ADR-0017, docs/ai-exchange.md).
         .target(name: "AIExchange", dependencies: ["Domain", "Analytics"]),
+        // Application layer (ADR-0035): one reading of the sources and one answer per shared training question.
+        .target(name: "TrainingServices", dependencies: ["Domain", "Analytics"]),
 
         // Presentation layer (ADR-0014). One module per feature; they never import each other or SwiftUI.
         .target(
@@ -55,12 +59,12 @@ let package = Package(
         ),
         .target(
             name: "HistoryPresentation",
-            dependencies: ["Domain", "Analytics", "PresentationKit"],
+            dependencies: ["Domain", "Analytics", "TrainingServices", "PresentationKit"],
             path: "Sources/Presentation/HistoryPresentation"
         ),
         .target(
             name: "PlanPresentation",
-            dependencies: ["Domain", "Analytics", "PresentationKit"],
+            dependencies: ["Domain", "Analytics", "TrainingServices", "PresentationKit"],
             path: "Sources/Presentation/PlanPresentation"
         ),
         .target(
@@ -70,7 +74,7 @@ let package = Package(
         ),
         .target(
             name: "TodayPresentation",
-            dependencies: ["Domain", "Analytics", "PresentationKit"],
+            dependencies: ["Domain", "Analytics", "TrainingServices", "PresentationKit"],
             path: "Sources/Presentation/TodayPresentation"
         ),
         .target(
@@ -80,7 +84,7 @@ let package = Package(
         ),
         .target(
             name: "AssistantPresentation",
-            dependencies: ["Domain", "PresentationKit", "AIExchange"],
+            dependencies: ["Domain", "TrainingServices", "PresentationKit", "AIExchange"],
             path: "Sources/Presentation/AssistantPresentation"
         ),
 
@@ -89,6 +93,7 @@ let package = Package(
 
         .testTarget(name: "DomainTests", dependencies: ["Domain", "Fixtures"]),
         .testTarget(name: "AnalyticsTests", dependencies: ["Analytics", "Domain"]),
+        .testTarget(name: "TrainingServicesTests", dependencies: ["TrainingServices", "Domain"]),
         .testTarget(name: "ReportsTests", dependencies: ["Reports", "Domain"]),
         .testTarget(name: "AIExchangeTests", dependencies: ["AIExchange", "Analytics", "Domain", "Fixtures"]),
         .testTarget(name: "StrongImportTests", dependencies: ["StrongImport", "Domain"]),
