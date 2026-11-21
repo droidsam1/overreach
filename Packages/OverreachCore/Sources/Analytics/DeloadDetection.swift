@@ -236,13 +236,10 @@ public enum DeloadDetection {
         guard Set(entries.keys).isSubset(of: Set(routine.exerciseIDs)), !routine.exerciseIDs.isEmpty else { return nil }
         var fraction = 0.0
         for id in routine.exerciseIDs {
-            let stored = settings[id]
-            var config = stored ?? exercises[id].map { ProgressionSettings(for: $0) } ?? .init(incrementKg: 2.5)
-            if let scheme = routine.prescription(for: id) {
-                config.scheme = scheme
-            } else if stored == nil, let focus = session.focus ?? routine.focus {
-                config.scheme = FocusPrescription.for(focus).defaultScheme
-            }
+            let config = ProgressionTargets.settings(
+                for: exercises[id], stored: settings[id], focus: session.focus ?? routine.focus,
+                prescription: routine.prescription(for: id)
+            )
             let expected = ProgressionTargets.next(history: history[id] ?? [], settings: config).sets
             let actual = (entries[id] ?? []).flatMap(\.sets).filter(\.isWorking)
             let weight = expected.first?.weightKg ?? 0

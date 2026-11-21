@@ -63,9 +63,24 @@ public enum StallDetection {
         weeklyFractionalSets: Double? = nil,
         thresholds: Thresholds = Thresholds()
     ) -> ExerciseStatus {
+        assessment(history: history, settings: settings, weeklyFractionalSets: weeklyFractionalSets,
+                   thresholds: thresholds).status
+    }
+
+    static func assessment(
+        history: [ExerciseExposure], settings: ProgressionSettings, weeklyFractionalSets: Double? = nil,
+        thresholds: Thresholds = Thresholds()
+    ) -> (status: ExerciseStatus, facts: StallFacts?) {
         guard let facts = facts(history: history, settings: settings, thresholds: thresholds) else {
-            return .notEnoughData
+            return (.notEnoughData, nil)
         }
+        return (status(facts: facts, settings: settings, weeklyFractionalSets: weeklyFractionalSets,
+                       thresholds: thresholds), facts)
+    }
+
+    private static func status(
+        facts: StallFacts, settings: ProgressionSettings, weeklyFractionalSets: Double?, thresholds: Thresholds
+    ) -> ExerciseStatus {
         if facts.recentBestKg > facts.previousBestKg * (1 + thresholds.minimumImprovement) { return .progressing }
         guard facts.misses >= thresholds.minimumMisses else { return .holding }
 

@@ -182,7 +182,7 @@ public enum PlanImporter {
         guard let exercise = lookup.resolve(name, issues: &issues) else { return nil }
         let field = "exerciseSettings[\(index)]"
         let before = issues.count
-        var settings = stored[exercise.id] ?? ProgressionSettings(for: exercise)
+        var settings = ProgressionTargets.settings(for: exercise, stored: stored[exercise.id])
         if proposal.focus != nil, let focus = self.focus(proposal.focus, field: "\(field).focus", issues: &issues) {
             settings = settings.declaring(focus)
         }

@@ -37,18 +37,14 @@ public struct PlanAnalysis: Hashable, Sendable {
             sessions: sessions, runs: runs, profile: profile, routines: routines, exercises: exercises,
             settings: settings, runReadFailed: runReadFailed, recordings: recordings, today: today, calendar: calendar
         )
-        let lastPlannedDeload = profile.deloads.map {
-            $0.start.adding(days: max(1, $0.days) - 1, calendar: calendar)
-        }.filter { $0 < today }.max()
-        let lastDetectedDeload = deloads.last { !$0.needsConfirmation }?.end
-        let lastDeload = [lastPlannedDeload, lastDetectedDeload].compactMap { $0 }.max()
-        let deloadAge = lastDeload.map { PlanReviewer.days(from: $0, to: today, calendar: calendar) }
+        let lastRecovery = RecoveryHistory.lastRecovery(
+            deloads: profile.deloads, detected: deloads, before: today, calendar: calendar
+        )
+        let deloadAge = lastRecovery.map { PlanReviewer.days(from: $0.lastDay, to: today, calendar: calendar) }
 
-        let stalled = index.exerciseIDs.filter { id in
-            let config = settings[id] ?? exercises[id].map { ProgressionSettings(for: $0) }
-                ?? ProgressionSettings(incrementKg: 2.5)
-            return StallDetection.status(history: index.exposures(of: id), settings: config).isStalled
-        }.count
+        let stalled = LiftStatus.assessAll(
+            index: index, exercises: exercises, stored: settings, routines: routines, now: now
+        ).filter(\.isStalled).count
 
         return PlanAnalysis(
             currentBlock: current,

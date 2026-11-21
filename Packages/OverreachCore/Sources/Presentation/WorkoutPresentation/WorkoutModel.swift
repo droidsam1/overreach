@@ -372,7 +372,7 @@ public final class WorkoutModel {
         guard let profile = try? await profiles?.profile() else { return }
         applyEffortScale(profile.effortScale)
         let today = CalendarDay(clock())
-        deloadPlan = profile.deloads.last?.contains(today) == true ? DeloadAdvisor.Settings().plan : nil
+        deloadPlan = RecoveryHistory.deloadInProgress(profile, on: today) != nil ? DeloadAdvisor.Settings().plan : nil
     }
 
     private func applyEffortScale(_ scale: EffortScale) {
@@ -559,7 +559,8 @@ public final class WorkoutModel {
     /// Target, status, focus and rest for `exercise`. A declared exercise focus wins over the session focus;
     /// without stored settings, the focus picks the default scheme (`FocusPrescription`).
     private func prepare(_ exercise: Exercise, id: UUID) async -> DraftExercise {
-        let sessions = await recentSessions()
+        let now = clock()
+        let sessions = await recentSessions(now: now)
         let history = ExerciseExposure.history(of: exercise.id, in: sessions)
         let stored: ProgressionSettings?
         let readSettings: Bool
@@ -590,7 +591,7 @@ public final class WorkoutModel {
         } else {
             choices = []
         }
-        let status = StallDetection.status(history: history, settings: settings)
+        let lift = LiftStatus.assess(exerciseID: exercise.id, history: history, settings: settings, now: now)
         let primed = isPrimed(exercise, before: id)
         let fallbackWeightKg = history.last?.workingWeightKg
         let plan = Self.warmUpPlan(
@@ -600,14 +601,14 @@ public final class WorkoutModel {
             for: target, warmUps: plan, settings: settings, primed: primed, fallbackWeightKg: fallbackWeightKg
         )
         return DraftExercise(
-            id: id, exercise: exercise, target: target, status: status, sets: sets, focus: focus,
+            id: id, exercise: exercise, target: target, status: lift.status, sets: sets, focus: focus,
             isFocusInferred: declaredFocus == nil && focus != nil,
             restSeconds: FocusPrescription.for(focus ?? .hypertrophy).restSeconds,
             appliedSettings: stored,
             scheme: settings.scheme,
             warmUpPlan: plan,
             isPrimed: primed,
-            stallFacts: StallDetection.facts(history: history, settings: settings),
+            stallFacts: lift.facts,
             effortScale: effortScale,
             isPrescribedByRoutine: prescribed != nil,
             firstProgressionChoices: choices,
@@ -876,8 +877,7 @@ public final class WorkoutModel {
         }
     }
 
-    private func recentSessions() async -> [StrengthSession] {
-        let now = clock()
+    private func recentSessions(now: Date) async -> [StrengthSession] {
         do {
             return try await workouts.sessions(from: now.addingTimeInterval(-Self.historyWindow), to: now)
         } catch {

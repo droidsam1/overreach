@@ -1,9 +1,12 @@
+import Analytics
+import AIExchange
 import Domain
 import Fixtures
 import Foundation
 import PresentationKit
 import Testing
 import TodayPresentation
+import WorkoutPresentation
 
 /// A stalled squat and bench (main lifts) over the last three weeks, and a week of poor recovery.
 @MainActor
@@ -72,6 +75,104 @@ struct DeloadAdviceTests {
         ])
         #expect(reasons.allSatisfy { !$0.evidence.isEmpty })
         #expect(advice.planText == "Same exercises, half of the working sets, about 10 % less load, RPE 7 at most.")
+    }
+
+    /// Eight weeks of training: lighter sessions every 3 days, then the stalled weeks.
+    private var longHistory: [StrengthSession] {
+        stride(from: 61, through: 22, by: -3).map { session($0, 80, [5, 5, 5]) } + stalledSessions
+    }
+
+    private func longAdvice(profile: AthleteProfile) -> [String] {
+        let advice = DeloadAdvice.make(
+            today: today, now: now, sessions: longHistory, exercises: [squat, bench],
+            settings: [squat.id: mainLift, bench.id: mainLift], profile: profile,
+            history: metrics(poorWeek: true), checkIns: [], calendar: calendar, format: format
+        )
+        guard case let .proposed(reasons) = advice?.state else { return [] }
+        return reasons.map(\.text)
+    }
+
+    @Test func withoutAnyDeloadTheIntervalSaysHowMuchHistoryThereIs() {
+        #expect(longAdvice(profile: AthleteProfile()).contains(
+            "No deload or break in the 8 weeks of training logged."
+        ))
+    }
+
+    @Test func todayAndPlanCountFromTheSameDeload() {
+        var profile = AthleteProfile()
+        profile.deloads = [DeloadRecord(start: today.adding(days: -15, calendar: calendar), days: 7)]
+
+        let reasons = longAdvice(profile: profile)
+        let plan = PlanAnalysis.run(
+            profile: profile, sessions: longHistory, exercises: [squat.id: squat, bench.id: bench],
+            settings: [squat.id: mainLift, bench.id: mainLift], now: now, calendar: calendar
+        )
+
+        #expect(!reasons.isEmpty)
+        #expect(!reasons.contains { $0.contains("weeks since") || $0.contains("No deload") })
+        #expect(plan.weeksSinceDeload == 1)
+    }
+
+    @Test func noProposalInTheWeekAfterAnAcceptedDeload() {
+        var profile = AthleteProfile()
+        profile.deloads = [DeloadRecord(start: today.adding(days: -10, calendar: calendar), days: 7)]
+        #expect(longAdvice(profile: profile).isEmpty)
+    }
+
+    @Test(arguments: [false, true])
+    func sameRoutineHasTheSameStallStatusAcrossSurfaces(historyIsOld: Bool) async throws {
+        let ids = [squat.id, bench.id]
+        let exercises = [squat, bench]
+        let routine = Routine(
+            name: "Full body", exerciseIDs: ids,
+            prescriptions: ids.map { RoutinePrescription(exerciseID: $0, scheme: mainLift.scheme) }
+        )
+        let byID = Dictionary(uniqueKeysWithValues: exercises.map { ($0.id, $0) })
+        let sessions = stalledSessions.map { original in
+            var session = original
+            session.routineID = routine.id
+            if historyIsOld {
+                session.startedAt = session.startedAt.addingTimeInterval(-60 * 86_400)
+                session.endedAt = session.endedAt?.addingTimeInterval(-60 * 86_400)
+            }
+            return session
+        }
+        let fixedNow = now
+        let store = TestStore(exercises: exercises, sessions: sessions, routines: [routine])
+        let workout = WorkoutModel(workouts: store, exercises: store, progression: store, clock: { fixedNow })
+        await workout.start(routine)
+        #expect(workout.exercises.count == 2)
+        #expect(workout.exercises.allSatisfy { $0.status.isStalled == !historyIsOld })
+
+        let profile = AthleteProfile()
+        let plan = PlanAnalysis.run(
+            profile: profile, sessions: sessions, exercises: byID, settings: [:], now: now,
+            routines: [routine], calendar: calendar
+        )
+        #expect(plan.stalledLifts == (historyIsOld ? 0 : 2))
+
+        let pack = ContextPackBuilder.build(
+            ContextInput(sessions: sessions, exercises: exercises, routines: [routine]),
+            period: today.adding(days: -90, calendar: calendar)...today, now: now, calendar: calendar
+        )
+        #expect(pack.exerciseTrends.map(\.status) == Array(
+            repeating: historyIsOld ? "notEnoughData" : "stalled", count: 2
+        ))
+
+        let advice = DeloadAdvice.make(
+            today: today, now: now, sessions: sessions, exercises: exercises, settings: [:], profile: profile,
+            history: metrics(poorWeek: true), checkIns: [], routines: [routine], calendar: calendar, format: format
+        )
+        if historyIsOld {
+            #expect(advice == nil)
+        } else {
+            let result = try #require(advice)
+            guard case let .proposed(reasons) = result.state else {
+                Issue.record("Expected a proposal with two stalled lifts")
+                return
+            }
+            #expect(reasons.first?.text == "2 lifts you train now have stalled.")
+        }
     }
 
     @Test func stallsWithGoodRecoveryAreNotEnough() {

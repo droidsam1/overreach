@@ -8433,6 +8433,23 @@
         }
       }
     },
+    "No deload or break in the {1} weeks of training logged.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ninguna descarga ni descanso en las {1} semanas de entrenamiento registradas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ningunha descarga nin descanso nas {1} semanas de adestramento rexistradas."
+          }
+        }
+      }
+    },
     "No exercises": {
       "extractionState": "manual",
       "localizations": {
@@ -16708,6 +16725,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Levantamentos estancados neste bloque: {1}."
+          }
+        }
+      }
+    },
+    "{1} lifts you train now have stalled.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Te has estancado en {1} de los ejercicios que entrenas ahora."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estancácheste en {1} dos exercicios que adestras agora."
           }
         }
       }

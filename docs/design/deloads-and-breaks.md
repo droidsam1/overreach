@@ -8,8 +8,9 @@ ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-pr
 
 Take the first task below whose boxes are not all checked. Each task is one pull request. Task 1 is done by
 [training services task 2](training-services.md#2-recovery-status); build tasks 2–6 on `TrainingServices` once it
-exists. Tasks 1 and 2 fix wrong advice and come first; tasks 5 and 6 change the Today card that
-[#94](https://github.com/droidsam1/overreach/issues/94) then places in the page. Record checks that need an iPhone
+exists. Tasks 1 and 2 fix wrong advice and come first. Task 5 explains the Today card that
+[#94](https://github.com/droidsam1/overreach/issues/94) then places in the page. Task 6 supplies lift findings
+to [Recovery & Progress](https://github.com/droidsam1/overreach/issues/126). Record checks that need an iPhone
 in [#21](https://github.com/droidsam1/overreach/issues/21).
 
 ## What the athlete saw
@@ -66,34 +67,30 @@ No study tests deloads or breaks in concurrent training. Treating strength and r
 
 ### 1. One "last recovery" for Today and Plan
 
-- [ ] Add a pure function in `Analytics` (e.g. `RecoveryHistory.latest`) that returns the last recovery before a
-  day: its last day, its kind (accepted deload week, confirmed or automatic break) and, after task 3, its discipline.
-  Accepted deload weeks end at `start + days - 1`.
-- [ ] Use it in `DeloadAdvisor.proposal` (instead of `lastDeload` plus `detectedDeloads`), in
-  `DeloadAdvice.unconfirmedBreak` and in `PlanAnalysis.run` (`weeksSinceDeload`).
-- [ ] Read runs the same way in Today and Plan: skip unavailable sources, and treat a source as failed only when it
-  is available and throws. Put the shared rule in one place.
-- [ ] Without any recovery in the history, the interval signal says how long the history is ("No deload or break in
-  the 11 months of training logged") instead of a week count from the first session.
-- [ ] Tests: one fixture through `DeloadAdvice.make` and `PlanAnalysis.run` gives the same last recovery and week
-  count; an accepted deload two weeks ago gives no interval signal in Today.
+Shipped through [training services](training-services.md) tasks 1 and 2 (`SourceReader`, `RecoveryHistory`).
+
+- [x] A pure function in `Analytics` (`RecoveryHistory.lastRecovery`) returns the last recovery before a day: its
+  last day and kind. Discipline comes with task 3.
+- [x] `DeloadAdvisor.proposal`, `DeloadAdvice.unconfirmedBreak`, `PlanAnalysis.run` and `WorkoutModel` use it.
+- [x] Today and Plan read runs through `SourceReader`.
+- [x] Without any recovery: "No deload or break in the 8 weeks of training logged."
+- [x] Tests: Today and Plan count from the same deload; an accepted deload gives no interval signal in Today.
 
 Finish line: with the same data, Today and Plan never disagree about the last deload.
 
 ### 2. Count only lifts in current training, and say which
 
-- [ ] A lift takes part in stall, drop and RPE-creep signals only if it was trained in the last 28 days
-  (`DeloadAdvisor.Settings.lookbackDays`) and, when a rotation or routine exists (`SessionRotation`, ADR-0033), is
-  in it.
-- [ ] Say "main lifts" only when lifts are marked main; otherwise "lifts you train now".
+- [x] Require an exposure in the last 28 days (`DeloadAdvisor.Settings.lookbackDays`) for lift signals.
+- [ ] When a rotation or routine exists (`SessionRotation`, ADR-0033), count only its exercises.
+- [x] Say "main lifts" when lifts are marked main and "lifts you train now" otherwise.
 - [ ] Add `StallDetection` output that explains a stall: exercise, the date progress stopped (first exposure of the
   flat window), best estimated 1RM and the set behind it, last exposure, and the `StallSuggestion`s.
 - [ ] Rule change: a deload proposal needs at least one fatigue signal (performance drop, RPE creep, weekly load
   spike or a sustained recovery signal). Stalls and the interval reinforce it. Stalls alone produce per-lift
   suggestions (task 6) instead. Record the change in a new ADR (next free number) and update `stall-heuristics`,
   `deload-design` and [progression engine](progression-engine.md#deload-proposals).
-- [ ] Tests: a lift last trained 3 months ago is not counted; 3 stalled current lifts with no fatigue signal give no
-  proposal; adding RPE creep gives one.
+- [x] Tests: a stale lift is excluded from current stalls in Today, Plan, Workout and the AI context.
+- [ ] Tests: three stalled current lifts with no fatigue signal give no proposal. Adding RPE creep gives one.
 
 Finish line: every stalled lift Overreach mentions is one the athlete trains now, and Today can name it.
 
@@ -128,16 +125,16 @@ Finish line: with the setting on, a week without lifting counts as strength reco
 
 ### 4. Ask about the latest periods only
 
-- [ ] Plan asks only about ambiguous periods after the last recovery (task 1), at most the two newest, and none older
-  than 12 weeks. Older ones are not asked and do not count; keep them behind an "Older periods" link for anyone who
-  wants to answer.
+- [ ] Ask about at most the two newest ambiguous periods after the last recovery (task 1) and within
+  12 weeks. Keep older unreviewed periods out of the calculation and available under "Older periods".
 - [ ] Each question shows what was logged, so the athlete can answer without remembering: "8–14 Oct: 2 strength
   sessions, about 40 % of your usual sets; no runs." Buttons: "Yes, it was rest" and "No".
 - [ ] One line says why the app asks: the answer sets when the next deload is due.
-- [ ] Today's "Did you already take a break?" uses the same selection.
+- [ ] Today's “Did you already take a break?” and any Plan prompt use the same selection. Link older periods
+  from the recovery history once [#126](https://github.com/droidsam1/overreach/issues/126) moves it.
 - [ ] Tests: five ambiguous periods in a year give at most two questions, newest first.
 
-Finish line: Plan never asks about a period older than 12 weeks unless the athlete opens the older list.
+Finish line: the default flow asks about at most two recent periods, both within the last 12 weeks.
 
 ### 5. Today deload card: summary first, details on demand
 
@@ -145,8 +142,8 @@ Finish line: Plan never asks about a period older than 12 weeks unless the athle
   the same weights feel harder"), "Start deload week", "Not now" and "Why and what changes". No evidence labels, no
   session preview on the card.
 - [ ] A detail screen with, in this order: **Why now** (training signals first, recovery signals marked as
-  supporting; stalled lifts link to task 6), **Your last rest** (date and kind from task 1, linking to Plan's
-  recovery history), **What changes** (the plan text and "See your deload session" with the current preview),
+  supporting), **Your last rest** (date and kind from task 1, linking to the recovery history),
+  **What changes** (the plan text and "See your deload session" with the current preview),
   **Evidence** (one plain sentence per evidence key, its level once, and `FurtherReading` links).
 - [ ] Rename the trend signal so it differs from readiness: "Your 7-day HRV average stayed below your usual range on
   5 of the last 7 days."
@@ -157,12 +154,12 @@ Finish line: the card fits in one screen on a compact iPhone at default text siz
 
 ### 6. Stalled lifts as their own recommendation
 
-- [ ] Plan gets a **Lifts to unblock** section (hidden when empty): each row names the lift, "No progress since
+- [ ] Prepare shared **Lifts to unblock** findings for the Progress detail in
+  [#126](https://github.com/droidsam1/overreach/issues/126). Each row names the lift, "No progress since
   12 Sep (best 82.5 kg × 5)", and the first `StallSuggestion` in plain words with its evidence on the detail.
 - [ ] Where a suggestion maps to a setting (microloading, double progression, rep range), offer "Apply" that changes
   that exercise's `ProgressionSettings` after confirmation; other suggestions are advice only.
-- [ ] Today shows stalls only through the deload detail (task 5) or, with no deload proposed, one line "2 lifts
-  stopped progressing" linking to the section.
 - [ ] Tests: rows, dates and suggestions for a stalled lift; nothing for a lift not trained in 28 days.
 
-Finish line: for each stalled lift the athlete sees since when and one concrete next step.
+Finish line: each current stalled lift has a start date and one concrete next step. Keep those findings
+reachable in Plan until #126 moves them and adds links from the deload detail.

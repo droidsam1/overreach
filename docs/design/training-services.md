@@ -1,12 +1,12 @@
 # Training services: one source of truth per question
 
-Status: planned (reviewed 2026-11-21). Decision: ADR-0035.
+Status: tasks 1–3 shipped (reviewed 2026-11-21). Decision: ADR-0035.
 
 ## Continue from here
 
 Take the first task below whose boxes are not all checked. Each task is one pull request and leaves `main`
 working. Task 2 replaces task 1 of [deloads and breaks](deloads-and-breaks.md): check its box there when done.
-After task 5, update the layout and dependency rules in `AGENTS.md` and `CODING_STANDARDS.md`.
+Keep `AGENTS.md` (layout and dependency rules) current as services move in.
 
 ## Inventory of drift
 
@@ -61,44 +61,56 @@ it to every model that needs it.
 
 ### 1. Module and shared reading
 
-- [ ] Add the `TrainingServices` target and library to `Packages/OverreachCore/Package.swift` (depends on `Domain`,
+- [x] Add the `TrainingServices` target and library to `Packages/OverreachCore/Package.swift` (depends on `Domain`,
   `Analytics`) and a test target.
-- [ ] Move run reading into it: skip unavailable sources, record an available source that throws as failed, remove
-  duplicates with `RunDeduplication`. Same for daily metrics (merged per day in source order, as `TodayModel` does)
-  and watch strength recordings.
-- [ ] Switch `TodayModel`, `PlanModel`, `HistoryRunReadings` and `AskAIModel` to it. The Assistant now sends one
+- [x] Move run reading into it (`SourceReader`): skip unavailable sources, record an available source that throws as
+  failed, remove duplicates with `RunDeduplication`. Same for daily metrics (merged per day in source order, as
+  `TodayModel` did). Watch strength recordings and walks (`ActivitySource`) are read in one call each and move with
+  the services that use them (tasks 2–4).
+- [x] Switch `TodayModel`, `PlanModel`, `HistoryRunReadings` and `AskAIModel` to it. The Assistant now sends one
   merged row per day.
-- [ ] Tests with fake sources: unavailable, failing, duplicated runs, two sources for one day.
+- [x] Tests with fake sources: unavailable, failing, duplicated runs, two sources for one day.
 
-Finish line: `grep -rn "\.runs(from\|dailyMetrics(in" Packages/OverreachCore/Sources/Presentation` finds nothing.
+Finish line: presentation modules call `runs(from:to:)` and `dailyMetrics(in:)` only on `SourceReader`.
 
 ### 2. Recovery status
 
-- [ ] `RecoveryStatus`: the last recovery (day, kind, and discipline once deloads task 3 lands), the deload week in
-  progress with its plan, and the breaks waiting for an answer.
-- [ ] Use it in `DeloadAdvice`, `PlanModel`/`PlanAnalysis` and `WorkoutModel`; `DeloadAdvisor.proposal` takes the
-  last recovery instead of `lastDeload` plus `detectedDeloads`.
-- [ ] Without any recovery, the interval signal says how much history there is, not weeks since the first session.
-- [ ] Tests: one fixture gives the same last recovery to Today, Plan and Workout; an accepted deload two weeks ago
-  gives no interval signal.
+Shipped as pure rules in `Analytics` (`RecoveryHistory`), since they need no reading of their own; the inputs to
+`DeloadDetection` move into `TrainingServices` with task 4.
 
-Finish line: [deloads task 1](deloads-and-breaks.md#1-one-last-recovery-for-today-and-plan) is checked.
+- [x] `RecoveryHistory.lastRecovery` (last day and kind; discipline once deloads task 3 lands) and
+  `RecoveryHistory.deloadInProgress`.
+- [x] Use them in `DeloadAdvice`, `PlanAnalysis` and `WorkoutModel`; `DeloadAdvisor.proposal` takes the last
+  recovery instead of `lastDeload` plus `detectedDeloads`. The week without repeat advice follows any recovery.
+- [x] Without any recovery, the interval signal says how much history there is (`noDeloadInHistory`).
+- [x] Tests: `RecoveryHistoryTests`; in `DeloadAdviceTests`, Today and `PlanAnalysis` count from the same deload,
+  and an accepted deload gives no interval signal.
 
 ### 3. Lift status and progression settings
 
-- [ ] One function resolves the progression settings of an exercise (stored, else the exercise default, plus the
-  routine prescription when a routine applies). Replace the 13 call sites.
-- [ ] `LiftStatus` per exercise: settings in use, trained recently or not, stall status with its explanation. Use it
-  in `WorkoutModel`, `PlanAnalysis`, `DeloadAdvice` and `ContextPackBuilder`.
-- [ ] Tests: the same lift is stalled or not on every screen and in the AI context.
+Shipped as pure rules in `Analytics`, as in task 2.
 
-Finish line: `StallDetection.status` and `ProgressionSettings(for:)` are called only from `TrainingServices` and
-`Analytics`.
+- [x] `ProgressionTargets.settings(for:stored:focus:prescription:)` is the one resolver: stored settings, else the
+  exercise default (2.5 kg increment when the exercise left the catalog), the focus's scheme, and a routine's
+  prescription on top. `DeloadDetection`, `SessionReview`, `PlanAnalysis`, the deload advice and preview, and the
+  plan importer use it. `ProgressionSettings(for:)` stays only where a screen compares with the defaults before
+  saving.
+- [x] `LiftStatus` per exercise: settings in use (from the latest session that trained it: its routine's
+  prescription and focus), progression history and stall status. `ExposureIndex.progressionExposures` leaves out
+  unfinished exercises, as the logger does; Plan used to count them. `WorkoutModel`, `PlanAnalysis`,
+  `DeloadAdvice` and `ContextPackBuilder` use it. "Trained recently" comes with deloads task 2.
+- [x] Tests: `LiftStatusTests` (unfinished exercises, routine prescription, missing exercise).
+  `DeloadAdviceTests` checks the same routine in Today, Plan, Workout and the AI context with recent and stale
+  history. Each surface requires an eligible exposure in the last 28 days for a current stall.
+
+Finish line: outside `Analytics`, `StallDetection.status` has no callers and `ProgressionSettings(for:)` only
+compares with defaults.
 
 ### 4. Readiness and the deload recommendation
 
 - [ ] Move the readiness and deload composition out of `TodayModel`/`DeloadAdvice` (which inputs, which windows)
-  into `TrainingServices`; `DeloadAdvice` keeps only the texts.
+  into `TrainingServices`; `DeloadAdvice` keeps only the texts. Today passes only completed sessions to
+  `DeloadDetection` and Plan passes all of them: read them once there.
 - [ ] Give the AI context pack the same readiness and deload answers Today shows.
 - [ ] Distinct names for the per-reading and 7-day-trend HRV counts in the returned types.
 
@@ -109,6 +121,6 @@ Finish line: the AI context and Today state the same readiness level and deload 
 - [ ] Add a check (SwiftLint `custom_rules` or `scripts/check-repo.py`) that fails when a file under
   `Packages/OverreachCore/Sources/Presentation` calls `.runs(from`, `.dailyMetrics(in`, `DeloadDetection.`,
   `DeloadAdvisor.`, `StallDetection.status` or `ReadinessRules.readiness`.
-- [ ] Mark ADR-0035 accepted and add `TrainingServices` to the layout and dependency rules in `AGENTS.md`.
+- [x] Mark ADR-0035 accepted and add `TrainingServices` to the layout and dependency rules in `AGENTS.md`.
 
 Finish line: the check passes on `main` and fails on a test file that breaks the rule.

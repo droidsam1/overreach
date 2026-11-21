@@ -54,20 +54,17 @@ public struct DeloadAdvice: Hashable, Sendable {
             format.number((1 - plan.loadMultiplier) * 100, maxFractionDigits: 0) + " %",
             format.number(plan.maximumRPE)
         )
-        if let current = profile.deloads.last, current.contains(today, calendar: calendar) {
-            let lastDay = current.start.adding(days: max(1, current.days) - 1, calendar: calendar)
+        if let current = RecoveryHistory.deloadInProgress(profile, on: today, calendar: calendar) {
+            let lastDay = RecoveryHistory.lastDay(of: current, calendar: calendar)
             return DeloadAdvice(state: .inProgress(lastDay: lastDay.startDate(in: calendar)), planText: planText)
         }
         if let postponed = profile.deloadPostponedUntil, today <= postponed { return nil }
 
         let byID = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        let used = Set(sessions.flatMap { $0.entries.map(\.exerciseID) })
-        let lifts = used.compactMap { id -> DeloadAdvisor.Lift? in
-            guard let exercise = byID[id] else { return nil }
-            let history = ExerciseExposure.history(of: id, in: sessions)
-            guard !history.isEmpty else { return nil }
-            return DeloadAdvisor.Lift(history: history, settings: settings[id] ?? ProgressionSettings(for: exercise))
-        }
+        let lifts = LiftStatus.assessAll(
+            index: ExposureIndex(sessions: sessions), exercises: byID, stored: settings, routines: routines,
+            now: now, lookbackDays: advisorSettings.lookbackDays
+        )
         let recovery = RecoveryTrend.assess(
             today: today, history: history, checkIns: checkIns, settings: readinessSettings, cycle: cycle,
             calendar: calendar
@@ -76,18 +73,19 @@ public struct DeloadAdvice: Hashable, Sendable {
             sessions: sessions, runs: runs, profile: profile, routines: routines, exercises: byID,
             settings: settings, runReadFailed: runReadFailed, recordings: recordings, today: today, calendar: calendar
         )
-        let lastDeload = profile.deloads.last.map { $0.start.startDate(in: calendar) }
         let weeklyLoad = Self.weeklyLoad(sessions: sessions, activity: activity, profile: profile, today: today,
                                          calendar: calendar)
+        func lastRecovery(_ periods: [DetectedDeload]) -> LastRecovery? {
+            RecoveryHistory.lastRecovery(deloads: profile.deloads, detected: periods, before: today, calendar: calendar)
+        }
         func propose(_ periods: [DetectedDeload]) -> DeloadProposal? {
             DeloadAdvisor.proposal(
-                lifts: lifts, lastDeload: lastDeload, weeklyLoad: weeklyLoad, recovery: recovery,
-                now: now, settings: advisorSettings,
-                detectedDeloads: periods, calendar: calendar
+                lifts: lifts, lastRecovery: lastRecovery(periods), weeklyLoad: weeklyLoad, recovery: recovery,
+                now: now, settings: advisorSettings, calendar: calendar
             )
         }
         guard let proposal = propose(detected) else { return nil }
-        if let pending = unconfirmedBreak(in: detected, lastDeload: profile.deloads.last?.start, today: today),
+        if let pending = unconfirmedBreak(in: detected, after: lastRecovery(detected), today: today),
            propose(detected + [DetectedDeload(start: pending.start, end: pending.end, reason: pending.reason,
                                               needsConfirmation: false)]) == nil {
             // Ask first: if the break was the rest the signals call for, a deload now would repeat it.
@@ -125,27 +123,31 @@ public struct DeloadAdvice: Hashable, Sendable {
         return Workload.weeklyLoadChange(loads: loads, on: today, calendar: calendar, walking: walking)
     }
 
-    /// The latest unconfirmed period after the last deload or confirmed break, within the planned interval.
+    /// The latest unconfirmed period after the last recovery.
     private static func unconfirmedBreak(
-        in detected: [DetectedDeload], lastDeload: CalendarDay?, today: CalendarDay
+        in detected: [DetectedDeload], after lastRecovery: LastRecovery?, today: CalendarDay
     ) -> DetectedDeload? {
-        let confirmedEnd = detected.filter { !$0.needsConfirmation }.map(\.end).max()
-        let lastRecovery = [confirmedEnd, lastDeload].compactMap { $0 }.max()
-        return detected.filter { period in
-            period.needsConfirmation && period.end < today && lastRecovery.map { period.start > $0 } ?? true
+        detected.filter { period in
+            period.needsConfirmation && period.end < today && lastRecovery.map { period.start > $0.lastDay } ?? true
         }.max { $0.end < $1.end }
     }
 
     static func text(for signal: DeloadSignal, format: Format, walkingIncluded: Bool = false) -> String {
         switch signal {
-        case let .liftsStalled(count):
-            L10n.format("{1} main lifts have stalled.", count)
+        case let .liftsStalled(count, mainLifts):
+            if mainLifts {
+                L10n.format("{1} main lifts have stalled.", count)
+            } else {
+                L10n.format("{1} lifts you train now have stalled.", count)
+            }
         case let .performanceDrop(lifts):
             L10n.format("Estimated maxes dropped on {1} lifts this month.", lifts)
         case let .rpeCreep(lifts):
             L10n.format("The same weights feel harder on {1} lifts (RPE up).", lifts)
         case let .weeksSinceDeload(weeks):
             L10n.format("{1} weeks since your last deload.", weeks)
+        case let .noDeloadInHistory(weeks):
+            L10n.format("No deload or break in the {1} weeks of training logged.", weeks)
         case let .weeklyLoadSpike(ratio) where walkingIncluded:
             L10n.format("Strength and extra walking load reached {1}× your usual week.",
                         format.number(ratio, maxFractionDigits: 1))

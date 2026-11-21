@@ -1,6 +1,6 @@
 # 0035 — One application layer gathers training data and composes rules
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-21
 
 ## Context

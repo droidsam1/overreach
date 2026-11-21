@@ -3,6 +3,11 @@ import Domain
 import Foundation
 import Testing
 
+/// A deload week that ended on `date`.
+private func deloadEnded(_ date: Date, calendar: Calendar = .current) -> LastRecovery {
+    LastRecovery(lastDay: CalendarDay(date, calendar: calendar), kind: .deloadWeek)
+}
+
 @Suite("Deload proposals with recovery signals")
 struct DeloadRecoveryTests {
     private let calendar = Calendar(identifier: .gregorian)
@@ -19,16 +24,16 @@ struct DeloadRecoveryTests {
     }
 
     /// Stalled on 102.5 kg for three sessions: a performance signal (2 points with two lifts).
-    private var stalled: DeloadAdvisor.Lift {
-        DeloadAdvisor.Lift(history: [
+    private var stalled: LiftStatus {
+        LiftStatus.assess(exerciseID: UUID(), history: [
             exposure(-18, 95, [5, 5, 5]), exposure(-15, 97.5, [5, 5, 5]), exposure(-12, 100, [5, 5, 5]),
             exposure(-9, 102.5, [4, 4, 4]), exposure(-6, 102.5, [4, 4, 3]), exposure(-3, 102.5, [4, 3, 3]),
-        ], settings: main)
+        ], settings: main, now: now)
     }
 
-    private var progressing: DeloadAdvisor.Lift {
-        DeloadAdvisor.Lift(history: (0..<6).map { exposure(-18 + $0 * 3, 100 + Double($0) * 2.5, [5, 5, 5]) },
-                           settings: main)
+    private var progressing: LiftStatus {
+        let history = (0..<6).map { exposure(-18 + $0 * 3, 100 + Double($0) * 2.5, [5, 5, 5]) }
+        return LiftStatus.assess(exerciseID: UUID(), history: history, settings: main, now: now)
     }
 
     private let poorRecovery = RecoveryTrend(
@@ -37,33 +42,37 @@ struct DeloadRecoveryTests {
 
     @Test func stallsAloneScoreTwoAndRecoveryTipsItIntoAProposal() throws {
         let lifts = [stalled, stalled]
-        #expect(DeloadAdvisor.proposal(lifts: lifts, lastDeload: at(-14), now: now) == nil)
+        #expect(DeloadAdvisor.proposal(lifts: lifts, lastRecovery: deloadEnded(at(-14)), now: now) == nil)
 
         let proposal = try #require(DeloadAdvisor.proposal(
-            lifts: lifts, lastDeload: at(-14), recovery: RecoveryTrend(hrvLowDays: 5), now: now
+            lifts: lifts, lastRecovery: deloadEnded(at(-14)), recovery: RecoveryTrend(hrvLowDays: 5), now: now
         ))
-        #expect(proposal.signals == [.liftsStalled(count: 2), .hrvSuppressed(days: 5)])
+        #expect(proposal.signals == [.liftsStalled(count: 2, mainLifts: true), .hrvSuppressed(days: 5)])
         #expect(proposal.score == 3)
         #expect(proposal.signals.last?.evidence.key == "deload-recovery-signals")
     }
 
     @Test func aDetectedDeloadResetsTheOverdueSignal() throws {
         let lifts = [stalled, stalled]
-        let old = try #require(DeloadAdvisor.proposal(lifts: lifts, lastDeload: at(-70), now: now))
+        let old = try #require(DeloadAdvisor.proposal(lifts: lifts, lastRecovery: deloadEnded(at(-70)), now: now))
         #expect(old.signals.contains(.weeksSinceDeload(10)))
         let detected = DetectedDeload(
             start: CalendarDay(at(-16), calendar: calendar), end: CalendarDay(at(-10), calendar: calendar),
             reason: .noTraining, needsConfirmation: false
         )
-        #expect(DeloadAdvisor.proposal(
-            lifts: lifts, lastDeload: at(-70), now: now, detectedDeloads: [detected], calendar: calendar
-        ) == nil)
+        let last = RecoveryHistory.lastRecovery(
+            deloads: [DeloadRecord(start: CalendarDay(at(-76), calendar: calendar), days: 7)], detected: [detected],
+            before: CalendarDay(now, calendar: calendar), calendar: calendar
+        )
+        #expect(last == LastRecovery(lastDay: detected.end, kind: .detectedBreak))
+        #expect(DeloadAdvisor.proposal(lifts: lifts, lastRecovery: last, now: now, calendar: calendar) == nil)
     }
 
     @Test func recoveryNeverProposesADeloadWithoutAPerformanceSignal() {
         // Overdue and with every recovery signal, but lifting keeps progressing: no deload.
         let proposal = DeloadAdvisor.proposal(
-            lifts: [progressing, progressing], lastDeload: at(-70), weeklyLoad: WeeklyLoadChange(lastWeek: 1.7, usualWeek: 1), recovery: poorRecovery,
+            lifts: [progressing, progressing], lastRecovery: deloadEnded(at(-70)),
+            weeklyLoad: WeeklyLoadChange(lastWeek: 1.7, usualWeek: 1), recovery: poorRecovery,
             now: now
         )
         #expect(proposal == nil)
@@ -71,7 +80,7 @@ struct DeloadRecoveryTests {
 
     @Test func recoveryAddsAtMostTwoPoints() throws {
         let proposal = try #require(DeloadAdvisor.proposal(
-            lifts: [stalled, stalled], lastDeload: at(-14), recovery: poorRecovery, now: now
+            lifts: [stalled, stalled], lastRecovery: deloadEnded(at(-14)), recovery: poorRecovery, now: now
         ))
         #expect(proposal.signals.count == 5)  // all four recovery signals are listed as reasons…
         #expect(proposal.score == 4)  // …but add only 2 points
@@ -79,13 +88,17 @@ struct DeloadRecoveryTests {
 
     @Test func shortRunsOfBadDaysDoNotCount() {
         let mild = RecoveryTrend(hrvLowDays: 4, restingHeartRateHighDays: 3, shortSleepNights: 3, poorWellbeingCheckIns: 2)
-        #expect(DeloadAdvisor.proposal(lifts: [stalled, stalled], lastDeload: at(-14), recovery: mild, now: now) == nil)
+        #expect(DeloadAdvisor.proposal(
+            lifts: [stalled, stalled], lastRecovery: deloadEnded(at(-14)), recovery: mild, now: now
+        ) == nil)
     }
 
     @Test func beingSickGivesNoDeload() {
         var sick = poorRecovery
         sick.sickRecently = true
-        #expect(DeloadAdvisor.proposal(lifts: [stalled, stalled], lastDeload: at(-60), recovery: sick, now: now) == nil)
+        #expect(DeloadAdvisor.proposal(
+            lifts: [stalled, stalled], lastRecovery: deloadEnded(at(-60)), recovery: sick, now: now
+        ) == nil)
     }
 
     // MARK: Recovery trend

@@ -3,6 +3,11 @@ import Domain
 import Foundation
 import Testing
 
+/// A deload week that ended on `date`.
+private func deloadEnded(_ date: Date, calendar: Calendar = .current) -> LastRecovery {
+    LastRecovery(lastDay: CalendarDay(date, calendar: calendar), kind: .deloadWeek)
+}
+
 // MARK: - Fixtures
 
 private let baseDate = Date(timeIntervalSince1970: 1_790_000_000)
@@ -237,22 +242,25 @@ struct DeloadAdvisorTests {
 
     @Test func proposesWhenLiftsStallAndADeloadIsDue() throws {
         let lifts = [
-            DeloadAdvisor.Lift(history: stalledSquat(), settings: main),
-            DeloadAdvisor.Lift(history: stalledSquat(startDay: 1), settings: main),
+            LiftStatus.assess(exerciseID: UUID(), history: stalledSquat(), settings: main, now: date(day: 17)),
+            LiftStatus.assess(
+                exerciseID: UUID(), history: stalledSquat(startDay: 1), settings: main, now: date(day: 17)
+            ),
         ]
         let proposal = try #require(DeloadAdvisor.proposal(
-            lifts: lifts, lastDeload: date(day: -42), now: date(day: 17)
+            lifts: lifts, lastRecovery: deloadEnded(date(day: -42)), now: date(day: 17)
         ))
-        #expect(proposal.signals.contains(.liftsStalled(count: 2)))
+        #expect(proposal.signals.contains(.liftsStalled(count: 2, mainLifts: true)))
         #expect(proposal.signals.contains(.weeksSinceDeload(8)))
         #expect(proposal.plan == .standard)
     }
 
     @Test func timeAndLoadAloneDoNotTriggerADeload() {
         let progressing = (0..<5).map { exposure(day: $0 * 3, weight: 100 + Double($0) * 2.5, reps: [5, 5, 5]) }
-        let lifts = [DeloadAdvisor.Lift(history: progressing, settings: main)]
+        let lifts = [LiftStatus.assess(exerciseID: UUID(), history: progressing, settings: main, now: date(day: 14))]
         let proposal = DeloadAdvisor.proposal(
-            lifts: lifts, lastDeload: date(day: -70), weeklyLoad: WeeklyLoadChange(lastWeek: 170, usualWeek: 100),
+            lifts: lifts, lastRecovery: deloadEnded(date(day: -70)),
+            weeklyLoad: WeeklyLoadChange(lastWeek: 170, usualWeek: 100),
             now: date(day: 14)
         )
         #expect(proposal == nil)

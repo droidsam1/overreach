@@ -3,10 +3,12 @@ import Foundation
 
 /// A signal that contributed to a deload proposal.
 public enum DeloadSignal: Hashable, Sendable {
-    case liftsStalled(count: Int)
+    case liftsStalled(count: Int, mainLifts: Bool)
     case rpeCreep(lifts: Int)
     case performanceDrop(lifts: Int)
     case weeksSinceDeload(Int)
+    /// No deload or break in the whole history read, which spans this many weeks.
+    case noDeloadInHistory(weeks: Int)
     /// Last 7 days' load as a multiple of the usual week (e.g. 1.6 = 60 % above).
     case weeklyLoadSpike(ratio: Double)
     /// Recovery over the last 7 days (`deload-recovery-signals`): they only reinforce training signals.
@@ -19,7 +21,7 @@ public enum DeloadSignal: Hashable, Sendable {
         switch self {
         case .liftsStalled, .performanceDrop: ProgressionEvidence.deloadDesign
         case .rpeCreep: ProgressionEvidence.rpeCreep
-        case .weeksSinceDeload: ProgressionEvidence.deloadPractice
+        case .weeksSinceDeload, .noDeloadInHistory: ProgressionEvidence.deloadPractice
         case .weeklyLoadSpike: ProgressionEvidence.weeklyLoadChange
         case .hrvSuppressed, .restingHeartRateElevated, .shortSleep, .poorWellbeing:
             ProgressionEvidence.deloadRecoverySignals
@@ -102,7 +104,7 @@ public enum DeloadAdvisor {
         /// e1RM below the recent best by more than this counts as a drop.
         public var performanceDropFraction = 0.03
         /// Window for RPE creep and performance drops.
-        public var lookbackDays = 28
+        public var lookbackDays = LiftStatus.recentDays
         /// Points per sustained recovery signal, and the most they add together.
         public var recoveryWeight = 1.0
         public var recoveryWeightCap = 2.0
@@ -116,47 +118,38 @@ public enum DeloadAdvisor {
         public init() {}
     }
 
-    public struct Lift: Hashable, Sendable {
-        public var history: [ExerciseExposure]
-        public var settings: ProgressionSettings
-
-        public init(history: [ExerciseExposure], settings: ProgressionSettings) {
-            self.history = history
-            self.settings = settings
-        }
-    }
-
+    /// - Parameter lastRecovery: from `RecoveryHistory.lastRecovery`, so every screen counts from the same day.
     public static func proposal(
-        lifts: [Lift],
-        lastDeload: Date?,
+        lifts: [LiftStatus],
+        lastRecovery: LastRecovery?,
         weeklyLoad: WeeklyLoadChange? = nil,
         recovery: RecoveryTrend? = nil,
         now: Date,
         settings: Settings = Settings(),
-        detectedDeloads: [DetectedDeload] = [],
         calendar: Calendar = .current
     ) -> DeloadProposal? {
         if recovery?.sickRecently == true { return nil }
         let today = CalendarDay(now, calendar: calendar)
-        let detectedEnd = detectedDeloads.filter { !$0.needsConfirmation && $0.end <= today }.map(\.end).max()
-        let lastRecovery = [lastDeload, detectedEnd?.startDate(in: calendar)].compactMap { $0 }.max()
-        if let detectedEnd, PlanReviewer.days(from: detectedEnd, to: today, calendar: calendar) <= 7 { return nil }
-        let mainLifts = lifts.filter(\.settings.isMainLift)
-        let considered = mainLifts.isEmpty ? lifts : mainLifts
+        // No repeat advice in the week after a deload or a break (ADR-0029).
+        if let lastRecovery, PlanReviewer.days(from: lastRecovery.lastDay, to: today, calendar: calendar) <= 7 {
+            return nil
+        }
+        let recoveryEnd = lastRecovery.map { $0.lastDay.adding(days: 1, calendar: calendar).startDate(in: calendar) }
+        let current = lifts.filter(\.trainedRecently)
+        let mainLifts = current.filter(\.settings.isMainLift)
+        let considered = mainLifts.isEmpty ? current : mainLifts
         var signals: [DeloadSignal] = []
         var score = 0.0
 
-        let stalled = considered.filter {
-            StallDetection.status(history: $0.history, settings: $0.settings).isStalled
-        }.count
+        let stalled = considered.filter { $0.status.isStalled }.count
         if stalled >= 2 {
-            signals.append(.liftsStalled(count: stalled))
+            signals.append(.liftsStalled(count: stalled, mainLifts: !mainLifts.isEmpty))
             score += settings.stalledWeight
         }
 
         // Lighter sessions during and right after a deload or a break are detraining, not accumulated fatigue:
         // drops and RPE creep only compare sessions since the last recovery period.
-        let since = max(now.addingTimeInterval(-Double(settings.lookbackDays) * 86_400), lastRecovery ?? .distantPast)
+        let since = max(now.addingTimeInterval(-Double(settings.lookbackDays) * 86_400), recoveryEnd ?? .distantPast)
         let dropped = considered.filter {
             hasPerformanceDrop($0.history, since: since, fraction: settings.performanceDropFraction)
         }.count
@@ -171,13 +164,17 @@ public enum DeloadAdvisor {
             score += settings.rpeCreepWeight
         }
 
-        let firstSession = lifts.compactMap { $0.history.first?.date }.min()
-        if let reference = lastRecovery ?? firstSession {
-            let weeks = PlanReviewer.days(
-                from: CalendarDay(reference, calendar: calendar), to: today, calendar: calendar
-            ) / 7
+        if let lastRecovery {
+            let weeks = PlanReviewer.days(from: lastRecovery.lastDay, to: today, calendar: calendar) / 7
             if weeks >= settings.plannedIntervalWeeks {
                 signals.append(.weeksSinceDeload(weeks))
+                score += settings.intervalWeight
+            }
+        } else if let first = lifts.compactMap({ $0.history.first?.date }).min() {
+            let firstDay = CalendarDay(first, calendar: calendar)
+            let weeks = PlanReviewer.days(from: firstDay, to: today, calendar: calendar) / 7
+            if weeks >= settings.plannedIntervalWeeks {
+                signals.append(.noDeloadInHistory(weeks: weeks))
                 score += settings.intervalWeight
             }
         }
