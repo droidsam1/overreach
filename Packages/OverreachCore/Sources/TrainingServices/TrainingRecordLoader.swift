@@ -36,6 +36,8 @@ public struct TrainingRecordLoader: Sendable {
 
     public struct Snapshot: Sendable {
         public let record: TrainingRecord
+        public let runOriginals: [RunActivity]
+        public let strengthOriginals: [RecordedStrengthActivity]
         public let metrics: SourceReading<[DailyMetrics]>
         public let metricsBySource: [DailyMetrics]
         public let allSessions: [StrengthSession]
@@ -78,8 +80,10 @@ public struct TrainingRecordLoader: Sendable {
         async let catalog = try? exercises?.allExercises()
         async let stored = try? progression?.allProgressionSettings()
         async let templates = try? routines?.allRoutines()
-        async let runs = sources.readRuns(from: recoveryStart, to: now)
-        async let recordings = recordedStrength?.strengthActivities(from: recoveryStart, to: now)
+        // Read across midnight before matching. The assessment keeps its original input window.
+        let activityStart = calendar.date(byAdding: .day, value: -1, to: recoveryStart) ?? recoveryStart
+        async let runs = sources.runOriginals(from: activityStart, to: now)
+        async let recordings = recordedStrength?.strengthActivities(from: activityStart, to: now)
         let metricsStart = min(metricsRange.lowerBound, exportFrom ?? today)
         async let allMetrics = sources.dailyMetricsBySource(in: metricsStart...today)
         let checkInStart = min(stressStart, exportFrom ?? today)
@@ -100,14 +104,19 @@ public struct TrainingRecordLoader: Sendable {
         let record = TrainingRecord(
             sessions: (sessions ?? []).filter { $0.isCompleted(through: now) },
             exercises: exercises ?? [], settings: progression ?? [:], routines: routines ?? [],
-            runs: runReading.activities, runReadFailed: runReading.failed, recordings: strength ?? [],
+            runs: RunDeduplication.removingDuplicates(runReading.value.filter { $0.startedAt >= recoveryStart }),
+            runReadFailed: runReading.failed,
+            recordings: StrengthActivityMatching.removingDuplicates(
+                (strength ?? []).filter { $0.startedAt >= recoveryStart }
+            ),
             metrics: historyMetrics, checkIns: recent, activity: movement,
             cycle: await cycleContext
         )
         let sessionsFailed = workouts != nil && sessions == nil
         let settingsFailed = self.progression != nil && progression == nil
         return Snapshot(
-            record: record, metrics: metrics, metricsBySource: reading.value,
+            record: record, runOriginals: runReading.value, strengthOriginals: strength ?? [],
+            metrics: metrics, metricsBySource: reading.value,
             allSessions: (sessions ?? []).filter { $0.startedAt >= sessionStart },
             allCheckIns: history + (checkIn.map { [$0] } ?? []), checkIn: checkIn,
             sessionsFailed: sessionsFailed, settingsFailed: settingsFailed,
