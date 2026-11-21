@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today puts an unfinished workout first and highlights the next useful action when there is no workout to resume.
+  Recommendation details, today's metrics and recent training have labeled entry points.
 - Plan lists the lifts to unblock: each current stalled lift says since when it stopped progressing, its best set
   and one next step, with the evidence and other options on its detail. Smaller jumps, a rep range or a new rep
   range can be applied to that exercise's settings after confirmation.

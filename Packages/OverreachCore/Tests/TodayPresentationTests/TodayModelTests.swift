@@ -44,6 +44,7 @@ struct TodayModelTests {
         #expect(model.metrics?.restingHeartRate == 52)
         #expect(model.metrics?.sleepSeconds == 25_200.0)  // 7 h
         #expect(model.failedSources.isEmpty)
+        #expect(model.nextAction == .train)
     }
 
     @Test func aFailingSourceDoesNotHideTheOthers() async {
@@ -62,6 +63,7 @@ struct TodayModelTests {
 
         await model.load()
 
+        #expect(model.nextAction == .retry)
         #expect(model.showsSourceWarning)
         #expect(model.sourceWarningDetail == "Apple Health: \(URLError(.notConnectedToInternet).localizedDescription)")
     }
@@ -88,6 +90,8 @@ struct TodayModelTests {
 
         await model.load()
 
+        #expect(model.nextAction == .connectHealth)
+        #expect(model.showsReadinessCard)
         #expect(model.metrics == nil)
         #expect(model.readiness.level == .unknown)
     }
@@ -97,5 +101,6 @@ struct TodayModelTests {
 
         #expect(model.readinessLevel == .unknown)
         #expect(model.readinessTitle == "Unknown")
+        #expect(model.nextAction == .loading)
     }
 }

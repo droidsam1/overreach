@@ -10,33 +10,31 @@ and the logger come before review tools, and work that only a person with an iPh
 
 ## Ready to implement
 
-1. **One clear next action in Today** — [#94](https://github.com/droidsam1/overreach/issues/94). Put resume or the
-   next useful action first, with its reason and any warning that affects it. Use the existing compact deload card.
-2. **Fewer taps in the active logger** — [#93](https://github.com/droidsam1/overreach/issues/93). Used in every
+1. **Fewer taps in the active logger** — [#93](https://github.com/droidsam1/overreach/issues/93). Used in every
    session. Shipped: the first set leads the screen (help and focus in session options), "Last time" with its
    date under today's target, haptic set completion and a report that leads with the saved confirmation and any
    record. Next: an opt-in "use last time's values" and the one-handed timing on a device
    ([#21](https://github.com/droidsam1/overreach/issues/21)).
-3. **Recovery & Progress from Today** — [#125](https://github.com/droidsam1/overreach/issues/125). After #94
+2. **Recovery & Progress from Today** — [#125](https://github.com/droidsam1/overreach/issues/125). After #94
    and shared readiness, open the new destination and move the metrics and everyday movement details together.
-4. **One activity log** — [#40](https://github.com/droidsam1/overreach/issues/40), in order
+3. **One activity log** — [#40](https://github.com/droidsam1/overreach/issues/40), in order
    [#85](https://github.com/droidsam1/overreach/issues/85) → [#86](https://github.com/droidsam1/overreach/issues/86)
    → [#87](https://github.com/droidsam1/overreach/issues/87) → [#88](https://github.com/droidsam1/overreach/issues/88).
    Correct wrong merges and count every activity once.
-5. **Running priority and the shared schedule** —
+4. **Running priority and the shared schedule** —
    [hybrid backlog tasks 6–8](design/readiness-and-hybrid-planning.md#6-add-a-running-objective-to-hybrid-goals):
    running/strength priority, dated strength in the calendar, structured runs, then adjusting planned runs.
-6. **Planned versus completed work for imported plans** — follow-up of
+5. **Planned versus completed work for imported plans** — follow-up of
    [#34](https://github.com/droidsam1/overreach/issues/34).
-7. **Schedule-first Plan** — [#126](https://github.com/droidsam1/overreach/issues/126). After #125, bring the
+6. **Schedule-first Plan** — [#126](https://github.com/droidsam1/overreach/issues/126). After #125, bring the
    calendar forward and move retrospective detail to Recovery & Progress as shared break and lift results land.
-8. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).
-9. **Hybrid planning research** —
+7. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).
+8. **Hybrid planning research** —
    [hybrid backlog task 9](design/readiness-and-hybrid-planning.md#9-research-and-validate-hybrid-planning-rules-before-automating-plans).
    Runs in parallel. Integrate after the shared schedule work.
-10. **Longer trends** — [#127](https://github.com/droidsam1/overreach/issues/127). After #126, add 30- and
-    90-day views inside the relevant details. Use the activity matching from #40 for combined-source totals.
-11. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
+9. **Longer trends** — [#127](https://github.com/droidsam1/overreach/issues/127). After #126, add 30- and
+   90-day views inside the relevant details. Use the activity matching from #40 for combined-source totals.
+10. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
 
 ## Needs a person or an iPhone
 

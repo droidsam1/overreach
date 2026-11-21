@@ -7481,6 +7481,23 @@
         }
       }
     },
+    "Loading Today…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cargando Hoy…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cargando Hoxe…"
+          }
+        }
+      }
+    },
     "Log RPE or reps in reserve, with a guide to rate it well.": {
       "extractionState": "manual",
       "localizations": {
@@ -8484,23 +8501,6 @@
         }
       }
     },
-    "Nightly HRV, sleep score and Body Battery for the readiness light. Three steps.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VFC nocturna, puntuación de sueño y Body Battery para el semáforo. Tres pasos."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VFC nocturna, puntuación de sono e Body Battery para o semáforo. Tres pasos."
-          }
-        }
-      }
-    },
     "Nightly HRV, sleep score, Body Battery and more. Three steps.": {
       "extractionState": "manual",
       "localizations": {
@@ -9381,6 +9381,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Abrir Garmin Connect outra vez"
+          }
+        }
+      }
+    },
+    "Open Train": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Entrenar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Adestrar"
           }
         }
       }
@@ -11387,6 +11404,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Revisa as miñas rutinas e dime que cambiarías."
+          }
+        }
+      }
+    },
+    "Review saved workout": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar el entrenamiento guardado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar o adestramento gardado"
           }
         }
       }
@@ -15824,6 +15858,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fortes"
+          }
+        }
+      }
+    },
+    "View recent training": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver entrenamientos recientes"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver adestramentos recentes"
           }
         }
       }
