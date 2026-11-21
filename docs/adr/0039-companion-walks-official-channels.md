@@ -22,7 +22,10 @@ those walks as fixed, but the walk data cannot tell them apart. Research on 2026
 1. A dog walk is a **tag** on a walk Overreach already has (`WalkBout.companion`), never a new walk.
 2. The main source is the athlete. The app asks "With <dog>?" on walks at the athlete's usual dog-walk times, learned
    from earlier answers, and one tap confirms. History allows changing any answer.
-3. An optional import of the Tractive GPX/KML export tags past walks automatically. A single pure matcher in Domain
+3. An optional import of the Tractive GPX/KML export tags past walks automatically. The athlete downloads the file
+   from my.tractive.com, guided by a three-step sheet with an animated walkthrough. The site opens in
+   `SFSafariViewController`, so the app never handles the Tractive login. The file can also arrive as a shared
+   document. A single pure matcher in Domain
    (`CompanionWalkMatching`) turns its movement windows into tags. A manual answer always wins.
 4. We do not use Tractive's or any other pet tracker's unofficial API, not even as a fallback (as ADR-0022 for Garmin).
    Strava routes are not planned.

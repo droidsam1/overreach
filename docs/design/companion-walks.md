@@ -131,8 +131,47 @@ without a question for each:
 
 - A pure `TrackImport` module turns track points into movement windows: speed ≥ 0.5 m/s for ≥ 8 min, joining gaps of
   ≤ 5 min, with confidence from point density.
-- The file is imported through Files like the Strong CSV (ADR-0011), with a preview before saving.
 - Coordinates are discarded once the windows are computed.
+
+### Guided import
+
+[#165](https://github.com/droidsam1/overreach/issues/165), shaped by the device check
+[#164](https://github.com/droidsam1/overreach/issues/164). The download is manual by design: Tractive offers no API,
+and the app must not handle the Tractive login. The flow makes those few taps obvious and short. It follows the
+Garmin setup pattern (`GarminSetupView`) and the [iPhone UX guide](iphone-ux.md).
+
+```
+Onboarding: "Does Nanoq wear a Tractive collar?" ── yes ──▶ profile.petTracker = .tractive  (no import yet)
+Today card (after 7 days) · Settings → Walks → Tractive · History hint
+        │
+        ▼
+1 What you get ──▶ 2 Download: animated walkthrough ──▶ Open Tractive (SFSafariViewController)
+                                                              │ download GPX (≤ 60 days)
+3 Choose the file (.fileImporter) ◀── or Share → Overreach / AirDrop (GPX and KML document types)
+        │
+        ▼
+Preview: "41 movement periods · 34 match your walks" ──▶ Tag 34 walks ──▶ result in place
+```
+
+- **One main action per step**: Continue → Open Tractive → Choose GPX file → Tag N walks.
+- **Animated walkthrough.** Before opening the site, a short animation shows the four taps (tracker → Export Location
+  History → GPX, last 60 days → Download). It is drawn by us with SF Symbols and shapes, never with Tractive
+  screenshots or logos. It uses `PhaseAnimator` or `KeyframeAnimator`. With Reduce Motion on, it shows a static
+  numbered list. The labels come from #164.
+- **No credentials.** `SFSafariViewController` keeps the Tractive login out of the app, unlike a `WKWebView`, where the
+  app could read what is typed.
+- **Any route in.** The app declares GPX (`com.topografix.gpx`) and KML (`com.google.earth.kml`) as importable document
+  types. A file shared from Files, Safari's downloads or AirDrop from a Mac opens the sheet at step 3. If #164 finds
+  the export does not work on a phone, the desktop route (computer → AirDrop or iCloud Drive) becomes the main path.
+- **Result where it happened.** The success state has a check animation, a haptic and a VoiceOver announcement. It
+  also suggests deleting the downloaded file, which contains the home location. The app deletes its own temporary copy
+  at once. Each failure (wrong type, no movement, nothing new, malformed) says what happened and offers **Choose
+  another file**.
+- **Staying current.** Settings shows the covered range and offers **Import newer walks** and **Remove imported tags**.
+  An optional reminder, off until enabled in the sheet, fires after 30 days. Day-to-day tagging stays with the one-tap
+  question, so the import never becomes a chore.
+- **Testable.** `TractiveImportModel` (SettingsPresentation) owns the steps, preview, result, errors, texts and the jump
+  to step 3, and is tested on Linux. The views only render (ADR-0014). Strings are in en, es and gl.
 
 ### Use in recommendations
 
@@ -169,7 +208,9 @@ These apply to every part and are acceptance criteria in the issues.
 | 1 | [#155](https://github.com/droidsam1/overreach/issues/155) Companion tag, answers and matcher (Domain) | P2 | — |
 | 2 | [#163](https://github.com/droidsam1/overreach/issues/163) "With Nanoq?" suggestion and one-tap confirm | P2 | #155 |
 | 3 | [#159](https://github.com/droidsam1/overreach/issues/159) Dog walks in Today and movement details | P2 | #155, #163 |
-| 4 | [#158](https://github.com/droidsam1/overreach/issues/158) Tractive GPX/KML import (backfill) | P3 | #155 |
+| — | [#164](https://github.com/droidsam1/overreach/issues/164) Device check: GPX download on an iPhone (a person) | P3 | — (any time) |
+| 4 | [#158](https://github.com/droidsam1/overreach/issues/158) Parse the GPX/KML export into windows | P3 | #155 |
+| 5 | [#165](https://github.com/droidsam1/overreach/issues/165) Guided, animated import flow | P3 | #158, #164 |
 
 Not planned: [#156](https://github.com/droidsam1/overreach/issues/156),
 [#157](https://github.com/droidsam1/overreach/issues/157) and [#160](https://github.com/droidsam1/overreach/issues/160)
@@ -180,6 +221,8 @@ and protects fixed walks without changing today's training decision.
 
 ## Open questions
 
-- Whether the GPX export has per-point timestamps in UTC. This is expected for GPX 1.1 and must be confirmed with a
-  real export, which must not be committed.
+- #164: does the export work in Safari on an iPhone and in `SFSafariViewController`, where does the file land, and what
+  are the exact labels in English and Spanish?
+- #164: whether the GPX export has per-point timestamps in UTC (expected for GPX 1.1), and the point density while
+  walking. Confirm with a real export, which must not be committed.
 - Tractive's general terms (F5). Read them before any revisit of option 5.
