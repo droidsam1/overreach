@@ -16151,6 +16151,23 @@
         }
       }
     },
+    "Use last time's values": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar los valores de la última vez"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar os valores da última vez"
+          }
+        }
+      }
+    },
     "Use notes for what the numbers miss: pain, technique, sleep or machine settings. They are saved with the session and included in backups.": {
       "extractionState": "manual",
       "localizations": {

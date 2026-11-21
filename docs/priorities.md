@@ -13,8 +13,8 @@ and the logger come before review tools, and work that only a person with an iPh
 1. **Fewer taps in the active logger** — [#93](https://github.com/droidsam1/overreach/issues/93). Used in every
    session. Shipped: the first set leads the screen (help and focus in session options), "Last time" with its
    date under today's target, haptic set completion and a report that leads with the saved confirmation and any
-   record. Next: an opt-in "use last time's values" and the one-handed timing on a device
-   ([#21](https://github.com/droidsam1/overreach/issues/21)).
+   record, and an opt-in "Use last time's values" in the exercise menu. Next: the one-handed timing on a device
+   ([#21](https://github.com/droidsam1/overreach/issues/21)), which needs a person.
 2. **Recovery & Progress from Today** — [#125](https://github.com/droidsam1/overreach/issues/125). Shipped:
    "View recovery" opens Recovery (readings with source, last update, coverage and baseline) and Recent load
    (strength, running, everyday movement, Garmin estimate); Today's metric tiles moved there. Next: move the

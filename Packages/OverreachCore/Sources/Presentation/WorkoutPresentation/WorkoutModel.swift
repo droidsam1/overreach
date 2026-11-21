@@ -72,6 +72,30 @@ public struct DraftExercise: Identifiable, Hashable, Codable, Sendable {
 
     /// Whether "Add warm-up sets" has something to add.
     public var canAddWarmUp: Bool { !warmUpPlan.isEmpty && !sets.contains(where: \.isWarmUp) }
+
+    /// Whether "Use last time's values" would change an open working set.
+    public var canUseLastTime: Bool { !setsToFillFromLastTime().isEmpty }
+
+    /// Copies weight and reps of last time's sets, by position, into the working sets not yet done. Effort stays
+    /// as entered: it describes today's set, not a previous one.
+    mutating func useLastTime() {
+        guard let lastTime else { return }
+        for (index, id) in setsToFillFromLastTime() {
+            guard let position = sets.firstIndex(where: { $0.id == id }) else { continue }
+            sets[position].weightKg = lastTime.sets[index].weightKg
+            sets[position].reps = lastTime.sets[index].reps
+        }
+    }
+
+    /// Open working sets whose values differ from the set in the same position last time.
+    private func setsToFillFromLastTime() -> [(index: Int, id: DraftSet.ID)] {
+        guard let lastTime else { return [] }
+        return workingSets.enumerated().compactMap { index, set in
+            guard !set.isDone, index < lastTime.sets.count else { return nil }
+            let last = lastTime.sets[index]
+            return set.weightKg != last.weightKg || set.reps != last.reps ? (index, set.id) : nil
+        }
+    }
 }
 
 /// What the logger shows about an exercise's target: one-line summary plus the reasons behind it.
@@ -657,6 +681,14 @@ public final class WorkoutModel {
             return
         }
         exercises[index].sets.insert(contentsOf: Self.draftSets(exercises[index].warmUpPlan), at: 0)
+    }
+
+    /// Fills the open working sets with last time's weight and reps, when the athlete asks for it.
+    public func useLastTime(for exerciseID: DraftExercise.ID) {
+        guard let index = exercises.firstIndex(where: { $0.id == exerciseID }), exercises[index].canUseLastTime else {
+            return
+        }
+        exercises[index].useLastTime()
     }
 
     public func removeExercise(_ exerciseID: DraftExercise.ID) {
