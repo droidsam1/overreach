@@ -58,9 +58,11 @@ public struct PlanAnalysis: Hashable, Sendable {
         let currentIDs = LiftStatus.currentExerciseIDs(
             sessions: recentSessions, routines: routines, profile: profile, now: now, calendar: calendar
         )
+        let lifts = LiftStatus.assessAll(
+            index: index, exercises: exercises, stored: settings, routines: routines, now: now
+        )
         let liftsToUnblock = LiftsToUnblock.find(
-            index: index, exercises: exercises, stored: settings, routines: routines, currentExerciseIDs: currentIDs,
-            now: now
+            in: lifts, index: index, stored: settings, routines: routines, currentExerciseIDs: currentIDs
         )
         let stalled = liftsToUnblock.count
 

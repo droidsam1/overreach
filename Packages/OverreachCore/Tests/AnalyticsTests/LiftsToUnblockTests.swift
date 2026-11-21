@@ -32,9 +32,13 @@ struct LiftsToUnblockTests {
     private func find(
         _ sessions: [StrengthSession], stored: ProgressionSettings? = nil, routines: [Routine] = []
     ) -> [StalledLift] {
-        LiftsToUnblock.find(
-            index: ExposureIndex(sessions: sessions), exercises: [squat.id: squat],
-            stored: stored.map { [squat.id: $0] } ?? [:], routines: routines, currentExerciseIDs: nil, now: now
+        let index = ExposureIndex(sessions: sessions)
+        let stored = stored.map { [squat.id: $0] } ?? [:]
+        let lifts = LiftStatus.assessAll(
+            index: index, exercises: [squat.id: squat], stored: stored, routines: routines, now: now
+        )
+        return LiftsToUnblock.find(
+            in: lifts, index: index, stored: stored, routines: routines, currentExerciseIDs: nil
         )
     }
 

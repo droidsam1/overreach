@@ -51,14 +51,14 @@ extension StallSuggestion {
 }
 
 public enum LiftsToUnblock {
-    /// Current lifts that are stalled, the longest-stalled first. A lift not trained in the last 28 days, or outside
-    /// the current routines or rotation when they are known, is not listed.
+    /// The stalled ones among `lifts` (from `LiftStatus.assessAll`), the longest-stalled first. A lift not trained in
+    /// the last 28 days, or outside the current routines or rotation when they are known, is not listed.
     public static func find(
-        index: ExposureIndex, exercises: [UUID: Exercise], stored: [UUID: ProgressionSettings], routines: [Routine],
-        currentExerciseIDs: Set<UUID>?, now: Date
+        in lifts: [LiftStatus], index: ExposureIndex, stored: [UUID: ProgressionSettings], routines: [Routine],
+        currentExerciseIDs: Set<UUID>?
     ) -> [StalledLift] {
         let routineByID = Dictionary(routines.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        return LiftStatus.assessAll(index: index, exercises: exercises, stored: stored, routines: routines, now: now)
+        return lifts
             .filter { currentExerciseIDs?.contains($0.exerciseID) ?? true }
             .compactMap { lift -> StalledLift? in
                 guard let explanation = lift.stallExplanation else { return nil }
