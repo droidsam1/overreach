@@ -545,6 +545,23 @@
         }
       }
     },
+    "About {1} steps a day over the last {2} days, well under your usual {3}. Very little daily movement can blunt what you get from training: a walk today helps.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unos {1} pasos al día en los últimos {2} días, muy por debajo de tus {3} habituales. Moverse muy poco a diario puede reducir lo que sacas del entrenamiento: hoy te vendría bien un paseo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uns {1} pasos ao día nos últimos {2} días, moi por debaixo dos teus {3} habituais. Moverse moi pouco a diario pode reducir o que lle sacas ao adestramento: hoxe viríache ben un paseo."
+          }
+        }
+      }
+    },
     "Above target: {1} vs {2}": {
       "extractionState": "manual",
       "localizations": {
@@ -1119,6 +1136,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ámbar"
+          }
+        }
+      }
+    },
+    "An easy 20–40 min walk can ease soreness and fatigue a little more than full rest.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un paseo suave de 20–40 min puede aliviar las agujetas y el cansancio algo más que el descanso total."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Un paseo suave de 20–40 min pode aliviar as agulletas e o cansazo algo máis ca o descanso total."
           }
         }
       }
@@ -4727,6 +4761,23 @@
         }
       }
     },
+    "Everyday movement": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Movimiento diario"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Movemento diario"
+          }
+        }
+      }
+    },
     "Exercise focus": {
       "extractionState": "manual",
       "localizations": {
@@ -6576,6 +6627,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mantén o día de descanso de carreira previsto."
+          }
+        }
+      }
+    },
+    "Keep your usual walks easy today. Easy movement eases soreness and fatigue a little more than full rest.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy haz tus paseos habituales a ritmo suave. Moverse suave alivia las agujetas y el cansancio algo más que el descanso total."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe fai os teus paseos habituais a ritmo suave. Moverse suave alivia as agulletas e o cansazo algo máis ca o descanso total."
           }
         }
       }
@@ -14009,6 +14077,23 @@
         }
       }
     },
+    "Today compares your steps and walks with your usual day and mentions a long hike or several very quiet days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy compara tus pasos y paseos con tu día habitual y te avisa de una caminata larga o de varios días muy tranquilos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe compara os teus pasos e paseos co teu día habitual e avísache dunha camiñada longa ou de varios días moi tranquilos."
+          }
+        }
+      }
+    },
     "Today is the {1}-rep block of your cycle.": {
       "extractionState": "manual",
       "localizations": {
@@ -14910,6 +14995,23 @@
         }
       }
     },
+    "Usually {1} a day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normalmente {1} al día"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normalmente {1} ao día"
+          }
+        }
+      }
+    },
     "VO2max": {
       "extractionState": "manual",
       "localizations": {
@@ -15641,6 +15743,23 @@
         }
       }
     },
+    "Yesterday you walked {1} min, {2} min more than usual. Your legs may be more tired for leg work or a run.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayer caminaste {1} min, {2} min más de lo habitual. Puede que tengas las piernas más cansadas para trabajar pierna o correr."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Onte camiñaches {1} min, {2} min máis do habitual. Pode que teñas as pernas máis cansas para traballar perna ou correr."
+          }
+        }
+      }
+    },
     "You can import it as it is, or send the correction and bring the new answer.": {
       "extractionState": "manual",
       "localizations": {
@@ -15688,6 +15807,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tes varias sesións de carreira previstas para hoxe. Revísaas en Plan antes de engadir ou substituír unha."
+          }
+        }
+      }
+    },
+    "You have walked {1} min today, {2} min more than usual. Your legs may be more tired for leg work or a run.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy llevas {1} min caminando, {2} min más de lo habitual. Puede que tengas las piernas más cansadas para trabajar pierna o correr."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe levas {1} min camiñando, {2} min máis do habitual. Pode que teñas as pernas máis cansas para traballar perna ou correr."
           }
         }
       }

@@ -1,6 +1,20 @@
 # Daily activity and walks
 
-Status: design, phases 0–3. Decision and evidence: ADR-0010.
+Status: partly shipped. Decision and evidence: ADR-0010.
+
+## Shipped
+
+- `EverydayMovement` (Analytics): 28-day median steps and walking minutes, extra walking minutes above the usual
+  day, the `walkingSpike` and `stepsFarBelowBaseline` signals and cross-source walk dedupe (Garmin first).
+  Defaults are in `walking-load-baseline` (`docs/evidence.md`).
+- Apple Health walking and hiking workouts become `WalkBout`s.
+- Today: the steps tile shows the usual day, and an **Everyday movement** card lists the signals and, on a red
+  day, an easy walk (or "keep your usual walks easy" with a dog or fixed walks). Steps come from the merged daily
+  metrics, so Garmin's count wins over Apple Health's.
+
+Still open, in order: Garmin walking/hiking activities, walks detected from step samples (rules below), walking
+load in the weekly load comparison and leg fatigue once those feed a decision, and the remaining
+recommendations in the table.
 
 ## Principle
 

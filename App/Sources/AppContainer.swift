@@ -146,9 +146,10 @@ final class AppContainer {
 
     func makeTodayModel() -> TodayModel {
         TodayModel(
-            sources: metricsSources, checkIns: checkIns, backup: backup, garmin: garmin, profiles: profiles,
-            workouts: workouts, exercises: exercises, recordedStrength: recordedStrength, routines: routines,
-            progression: progression, cycle: cycleSource
+            sources: metricsSources, activity: healthSource.map { [$0 as any ActivitySource] } ?? [],
+            checkIns: checkIns, backup: backup, garmin: garmin, profiles: profiles, workouts: workouts,
+            exercises: exercises, recordedStrength: recordedStrength, routines: routines, progression: progression,
+            cycle: cycleSource
         )
     }
 

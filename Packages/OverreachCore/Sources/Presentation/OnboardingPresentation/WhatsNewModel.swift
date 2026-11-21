@@ -20,6 +20,13 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "figure.walk", title: L10n.text("Everyday movement"),
+                    detail: L10n.text(
+                        "Today compares your steps and walks with your usual day and mentions a long hike or several "
+                            + "very quiet days."
+                    )
+                ),
+                ReleaseHighlight(
                     symbol: "chart.line.uptrend.xyaxis", title: L10n.text("Choose progression"),
                     detail: L10n.text("After your first session with an exercise, preview and choose how to progress.")
                 ),

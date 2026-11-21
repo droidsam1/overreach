@@ -59,8 +59,12 @@ public final class TodayModel {
     public private(set) var isGarminConnected = false
     /// The person said they use a Garmin (first-run setup).
     private var wearsGarmin = false
+    /// Steps and walks against the usual day (ADR-0010): spikes, very low days and recovery walks.
+    public private(set) var movementNotes: [MovementNote] = []
+    private var usualSteps: Double?
 
     private let sources: [any MetricsSource]
+    private let activitySources: [any ActivitySource]
     private let garmin: (any GarminAccount)?
     private let profiles: (any ProfileRepository)?
     private let cycleSource: (any CycleSource)?
@@ -303,8 +307,13 @@ public final class TodayModel {
     public var sleepAverageCaption: String? {
         average(\.sleepSeconds).map { weekly(format.number($0 / 3_600, maxFractionDigits: 1) + " h") }
     }
+    /// "Usually 8,400 a day" once there are enough days for the usual day (`walking-load-baseline`), otherwise the
+    /// weekly average.
     public var stepsCaption: String? {
-        average { $0.steps.map(Double.init) }.map { weekly(format.number($0, maxFractionDigits: 0)) }
+        if let usualSteps {
+            return L10n.format("Usually {1} a day", format.number(usualSteps, maxFractionDigits: 0))
+        }
+        return average { $0.steps.map(Double.init) }.map { weekly(format.number($0, maxFractionDigits: 0)) }
     }
 
     /// "From Apple Health · Garmin" — where today's numbers come from.
@@ -329,8 +338,10 @@ public final class TodayModel {
     ///   the first one wins (e.g. `[garmin, appleHealth]`).
     /// - Parameter checkIns: today's check-in adds how the user feels (and "sick") to the readiness light.
     /// - Parameter cycle: menstrual flow from Apple Health, read only for a natural cycle (ADR-0009).
+    /// - Parameter activity: walks from Apple Health or Garmin (ADR-0010). Steps come from `sources`.
     public init(
-        sources: [any MetricsSource], checkIns: (any CheckInRepository)? = nil, backup: (any BackupService)? = nil,
+        sources: [any MetricsSource], activity: [any ActivitySource] = [], checkIns: (any CheckInRepository)? = nil,
+        backup: (any BackupService)? = nil,
         garmin: (any GarminAccount)? = nil, profiles: (any ProfileRepository)? = nil,
         workouts: (any WorkoutRepository)? = nil, exercises: (any ExerciseRepository)? = nil,
         recordedStrength: (any RecordedStrengthSource)? = nil, routines: (any RoutineRepository)? = nil,
@@ -339,6 +350,7 @@ public final class TodayModel {
         format: Format = Format()
     ) {
         self.sources = sources
+        self.activitySources = activity
         self.cycleSource = cycle
         self.garmin = garmin
         self.profiles = profiles
@@ -399,6 +411,12 @@ public final class TodayModel {
             }
         }
 
+        var walks: [WalkBout] = []
+        for source in activitySources {
+            // A failed walk read leaves steps and the rest of Today untouched; the metric source reports the outage.
+            walks += (try? await source.dailyActivity(in: range))?.flatMap(\.walks) ?? []
+        }
+
         let checkIn = (try? await checkIns?.checkIn(for: today)).flatMap { $0.day == today ? $0 : nil }
         let garminConnected = await garmin?.connection() != nil
         guard activeLoad == loadID else { return }
@@ -419,6 +437,8 @@ public final class TodayModel {
             today: today, history: history, checkIn: checkIn, settings: readinessSettings,
             tracksNaturalCycle: profile?.usesCyclePhase ?? false, cycle: cycle, calendar: calendar
         )
+        updateMovement(history: history, walks: walks, range: range, today: today,
+                       routine: profile?.walkingRoutine ?? WalkingRoutine())
         await loadRecentTraining(in: weekStart...today, now: now, sources: availableSources, profile: profile,
                                  loadID: loadID, metricsHistory: history)
     }
@@ -852,6 +872,26 @@ public final class TodayModel {
         case .missingData:
             L10n.text("It needs about two weeks of HRV or resting HR from Apple Health, last night's sleep or a check-in.")
         }
+    }
+
+    /// Steps come from the merged metrics (Garmin first); walks from the activity sources, each walk once.
+    private func updateMovement(
+        history: [DailyMetrics], walks: [WalkBout], range: ClosedRange<CalendarDay>, today: CalendarDay,
+        routine: WalkingRoutine
+    ) {
+        let walksByDay = Dictionary(grouping: EverydayMovement.removingDuplicateWalks(walks)) {
+            CalendarDay($0.start, calendar: calendar)
+        }
+        let steps = Dictionary(history.compactMap { day in day.steps.map { (day.day, $0) } }, uniquingKeysWith: { $1 })
+        let days = Set(steps.keys).union(walksByDay.keys).filter(range.contains)
+        let activity = days.sorted().map { DailyActivity(day: $0, steps: steps[$0], walks: walksByDay[$0] ?? []) }
+        usualSteps = EverydayMovement.baseline(activity, before: today, calendar: calendar).steps
+        let suggestsRecoveryWalk = readiness.level == .red
+            && !readiness.reasons.contains(where: \.advisesSkippingTraining)
+        movementNotes = MovementNote.notes(
+            signals: EverydayMovement.signals(activity, today: today, calendar: calendar),
+            suggestsRecoveryWalk: suggestsRecoveryWalk, routine: routine, today: today, format: format
+        )
     }
 
     private func has(_ value: (DailyMetrics) -> Double?) -> Bool {
