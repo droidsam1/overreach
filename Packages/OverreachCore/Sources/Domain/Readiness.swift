@@ -15,6 +15,10 @@ public enum ReadinessLevel: String, Codable, Sendable {
 public enum ReadinessReason: Hashable, Codable, Sendable {
     case markedSick
     case symptomsLimitTraining
+    case exerciseWarningSigns
+    case runningPainLimitsTraining
+    case unusualFatigue
+    case unusualStress
     case hrvBelowBaseline(nights: Int)
     /// The person tracks a natural cycle: low HRV may be the normal luteal-phase drop, so it is context and does
     /// not make the light red on its own (`hrv-cycle-phase`).
@@ -36,7 +40,22 @@ public enum ReadinessReason: Hashable, Codable, Sendable {
     /// Context that explains the comparison; never a signal for amber or red on its own.
     public var isContext: Bool {
         switch self {
-        case .hrvMayReflectCycle, .phaseBaseline, .possibleLutealShift: true
+        case .hrvMayReflectCycle, .phaseBaseline, .possibleLutealShift, .unusualStress: true
+        default: false
+        }
+    }
+
+    public var isPrivateCheckInContext: Bool {
+        switch self {
+        case .symptomsLimitTraining, .exerciseWarningSigns, .runningPainLimitsTraining, .unusualFatigue, .unusualStress:
+            true
+        default: false
+        }
+    }
+
+    public var advisesSkippingTraining: Bool {
+        switch self {
+        case .markedSick, .symptomsLimitTraining, .exerciseWarningSigns, .runningPainLimitsTraining: true
         default: false
         }
     }

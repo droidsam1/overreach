@@ -50,6 +50,12 @@ private struct NoMetrics: MetricsSource {
     func runs(from start: Date, to end: Date) async throws -> [RunActivity] { [] }
 }
 
+private struct CheckInProfile: ProfileRepository {
+    let stored: AthleteProfile
+    func profile() async throws -> AthleteProfile { stored }
+    func save(_ profile: AthleteProfile) async throws {}
+}
+
 private struct LowHRVMetrics: MetricsSource {
     let kind = DataSourceKind.garmin
     let today: CalendarDay
@@ -167,7 +173,8 @@ struct CheckInModelTests {
         #expect(await sheet.save())
         await model.load(now: now)
 
-        #expect(model.readiness.level == original.level && model.readiness.reasons == original.reasons)
+        #expect(model.readiness.level == original.level)
+        #expect(model.readiness.reasons == original.reasons + [.unusualStress])
         #expect(model.checkInSummary == "More stress than usual")
         #expect(model.checkInButtonTitle == "Edit today's check-in")
         #expect(model.makeCheckInModel(now: now)?.contextAnswer == .yes)
@@ -215,8 +222,52 @@ struct CheckInModelTests {
         #expect(model.checkInButtonTitle == "Edit today's check-in")
     }
 
-    @Test func theOptionalAnswerRoundTripsThroughBackup() throws {
-        let checkIn = CheckIn(day: today, context: .init(question: .symptoms, answer: .unsure))
+    @Test func warningSignsTakePrecedenceAndCanBeCleared() async throws {
+        let store = CheckInStore()
+        let model = TodayModel(sources: [], checkIns: store, calendar: calendar)
+        await model.load(now: now)
+        let sheet = try #require(model.makeCheckInModel(now: now))
+        sheet.hasExerciseWarningSigns = true
+        #expect(await sheet.save())
+        await model.load(now: now)
+
+        #expect(model.readiness.reasons == [.exerciseWarningSigns])
+        #expect(model.readinessAdvice == "Skip training and seek medical advice before returning to exercise.")
+        let tomorrow = try #require(model.makeCheckInModel(now: now.addingTimeInterval(86_400)))
+        #expect(!tomorrow.hasExerciseWarningSigns)
+
+        let edit = try #require(model.makeCheckInModel(now: now))
+        edit.hasExerciseWarningSigns = false
+        #expect(await edit.save())
+        await model.load(now: now)
+        #expect(model.readinessLevel == .unknown)
+    }
+
+    @Test func recentLinkedRunPainPromptsAQuestionAndChangesAdvice() async throws {
+        let startedAt = now.addingTimeInterval(-1_800)
+        var completion = PlannedRunCompletion(RunActivity(
+            id: "run", source: .garmin, startedAt: startedAt, durationSeconds: 900, distanceMeters: 2_000
+        ))
+        completion.painAfter = true
+        let goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000),
+                                nextRun: PlannedRun(day: today, purpose: .easy, completion: completion))
+        let model = TodayModel(sources: [], checkIns: CheckInStore(),
+                               profiles: CheckInProfile(stored: AthleteProfile(goal: goal)), calendar: calendar)
+        await model.load(now: now)
+        let sheet = try #require(model.makeCheckInModel(now: now))
+        #expect(sheet.contextQuestionTitle == "Did the pain get worse or change your stride on your last run?")
+        sheet.contextAnswer = .yes
+        #expect(await sheet.save())
+        await model.load(now: now)
+        #expect(model.readiness.reasons == [.runningPainLimitsTraining])
+        #expect(model.runningOption == nil)
+    }
+
+    @Test(arguments: [CheckIn.Context.Question.symptoms, .stress, .fatigue, .runningPain])
+    func theOptionalAnswerRoundTripsThroughBackup(question: CheckIn.Context.Question) throws {
+        let checkIn = CheckIn(
+            day: today, context: .init(question: question, answer: .unsure), exerciseWarningSigns: true
+        )
         let encoded = try BackupCodec.encode(BackupDocument(createdAt: now, checkIns: [checkIn]))
         let decoded = try BackupCodec.decode(encoded)
 

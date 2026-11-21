@@ -154,6 +154,28 @@ struct ReadinessRulesTests {
         #expect(readiness([], checkIn: CheckIn(day: today, context: context)).level == .unknown)
     }
 
+    @Test func promptsUseComparedInputsAndPrioritizeSymptomsOverRunPain() {
+        let days = history(recentHRV: [42, 44, 43, 45, 44, 46, 45], todayResting: 58)
+        #expect(ReadinessRules.contextQuestion(for: readiness(days), recentRunPain: true) == .symptoms)
+
+        var missingPulse = days
+        missingPulse[0].restingHeartRate = nil
+        let result = readiness(missingPulse)
+        #expect(result.input(.restingHeartRate)?.status == .stale)
+        #expect(ReadinessRules.contextQuestion(for: result) == .stress)
+        #expect(ReadinessRules.contextQuestion(for: result, trainedRecently: true) == .fatigue)
+    }
+
+    @Test func reportedFatigueCanChangeAdviceWithoutCountingOrdinarySorenessAsPain() {
+        let context = CheckIn.Context(question: .fatigue, answer: .yes)
+        let result = readiness([], checkIn: CheckIn(day: today, context: context))
+        #expect(result.level == .amber && result.reasons == [.unusualFatigue])
+        let lowEnergy = readiness([], checkIn: CheckIn(day: today, energy: 2, context: context))
+        #expect(lowEnergy.reasons == [.lowEnergy(score: 2)])
+        let sore = readiness([], checkIn: CheckIn(day: today, soreness: 3))
+        #expect(ReadinessRules.contextQuestion(for: sore) == nil)
+    }
+
     @Test func everyReasonCitesItsEvidence() {
         let reasons: [ReadinessReason] = [
             .markedSick, .hrvBelowBaseline(nights: 3), .hrvMayReflectCycle, .restingHeartRateElevated(bpmAboveBaseline: 6),

@@ -29,8 +29,11 @@ struct CheckInView: View {
 
                 Section {
                     Toggle("I'm sick", isOn: $model.isSick)
+                    Toggle(
+                        "Chest discomfort, unusual breathlessness or dizziness", isOn: $model.hasExerciseWarningSigns
+                    )
                 } footer: {
-                    Text("Fever, flu, a cold or a stomach bug. The light turns red until you feel better.")
+                    Text("Mark sick if you have a fever or feel ill today.")
                 }
 
                 Section("Energy") {

@@ -471,20 +471,26 @@ objective markers, and the two often disagree, so both are worth collecting.
 
 ### `readiness-context-prompt` — heuristic
 
-Below-range HRV prompts a question about recent unusual stress. When resting heart rate is also above the
-personal reference, the first question asks whether new symptoms make the user feel too unwell to train.
-Daily-life HRV can vary with perceived stress and physical activity. The exact prompt and its priority are
-product heuristics. Stress is shown as self-reported context and has no weight in the traffic light. A negative,
-unsure or skipped answer neither clears the athlete to train nor counts as evidence of illness. Questions and
-answers apply only to the current day. Reviewed 2026-11-20. [Daily-life study](https://pubmed.ncbi.nlm.nih.gov/39032150/)
+Compared HRV below range and resting heart rate above range prompt a question about symptoms that affect
+training. Recent pain reported on a linked run prompts a question about worsening pain or changes in stride.
+A positive answer favors skipping the session. Rehabilitation protocols use these observations to guide running
+progression. The choice to skip the session and the prompt window are coaching heuristics.
+With a low HRV trend, Today asks about fatigue after recorded training or unusual stress when no recent training
+was recorded. Low reported energy with a stable comparison and no recent training can also prompt the stress
+question. Reported fatigue counts once with the energy scale. Reported stress explains what the athlete felt
+and carries zero weight in the readiness level. Negative, unsure and skipped answers preserve the existing
+decision. Answers apply only to their calendar day. Reviewed 2026-11-21.
+[Daily-life study](https://pubmed.ncbi.nlm.nih.gov/39032150/) · [Brigham and Women's return-to-running guidance](https://www.brighamandwomens.org/assets/bwh/patients-and-families/rehabilitation-services/pdfs/le-running-injury-prevention-tips-and-return-to-running-program-bwh.pdf)
 
 ### `readiness-reported-symptoms` — limited
 
-When the athlete reports that new symptoms make them feel too unwell to train, Today suggests skipping the
-session and reassessing how they feel. This extends the existing symptom-led approach to a direct self-report,
-without a diagnosis or a time to return. The IOC guidance applies to acute respiratory illness in athletes and
-considers symptoms and severity for return decisions. A wearable deviation only selects a question. The app
-offers no symptom-specific triage in this flow. Reviewed 2026-11-20. [IOC consensus](https://doi.org/10.1136/bjsports-2022-105759)
+An athlete who reports feeling too unwell to train is advised to skip the session and reassess how they feel.
+Fever or feeling ill uses the rest and gradual return guidance in `illness-return`. Reported chest discomfort,
+unusual breathlessness or dizziness takes priority and prompts medical advice before resuming exercise.
+The IOC consensus identifies these symptoms as reasons to stop exercise and seek medical assessment in the
+context of acute respiratory illness. Overreach uses a conservative self-report rule and leaves diagnosis and
+individual return decisions to clinicians. Clinical review of the check-in wording and escalation remains
+pending before release. Literature reviewed 2026-11-21. [IOC consensus](https://doi.org/10.1136/bjsports-2022-105759)
 
 ### `readiness-combination` — heuristic
 Sick in the check-in → red (see `illness-return`). No signal → green; one or more → amber; two or more with at

@@ -31,6 +31,7 @@ public final class TodayModel {
     public private(set) var accessError: String?
     /// Today's check-in, once filled in.
     public private(set) var checkIn: CheckIn?
+    private var recentRunPain = false
     public private(set) var recentTrainingDays: [RecentTrainingDay] = []
     public private(set) var scheduledStrengthToday: ScheduledTrainingRow?
     public private(set) var scheduledRunsToday: [ScheduledTrainingRow] = []
@@ -71,8 +72,8 @@ public final class TodayModel {
 
     /// What the light means for today's training.
     public var readinessAdvice: String {
-        if readiness.reasons.contains(.symptomsLimitTraining) {
-            return L10n.text("Skip training today and reassess how you feel.")
+        if readiness.reasons.contains(where: \.advisesSkippingTraining) {
+            return safetyAdvice
         }
         return switch readiness.level {
         case .green: L10n.text("Train as planned.")
@@ -81,6 +82,19 @@ public final class TodayModel {
         case .red: L10n.text("Make it a recovery day: a walk or a very easy session. If you lift, keep it light (RPE 6 or less).")
         case .unknown: L10n.text("Not enough data yet to judge today.")
         }
+    }
+
+    private var safetyAdvice: String {
+        if readiness.reasons.contains(.exerciseWarningSigns) {
+            return L10n.text("Skip training and seek medical advice before returning to exercise.")
+        }
+        if readiness.reasons.contains(.runningPainLimitsTraining) {
+            return L10n.text("Skip today's session and reassess the pain before running again.")
+        }
+        if readiness.reasons.contains(.markedSick) {
+            return L10n.text("Rest today. Ease back into training once you feel well again.")
+        }
+        return L10n.text("Skip training today and reassess how you feel.")
     }
 
     /// Why the light has its colour, each reason with its evidence level.
@@ -166,13 +180,18 @@ public final class TodayModel {
     }
 
     private var suggestedContextQuestion: CheckIn.Context.Question? {
-        guard checkIn?.context == nil else { return nil }
-        return ReadinessRules.contextQuestion(for: readiness)
+        guard !isLoading, checkIn?.context == nil, let loadedDay else { return nil }
+        let yesterday = loadedDay.adding(days: -1, calendar: calendar)
+        let trainedRecently = recentTrainingDays.contains { $0.id >= yesterday && !$0.workouts.isEmpty }
+        return ReadinessRules.contextQuestion(
+            for: readiness, recentRunPain: recentRunPain, trainedRecently: trainedRecently
+        )
     }
 
     /// "Energy 4/5 · Soreness 1/3", or "Sick" — what today's check-in said.
     public var checkInSummary: String? {
         guard let checkIn else { return nil }
+        if checkIn.exerciseWarningSigns == true { return L10n.text("Symptoms to discuss with a clinician") }
         if checkIn.isSick { return L10n.text("Sick") }
         var parts: [String] = []
         if let energy = checkIn.energy { parts.append(L10n.format("Energy {1}/5", String(energy))) }
@@ -180,6 +199,8 @@ public final class TodayModel {
         switch checkIn.context?.answer == .yes ? checkIn.context?.question : nil {
         case .symptoms: parts.append(L10n.text("New symptoms affect training"))
         case .stress: parts.append(L10n.text("More stress than usual"))
+        case .fatigue: parts.append(L10n.text("More fatigue than usual"))
+        case .runningPain: parts.append(L10n.text("Running pain worsened or affected your stride"))
         case nil: break
         }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
@@ -319,6 +340,7 @@ public final class TodayModel {
         scheduledRunsToday = []
         strengthOption = nil
         runningOption = nil
+        recentRunPain = false
         defer {
             if activeLoad == loadID {
                 isLoading = false
@@ -439,6 +461,12 @@ public final class TodayModel {
     private func loadRunningPlan(goal: TrainingGoal?, today: CalendarDay, now: Date, runs: [RunActivity]) {
         guard let goal, let running = goal.running else { return }
         let schedule = goal.scheduledRuns
+        let yesterday = today.adding(days: -1, calendar: calendar).startDate(in: calendar)
+        let latestRun = schedule.compactMap(\.completion).filter {
+            $0.durationSeconds.isFinite && $0.durationSeconds > 0
+                && (yesterday...now).contains($0.startedAt.addingTimeInterval($0.durationSeconds))
+        }.max { $0.startedAt < $1.startedAt }
+        recentRunPain = latestRun?.painDuring == true || latestRun?.painAfter == true
         scheduledRunsToday = schedule.filter { $0.day == today }.map { ScheduledTrainingRow.run($0, format: format) }
         if let decision = EasyRunAdvisor.advise(
             goal: running, targetDay: goal.targetDate, schedule: schedule, readiness: readiness, metrics: metrics,
@@ -478,7 +506,7 @@ public final class TodayModel {
     private func loadDeloadAdvice(
         now: Date, history: [DailyMetrics], profile: AthleteProfile?, training: DeloadTraining, loadID: UUID
     ) async {
-        guard let profile, let workouts else {
+        guard !readiness.reasons.contains(where: \.advisesSkippingTraining), let profile, let workouts else {
             deloadAdvice = nil
             return
         }
@@ -590,6 +618,14 @@ public final class TodayModel {
             L10n.text("Marked as sick in today's check-in. Rest until the symptoms ease.")
         case .symptomsLimitTraining:
             L10n.text("You reported symptoms that make you feel too unwell to train.")
+        case .exerciseWarningSigns:
+            L10n.text("Symptoms to discuss with a clinician")
+        case .runningPainLimitsTraining:
+            L10n.text("Running pain worsened or affected your stride")
+        case .unusualFatigue:
+            L10n.text("More fatigue than usual")
+        case .unusualStress:
+            L10n.text("More stress than usual")
         case .hrvBelowBaseline(let nights):
             if let coverage = readiness.hrvCoverage, let metric = coverage.metric {
                 L10n.format(
