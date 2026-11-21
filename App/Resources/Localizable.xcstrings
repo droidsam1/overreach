@@ -7090,6 +7090,23 @@
         }
       }
     },
+    "Keep your usual training days at a comfortable effort. An easy run, a walk or a light lift may help how you feel.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén tus días de entrenamiento habituales con un esfuerzo cómodo. Una carrera suave, un paseo o un levantamiento ligero pueden ayudarte a sentirte mejor."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén os teus días de adestramento habituais cun esforzo cómodo. Unha carreira suave, un paseo ou un levantamento lixeiro poden axudarche a sentirte mellor."
+          }
+        }
+      }
+    },
     "Keep your usual walks easy today. Easy movement eases soreness and fatigue a little more than full rest.": {
       "extractionState": "manual",
       "localizations": {
@@ -7562,6 +7579,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Para saber máis"
+          }
+        }
+      }
+    },
+    "Leave sets to failure and personal-record attempts for when you feel steadier.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deja las series al fallo y los intentos de récord personal para cuando te sientas más estable."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deixa as series ao fallo e os intentos de récord persoal para cando te sintas máis estable."
           }
         }
       }
@@ -10762,6 +10796,23 @@
         }
       }
     },
+    "Protect your sleep: stress and short nights add up.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuida el sueño: el estrés y las noches cortas se suman."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coida o sono: o estrés e as noites curtas sómanse."
+          }
+        }
+      }
+    },
     "Push smart, recover smarter: a gym log that explains every target.": {
       "extractionState": "manual",
       "localizations": {
@@ -13720,6 +13771,23 @@
         }
       }
     },
+    "Some lifts have stopped progressing and you reported more stress than usual. A steadier week may help more than a deload.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algunos ejercicios se han estancado y has indicado más estrés de lo habitual. Una semana más estable puede ayudarte más que una descarga."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algúns exercicios estancáronse e indicaches máis estrés do habitual. Unha semana máis estable pode axudarche máis que unha descarga."
+          }
+        }
+      }
+    },
     "Some lifts have stopped progressing and your training load rose sharply this week.": {
       "extractionState": "manual",
       "localizations": {
@@ -13992,6 +14060,23 @@
         }
       }
     },
+    "Start steadier week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empezar semana más estable"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comezar semana máis estable"
+          }
+        }
+      }
+    },
     "Start this block today": {
       "extractionState": "manual",
       "localizations": {
@@ -14056,6 +14141,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Comeza esta sesión"
+          }
+        }
+      }
+    },
+    "Steadier week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana más estable"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana máis estable"
+          }
+        }
+      }
+    },
+    "Steadier week suggested": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se sugiere una semana más estable"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suxírese unha semana máis estable"
           }
         }
       }
@@ -14447,6 +14566,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Estrés"
+          }
+        }
+      }
+    },
+    "Stress can lower HRV and slow recovery without any change in your training, so some of the signs above may come from it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El estrés puede bajar la VFC y frenar la recuperación sin que cambie tu entrenamiento, así que parte de las señales de arriba pueden venir de ahí."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O estrés pode baixar a VFC e frear a recuperación sen que cambie o teu adestramento, así que parte dos sinais de arriba poden vir de aí."
+          }
+        }
+      }
+    },
+    "Stress outside training adds to the load your body recovers from, and it can lower HRV on its own.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El estrés ajeno al entrenamiento se suma a la carga de la que se recupera tu cuerpo y puede bajar la VFC por sí solo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O estrés alleo ao adestramento súmase á carga da que se recupera o teu corpo e pode baixar a VFC por si só."
           }
         }
       }
@@ -17664,6 +17817,23 @@
         }
       }
     },
+    "You said you have felt more stressed than usual lately.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dijiste que últimamente has sentido más estrés de lo habitual."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dixeches que ultimamente sentiches máis estrés do habitual."
+          }
+        }
+      }
+    },
     "You're returning from a running break.": {
       "extractionState": "manual",
       "localizations": {
@@ -18051,6 +18221,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "As túas sesións recentes aínda non seguen unha orde fixa. Escolle a que vas facer."
+          }
+        }
+      }
+    },
+    "Your stress": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu estrés"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teu estrés"
           }
         }
       }

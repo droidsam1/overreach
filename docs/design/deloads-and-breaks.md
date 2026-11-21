@@ -1,6 +1,6 @@
 # Deloads, breaks and stalled lifts
 
-Status: tasks 1–6 implemented (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
+Status: tasks 1–7 implemented (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
 ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-practice`, `deload-recovery-signals`,
 `unplanned-deload`, `stall-heuristics` in [the evidence register](../evidence.md).
 
@@ -159,3 +159,17 @@ Delivered: `LiftsToUnblock.find` (Analytics) returns each current stalled lift w
 suggestions; `PlanAnalysis.liftsToUnblock` feeds the block advice and Plan's **Lifts to unblock** section.
 `StalledLift.applying` maps microloading, the switch to double progression and a new rep range to
 `ProgressionSettings`. A routine's prescription keeps scheme changes in that routine. Microloading stops at 1 kg.
+
+### 7. Ask about life stress before proposing a deload
+
+An athlete two weeks after a deload, with stalled lifts and HRV a few points under their usual range, received
+another deload proposal that stress could explain ([ADR-0038](../adr/0038-life-stress-in-deload-proposals.md),
+[`deload-life-stress`](../evidence.md#deload-life-stress--limited)).
+
+- [x] `RecoveryTrend.lifeStress` reads the latest yes or no stress answer of the last 14 days.
+- [x] Today asks the stress question first when a proposal would show and no answer exists.
+- [x] A yes offers a steadier week (`DeloadPlan.stressAware`) with reasons and what may help; a no keeps the deload.
+- [x] An accepted steadier week is stored (`DeloadRecord.forLifeStress`), applied in the logger and named on Today.
+- [x] Tests: answer windows, no points from stress alone, plan choice, explanation, accepted week.
+- [ ] Follow-up: use the same answer to soften running advice, and review wording with a clinician (see
+  [readiness task 3](readiness-and-hybrid-planning.md#3-ask-a-question-that-changes-the-decision)).

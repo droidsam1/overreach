@@ -61,7 +61,7 @@ public struct TrainingRecordLoader: Sendable {
         settings: ReadinessRules.Settings = .init(), calendar: Calendar = .current
     ) async -> Snapshot {
         let today = CalendarDay(now, calendar: calendar)
-        let weekStart = today.adding(days: -6, calendar: calendar)
+        let stressStart = today.adding(days: -(RecoveryTrend.stressWindowDays - 1), calendar: calendar)
         let historyStart = today.adding(days: -Self.historyDays, calendar: calendar).startDate(in: calendar)
         let blockStart = PlanSchedule.runningBlock(profile?.declaredBlocks ?? [], today: today, calendar: calendar)?
             .start.startDate(in: calendar)
@@ -82,7 +82,7 @@ public struct TrainingRecordLoader: Sendable {
         async let recordings = recordedStrength?.strengthActivities(from: recoveryStart, to: now)
         let metricsStart = min(metricsRange.lowerBound, exportFrom ?? today)
         async let allMetrics = sources.dailyMetricsBySource(in: metricsStart...today)
-        let checkInStart = min(weekStart, exportFrom ?? today)
+        let checkInStart = min(stressStart, exportFrom ?? today)
         async let checkInHistory = try? checkIns?.checkIns(in: checkInStart...today)
         async let current = try? checkIns?.checkIn(for: today)
         async let cycleContext = readCycle(profile: profile, today: today, calendar: calendar)
@@ -96,12 +96,12 @@ public struct TrainingRecordLoader: Sendable {
         let (runReading, strength, checkIns, latest) = await (runs, recordings, checkInHistory, current)
         let checkIn = latest.flatMap { $0.day == today ? $0 : nil } ?? checkIns?.last { $0.day == today }
         let history = (checkIns ?? []).filter { $0.day != today }
-        let week = history.filter { (weekStart...today).contains($0.day) } + (checkIn.map { [$0] } ?? [])
+        let recent = history.filter { (stressStart...today).contains($0.day) } + (checkIn.map { [$0] } ?? [])
         let record = TrainingRecord(
             sessions: (sessions ?? []).filter { $0.isCompleted(through: now) },
             exercises: exercises ?? [], settings: progression ?? [:], routines: routines ?? [],
             runs: runReading.activities, runReadFailed: runReading.failed, recordings: strength ?? [],
-            metrics: historyMetrics, checkIns: week, activity: movement,
+            metrics: historyMetrics, checkIns: recent, activity: movement,
             cycle: await cycleContext
         )
         let sessionsFailed = workouts != nil && sessions == nil

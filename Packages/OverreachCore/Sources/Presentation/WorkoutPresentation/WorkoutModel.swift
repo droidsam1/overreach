@@ -396,7 +396,9 @@ public final class WorkoutModel {
         guard let profile = try? await profiles?.profile() else { return }
         applyEffortScale(profile.effortScale)
         let today = CalendarDay(clock())
-        deloadPlan = RecoveryHistory.deloadInProgress(profile, on: today) != nil ? DeloadPlan.standard : nil
+        deloadPlan = RecoveryHistory.deloadInProgress(profile, on: today).map {
+            $0.forLifeStress == true ? DeloadPlan.stressAware : DeloadPlan.standard
+        }
     }
 
     private func applyEffortScale(_ scale: EffortScale) {

@@ -27,6 +27,39 @@ struct DeloadExplanationTests {
         #expect(DeloadExplanation.summary(for: signals) == expected)
     }
 
+    @Test func reportedStressOffersASteadierWeek() {
+        let proposal = DeloadProposal(
+            signals: [Self.stall, .hrvSuppressed(days: 6), .lifeStressReported], stalledExerciseIDs: [], score: 3,
+            plan: .stressAware, lifeStress: .reported
+        )
+        let format = Format(locale: Locale(identifier: "en_US"))
+        let advice = DeloadAdvice.make(
+            .proposed(proposal, walkingIncluded: false, lastRecovery: nil), exercises: [],
+            calendar: Calendar(identifier: .gregorian), format: format
+        )
+        guard case let .proposed(detail) = advice.state else {
+            Issue.record("Expected a proposal explanation")
+            return
+        }
+        #expect(detail.lifeStress == .reported)
+        #expect(detail.summary == DeloadExplanation.stressSummary)
+        #expect(detail.stressContext.first == "You said you have felt more stressed than usual lately.")
+        #expect(detail.recoveryReasons.count == 1)
+        #expect(detail.evidence.map(\.id).contains("deload-life-stress"))
+        #expect(advice.planText == "Same exercises, 75 % of the working sets, about 5 % less load, RPE 8 at most.")
+    }
+
+    @Test func withoutReportedStressThereIsNoStressContext() {
+        let proposal = DeloadProposal(signals: [Self.stall], stalledExerciseIDs: [], score: 3, plan: .standard)
+        let advice = DeloadAdvice.make(
+            .proposed(proposal, walkingIncluded: false, lastRecovery: nil), exercises: [],
+            calendar: Calendar(identifier: .gregorian), format: Format(locale: Locale(identifier: "en_US"))
+        )
+        guard case let .proposed(detail) = advice.state else { return }
+        #expect(detail.stressContext.isEmpty)
+        #expect(detail.lifeStress == .unanswered)
+    }
+
     @Test func detailShowsEverySignalAndOneEntryPerEvidenceKey() {
         let signals: [DeloadSignal] = [
             .hrvSuppressed(days: 5), Self.stall, Self.drop, Self.effort, .weeksSinceDeload(8), Self.load,

@@ -15,10 +15,14 @@ public enum Wearable: String, Codable, Sendable, CaseIterable {
 public struct DeloadRecord: Hashable, Codable, Sendable {
     public var start: CalendarDay
     public var days: Int
+    /// The athlete accepted the steadier week offered when they reported unusual stress (ADR-0038). Absent in
+    /// records written before it and for ordinary deloads.
+    public var forLifeStress: Bool?
 
-    public init(start: CalendarDay, days: Int) {
+    public init(start: CalendarDay, days: Int, forLifeStress: Bool? = nil) {
         self.start = start
         self.days = days
+        self.forLifeStress = forLifeStress
     }
 
     /// Whether `day` falls inside the deload.

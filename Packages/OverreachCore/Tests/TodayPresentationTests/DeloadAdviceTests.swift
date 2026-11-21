@@ -284,8 +284,22 @@ struct DeloadAdviceTests {
         let advice = try #require(makeAdvice(profile: profile))
 
         #expect(advice.state == .inProgress(
-            lastDay: today.adding(days: 4, calendar: calendar).startDate(in: calendar)
+            lastDay: today.adding(days: 4, calendar: calendar).startDate(in: calendar), forLifeStress: false
         ))
+    }
+
+    @Test func anAcceptedSteadierWeekKeepsItsPlan() throws {
+        var profile = AthleteProfile()
+        profile.deloads = [DeloadRecord(start: today, days: 7, forLifeStress: true)]
+
+        let advice = try #require(makeAdvice(profile: profile))
+
+        guard case let .inProgress(_, forLifeStress) = advice.state else {
+            Issue.record("Expected a week in progress")
+            return
+        }
+        #expect(forLifeStress)
+        #expect(advice.planText.contains("75 %"))
     }
 
     @Test func aDetectedRestWeekSuppressesTheRepeatProposal() async throws {

@@ -16,6 +16,9 @@ public enum DeloadSignal: Hashable, Sendable {
     case restingHeartRateElevated(days: Int)
     case shortSleep(nights: Int)
     case poorWellbeing(checkIns: Int)
+    /// The athlete reported more stress than usual in the last two weeks. It is context for the recovery signals
+    /// and changes the week proposed; it adds no points (`deload-life-stress`).
+    case lifeStressReported
 
     public var evidence: EvidenceReference {
         switch self {
@@ -25,6 +28,7 @@ public enum DeloadSignal: Hashable, Sendable {
         case .weeklyLoadSpike: ProgressionEvidence.weeklyLoadChange
         case .hrvSuppressed, .restingHeartRateElevated, .shortSleep, .poorWellbeing:
             ProgressionEvidence.deloadRecoverySignals
+        case .lifeStressReported: ProgressionEvidence.deloadLifeStress
         }
     }
 
@@ -38,7 +42,7 @@ public enum DeloadSignal: Hashable, Sendable {
 
     var isFatigueSignal: Bool {
         switch self {
-        case .liftsStalled, .weeksSinceDeload, .noDeloadInHistory: false
+        case .liftsStalled, .weeksSinceDeload, .noDeloadInHistory, .lifeStressReported: false
         default: true
         }
     }
@@ -55,6 +59,11 @@ public struct DeloadPlan: Hashable, Sendable {
     public var maximumRPE: Double
 
     public static let standard = DeloadPlan(durationDays: 7, setMultiplier: 0.5, loadMultiplier: 0.9, maximumRPE: 7)
+
+    /// A steadier week for an athlete who reports unusual stress (`deload-life-stress`): the same training days
+    /// at a comfortable effort, a quarter fewer sets and almost the same loads. Stress adds to the load the body
+    /// recovers from, but moving still helps how people feel, so this reduces demand less than `standard`.
+    public static let stressAware = DeloadPlan(durationDays: 7, setMultiplier: 0.75, loadMultiplier: 0.95, maximumRPE: 8)
 
     /// `target` reduced for a deload week: the same exercise with fewer sets (at least one), less load rounded to the
     /// exercise's increment, and RPE capped. Rep targets stay. The deload reason comes first.
@@ -87,6 +96,8 @@ public struct DeloadProposal: Hashable, Sendable {
     public var stalledExerciseIDs: [UUID]
     public var score: Double
     public var plan: DeloadPlan
+    /// What the athlete said about stress. `.unanswered` lets Today ask before it proposes a week.
+    public var lifeStress: RecoveryTrend.LifeStress = .unanswered
 }
 
 /// Proposes a whole-programme deload from training signals, reinforced by sustained recovery signals.
@@ -122,6 +133,8 @@ public enum DeloadAdvisor {
         public var shortSleepNights = 4
         public var poorWellbeingCheckIns = 3
         public var plan = DeloadPlan.standard
+        /// Used instead of `plan` when the athlete reports unusual stress.
+        public var stressPlan = DeloadPlan.stressAware
 
         public init() {}
     }
@@ -210,13 +223,16 @@ public enum DeloadAdvisor {
                 recoverySignals.append(.poorWellbeing(checkIns: recovery.poorWellbeingCheckIns))
             }
             signals += recoverySignals
+            if recovery.lifeStress == .reported { signals.append(.lifeStressReported) }
             score += min(settings.recoveryWeightCap, Double(recoverySignals.count) * settings.recoveryWeight)
         }
 
         guard score >= settings.threshold, signals.contains(where: \.isPerformanceSignal),
               signals.contains(where: \.isFatigueSignal) else { return nil }
+        let lifeStress = recovery?.lifeStress ?? .unanswered
         return DeloadProposal(
-            signals: signals, stalledExerciseIDs: stalled.count >= 2 ? stalled : [], score: score, plan: settings.plan
+            signals: signals, stalledExerciseIDs: stalled.count >= 2 ? stalled : [], score: score,
+            plan: lifeStress == .reported ? settings.stressPlan : settings.plan, lifeStress: lifeStress
         )
     }
 

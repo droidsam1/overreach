@@ -223,8 +223,8 @@ public struct TodayView: View {
                 ) {
                     deloadApplication
                 }
-            case let .inProgress(lastDay):
-                Label("Deload week", systemImage: "arrow.down.right.circle.fill")
+            case let .inProgress(lastDay, forLifeStress):
+                Label(forLifeStress ? LocalizedStringKey("Steadier week") : LocalizedStringKey("Deload week"), systemImage: "arrow.down.right.circle.fill")
                     .font(.headline)
                     .foregroundStyle(.tint)
                 Text(advice.planText).font(.subheadline)

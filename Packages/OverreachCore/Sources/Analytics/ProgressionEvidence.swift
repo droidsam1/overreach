@@ -27,6 +27,8 @@ public enum ProgressionEvidence {
     public static let stallHeuristics = EvidenceReference(key: "stall-heuristics", level: .heuristic)
     /// Sustained recovery signals only reinforce a deload that training suggests (Meeusen 2013, Bellenger 2016).
     public static let deloadRecoverySignals = EvidenceReference(key: "deload-recovery-signals", level: .limited)
+    /// Life stress adds to the load the body recovers from and can explain low HRV; it changes the week proposed.
+    public static let deloadLifeStress = EvidenceReference(key: "deload-life-stress", level: .limited)
     /// Rising RPE at the same load and reps as a fatigue signal.
     public static let rpeCreep = EvidenceReference(key: "rpe-creep", level: .heuristic)
     /// Last week's load against the usual week (uncoupled); a weak signal, never an injury-risk measure.
