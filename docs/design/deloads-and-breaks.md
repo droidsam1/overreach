@@ -1,6 +1,6 @@
 # Deloads, breaks and stalled lifts
 
-Status: tasks 1–5 implemented (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
+Status: tasks 1–6 implemented (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
 ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-practice`, `deload-recovery-signals`,
 `unplanned-deload`, `stall-heuristics` in [the evidence register](../evidence.md).
 
@@ -8,8 +8,9 @@ ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-pr
 
 Take the first task below whose boxes are not all checked. Each task is one pull request. Task 1 is done by
 [training services task 2](training-services.md#2-recovery-status); build tasks 2–6 on `TrainingServices` once it
-exists. Continue with task 6. Task 5 explains the Today card that
+exists. All tasks are done. Task 5 explains the Today card that
 [#94](https://github.com/droidsam1/overreach/issues/94) then places in the page. Task 6 supplies lift findings
+(`LiftsToUnblock`, shown in Plan)
 to [Recovery & Progress](https://github.com/droidsam1/overreach/issues/126). Record checks that need an iPhone
 in [#21](https://github.com/droidsam1/overreach/issues/21).
 
@@ -144,12 +145,17 @@ The card opens the explanation in one tap. Verify the fit on a compact iPhone at
 
 ### 6. Stalled lifts as their own recommendation
 
-- [ ] Prepare shared **Lifts to unblock** findings for the Progress detail in
+- [x] Prepare shared **Lifts to unblock** findings for the Progress detail in
   [#126](https://github.com/droidsam1/overreach/issues/126). Each row names the lift, "No progress since
   12 Sep (best 82.5 kg × 5)", and the first `StallSuggestion` in plain words with its evidence on the detail.
-- [ ] Where a suggestion maps to a setting (microloading, double progression, rep range), offer "Apply" that changes
+- [x] Where a suggestion maps to a setting (microloading, double progression, rep range), offer "Apply" that changes
   that exercise's `ProgressionSettings` after confirmation; other suggestions are advice only.
-- [ ] Tests: rows, dates and suggestions for a stalled lift; nothing for a lift not trained in 28 days.
+- [x] Tests: rows, dates and suggestions for a stalled lift; nothing for a lift not trained in 28 days.
 
 Finish line: each current stalled lift has a start date and one concrete next step. Keep those findings
 reachable in Plan until #126 moves them and adds links from the deload detail.
+
+Delivered: `LiftsToUnblock.find` (Analytics) returns each current stalled lift with its stall start, best set and
+suggestions; `PlanAnalysis.liftsToUnblock` feeds the block advice and Plan's **Lifts to unblock** section.
+`StalledLift.applying` maps microloading, the switch to double progression and a new rep range to
+`ProgressionSettings`. A routine's prescription keeps scheme changes in that routine. Microloading stops at 1 kg.

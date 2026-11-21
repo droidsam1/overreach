@@ -236,7 +236,9 @@ Reviewed 2026-11-21.
 
 ### `stall-heuristics` — heuristic
 Stall = no e1RM gain > 1 % over the last 3 exposures vs the 6 before, with ≥ 2 missed targets. Linear reset
-−10 % after 3 misses; microload at half the increment when the miss was by 1 rep; variation swap 3–4 weeks.
+−10 % after 3 misses; microload at half the increment when the miss was by 1 rep, down to 1 kg; variation swap 3–4 weeks.
+Applying a suggestion from Plan: linear → double progression keeps the sets and uses the current reps as the floor
+(5 → 5–7, 8 → 8–12); a new rep range moves 2 reps heavier when the floor stays at 3 or more (8–12 → 6–10), else lighter.
 Current stall assessments require a progression-eligible exposure in the last 28 days. Deload and Plan signals
 also use active routine or rotation membership when it is known. Stalls and elapsed time alone do not imply
 accumulated fatigue. These are Overreach heuristics ([ADR-0036](adr/0036-deload-needs-fatigue.md)). The [2026 ACSM position stand](https://pubmed.ncbi.nlm.nih.gov/41843416/)

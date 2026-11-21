@@ -46,6 +46,7 @@ public struct PlanView<Assistant: View>: View {
                         RecoveryHistoryRows(model: model)
                     }
                 }
+                if !model.liftsToUnblockRows.isEmpty { LiftsToUnblockSection(model: model) }
                 planSection
                 if !model.findingLines.isEmpty {
                     Section("Worth a look") {
@@ -160,7 +161,7 @@ public struct PlanView<Assistant: View>: View {
 }
 
 /// Rule explanations, each with the strength of its evidence.
-private struct ExplainedLines: View {
+struct ExplainedLines: View {
     let lines: [ExplainedLine]
 
     var body: some View {

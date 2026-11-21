@@ -78,6 +78,10 @@ public final class PlanModel {
     private var recentDeloadQuestions: [DetectedDeload] = []
     private var weeksSinceDeload: Int?
     private var lastRecoveryKind: LastRecovery.Kind?
+    private var stalledLifts: [StalledLift] = []
+    /// Lifts whose next step was applied on this screen; their stall stays until new sessions show progress.
+    private var changedLifts: Set<UUID> = []
+    public private(set) var isApplyingLiftChange = false
 
     // Editable state of the screen.
     /// Whether the goal has a target date. Change it with `setHasTargetDate(_:)`.
@@ -411,6 +415,35 @@ public final class PlanModel {
         recentDeloadQuestions = analysis.recentDeloadQuestions
         weeksSinceDeload = analysis.weeksSinceDeload
         lastRecoveryKind = analysis.lastRecoveryKind
+        stalledLifts = analysis.liftsToUnblock
+    }
+}
+
+extension PlanModel {
+    /// Current stalled lifts, the longest-stalled first, each with one next step.
+    public var liftsToUnblockRows: [LiftToUnblockRow] {
+        stalledLifts.map { lift in
+            LiftToUnblockRow(
+                lift: lift, name: exerciseNames[lift.exerciseID] ?? L10n.text("An exercise"),
+                applied: changedLifts.contains(lift.exerciseID), calendar: calendar
+            )
+        }
+    }
+
+    /// Saves the setting change behind the lift's next step (after the user confirmed `LiftChange`).
+    public func applyNextStep(for exerciseID: UUID) async {
+        guard !isApplyingLiftChange, !changedLifts.contains(exerciseID),
+              let lift = stalledLifts.first(where: { $0.exerciseID == exerciseID }),
+              let step = lift.nextStep, let settings = lift.applying(step) else { return }
+        isApplyingLiftChange = true
+        defer { isApplyingLiftChange = false }
+        do {
+            try await progression.save(settings, for: exerciseID)
+            changedLifts.insert(exerciseID)
+            errorMessage = nil
+        } catch {
+            errorMessage = L10n.text("Could not save the exercise settings. Try again.")
+        }
     }
 }
 

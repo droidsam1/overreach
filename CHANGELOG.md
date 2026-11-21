@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Plan lists the lifts to unblock: each current stalled lift says since when it stopped progressing, its best set
+  and one next step, with the evidence and other options on its detail. Smaller jumps, a rep range or a new rep
+  range can be applied to that exercise's settings after confirmation.
 - Today gives one main reason for a suggested deload. Open the explanation for all the signals, your last rest
   and recovery history, the changes to your next strength session and the supporting research.
 - Today and Plan ask about the latest lighter training periods, with the strength and running activity recorded

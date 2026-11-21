@@ -1429,6 +1429,23 @@
         }
       }
     },
+    "Apply": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicar"
+          }
+        }
+      }
+    },
     "Apply it to every session of the week, starting with the next one:": {
       "extractionState": "manual",
       "localizations": {
@@ -1952,6 +1969,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cambia o rango de repeticións unhas semanas: un estímulo distinto adoita reactivar o progreso."
+          }
+        }
+      }
+    },
+    "Change to {1}–{2} reps": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar a {1}–{2} repeticiones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar a {1}–{2} repeticións"
+          }
+        }
+      }
+    },
+    "Changed. Give it three sessions before judging it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiado. Dale tres sesiones antes de valorarlo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiado. Dálle tres sesións antes de valoralo."
           }
         }
       }
@@ -3316,6 +3367,23 @@
         }
       }
     },
+    "Could not save the exercise settings. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo guardar la configuración del ejercicio. Inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido gardar a configuración do exercicio. Téntao de novo."
+          }
+        }
+      }
+    },
     "Could not save the exercise.": {
       "extractionState": "manual",
       "localizations": {
@@ -3635,6 +3703,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bloque actual"
+          }
+        }
+      }
+    },
+    "Current lifts that stopped progressing. Each needs a change to that lift, not a deload.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejercicios actuales que dejaron de progresar. Cada uno necesita un cambio en ese ejercicio, no una descarga."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercicios actuais que deixaron de progresar. Cada un precisa un cambio nese exercicio, non unha descarga."
           }
         }
       }
@@ -7260,6 +7345,23 @@
         }
       }
     },
+    "Lifts to unblock": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejercicios por desbloquear"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercicios por desbloquear"
+          }
+        }
+      }
+    },
     "Light": {
       "extractionState": "manual",
       "localizations": {
@@ -8314,6 +8416,23 @@
         }
       }
     },
+    "Next step": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siguiente paso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seguinte paso"
+          }
+        }
+      }
+    },
     "Next time: {1} @ {2}.": {
       "extractionState": "manual",
       "localizations": {
@@ -8603,6 +8722,23 @@
         }
       }
     },
+    "No longer stalled": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya no está estancado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xa non está estancado"
+          }
+        }
+      }
+    },
     "No longer stalled.": {
       "extractionState": "manual",
       "localizations": {
@@ -8684,6 +8820,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non se atopou ningún plan. Copia o formato de resposta no chat e volve pedilo."
+          }
+        }
+      }
+    },
+    "No progress since {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin progreso desde el {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen progreso desde o {1}"
+          }
+        }
+      }
+    },
+    "No progress since {1} (best {2} × {3})": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin progreso desde el {1} (mejor {2} × {3})"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen progreso desde o {1} (mellor {2} × {3})"
           }
         }
       }
@@ -9330,6 +9500,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Outros nomes"
+          }
+        }
+      }
+    },
+    "Other options": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otras opciones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Outras opcións"
           }
         }
       }
@@ -13618,6 +13805,23 @@
         }
       }
     },
+    "Switch to {1}–{2} reps": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasar a {1}–{2} repeticiones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasar a {1}–{2} repeticións"
+          }
+        }
+      }
+    },
     "Symptoms to discuss with a clinician": {
       "extractionState": "manual",
       "localizations": {
@@ -14396,6 +14600,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Isto non é un plan de Overreach."
+          }
+        }
+      }
+    },
+    "This lift's sets and reps come from its routine. Change them in the routine.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las series y repeticiones de este ejercicio vienen de su rutina. Cámbialas en la rutina."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As series e repeticións deste exercicio veñen da súa rutina. Cámbiaas na rutina."
           }
         }
       }
@@ -15450,6 +15671,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Usa as series de traballo da túa última sesión como punto de partida para hoxe."
+          }
+        }
+      }
+    },
+    "Use {1} jumps": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar saltos de {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar saltos de {1}"
           }
         }
       }
@@ -17660,6 +17898,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Faltan {1} semanas para a túa data obxectivo: toca chegar en plena forma (cargas altas, menos volume e descarga a última semana)."
+          }
+        }
+      }
+    },
+    "{1} will add {2} at a time from its next session.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} subirá {2} cada vez desde su próxima sesión."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} subirá {2} cada vez desde a súa próxima sesión."
+          }
+        }
+      }
+    },
+    "{1} will use {2} sets of {3}–{4} reps from its next session, adding reps before load.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} usará {2} series de {3}–{4} repeticiones desde su próxima sesión, sumando repeticiones antes que peso."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} usará {2} series de {3}–{4} repeticións desde a súa próxima sesión, sumando repeticións antes que peso."
+          }
+        }
+      }
+    },
+    "{1} will use {2} sets of {3}–{4} reps from its next session.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} usará {2} series de {3}–{4} repeticiones desde su próxima sesión."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} usará {2} series de {3}–{4} repeticións desde a súa próxima sesión."
           }
         }
       }
