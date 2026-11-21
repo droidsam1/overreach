@@ -10,7 +10,7 @@ public struct DeloadAdvice: Hashable, Sendable {
         /// Training and recovery suggest a deload week now.
         case proposed(DeloadExplanation)
         /// An accepted deload week, until `lastDay`.
-        case inProgress(lastDay: Date)
+        case inProgress(lastDay: Date, forLifeStress: Bool)
         /// A deload would be proposed, but a recent break the athlete has not confirmed may already have been one.
         case confirmBreak(DetectedBreak)
     }
@@ -29,9 +29,14 @@ public struct DeloadAdvice: Hashable, Sendable {
     public let planText: String
 
     static func make(
-        _ assessment: DeloadAssessment, exercises: [Exercise], plan: DeloadPlan = .standard,
-        calendar: Calendar, format: Format
+        _ assessment: DeloadAssessment, exercises: [Exercise], calendar: Calendar, format: Format
     ) -> DeloadAdvice {
+        var plan = DeloadPlan.standard
+        switch assessment {
+        case let .proposed(proposal, _, _): plan = proposal.plan
+        case let .inProgress(_, forLifeStress): if forLifeStress { plan = .stressAware }
+        case .confirmBreak: break
+        }
         let planText = L10n.format(
             "Same exercises, {1} of the working sets, about {2} less load, RPE {3} at most.",
             plan.setMultiplier == 0.5 ? L10n.text("half") : format.number(plan.setMultiplier * 100) + " %",
@@ -39,8 +44,11 @@ public struct DeloadAdvice: Hashable, Sendable {
             format.number(plan.maximumRPE)
         )
         switch assessment {
-        case let .inProgress(lastDay):
-            return DeloadAdvice(state: .inProgress(lastDay: lastDay.startDate(in: calendar)), planText: planText)
+        case let .inProgress(lastDay, forLifeStress):
+            return DeloadAdvice(
+                state: .inProgress(lastDay: lastDay.startDate(in: calendar), forLifeStress: forLifeStress),
+                planText: planText
+            )
         case let .confirmBreak(pending):
             return DeloadAdvice(
                 state: .confirmBreak(DetectedBreak(
@@ -83,6 +91,8 @@ public struct DeloadAdvice: Hashable, Sendable {
                         format.number(ratio, maxFractionDigits: 1))
         case let .weeklyLoadSpike(ratio):
             L10n.format("Training load rose fast this week ({1}× your usual).", format.number(ratio, maxFractionDigits: 1))
+        case .lifeStressReported:
+            L10n.text("You said you have felt more stressed than usual lately.")
         case let .hrvSuppressed(days):
             L10n.format("Your 7-day HRV average was below your usual range on {1} of the last 7 days.", days)
         case let .restingHeartRateElevated(days):

@@ -55,6 +55,28 @@ struct DeloadRecoveryTests {
         #expect(proposal.signals.last?.evidence.key == "deload-recovery-signals")
     }
 
+    @Test func reportedStressChangesTheWeekButAddsNoPoints() throws {
+        let lifts = [stalled(), stalled()]
+        let last = deloadEnded(at(-14))
+        let tired = RecoveryTrend(hrvTrendLowDays: 6)
+        let ordinary = try #require(DeloadAdvisor.proposal(lifts: lifts, lastRecovery: last, recovery: tired, now: now))
+        #expect(ordinary.plan == .standard)
+        #expect(ordinary.lifeStress == .unanswered)
+
+        let stressed = RecoveryTrend(hrvTrendLowDays: 6, lifeStress: .reported)
+        let steadier = try #require(DeloadAdvisor.proposal(lifts: lifts, lastRecovery: last, recovery: stressed, now: now))
+        #expect(steadier.plan == .stressAware)
+        #expect(steadier.score == ordinary.score)
+        #expect(steadier.signals.last == .lifeStressReported)
+        #expect(steadier.lifeStress == .reported)
+
+        // Stress alone never proposes anything.
+        #expect(DeloadAdvisor.proposal(
+            lifts: [progressing], lastRecovery: last, recovery: RecoveryTrend(lifeStress: .reported), now: now
+        ) == nil)
+        #expect(DeloadPlan.stressAware.setMultiplier > DeloadPlan.standard.setMultiplier)
+    }
+
     @Test func threeCurrentStallsAndTheIntervalNeedFatigue() throws {
         let last = deloadEnded(at(-70))
         let steady = [stalled(), stalled(), stalled()]
@@ -182,6 +204,23 @@ struct DeloadRecoveryTests {
         #expect(trend.shortSleepNights == 5)
         #expect(trend.poorWellbeingCheckIns == 3)
         #expect(!trend.sickRecently)
+    }
+
+    private func stress(_ offset: Int, _ answer: CheckIn.Context.Answer) -> CheckIn {
+        CheckIn(day: day(-offset), context: .init(question: .stress, answer: answer))
+    }
+
+    @Test func theLatestStressAnswerInTwoWeeksSetsTheContext() {
+        func trend(_ checkIns: [CheckIn]) -> RecoveryTrend.LifeStress {
+            RecoveryTrend.assess(today: today, history: history(), checkIns: checkIns, calendar: calendar).lifeStress
+        }
+        #expect(trend([]) == .unanswered)
+        #expect(trend([stress(10, .yes)]) == .reported)
+        #expect(trend([stress(10, .yes), stress(2, .no)]) == .denied)
+        #expect(trend([stress(12, .yes), stress(1, .unsure), stress(0, .skipped)]) == .reported)
+        #expect(trend([stress(14, .yes)]) == .unanswered)
+        // Another question's "yes" says nothing about stress.
+        #expect(trend([CheckIn(day: day(0), context: .init(question: .fatigue, answer: .yes))]) == .unanswered)
     }
 
     @Test func aSickCheckInThisWeekIsNoted() {

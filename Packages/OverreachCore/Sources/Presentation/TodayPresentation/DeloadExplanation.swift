@@ -11,6 +11,10 @@ public struct DeloadExplanation: Hashable, Sendable {
     public let lastRest: String
     public let evidence: [DeloadEvidenceLine]
     public let readings: [Reading]
+    /// Whether the athlete said they are under more stress than usual, which changes the week proposed.
+    public let lifeStress: RecoveryTrend.LifeStress
+    /// What the athlete said about stress, and what may help this week; empty unless they reported stress.
+    public let stressContext: [String]
 
     static func make(
         _ proposal: DeloadProposal, exercises: [Exercise], walkingIncluded: Bool,
@@ -26,6 +30,8 @@ public struct DeloadExplanation: Hashable, Sendable {
             switch signal {
             case .hrvSuppressed, .restingHeartRateElevated, .shortSleep, .poorWellbeing:
                 recoveryReasons.append(reason)
+            case .lifeStressReported:
+                break
             case .liftsStalled where !names.isEmpty:
                 trainingReasons.append(
                     L10n.format("{1} The stalled exercises are {2}.", reason, names.joined(separator: ", "))
@@ -39,13 +45,26 @@ public struct DeloadExplanation: Hashable, Sendable {
                 references.append(signal.evidence)
             }
         }
+        let stressed = proposal.lifeStress == .reported
         return Self(
-            summary: summary(for: proposal.signals),
+            summary: stressed ? stressSummary : summary(for: proposal.signals),
             trainingReasons: trainingReasons, recoveryReasons: recoveryReasons,
             lastRest: lastRest.text,
             evidence: references.compactMap(DeloadEvidenceLine.init),
-            readings: FurtherReading.readings(for: references)
+            readings: FurtherReading.readings(for: references),
+            lifeStress: proposal.lifeStress,
+            stressContext: stressed ? [
+                DeloadAdvice.text(for: .lifeStressReported, format: format),
+                L10n.text("Stress can lower HRV and slow recovery without any change in your training, so some of the signs above may come from it."),
+                L10n.text("Keep your usual training days at a comfortable effort. An easy run, a walk or a light lift may help how you feel."),
+                L10n.text("Leave sets to failure and personal-record attempts for when you feel steadier."),
+                L10n.text("Protect your sleep: stress and short nights add up."),
+            ] : []
         )
+    }
+
+    static var stressSummary: String {
+        L10n.text("Some lifts have stopped progressing and you reported more stress than usual. A steadier week may help more than a deload.")
     }
 
     static func summary(for signals: [DeloadSignal]) -> String {
@@ -102,6 +121,8 @@ public struct DeloadEvidenceLine: Hashable, Sendable, Identifiable {
             text = L10n.text("Strength athletes report taking lighter weeks roughly every five to six weeks.")
         case "weekly-load-change":
             text = L10n.text("A sharp rise in weekly load is a rough clue that training has been more demanding.")
+        case "deload-life-stress":
+            text = L10n.text("Stress outside training adds to the load your body recovers from, and it can lower HRV on its own.")
         case "deload-recovery-signals":
             text = L10n.text("Sleep, heart measurements and how you feel can add context to changes in your training.")
         default:
@@ -113,6 +134,9 @@ public struct DeloadEvidenceLine: Hashable, Sendable, Identifiable {
 public enum DeloadProposalText {
     public static var title: String { L10n.text("Deload week suggested") }
     public static var start: String { L10n.text("Start deload week") }
+    public static var steadierTitle: String { L10n.text("Steadier week suggested") }
+    public static var steadierStart: String { L10n.text("Start steadier week") }
+    public static var yourStress: String { L10n.text("Your stress") }
     public static var postpone: String { L10n.text("Not now") }
     public static var details: String { L10n.text("Why and what changes") }
     public static var whyNow: String { L10n.text("Why now") }

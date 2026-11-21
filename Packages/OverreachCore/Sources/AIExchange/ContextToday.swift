@@ -18,7 +18,7 @@ extension ContextPack {
             case .confirmBreak:
                 deload = TodayDeload(state: "confirmBreak")
             case let .proposed(proposal, _, _):
-                deload = TodayDeload(state: "proposed", signals: proposal.signals.map(Self.signalName))
+                deload = TodayDeload(state: "proposed", signals: proposal.signals.compactMap(Self.signalName))
             case nil:
                 deload = TodayDeload(state: "none")
             }
@@ -42,7 +42,8 @@ extension ContextPack {
             }
         }
 
-        private static func signalName(_ signal: DeloadSignal) -> String {
+        /// Reported stress is private check-in context and stays out of what is shared.
+        private static func signalName(_ signal: DeloadSignal) -> String? {
             switch signal {
             case .liftsStalled: "liftsStalled"
             case .rpeCreep: "rpeCreep"
@@ -54,6 +55,7 @@ extension ContextPack {
             case .restingHeartRateElevated: "restingHeartRateElevated"
             case .shortSleep: "shortSleep"
             case .poorWellbeing: "poorWellbeing"
+            case .lifeStressReported: nil
             }
         }
     }

@@ -209,6 +209,31 @@ and meta-analysis); Manresa-Rocamora et al. 2021, Scand J Med Sci Sports 31:1164
 Gastin 2016, Br J Sports Med 50:281 (systematic review); Craven et al. 2022, Sports Med 52:2669 (meta-analysis).
 Reviewed 2026-11-20.
 
+### `deload-life-stress` — limited
+
+Training and life demands add up: the 2018 consensus on recovery frames the balance between stress (training load
+and other life demands) and recovery as what sustains performance. In students lifting weights, higher life
+stress went with worse recovery of muscle function over 96 hours (Bartholomew 2008; Stults-Kolehmainen 2012, 2014;
+small, observational) and smaller strength gains over 12 weeks. In a collegiate team, HRV changes that look like
+fatigue can come from non-training factors, so the fix may be life stress or sleep, not less training (Flatt et al.
+2018). Exercise itself is not a stressor to avoid: a single bout lowers blood pressure and cortisol reactivity to
+stress, with higher intensity giving larger reductions, and self-reported stress changes little (2024 systematic
+review, 31 studies); exercise programmes lower anxiety and depressive symptoms (resistance training: Gordon 2018,
+Conn 2010 for activity in general), and for perceived stress the pooled evidence is thin. No study tests which
+exercise is best for a stressed athlete, or whether harder is better.
+→ A yes to the stress question (last 14 days) keeps the proposal's score and changes the week to a steadier one:
+same days, 75 % of the sets, about 5 % less load, RPE 8 at most, with no sets to failure and a prompt to protect
+sleep and keep moving at a comfortable effort. Stress alone never proposes a week. No stress is inferred from the
+device ([ADR-0038](adr/0038-life-stress-in-deload-proposals.md)). The multipliers are product heuristics.
+Refs: [Kellmann et al. 2018](https://pubmed.ncbi.nlm.nih.gov/29345524/), Int J Sports Physiol Perform 13:240
+(consensus); Bartholomew et al. 2008 ([PubMed 18545186](https://pubmed.ncbi.nlm.nih.gov/18545186/)),
+Stults-Kolehmainen et al. 2012 ([22688829](https://pubmed.ncbi.nlm.nih.gov/22688829/)) and 2014
+([24343323](https://pubmed.ncbi.nlm.nih.gov/24343323/)) on life stress, recovery and strength gains; Flatt et al.
+2018 (HRV and non-training factors in collegiate swimmers); [J Behav Med 2024](https://link.springer.com/10.1007/s10865-024-00470-w)
+(acute exercise and stress reactivity); Gordon et al. 2018, JAMA Psychiatry (resistance training and depressive
+symptoms); Conn 2010 ([PubMed 20410849](https://pubmed.ncbi.nlm.nih.gov/20410849/), activity interventions and
+anxiety). Reviewed 2026-11-21.
+
 ### `unplanned-deload` — heuristic
 
 Bell et al. [2023 Delphi](https://pmc.ncbi.nlm.nih.gov/articles/PMC10511399/) and

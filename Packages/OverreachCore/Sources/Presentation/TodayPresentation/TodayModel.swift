@@ -228,9 +228,14 @@ public final class TodayModel {
         guard !isLoading, checkIn?.context == nil, let loadedDay else { return nil }
         let yesterday = loadedDay.adding(days: -1, calendar: calendar)
         let trainedRecently = recentTrainingDays.contains { $0.id >= yesterday && !$0.workouts.isEmpty }
-        return ReadinessRules.contextQuestion(
+        if let question = ReadinessRules.contextQuestion(
             for: readiness, recentRunPain: recentRunPain, trainedRecently: trainedRecently
-        )
+        ) { return question }
+        // A deload that stress could explain waits for the athlete's answer (`deload-life-stress`).
+        if case let .proposed(explanation) = deloadAdvice?.state, explanation.lifeStress == .unanswered {
+            return .stress
+        }
+        return nil
     }
 
     /// "Energy 4/5 · Soreness 1/3", or "Sick" — what today's check-in said.
@@ -510,7 +515,10 @@ public final class TodayModel {
     public func acceptDeload(now: Date = .now) async {
         guard let profiles, var profile = try? await profiles.profile() else { return }
         let today = CalendarDay(now, calendar: calendar)
-        profile.deloads.append(DeloadRecord(start: today, days: DeloadPlan.standard.durationDays))
+        let plan = deloadPlan
+        profile.deloads.append(DeloadRecord(
+            start: today, days: plan.durationDays, forLifeStress: plan == .stressAware ? true : nil
+        ))
         profile.deloadPostponedUntil = nil
         try? await profiles.save(profile)
         await load(now: now)
@@ -690,6 +698,15 @@ public final class TodayModel {
     }
 
     /// The deload applied to the session that comes next. Without one, Today explains it in general terms.
+    /// The plan the advice shows: the steadier week when the athlete reported stress.
+    private var deloadPlan: DeloadPlan {
+        switch deloadAdvice?.state {
+        case let .proposed(explanation): explanation.lifeStress == .reported ? .stressAware : .standard
+        case let .inProgress(_, forLifeStress): forLifeStress ? .stressAware : .standard
+        default: .standard
+        }
+    }
+
     private func updateDeloadSession() {
         deloadSession = nil
         guard let advice = deloadAdvice, let context = recentWorkouts else { return }
@@ -709,7 +726,7 @@ public final class TodayModel {
             .max(by: { $0.startedAt < $1.startedAt }) else { return }
         deloadSession = DeloadSessionPreview.make(
             heading: target.heading, session: session, exercises: context.catalog, settings: context.settings,
-            format: format
+            plan: deloadPlan, format: format
         )
     }
 

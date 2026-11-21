@@ -23,9 +23,8 @@ public struct DeloadSessionPreview: Hashable, Sendable {
 
     static func make(
         heading: String, session: StrengthSession, exercises: [Exercise], settings: [UUID: ProgressionSettings],
-        format: Format
+        plan: DeloadPlan = .standard, format: Format
     ) -> DeloadSessionPreview? {
-        let plan = DeloadPlan.standard
         let byID = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         var seen: Set<UUID> = []
         let rows = session.entries

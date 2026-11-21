@@ -73,7 +73,7 @@ public struct TrainingRecord: Sendable {
     public var recordings: [RecordedStrengthActivity]
     /// Merged daily metrics covering `ReadinessAssessment.historyRange`.
     public var metrics: [DailyMetrics]
-    /// Check-ins of the last 7 days.
+    /// Check-ins of the last `RecoveryTrend.stressWindowDays` days.
     public var checkIns: [CheckIn]
     public var activity: [DailyActivity]
     public var cycle: CycleContext?
@@ -115,7 +115,7 @@ extension TrainingRecord {
 /// ADR-0035). Screens and the AI context turn it into text; none of them decides it again.
 public enum DeloadAssessment: Hashable, Sendable {
     /// An accepted deload week, until `lastDay`.
-    case inProgress(lastDay: CalendarDay)
+    case inProgress(lastDay: CalendarDay, forLifeStress: Bool = false)
     /// Training and recovery call for a deload week. `walkingIncluded`: the weekly load counts extra walking.
     case proposed(DeloadProposal, walkingIncluded: Bool, lastRecovery: LastRecovery?)
     /// A deload would be proposed, but this unconfirmed break may already have been the rest it calls for.
@@ -128,7 +128,10 @@ public enum DeloadAssessment: Hashable, Sendable {
         calendar: Calendar = .current, recoveryPeriods: [DetectedDeload]? = nil
     ) -> Self? {
         if let current = RecoveryHistory.deloadInProgress(profile, on: today, calendar: calendar) {
-            return .inProgress(lastDay: RecoveryHistory.lastDay(of: current, calendar: calendar))
+            return .inProgress(
+                lastDay: RecoveryHistory.lastDay(of: current, calendar: calendar),
+                forLifeStress: current.forLifeStress == true
+            )
         }
         if let postponed = profile.deloadPostponedUntil, today <= postponed { return nil }
 

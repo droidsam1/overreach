@@ -4,6 +4,17 @@ import Foundation
 /// How recovery went over the last 7 days, for deload decisions (`deload-recovery-signals`). It counts sustained
 /// signals, not single bad days: the daily readiness light already handles a single day.
 public struct RecoveryTrend: Hashable, Sendable {
+    /// What the athlete said about unusual stress in the last `stressWindowDays` (`deload-life-stress`).
+    /// Only an answer counts: nothing is inferred from the device.
+    public enum LifeStress: Hashable, Sendable {
+        /// The latest answer was yes.
+        case reported
+        /// The latest answer was no.
+        case denied
+        /// No answer, or only "not sure" or "skip".
+        case unanswered
+    }
+
     /// Days whose 7-day HRV trend was below the personal range (one HRV statistic, ADR-0024).
     public var hrvTrendLowDays = 0
     /// Days with resting HR at least the configured rise above its 60-day mean.
@@ -14,23 +25,28 @@ public struct RecoveryTrend: Hashable, Sendable {
     public var poorWellbeingCheckIns = 0
     /// A check-in marked sick: return to training gradually instead of deloading (`illness-return`).
     public var sickRecently = false
+    public var lifeStress = LifeStress.unanswered
 
     public init(
         hrvTrendLowDays: Int = 0, restingHeartRateHighDays: Int = 0, shortSleepNights: Int = 0,
-        poorWellbeingCheckIns: Int = 0, sickRecently: Bool = false
+        poorWellbeingCheckIns: Int = 0, sickRecently: Bool = false, lifeStress: LifeStress = .unanswered
     ) {
         self.hrvTrendLowDays = hrvTrendLowDays
         self.restingHeartRateHighDays = restingHeartRateHighDays
         self.shortSleepNights = shortSleepNights
         self.poorWellbeingCheckIns = poorWellbeingCheckIns
         self.sickRecently = sickRecently
+        self.lifeStress = lifeStress
     }
 
     public static let windowDays = 7
+    /// Stress answers older than this say nothing about now.
+    public static let stressWindowDays = 14
 
     /// - Parameters:
     ///   - history: merged daily metrics covering at least the readiness baseline before the window (60 days).
-    ///   - checkIns: check-ins of the window (others are ignored).
+    ///   - checkIns: check-ins of the last `stressWindowDays` days; the 7-day window counts for everything but the
+    ///     stress answer.
     ///   - cycle: menstrual events and tracking mode. Each day is judged with its own phase estimate, so the deload
     ///     signals use phase-aware baselines like the readiness light (`cycle-phase-baselines`).
     public static func assess(
@@ -66,6 +82,14 @@ public struct RecoveryTrend: Hashable, Sendable {
             let lowEnergy = checkIn.energy.map { $0 <= settings.lowEnergy } ?? false
             let sore = checkIn.soreness.map { $0 >= settings.highSoreness } ?? false
             if lowEnergy || sore { trend.poorWellbeingCheckIns += 1 }
+        }
+        let stressWindow = Set((0..<stressWindowDays).map { today.adding(days: -$0, calendar: calendar) })
+        let answered = checkIns
+            .filter { stressWindow.contains($0.day) && $0.context?.question == .stress }
+            .sorted { $0.day > $1.day }
+            .first { $0.context?.answer == .yes || $0.context?.answer == .no }
+        if let answer = answered?.context?.answer {
+            trend.lifeStress = answer == .yes ? .reported : .denied
         }
         return trend
     }
