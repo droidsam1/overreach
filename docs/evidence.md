@@ -90,7 +90,13 @@ usual steps and 5,000 steps (`low-steps-exercise-resistance`) on each of the las
 Walks found in step counts (`StepWalkDetection.Settings`): at least 10 minutes of 60–140 steps a minute, with
 pauses of up to 3 minutes inside one walk. 60 steps/min separates walking from pottering about; above ≈ 140
 steps/min people usually run, so those minutes are left out. Both are product heuristics.
-Reviewed 2026-11-21.
+
+For weekly load, excess minutes are allocated proportionally across bouts. Effort is estimated as ten times
+the HR reserve fraction, bounded to 1–3. Without usable HR reserve, effort is 1, multiplied by 1.3 at 50 m of
+ascent per kilometre. The walking estimate contributes at weight 0.25 to the weekly comparison. These values
+are product heuristics. A small crossover study found next-day soreness after downhill walking. Ascent data
+only adjusts the fallback load estimate. The warm-up cue asks the athlete to check for fatigue.
+Reviewed 2026-11-21. [Downhill walking trial](https://pubmed.ncbi.nlm.nih.gov/29679309/)
 
 ## Progression engine
 

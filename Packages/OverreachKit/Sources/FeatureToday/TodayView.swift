@@ -391,7 +391,9 @@ public struct TodayView: View {
             ForEach(model.movementNotes, id: \.self) { note in
                 VStack(alignment: .leading, spacing: Spacing.xSmall) {
                     Text(note.text).font(.subheadline)
-                    Text(note.evidence).font(.caption).foregroundStyle(.secondary)
+                    if let evidence = note.evidence {
+                        Text(evidence).font(.caption).foregroundStyle(.secondary)
+                    }
                 }
                 .accessibilityElement(children: .combine)
             }

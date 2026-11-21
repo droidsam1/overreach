@@ -125,7 +125,10 @@ public enum EverydayMovement {
         return signals
     }
 
-    public static func walkingMinutes(_ day: DailyActivity) -> Double { day.walkingSeconds / 60 }
+    public static func walkingMinutes(_ day: DailyActivity) -> Double {
+        day.walks.filter { $0.durationSeconds.isFinite && $0.durationSeconds > 0 }
+            .reduce(0) { $0 + $1.durationSeconds / 60 }
+    }
 
     /// Walks from several sources, each walk once: when two overlap in time, the one from the source listed first
     /// in `priority` stays (Garmin before Apple Health, as for runs and strength).
@@ -141,7 +144,7 @@ public enum EverydayMovement {
         return kept.sorted { $0.start < $1.start }
     }
 
-    private static func latestPerDay(_ activity: [DailyActivity]) -> [DailyActivity] {
+    static func latestPerDay(_ activity: [DailyActivity]) -> [DailyActivity] {
         Dictionary(activity.map { ($0.day, $0) }, uniquingKeysWith: { _, last in last }).values
             .sorted { $0.day < $1.day }
     }
