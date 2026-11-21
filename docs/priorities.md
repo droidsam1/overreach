@@ -21,7 +21,13 @@ and the logger come before review tools, and work that only a person with an iPh
    Runs in parallel. Integrate after the shared schedule work.
 5. **Longer trends** — [#127](https://github.com/droidsam1/overreach/issues/127). Add 30- and
    90-day views inside the relevant details. Use the activity matching from #40 for combined-source totals.
-6. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
+6. **Dog walks from a pet tracker** — [#154](https://github.com/droidsam1/overreach/issues/154), one task at a time:
+   [#155](https://github.com/droidsam1/overreach/issues/155) (matcher), then
+   [#157](https://github.com/droidsam1/overreach/issues/157) once the device check #156 is done, then
+   [#159](https://github.com/droidsam1/overreach/issues/159), [#158](https://github.com/droidsam1/overreach/issues/158).
+   [#160](https://github.com/droidsam1/overreach/issues/160) only if #156 fails. Design:
+   [companion walks](design/companion-walks.md).
+7. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
 
 ## Needs a person or an iPhone
 
@@ -35,3 +41,5 @@ Agents can prepare these but not finish them.
 - Clinical review of symptom wording —
   [hybrid backlog task 3](design/readiness-and-hybrid-planning.md#3-ask-a-question-that-changes-the-decision).
 - Release v0.1.0 and the beta guide — [#22](https://github.com/droidsam1/overreach/issues/22).
+- Does a Tractive walk reach Apple Health through Strava? — [#156](https://github.com/droidsam1/overreach/issues/156).
+  Decides whether #157 or #160 comes next.
