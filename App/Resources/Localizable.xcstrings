@@ -460,6 +460,23 @@
         }
       }
     },
+    "A sharp rise in weekly load is a rough clue that training has been more demanding.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una subida brusca de la carga semanal da una idea de cuánto se ha endurecido el entrenamiento."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unha subida brusca da carga semanal dá unha idea de canto se endureceu o adestramento."
+          }
+        }
+      }
+    },
     "A summary after every session": {
       "extractionState": "manual",
       "localizations": {
@@ -2343,6 +2360,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pechar"
+          }
+        }
+      }
+    },
+    "Coaches recommend shorter or easier strength sessions to manage fatigue.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los entrenadores recomiendan sesiones de fuerza más cortas o suaves para manejar la fatiga."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os adestradores recomendan sesións de forza máis curtas ou suaves para xestionar a fatiga."
           }
         }
       }
@@ -4944,6 +4978,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Movemento diario"
+          }
+        }
+      }
+    },
+    "Evidence": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evidencia"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evidencia"
           }
         }
       }
@@ -8858,6 +8909,23 @@
         }
       }
     },
+    "No recovery periods recorded.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay períodos de recuperación registrados."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai períodos de recuperación rexistrados."
+          }
+        }
+      }
+    },
     "No runs recorded": {
       "extractionState": "manual",
       "localizations": {
@@ -8871,6 +8939,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non hai carreiras rexistradas"
+          }
+        }
+      }
+    },
+    "No strength deload or rest period in your logged history.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay ninguna descarga ni pausa de fuerza en tu historial."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai ningunha descarga nin pausa de forza no teu historial."
           }
         }
       }
@@ -9449,6 +9534,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Overreach"
+          }
+        }
+      }
+    },
+    "Overreach treats rising effort at the same weight and reps as a sign of fatigue.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach considera una señal de fatiga que aumente el esfuerzo con el mismo peso y las mismas repeticiones."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach considera un sinal de fatiga que aumente o esforzo co mesmo peso e as mesmas repeticións."
           }
         }
       }
@@ -11884,6 +11986,23 @@
         }
       }
     },
+    "See your deload session": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver tu sesión de descarga"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver a túa sesión de descarga"
+          }
+        }
+      }
+    },
     "Separate other names with commas. Search and imports use them too.": {
       "extractionState": "manual",
       "localizations": {
@@ -12751,6 +12870,23 @@
         }
       }
     },
+    "Sleep, heart measurements and how you feel can add context to changes in your training.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El sueño, las mediciones cardíacas y cómo te sientes pueden ayudar a interpretar los cambios en tu entrenamiento."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O sono, as medicións cardíacas e como te sentes poden axudar a interpretar os cambios no teu adestramento."
+          }
+        }
+      }
+    },
     "So-so": {
       "extractionState": "manual",
       "localizations": {
@@ -12815,6 +12951,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hai exercicios sen rematar"
+          }
+        }
+      }
+    },
+    "Some lifts have stopped progressing and recent recovery signs support a lighter week.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Has dejado de progresar en algunos ejercicios y las señales recientes de recuperación apuntan a una semana más suave."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deixaches de progresar nalgúns exercicios e os sinais recentes de recuperación apuntan a unha semana máis suave."
+          }
+        }
+      }
+    },
+    "Some lifts have stopped progressing and the same weights feel harder.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Has dejado de progresar en algunos ejercicios y los mismos pesos te cuestan más."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deixaches de progresar nalgúns exercicios e os mesmos pesos cústanche máis."
+          }
+        }
+      }
+    },
+    "Some lifts have stopped progressing and your training load rose sharply this week.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Has dejado de progresar en algunos ejercicios y tu carga de entrenamiento subió mucho esta semana."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deixaches de progresar nalgúns exercicios e a túa carga de adestramento subiu moito esta semana."
           }
         }
       }
@@ -13312,6 +13499,23 @@
         }
       }
     },
+    "Strength athletes report taking lighter weeks roughly every five to six weeks.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los deportistas de fuerza dicen que entrenan más suave una semana cada cinco o seis, aproximadamente."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os deportistas de forza din que adestran máis suave unha semana cada cinco ou seis, aproximadamente."
+          }
+        }
+      }
+    },
     "Strength day": {
       "extractionState": "manual",
       "localizations": {
@@ -13546,6 +13750,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Suxerido {1}–{2} · {3} ({4})"
+          }
+        }
+      }
+    },
+    "Supporting recovery signs": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Señales de recuperación que apoyan la propuesta"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sinais de recuperación que apoian a proposta"
           }
         }
       }
@@ -14192,6 +14413,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "O plan non ten rutinas nin axustes de exercicios."
+          }
+        }
+      }
+    },
+    "The same weights feel harder on several lifts.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los mismos pesos te cuestan más en varios ejercicios."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os mesmos pesos cústanche máis en varios exercicios."
           }
         }
       }
@@ -15947,6 +16185,23 @@
         }
       }
     },
+    "What changes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qué cambia"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Que cambia"
+          }
+        }
+      }
+    },
     "What's new in {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -16062,6 +16317,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Que exercicios están estancados e que debería probar?"
+          }
+        }
+      }
+    },
+    "Why and what changes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por qué y qué cambia"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por que e que cambia"
+          }
+        }
+      }
+    },
+    "Why now": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por qué ahora"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por que agora"
           }
         }
       }
@@ -16712,6 +17001,40 @@
         }
       }
     },
+    "Your estimated maxes have dropped and the same weights feel harder.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus máximos estimados han bajado y los mismos pesos te cuestan más."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os teus máximos estimados baixaron e os mesmos pesos cústanche máis."
+          }
+        }
+      }
+    },
+    "Your estimated maxes have dropped on several lifts.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus máximos estimados han bajado en varios ejercicios."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os teus máximos estimados baixaron en varios exercicios."
+          }
+        }
+      }
+    },
     "Your key stays on your iPhone, in the Keychain, and only syncs through your own iCloud Keychain.": {
       "extractionState": "manual",
       "localizations": {
@@ -16725,6 +17048,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "A túa chave quédase no teu iPhone, no Chaveiro, e só se sincroniza co teu propio Chaveiro de iCloud."
+          }
+        }
+      }
+    },
+    "Your last deload week ended on {1}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu última semana de descarga terminó el {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa última semana de descarga rematou o {1}."
+          }
+        }
+      }
+    },
+    "Your last rest": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu último descanso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teu último descanso"
+          }
+        }
+      }
+    },
+    "Your last strength rest period ended on {1}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu último descanso de fuerza terminó el {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teu último descanso de forza rematou o {1}."
           }
         }
       }
@@ -17490,6 +17864,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} semanas desde a túa última descarga."
+          }
+        }
+      }
+    },
+    "{1} weeks since your last strength rest period.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Han pasado {1} semanas desde tu último descanso de fuerza."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasaron {1} semanas desde o teu último descanso de forza."
           }
         }
       }

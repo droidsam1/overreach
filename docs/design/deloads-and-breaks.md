@@ -1,6 +1,6 @@
 # Deloads, breaks and stalled lifts
 
-Status: tasks 1–4 and 6 implemented (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
+Status: tasks 1–6 implemented (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
 ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-practice`, `deload-recovery-signals`,
 `unplanned-deload`, `stall-heuristics` in [the evidence register](../evidence.md).
 
@@ -8,8 +8,9 @@ ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-pr
 
 Take the first task below whose boxes are not all checked. Each task is one pull request. Task 1 is done by
 [training services task 2](training-services.md#2-recovery-status); build tasks 2–6 on `TrainingServices` once it
-exists. Continue with task 5. It explains the Today card that
-[#94](https://github.com/droidsam1/overreach/issues/94) then places in the page. Task 6 supplies lift findings (`LiftsToUnblock`, shown in Plan)
+exists. All tasks are done. Task 5 explains the Today card that
+[#94](https://github.com/droidsam1/overreach/issues/94) then places in the page. Task 6 supplies lift findings
+(`LiftsToUnblock`, shown in Plan)
 to [Recovery & Progress](https://github.com/droidsam1/overreach/issues/126). Record checks that need an iPhone
 in [#21](https://github.com/droidsam1/overreach/issues/21).
 
@@ -127,19 +128,20 @@ Finish line: the default flow asks about at most two recent periods, both within
 
 ### 5. Today deload card: summary first, details on demand
 
-- [ ] The card shows a title, one sentence with the main reason in plain words ("Your lifts stopped progressing and
+- [x] The card shows a title, one sentence with the main reason in plain words ("Your lifts stopped progressing and
   the same weights feel harder"), "Start deload week", "Not now" and "Why and what changes". No evidence labels, no
   session preview on the card.
-- [ ] A detail screen with, in this order: **Why now** (training signals first, recovery signals marked as
+- [x] A detail screen with, in this order: **Why now** (training signals first, recovery signals marked as
   supporting), **Your last rest** (date and kind from task 1, linking to the recovery history),
   **What changes** (the plan text and "See your deload session" with the current preview),
   **Evidence** (one plain sentence per evidence key, its level once, and `FurtherReading` links).
 - [x] Rename the trend signal so it differs from readiness: "Your 7-day HRV average stayed below your usual range on
   5 of the last 7 days."
-- [ ] All texts come from `TodayPresentation`; the views only render (ADR-0014). Strings in en, es and gl.
-- [ ] Tests on the model: the summary sentence for each signal combination, and that the detail lists every signal.
+- [x] All texts come from `TodayPresentation`; the views only render (ADR-0014). Strings in en, es and gl.
+- [x] Tests on the model: the summary sentence for each signal combination, and that the detail lists every signal.
 
-Finish line: the card fits in one screen on a compact iPhone at default text size, and every reason is one tap away.
+The card opens the explanation in one tap. Verify the fit on a compact iPhone at default text size in
+[#21](https://github.com/droidsam1/overreach/issues/21).
 
 ### 6. Stalled lifts as their own recommendation
 

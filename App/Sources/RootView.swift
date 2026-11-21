@@ -81,7 +81,10 @@ struct RootView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Today", systemImage: "gauge.with.needle", value: AppTab.today) {
-                TodayView(model: todayModel, onConnectGarmin: { garminModel.start() })
+                TodayView(
+                    model: todayModel, onConnectGarmin: { garminModel.start() },
+                    recoveryHistory: { RecoveryHistoryView(model: planModel) }
+                )
             }
             Tab("Train", systemImage: "dumbbell", value: AppTab.train) {
                 WorkoutView(model: workoutModel, routines: routinesModel)

@@ -10,7 +10,6 @@ import SwiftUI
 /// Goal, current block, what to do next, balance findings and the plan for the coming months (ADR-0013).
 public struct PlanView<Assistant: View>: View {
     @State private var model: PlanModel
-    @State private var showsDeloadHistory = false
     private let assistant: Assistant
 
     /// - Parameter assistant: links to other features (e.g. "Ask AI"). Wired by the app.
@@ -42,7 +41,11 @@ public struct PlanView<Assistant: View>: View {
                     }
                 }
                 currentBlockSection
-                if model.hasRecoveryHistory { deloadSection }
+                if model.hasRecoveryHistory {
+                    Section("Recovery history") {
+                        RecoveryHistoryRows(model: model)
+                    }
+                }
                 if !model.liftsToUnblockRows.isEmpty { LiftsToUnblockSection(model: model) }
                 planSection
                 if !model.findingLines.isEmpty {
@@ -57,57 +60,6 @@ public struct PlanView<Assistant: View>: View {
             .navigationTitle("Plan")
             .task { await model.load() }
             .refreshable { await model.load() }
-        }
-    }
-
-    private var deloadSection: some View {
-        Section("Recovery history") {
-            if let summary = model.lastDeloadSummary {
-                Text(summary)
-            }
-            if !model.deloadRows.isEmpty {
-                DisclosureGroup("Deloads and rest periods", isExpanded: $showsDeloadHistory) {
-                    ForEach(model.deloadRows) { row in
-                        deloadDetails(row)
-                    }
-                }
-            }
-            ForEach(model.pendingDeloadRows) { row in
-                deloadQuestion(row)
-            }
-            if !model.olderDeloadRows.isEmpty {
-                DisclosureGroup("Older periods") {
-                    ForEach(model.olderDeloadRows) { row in
-                        deloadQuestion(row)
-                    }
-                }
-            }
-        }
-    }
-
-    private func deloadQuestion(_ row: DeloadQuestionRow) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
-            Text("Was this a rest period?").font(.headline)
-            Text(row.details.dates)
-            if let strength = row.details.strength { Text(strength) }
-            if let running = row.details.running { Text(running) }
-            Text(row.details.reason).font(.footnote).foregroundStyle(.secondary)
-            Button("Yes, it was rest") {
-                Task { await model.reviewDeload(id: row.id, accepted: true) }
-            }
-            Button("No") {
-                Task { await model.reviewDeload(id: row.id, accepted: false) }
-            }
-        }
-        .buttonStyle(.borderless)
-        .disabled(model.isReviewingDeload)
-    }
-
-    private func deloadDetails(_ row: DeloadRow) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.xSmall) {
-            Text(row.start...row.end)
-            Text(row.reason.text).foregroundStyle(.secondary)
-            Text(row.reason.evidence).font(.caption).foregroundStyle(.secondary)
         }
     }
 

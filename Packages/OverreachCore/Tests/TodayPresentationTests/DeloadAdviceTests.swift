@@ -73,16 +73,21 @@ struct DeloadAdviceTests {
 
     @Test func stalledLiftsAndAPoorWeekProposeADeloadWithReasons() throws {
         let advice = try #require(makeAdvice())
-        guard case let .proposed(reasons) = advice.state else {
+        guard case let .proposed(explanation) = advice.state else {
             Issue.record("expected a proposal")
             return
         }
-        #expect(reasons.map(\.text) == [
+        #expect(explanation.trainingReasons == [
             "2 main lifts have stalled. The stalled exercises are Back Squat, Bench Press.",
+        ])
+        #expect(explanation.recoveryReasons == [
             "Your 7-day HRV average was below your usual range on 7 of the last 7 days.",
             "Less than 6 h of sleep on 7 of the last 7 nights.",
         ])
-        #expect(reasons.allSatisfy { !$0.evidence.isEmpty })
+        #expect(explanation.evidence.map(\.id) == ["deload-design", "deload-recovery-signals"])
+        #expect(explanation.evidence.allSatisfy { !$0.level.isEmpty })
+        #expect(explanation.readings.count == 2)
+        #expect(explanation.lastRest == "No strength deload or rest period in your logged history.")
         #expect(advice.planText == "Same exercises, half of the working sets, about 10 % less load, RPE 7 at most.")
     }
 
@@ -97,8 +102,8 @@ struct DeloadAdviceTests {
             metrics: metrics(poorWeek: true)
         )
         let advice = advice(for: record, profile: profile)
-        guard case let .proposed(reasons) = advice?.state else { return [] }
-        return reasons.map(\.text)
+        guard case let .proposed(explanation) = advice?.state else { return [] }
+        return explanation.trainingReasons
     }
 
     @Test func withoutAnyDeloadTheIntervalSaysHowMuchHistoryThereIs() {
@@ -111,14 +116,28 @@ struct DeloadAdviceTests {
         var profile = AthleteProfile()
         profile.deloads = [DeloadRecord(start: today.adding(days: -15, calendar: calendar), days: 7)]
 
-        let reasons = longAdvice(profile: profile)
+        let record = TrainingRecord(
+            sessions: longHistory, exercises: [squat, bench], settings: [squat.id: mainLift, bench.id: mainLift],
+            metrics: metrics(poorWeek: true)
+        )
+        guard case let .proposed(explanation) = advice(for: record, profile: profile)?.state else {
+            Issue.record("expected a proposal")
+            return
+        }
         let plan = PlanAnalysis.run(
             profile: profile, sessions: longHistory, exercises: [squat.id: squat, bench.id: bench],
             settings: [squat.id: mainLift, bench.id: mainLift], now: now, calendar: calendar
         )
 
-        #expect(!reasons.isEmpty)
-        #expect(!reasons.contains { $0.contains("weeks since") || $0.contains("No deload") })
+        let lastDay = today.adding(days: -9, calendar: calendar).startDate(in: calendar)
+        let date = lastDay.formatted(
+            Date.FormatStyle(
+                date: .abbreviated, time: .omitted,
+                locale: format.locale, calendar: calendar, timeZone: calendar.timeZone
+            )
+        )
+        #expect(explanation.lastRest == "Your last deload week ended on \(date).")
+        #expect(!explanation.trainingReasons.contains { $0.contains("weeks since") || $0.contains("No deload") })
         #expect(plan.weeksSinceDeload == 1)
     }
 
@@ -203,12 +222,12 @@ struct DeloadAdviceTests {
             #expect(advice == nil)
         } else {
             let result = try #require(advice)
-            guard case let .proposed(reasons) = result.state else {
+            guard case let .proposed(explanation) = result.state else {
                 Issue.record("Expected a proposal with two stalled lifts")
                 return
             }
             let expected = "2 lifts you train now have stalled. The stalled exercises are Back Squat, Bench Press."
-            #expect(reasons.first?.text == expected)
+            #expect(explanation.trainingReasons.first == expected)
         }
     }
 
@@ -239,11 +258,11 @@ struct DeloadAdviceTests {
 
         #expect(advice(activity: []) == nil)
         let result = try #require(advice(activity: activity))
-        guard case let .proposed(reasons) = result.state else {
+        guard case let .proposed(explanation) = result.state else {
             Issue.record("expected a proposal")
             return
         }
-        #expect(reasons.map(\.text) == [
+        #expect(explanation.trainingReasons == [
             "2 main lifts have stalled. The stalled exercises are Back Squat, Bench Press.",
             "Strength and extra walking load reached 1.6× your usual week.",
         ])
