@@ -63,10 +63,40 @@ public struct HealthKitMetricsSource: MetricsSource, ActivitySource, CycleSource
     public func dailyActivity(in range: ClosedRange<CalendarDay>) async throws -> [DailyActivity] {
         let start = range.lowerBound.startDate(in: calendar)
         let end = range.upperBound.adding(days: 1, calendar: calendar).startDate(in: calendar)
-        return try await steps(from: start, to: end)
-            .filter { range.contains($0.key) }
-            .map { DailyActivity(day: $0.key, steps: $0.value) }
+        let steps = try await steps(from: start, to: end)
+        let walks = Dictionary(grouping: try await walks(from: start, to: end)) {
+            CalendarDay($0.start, calendar: calendar)
+        }
+        return Set(steps.keys).union(walks.keys)
+            .filter { range.contains($0) }
+            .map { DailyActivity(day: $0, steps: steps[$0], walks: walks[$0] ?? []) }
             .sorted { $0.day < $1.day }
+    }
+
+    /// Walking and hiking workouts as walks (ADR-0010). Walks detected from step samples alone come later.
+    private func walks(from start: Date, to end: Date) async throws -> [WalkBout] {
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end)
+        let query = HKSampleQueryDescriptor(
+            predicates: [.workout(predicate)], sortDescriptors: [SortDescriptor(\.startDate)]
+        )
+        let bpm = HKUnit.count().unitDivided(by: .minute())
+        return try await query.result(for: store)
+            .filter { $0.workoutActivityType == .walking || $0.workoutActivityType == .hiking }
+            .map { workout in
+                let distance = workout.statistics(for: HKQuantityType(.distanceWalkingRunning))?.sumQuantity()
+                let steps = workout.statistics(for: HKQuantityType(.stepCount))?.sumQuantity()
+                let elevation = workout.metadata?[HKMetadataKeyElevationAscended] as? HKQuantity
+                return WalkBout(
+                    start: workout.startDate,
+                    durationSeconds: workout.duration,
+                    steps: steps.map { Int($0.doubleValue(for: .count())) },
+                    distanceMeters: distance?.doubleValue(for: .meter()),
+                    averageHeartRate: workout.statistics(for: HKQuantityType(.heartRate))?
+                        .averageQuantity()?.doubleValue(for: bpm),
+                    elevationGainMeters: elevation?.doubleValue(for: .meter()),
+                    source: .appleHealth
+                )
+            }
     }
 
     public func runs(from start: Date, to end: Date) async throws -> [RunActivity] {

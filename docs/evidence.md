@@ -84,7 +84,10 @@ Refs: Burton & Coyle 2021 (randomised crossover). Reviewed 2026-11-16.
 
 ### `walking-load-baseline` — heuristic
 Only walking above the 28-day personal baseline counts as extra load; weight starts low and is configurable.
-Reviewed 2026-11-16.
+Implemented defaults (`EverydayMovement.Settings`): the baseline is the median of the 28 days before, used from
+14 days with data; a walking spike is ≥ 60 min above the usual walking minutes; "far below" is under both half the
+usual steps and 5,000 steps (`low-steps-exercise-resistance`) on each of the last 3 complete days.
+Reviewed 2026-11-21.
 
 ## Progression engine
 

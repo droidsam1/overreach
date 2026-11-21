@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today compares your steps with your usual day over the last four weeks. A walk or hike from Apple Health that is
+  an hour or more above your usual walking is mentioned before leg work or a run, three very quiet days suggest a
+  walk, and a red day suggests an easy walk, or keeping your usual dog walks easy (ADR-0010).
 - Today leads with the recommended action and its main reasons. The explanation shows how many comparable HRV
   readings were low, what other readings say and where the readings and references came from.
 - Today's HRV explanation uses when you actually slept: a run that ends after midnight still counts before last
