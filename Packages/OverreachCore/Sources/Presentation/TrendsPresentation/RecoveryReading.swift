@@ -40,11 +40,14 @@ struct RecoveryReadings {
     }
 
     private func reading(_ audit: ReadinessInputAudit) -> RecoveryReading {
-        let (kind, title, unit): (RecoveryReading.Kind, String, String) = switch audit.input {
-        case .hrv: (.hrv, seriesTitle(audit), "ms")
-        case .restingHeartRate: (.restingHeartRate, L10n.text("Resting HR"), "bpm")
-        case .sleep, .checkIn: (.sleep, L10n.text("Sleep"), "h")
+        let kind: RecoveryReading.Kind = switch audit.input {
+        case .hrv: .hrv
+        case .restingHeartRate: .restingHeartRate
+        case .sleep, .checkIn: .sleep
         }
+        let title = kind == .hrv ? seriesTitle(audit)
+            : kind == .sleep ? L10n.text("Sleep") : L10n.text("Resting HR")
+        let unit = kind == .hrv ? "ms" : kind == .sleep ? "h" : "bpm"
         let digits = kind == .sleep ? 1 : 0
         let hasValue = audit.value != nil && audit.status != .missing && audit.status != .outOfRange
         let value = audit.value.flatMap { hasValue ? format.number($0, maxFractionDigits: digits) + " " + unit : nil }

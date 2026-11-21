@@ -9,7 +9,9 @@ private actor DaysSource: MetricsSource {
     let fails: Bool
     let runList: [RunActivity]
 
-    init(kind: DataSourceKind = .appleHealth, days: [DailyMetrics] = [], fails: Bool = false, runs: [RunActivity] = []) {
+    init(
+        kind: DataSourceKind = .appleHealth, days: [DailyMetrics] = [], fails: Bool = false, runs: [RunActivity] = []
+    ) {
         self.kind = kind
         self.days = days
         self.fails = fails
