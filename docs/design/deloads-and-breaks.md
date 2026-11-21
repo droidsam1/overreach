@@ -6,8 +6,9 @@ ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-pr
 
 ## Continue from here
 
-Take the first task below whose boxes are not all checked. Each task is one pull request. Tasks 1 and 2 fix wrong
-advice and come first; tasks 5 and 6 change the Today card that
+Take the first task below whose boxes are not all checked. Each task is one pull request. Task 1 is done by
+[training services task 2](training-services.md#2-recovery-status); build tasks 2–6 on `TrainingServices` once it
+exists. Tasks 1 and 2 fix wrong advice and come first; tasks 5 and 6 change the Today card that
 [#94](https://github.com/droidsam1/overreach/issues/94) then places in the page. Record checks that need an iPhone
 in [#21](https://github.com/droidsam1/overreach/issues/21).
 
