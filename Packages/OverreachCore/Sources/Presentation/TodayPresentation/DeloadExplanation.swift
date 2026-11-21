@@ -56,7 +56,9 @@ public struct DeloadExplanation: Hashable, Sendable {
             stressContext: stressed ? [
                 DeloadAdvice.text(for: .lifeStressReported, format: format),
                 L10n.text("Stress can lower HRV and slow recovery, so some signs above may come from it."),
-                L10n.text("Train on your usual days at a comfortable effort. A walk, an easy run or a light lift may help."),
+                L10n.text(
+                    "Train on your usual days at a comfortable effort. A walk, an easy run or a light lift may help."
+                ),
                 L10n.text("Leave sets to failure and personal-record attempts for when you feel steadier."),
                 L10n.text("Protect your sleep: stress and short nights add up."),
             ] : []

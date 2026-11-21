@@ -224,7 +224,10 @@ public struct TodayView: View {
                     deloadApplication
                 }
             case let .inProgress(lastDay, forLifeStress):
-                Label(DeloadProposalText.weekInProgress(steadier: forLifeStress), systemImage: "arrow.down.right.circle.fill")
+                Label(
+                    DeloadProposalText.weekInProgress(steadier: forLifeStress),
+                    systemImage: "arrow.down.right.circle.fill"
+                )
                     .font(.headline)
                     .foregroundStyle(.tint)
                 Text(advice.planText).font(.subheadline)
