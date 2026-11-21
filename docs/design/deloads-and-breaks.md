@@ -9,7 +9,7 @@ ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-pr
 Take the first task below whose boxes are not all checked. Each task is one pull request. Task 1 is done by
 [training services task 2](training-services.md#2-recovery-status); build tasks 2–6 on `TrainingServices` once it
 exists. Continue with task 5. It explains the Today card that
-[#94](https://github.com/droidsam1/overreach/issues/94) then places in the page. Task 6 supplies lift findings
+[#94](https://github.com/droidsam1/overreach/issues/94) then places in the page. Task 6 (in progress) supplies lift findings
 to [Recovery & Progress](https://github.com/droidsam1/overreach/issues/126). Record checks that need an iPhone
 in [#21](https://github.com/droidsam1/overreach/issues/21).
 
