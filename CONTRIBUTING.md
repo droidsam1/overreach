@@ -19,6 +19,19 @@ Thanks for your interest! Overreach is a small project; these rules keep it main
    `test:`, `chore:`.
 6. Update `CHANGELOG.md` under *Unreleased* when the change is user-visible.
 
+### Parallel PRs
+
+When open PRs change the same files, fetch both current branch heads and preview their merge with
+`git merge-tree --write-tree origin/branch-a origin/branch-b`. This leaves the checkout intact. If the preview
+reports conflicts, agree on the integration order and rerun it after either head changes.
+
+### CI and merge
+
+Record the PR head SHA with `gh pr view 123 --json headRefOid --jq .headRefOid`. Once checks appear for that
+revision, follow them with `gh pr checks 123 --watch`. If a check fails, use `python3 scripts/ci-failures.py 123`
+to see the failures. After a push, start with the new head SHA. When the checks pass, use
+`gh pr merge 123 --match-head-commit CHECKED_SHA` to merge the revision you verified.
+
 ## Code guidelines
 
 - Swift 6 with strict concurrency; no warnings.
