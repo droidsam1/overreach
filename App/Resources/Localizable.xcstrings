@@ -1157,6 +1157,23 @@
         }
       }
     },
+    "Allow automatic matching": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir la vinculación automática"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir a vinculación automática"
+          }
+        }
+      }
+    },
     "Alternate heavy and light sessions": {
       "extractionState": "manual",
       "localizations": {
@@ -6971,6 +6988,23 @@
         }
       }
     },
+    "Keep runs separate": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantener las carreras separadas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manter as carreiras separadas"
+          }
+        }
+      }
+    },
     "Keep the last load. A smaller weight increment in exercise settings can help you progress.": {
       "extractionState": "manual",
       "localizations": {
@@ -7630,6 +7664,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vincula unha carreira rexistrada no calendario para vela aquí."
+          }
+        }
+      }
+    },
+    "Link these runs": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vincular estas carreras"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vincular estas carreiras"
           }
         }
       }
@@ -9279,6 +9330,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aínda non hai lecturas de recuperación. Conecta Apple Health ou Garmin para velas aquí."
+          }
+        }
+      }
+    },
+    "No run matches to review": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay coincidencias de carreras para revisar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai coincidencias de carreiras para revisar"
           }
         }
       }
@@ -11931,6 +11999,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Revisa as miñas rutinas e dime que cambiarías."
+          }
+        }
+      }
+    },
+    "Review run matches": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar coincidencias de carreras"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar coincidencias de carreiras"
           }
         }
       }
@@ -15943,6 +16028,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dúas rutinas comparten o id «{1}»."
+          }
+        }
+      }
+    },
+    "Undo run link": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desvincular las carreras"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desvincular as carreiras"
           }
         }
       }

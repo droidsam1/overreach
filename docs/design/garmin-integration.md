@@ -332,10 +332,14 @@ logged in Overreach. Rules, so nothing is counted twice and the two never disagr
    is kept apart from
    sRPE load: the two are different units and must not be added together in ACWR without an evidence-based
    conversion (step 5).
-6. **Runs follow the same rule against Apple Health:** a Garmin run and the copy Garmin Connect writes to Health are
-   the same run. Keep the Garmin one, since it has load, training effect and the FIT file. The History list, calendar and
-   AI report use `RunDeduplication`. The calendar reads one day on each side of the month so copies around
-   midnight can be matched before the run count and distance are assigned to the preferred record's month.
+6. **Run matching in History.** Garmin and Apple Health runs are candidates when their intervals overlap by
+   at least half the shorter duration. If either duration is unavailable, starts must be less than two minutes
+   apart. Only pairs with one candidate at both ends link automatically. Competing pairs stay visible for review.
+   Links reserve both source-qualified IDs, including during a source outage. Undoing a link saves a separation.
+   A saved separation can be cleared or changed to a link. Combined runs keep Garmin's start and available load
+   and training effect. History reads a day beyond each date boundary to match copies around midnight.
+   Decisions are stored in device-local preferences. Applying them to Today and exports is tracked in
+   [#88](https://github.com/droidsam1/overreach/issues/88).
 
 Overreach does not write a session to Apple Health when another app already recorded the same workout there, and
 removes its own copy once the watch's workout arrives (ADR-0023).

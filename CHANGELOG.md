@@ -9,6 +9,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - Hybrid goals have a Running first, Strength first or Balanced priority in Plan. It is saved with the goal and
   shared in the context export.
+- History lets you review competing Garmin and Apple Health run matches, link originals and undo a link.
+  Choices persist across syncs and apply in both the list and calendar.
 - Recent load in Recovery & Progress shows today's walking and how it compares with your usual day. Today
   keeps walking advice relevant to the day's training.
 - The workout logger can fill the open sets of an exercise with last time's weight and reps from its menu, only when

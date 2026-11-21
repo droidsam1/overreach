@@ -104,6 +104,11 @@ public final class HistoryModel {
     private let clock: @Sendable () -> Date
     private var effortScale = EffortScale.rpe
     private var recordings: [RecordedStrengthActivity] = []
+    private var runOriginals: [RunActivity] = []
+    private var runRange: ClosedRange<Date>?
+    public private(set) var runReviews: [HistoryRunReview] = []
+    private let saveRunChoices: ([RunMatchPair: RunMatchChoice]) -> Void
+    private var runChoices: [RunMatchPair: RunMatchChoice]
     private var runLines: [HistoryRunActivity] = []
     private var timeline: [HistoryRow] = []
     private var timelineMatches = StrengthActivityMatches()
@@ -124,6 +129,8 @@ public final class HistoryModel {
         recordedStrength: (any RecordedStrengthSource)? = nil,
         calendar: Calendar = .current,
         format: Format = Format(),
+        runChoices: [RunMatchPair: RunMatchChoice] = [:],
+        saveRunChoices: @escaping ([RunMatchPair: RunMatchChoice]) -> Void = { _ in },
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
@@ -137,9 +144,11 @@ public final class HistoryModel {
         self.runSources = runSources
         self.format = format
         self.clock = clock
+        self.runChoices = runChoices
+        self.saveRunChoices = saveRunChoices
         self.calendar = HistoryCalendarModel(
             workouts: workouts, activity: activity, runSources: runSources,
-            calendar: calendar, format: format, clock: clock
+            calendar: calendar, format: format, runChoices: runChoices, clock: clock
         )
     }
 
@@ -176,12 +185,35 @@ public final class HistoryModel {
         }
         recordings = await loadedRecordings ?? []
         let runReadings = await loadedRuns
-        runLines = runReadings.runs
-            .filter { (start...now).contains($0.activity.startedAt) }
-            .map { HistoryRunActivity($0, format: format) }
-        rebuildTimeline()
+        runOriginals = runReadings.runs
+        runRange = start...now
+        resolveRuns()
         errorMessage = failed ? L10n.text("Could not load your history.") : nil
         runWarning = runReadings.warning()
+    }
+
+    private func resolveRuns() {
+        let result = RunDeduplication.resolve(runOriginals, choices: runChoices)
+        runLines = result.runs
+            .filter { runRange?.contains($0.activity.startedAt) == true }
+            .map { HistoryRunActivity($0, format: format) }
+        runReviews = result.candidates
+            .filter {
+                runRange?.contains($0.garmin.startedAt) == true || runRange?.contains($0.appleHealth.startedAt) == true
+            }
+            .map { HistoryRunReview($0, format: format) }
+        rebuildTimeline()
+    }
+
+    public func chooseRunMatch(_ choice: RunMatchChoice?, for pair: RunMatchPair) {
+        if choice == .linked {
+            guard runReviews.contains(where: { $0.id == pair }) ||
+                    calendar.runReviews.contains(where: { $0.id == pair }) else { return }
+        }
+        runChoices[pair] = choice
+        saveRunChoices(runChoices)
+        resolveRuns()
+        calendar.updateRunChoices(runChoices)
     }
 
     public func delete(_ sessionID: UUID) async {
