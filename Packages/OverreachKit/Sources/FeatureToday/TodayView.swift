@@ -10,6 +10,7 @@ public struct TodayView: View {
     @State private var checkInSheet: CheckInModel?
     private let onConnectGarmin: () -> Void
     private let recoveryHistory: (() -> AnyView)?
+    private var recoveryDestination: (() -> AnyView)?
 
     public enum WorkoutContinuation {
         case resume(String), reviewDraft
@@ -44,6 +45,16 @@ public struct TodayView: View {
         self.onOpenHistory = onOpenHistory
         self.onConnectGarmin = onConnectGarmin
         self.recoveryHistory = { AnyView(recoveryHistory()) }
+    }
+
+    /// Where "View recovery" goes: the readings and recent load that used to sit in Today's metrics. Pushed in
+    /// Today's own stack, so going back returns to the decision.
+    public func recoveryProgress<Destination: View>(
+        @ViewBuilder _ destination: @escaping () -> Destination
+    ) -> TodayView {
+        var copy = self
+        copy.recoveryDestination = { AnyView(destination()) }
+        return copy
     }
 
     public var body: some View {
@@ -93,13 +104,17 @@ public struct TodayView: View {
                         movement
                     }
                     if model.showsReadinessCard {
-                        DisclosureGroup("Today's metrics") {
-                            TodayMetrics(model: model)
-                            if primary != .connectHealth, model.showsConnectHealth {
-                                connectHealth(prominent: false)
-                            }
-                            if primary != .connectGarmin, model.showsConnectGarmin {
-                                connectGarmin(prominent: false)
+                        if primary != .connectHealth, model.showsConnectHealth {
+                            connectHealth(prominent: false)
+                        }
+                        if primary != .connectGarmin, model.showsConnectGarmin {
+                            connectGarmin(prominent: false)
+                        }
+                        if let recoveryDestination {
+                            NavigationLink {
+                                recoveryDestination()
+                            } label: {
+                                Label("View recovery", systemImage: "heart.text.square")
                             }
                         }
                         Button("View recent training", systemImage: "calendar", action: onOpenHistory)

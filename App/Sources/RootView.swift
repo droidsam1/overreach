@@ -8,6 +8,7 @@ import FeatureOnboarding
 import FeaturePlan
 import FeatureSettings
 import FeatureToday
+import FeatureTrends
 import FeatureWorkout
 import HistoryPresentation
 import OnboardingPresentation
@@ -15,6 +16,7 @@ import PlanPresentation
 import SettingsPresentation
 import SwiftUI
 import TodayPresentation
+import TrendsPresentation
 import WorkoutPresentation
 
 /// Top-level navigation. Cross-feature navigation is wired here, never inside a feature.
@@ -24,6 +26,7 @@ struct RootView: View {
     }
 
     @State private var todayModel: TodayModel
+    @State private var recoveryModel: RecoveryProgressModel
     @State private var workoutModel: WorkoutModel
     @State private var routinesModel: RoutinesModel
     @State private var historyModel: HistoryModel
@@ -61,6 +64,7 @@ struct RootView: View {
     init(container: AppContainer) {
         self.container = container
         _todayModel = State(initialValue: container.makeTodayModel())
+        _recoveryModel = State(initialValue: container.makeRecoveryProgressModel())
         _workoutModel = State(initialValue: container.makeWorkoutModel())
         _selectedTab = State(initialValue: .today)
         _routinesModel = State(initialValue: container.makeRoutinesModel())
@@ -100,6 +104,9 @@ struct RootView: View {
                     onConnectGarmin: { garminModel.start() },
                     recoveryHistory: { RecoveryHistoryView(model: planModel) }
                 )
+                .recoveryProgress {
+                    TrendsView(model: recoveryModel, section: .recovery, onConnectGarmin: { garminModel.start() })
+                }
             }
             Tab("Train", systemImage: "dumbbell", value: AppTab.train) {
                 WorkoutView(model: workoutModel, routines: routinesModel)
@@ -175,6 +182,7 @@ struct RootView: View {
         .onChange(of: garminModel.isConnected) {
             // New Garmin data: Today shows it at once.
             Task { await todayModel.load() }
+            Task { await recoveryModel.load() }
         }
         .onChange(of: planModel.profile.goal) {
             Task { await todayModel.load() }

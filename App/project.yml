@@ -110,6 +110,8 @@ targets:
       - package: OverreachCore
         product: TodayPresentation
       - package: OverreachCore
+        product: TrendsPresentation
+      - package: OverreachCore
         product: OnboardingPresentation
 
 schemes:
