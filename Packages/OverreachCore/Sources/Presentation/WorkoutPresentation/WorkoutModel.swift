@@ -58,6 +58,8 @@ public struct DraftExercise: Identifiable, Hashable, Codable, Sendable {
     /// Progressions offered after the first logged session; optional so drafts saved before them still load.
     var firstProgressionChoices: [FirstProgression.Choice]?
     var setsBeforeProgressionChoice: [DraftSet]?
+    /// The working sets of the latest saved session with this exercise; optional so older drafts still load.
+    var lastTime: LastTimeSets?
 
     /// 1-based position of a set among the sets of its kind (warm-ups and working sets are numbered apart).
     public func number(of setID: DraftSet.ID) -> Int {
@@ -78,6 +80,8 @@ public struct TargetSummary: Hashable, Sendable {
     public let targetLine: String
     /// "Hypertrophy (detected) · rest 1:30–2:00"
     public let focusLine: String
+    /// "Last time (12 Nov): 60 kg × 8/8/7 @ RPE 8", or a clear empty state without saved sets.
+    public let lastTimeLine: String
     /// "Progressing", "Stalled", …; `nil` without enough history.
     public let status: String?
     public let isStalled: Bool
@@ -154,9 +158,17 @@ extension DraftExercise {
         if let warmUp = warmUpReason {
             reasons.append(warmUp)
         }
+        let lastTimeLine = lastTime.map { last in
+            L10n.format(
+                "Last time ({1}): {2}",
+                last.date.formatted(.dateTime.day().month(.abbreviated).locale(format.locale)),
+                last.text(effortScale: effortScale, format: format)
+            )
+        } ?? L10n.text("Last time: no sets logged yet")
         return TargetSummary(
             targetLine: targetLine,
             focusLine: focusLine,
+            lastTimeLine: lastTimeLine,
             status: status.text,
             isStalled: status.isStalled,
             statusExplanation: statusExplanation(format: format),
@@ -547,7 +559,8 @@ public final class WorkoutModel {
     /// Target, status, focus and rest for `exercise`. A declared exercise focus wins over the session focus;
     /// without stored settings, the focus picks the default scheme (`FocusPrescription`).
     private func prepare(_ exercise: Exercise, id: UUID) async -> DraftExercise {
-        let history = await history(of: exercise.id)
+        let sessions = await recentSessions()
+        let history = ExerciseExposure.history(of: exercise.id, in: sessions)
         let stored: ProgressionSettings?
         let readSettings: Bool
         do {
@@ -598,7 +611,8 @@ public final class WorkoutModel {
             effortScale: effortScale,
             isPrescribedByRoutine: prescribed != nil,
             firstProgressionChoices: choices,
-            setsBeforeProgressionChoice: choices.isEmpty ? [] : sets
+            setsBeforeProgressionChoice: choices.isEmpty ? [] : sets,
+            lastTime: LastTimeSets.latest(of: exercise.id, in: sessions)
         )
     }
 
@@ -862,11 +876,10 @@ public final class WorkoutModel {
         }
     }
 
-    private func history(of exerciseID: UUID) async -> [ExerciseExposure] {
+    private func recentSessions() async -> [StrengthSession] {
         let now = clock()
         do {
-            let sessions = try await workouts.sessions(from: now.addingTimeInterval(-Self.historyWindow), to: now)
-            return ExerciseExposure.history(of: exerciseID, in: sessions)
+            return try await workouts.sessions(from: now.addingTimeInterval(-Self.historyWindow), to: now)
         } catch {
             warnAboutTargets()
             return []

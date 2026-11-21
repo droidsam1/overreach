@@ -18,7 +18,10 @@ and the logger come before review tools, and work that only a person with an iPh
    card by card (readiness, deload, strength and running options, check-in, now movement). Do it after item 1
    so the layout is settled once.
 3. **Fewer taps in the active logger** — [#93](https://github.com/droidsam1/overreach/issues/93). Used in every
-   session; "last time" next to "today's target".
+   session. Shipped: the first set leads the screen (help and focus in session options), "Last time" with its
+   date under today's target, haptic set completion and a report that leads with the saved confirmation and any
+   record. Next: an opt-in "use last time's values" and the one-handed timing on a device
+   ([#21](https://github.com/droidsam1/overreach/issues/21)).
 4. **One activity log** — [#40](https://github.com/droidsam1/overreach/issues/40), in order
    [#85](https://github.com/droidsam1/overreach/issues/85) → [#86](https://github.com/droidsam1/overreach/issues/86)
    → [#87](https://github.com/droidsam1/overreach/issues/87) → [#88](https://github.com/droidsam1/overreach/issues/88).

@@ -119,6 +119,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   stalls or the working weight.
 
 ### Changed
+- The workout logger leads with the first exercise and its sets. "How to log sets" and the session focus moved to
+  the session options menu, and the optional warm-up advice now follows the first exercise. Each exercise shows
+  what you did last time, with its date, under today's target, completing a set gives a haptic confirmation, and
+  the report after finishing leads with "Workout saved to History" and the session's record, when there is one.
 - Evidence review of November 2026 (`docs/evidence-review-2026-11.md`):
   - The acute:chronic workload ratio is replaced by this week's load against the usual week (the 3 weeks before),
     uncoupled; it is a weak deload signal and never an injury-risk measure.

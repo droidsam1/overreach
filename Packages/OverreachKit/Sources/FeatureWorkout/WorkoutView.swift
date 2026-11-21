@@ -14,6 +14,7 @@ public struct WorkoutView: View {
     @State private var routineEditor: RoutineEditorModel?
     @State private var isPickingExercise = false
     @State private var isConfirmingDiscard = false
+    @State private var isShowingGuide = false
 
     public init(model: WorkoutModel, routines: RoutinesModel) {
         _model = State(initialValue: model)
@@ -58,6 +59,12 @@ public struct WorkoutView: View {
             .sheet(item: $routineEditor) { editor in
                 RoutineEditorView(model: editor)
             }
+            .sheet(isPresented: $isShowingGuide) {
+                SetLoggingGuide(showsRepsInReserve: Binding(
+                    get: { model.showsRepsInReserve },
+                    set: { showsRIR in Task { await model.setEffortScale(showsRIR ? .repsInReserve : .rpe) } }
+                ))
+            }
             .confirmationDialog(
                 "Discard this session?", isPresented: $isConfirmingDiscard, titleVisibility: .visible
             ) {
@@ -93,8 +100,23 @@ public struct WorkoutView: View {
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         if model.isSessionActive && !model.isPreparingSession {
+            // Help and focus stay one tap away, so the first set leads the screen.
             ToolbarItem(placement: .cancellationAction) {
                 Menu {
+                    Button("How to log sets", systemImage: "questionmark.circle") { isShowingGuide = true }
+                    Picker(selection: Binding(
+                        get: { model.sessionFocus },
+                        set: { focus in Task { await model.setSessionFocus(focus) } }
+                    )) {
+                        Text("Auto").tag(TrainingFocus?.none)
+                        ForEach(model.focusOptions) { option in
+                            Text(option.name).tag(TrainingFocus?.some(option.value))
+                        }
+                    } label: {
+                        Label("Session focus", systemImage: "scope")
+                    }
+                    .pickerStyle(.menu)
+                    Divider()
                     Button("Discard", systemImage: "trash", role: .destructive) { isConfirmingDiscard = true }
                 } label: {
                     Label("Session options", systemImage: "ellipsis.circle")
@@ -167,7 +189,6 @@ private struct WorkoutRecoveryView: View {
 private struct SessionList: View {
     @Bindable var model: WorkoutModel
     @Binding var isPickingExercise: Bool
-    @State private var isShowingGuide = false
     @State private var progressionExercise: DraftExercise.ID?
 
     var body: some View {
@@ -175,21 +196,7 @@ private struct SessionList: View {
             Text(model.sessionName)
                 .font(.title2.weight(.semibold))
                 .accessibilityAddTraits(.isHeader)
-            Button("How to log sets", systemImage: "questionmark.circle") { isShowingGuide = true }
-            if let tip = model.generalWarmUpTip {
-                Label(tip, systemImage: "figure.walk")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
-            Picker("Session focus", selection: Binding(
-                get: { model.sessionFocus },
-                set: { focus in Task { await model.setSessionFocus(focus) } }
-            )) {
-                Text("Auto").tag(TrainingFocus?.none)
-                ForEach(model.focusOptions) { option in
-                    Text(option.name).tag(TrainingFocus?.some(option.value))
-                }
-            }
+            // Failures and what fixes them stay above the sets.
             if let message = model.draftErrorMessage {
                 StatusLabel(title: message, tone: .caution)
                 Button("Retry saving draft", systemImage: "arrow.clockwise") { model.retryDraftAccess() }
@@ -261,6 +268,11 @@ private struct SessionList: View {
                         }
                         .accessibilityLabel("Exercise options")
                     }
+                } footer: {
+                    // Optional advice comes after the first exercise's sets, not before them.
+                    if exercise.id == model.exercises.first?.id, let tip = model.generalWarmUpTip {
+                        Label(tip, systemImage: "figure.walk")
+                    }
                 }
             }
             if model.exercises.isEmpty {
@@ -272,12 +284,6 @@ private struct SessionList: View {
                           axis: .vertical)
                     .lineLimit(2...6)
             }
-        }
-        .sheet(isPresented: $isShowingGuide) {
-            SetLoggingGuide(showsRepsInReserve: Binding(
-                get: { model.showsRepsInReserve },
-                set: { showsRIR in Task { await model.setEffortScale(showsRIR ? .repsInReserve : .rpe) } }
-            ))
         }
         .scrollDismissesKeyboard(.interactively)
         .sheet(isPresented: Binding(
@@ -383,6 +389,9 @@ private struct TargetSummaryView: View {
                         }
                     }
                 }
+                Label(summary.lastTimeLine, systemImage: "clock.arrow.circlepath")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
                 Text(summary.focusLine)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -417,6 +426,8 @@ private struct SetRow: View {
                     .contentShape(Rectangle())
             }
             .toggleStyle(.button)
+            // Confirms completion without looking at the screen.
+            .sensoryFeedback(.success, trigger: set.isDone) { _, isDone in isDone }
         }
     }
 }

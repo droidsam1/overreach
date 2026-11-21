@@ -27,18 +27,24 @@ public struct SessionReportContent: Hashable {
     public let adherence: String?
     public let comparison: String?
     public let muscles: String?
+    /// A real record of the session, shown first; never a streak or a badge.
+    public let achievement: String?
+    /// Shown right after finishing: the sheet leads with the confirmation that the session was saved.
+    public let isJustSaved: Bool
     public let rows: [Row]
     public let shareText: String
 
     public init(
-        title: String, headline: String, adherence: String?, comparison: String?, muscles: String?, rows: [Row],
-        shareText: String
+        title: String, headline: String, adherence: String?, comparison: String?, muscles: String?,
+        achievement: String? = nil, isJustSaved: Bool = false, rows: [Row], shareText: String
     ) {
         self.title = title
         self.headline = headline
         self.adherence = adherence
         self.comparison = comparison
         self.muscles = muscles
+        self.achievement = achievement
+        self.isJustSaved = isJustSaved
         self.rows = rows
         self.shareText = shareText
     }
@@ -57,6 +63,14 @@ public struct SessionReportSheet: View {
         NavigationStack {
             List {
                 Section {
+                    if content.isJustSaved {
+                        Label("Workout saved to History", systemImage: "checkmark.circle.fill")
+                            .font(.headline)
+                            .foregroundStyle(.green)
+                    }
+                    if let achievement = content.achievement {
+                        Label(achievement, systemImage: "trophy.fill")
+                    }
                     Text(content.headline).font(.headline.monospacedDigit())
                     if let adherence = content.adherence {
                         Label(adherence, systemImage: "target")

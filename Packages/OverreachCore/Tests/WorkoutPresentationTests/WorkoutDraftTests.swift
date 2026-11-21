@@ -110,6 +110,29 @@ struct WorkoutDraftTests {
         #expect(draft.data == nil)
     }
 
+    @Test func aDraftSavedBeforeLastTimeExistedStillResumes() async throws {
+        let earlier = StrengthSession(
+            name: "Push", startedAt: now.addingTimeInterval(-3 * 86_400),
+            entries: [ExerciseEntry(exerciseID: bench.id, sets: [WorkoutSet(weightKg: 60, reps: 8)])]
+        )
+        let store = TestStore(exercises: [bench], sessions: [earlier])
+        let draft = DraftStore()
+        let first = model(store: store, draft: draft, at: now)
+        await first.load()
+        first.start()
+        await first.add(exerciseID: bench.id)
+        // Renaming the key leaves the draft as an older build wrote it: decoding ignores unknown keys.
+        let saved = try #require(draft.data.flatMap { String(data: $0, encoding: .utf8) })
+        #expect(saved.contains("\"lastTime\""))
+        draft.data = Data(saved.replacingOccurrences(of: "\"lastTime\"", with: "\"unknownKey\"").utf8)
+
+        let reopened = model(store: store, draft: draft, at: now.addingTimeInterval(60))
+        await reopened.resumeSavedWorkout()
+
+        let exercise = try #require(reopened.exercises.first)
+        #expect(exercise.summary.lastTimeLine == "Last time: no sets logged yet")
+    }
+
     @Test func failedCommitKeepsTheDraftAvailableForAnotherLaunch() async throws {
         let store = TestStore(exercises: [bench])
         let workouts = FailingWorkoutRepository()
