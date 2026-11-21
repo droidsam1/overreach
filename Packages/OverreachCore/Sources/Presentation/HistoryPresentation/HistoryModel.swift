@@ -10,11 +10,10 @@ public struct SessionSummary: Identifiable, Hashable, Sendable {
     public let exerciseNames: [String]
     public let workingSets: Int
     public let tonnageKg: Double
-    var matchedSource: DataSourceKind?
+    var matchedSources: [DataSourceKind] = []
 
     var sources: [DataSourceKind] {
-        guard let matchedSource, matchedSource != session.source else { return [session.source] }
-        return [session.source, matchedSource]
+        [session.source] + matchedSources.filter { $0 != session.source }
     }
 
     public var sourceText: String { sources.map(\.displayName).joined(separator: " · ") }
@@ -291,7 +290,7 @@ public final class HistoryModel {
         guard let session = session(id: sessionID) else { return nil }
         let recording = strengthMatches.activity(for: sessionID)
         var detailsSummary = summary(session)
-        detailsSummary.matchedSource = recording?.source
+        detailsSummary.matchedSources = strengthMatches.sources(for: sessionID)
         return SessionDetail(
             id: session.id,
             name: session.name,
@@ -317,7 +316,9 @@ public final class HistoryModel {
                     countsForProgression: entry.countsForProgression
                 )
             },
-            recording: recording.map { HistoryStrengthActivity($0, format: format) },
+            recording: recording.map {
+                HistoryStrengthActivity($0, sources: strengthMatches.sources(for: $0), format: format)
+            },
             sourceText: detailsSummary.sourceText
         )
     }
@@ -423,12 +424,15 @@ public final class HistoryModel {
         let start = now.addingTimeInterval(-Self.window)
         let logged = summaries.map { summary in
             var row = summary
-            row.matchedSource = strengthMatches.activity(for: summary.id)?.source
+            row.matchedSources = strengthMatches.sources(for: summary.id)
             return HistoryRow.session(row)
         }
         let watchOnly = strengthMatches.unmatched
             .filter { $0.startedAt >= start && $0.startedAt <= now }
-            .map { HistoryRow.recording(HistoryStrengthActivity($0, format: format)) }
+            .map {
+                let recording = HistoryStrengthActivity($0, sources: strengthMatches.sources(for: $0), format: format)
+                return HistoryRow.recording(recording)
+            }
         timeline = (logged + watchOnly + runLines.map(HistoryRow.run)).sorted {
             if $0.date == $1.date { return $0.sortID < $1.sortID }
             return $0.date > $1.date

@@ -44,6 +44,7 @@ public struct HealthKitWorkoutWriter: HealthWorkoutWriter, RecordedStrengthSourc
         let range = HKQuery.predicateForSamples(withStart: start, end: end)
         let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [strength, range])
         let query = HKSampleQueryDescriptor(predicates: [.workout(predicate)], sortDescriptors: [])
+        // External UUIDs can belong to any app. The writing source identifies Overreach's own copies.
         let ownBundle = HKSource.default().bundleIdentifier
         return try await query.result(for: store)
             .filter { $0.sourceRevision.source.bundleIdentifier != ownBundle }
