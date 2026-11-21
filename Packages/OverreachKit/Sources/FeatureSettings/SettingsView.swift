@@ -50,65 +50,63 @@ public struct SettingsView<Library: View>: View {
     }
 
     public var body: some View {
-        NavigationStack {
-            Form {
-                Section("Library") { library }
-                trainingSection
-                garminSection
-                Section("Appearance") {
-                    Picker("Appearance", selection: $appearance) {
-                        ForEach(AppAppearance.allCases) { option in
-                            Text(option.title).tag(option)
-                        }
-                    }
-                }
-                backupSection
-                Section {
-                    NavigationLink {
-                        strongImport
-                    } label: {
-                        Label("Import from Strong", systemImage: "square.and.arrow.down")
+        Form {
+            Section("Library") { library }
+            trainingSection
+            garminSection
+            Section("Appearance") {
+                Picker("Appearance", selection: $appearance) {
+                    ForEach(AppAppearance.allCases) { option in
+                        Text(option.title).tag(option)
                     }
                 }
             }
-            .navigationTitle("Settings")
-            .navigationDestination(isPresented: $showsStrongImport) {
-                strongImport
-            }
-            .confirmationDialog(
-                "Restore this backup?",
-                isPresented: $backupModel.isConfirmingRestore,
-                titleVisibility: .visible
-            ) {
-                Button("Restore", role: .destructive) {
-                    Task {
-                        await backupModel.confirmRestore()
-                        await trainingModel.load()
-                    }
-                }
-                Button("Cancel", role: .cancel) { backupModel.cancelRestore() }
-            } message: {
-                if let message = backupModel.pendingRestoreMessage {
-                    Text(message)
+            backupSection
+            Section {
+                NavigationLink {
+                    strongImport
+                } label: {
+                    Label("Import from Strong", systemImage: "square.and.arrow.down")
                 }
             }
-            .task { await backupModel.load() }
-            .task { await garminModel.load() }
-            .task { await trainingModel.load() }
-            .confirmationDialog(
-                "Disconnect Garmin?", isPresented: $isConfirmingDisconnect, titleVisibility: .visible
-            ) {
-                Button("Disconnect", role: .destructive) { Task { await garminModel.disconnect() } }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("The key is removed from this iPhone and your iCloud Keychain. What was imported stays.")
+        }
+        .navigationTitle("Settings")
+        .navigationDestination(isPresented: $showsStrongImport) {
+            strongImport
+        }
+        .confirmationDialog(
+            "Restore this backup?",
+            isPresented: $backupModel.isConfirmingRestore,
+            titleVisibility: .visible
+        ) {
+            Button("Restore", role: .destructive) {
+                Task {
+                    await backupModel.confirmRestore()
+                    await trainingModel.load()
+                }
             }
-            // Asked from the first-run setup ("Restore from a backup"); runs when Settings first appears too.
-            .task(id: backupModel.isRequestingFolderChoice) {
-                guard backupModel.isRequestingFolderChoice else { return }
-                backupModel.isRequestingFolderChoice = false
-                pick(.backupFolder)
+            Button("Cancel", role: .cancel) { backupModel.cancelRestore() }
+        } message: {
+            if let message = backupModel.pendingRestoreMessage {
+                Text(message)
             }
+        }
+        .task { await backupModel.load() }
+        .task { await garminModel.load() }
+        .task { await trainingModel.load() }
+        .confirmationDialog(
+            "Disconnect Garmin?", isPresented: $isConfirmingDisconnect, titleVisibility: .visible
+        ) {
+            Button("Disconnect", role: .destructive) { Task { await garminModel.disconnect() } }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("The key is removed from this iPhone and your iCloud Keychain. What was imported stays.")
+        }
+        // Asked from the first-run setup ("Restore from a backup"); runs when Settings first appears too.
+        .task(id: backupModel.isRequestingFolderChoice) {
+            guard backupModel.isRequestingFolderChoice else { return }
+            backupModel.isRequestingFolderChoice = false
+            pick(.backupFolder)
         }
         .fileImporter(isPresented: $isPickingFile, allowedContentTypes: filePick.contentTypes) { result in
             handlePicked(result)
