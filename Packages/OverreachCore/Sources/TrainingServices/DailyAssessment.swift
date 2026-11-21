@@ -117,7 +117,7 @@ public enum DeloadAssessment: Hashable, Sendable {
     /// An accepted deload week, until `lastDay`.
     case inProgress(lastDay: CalendarDay)
     /// Training and recovery call for a deload week. `walkingIncluded`: the weekly load counts extra walking.
-    case proposed(DeloadProposal, walkingIncluded: Bool)
+    case proposed(DeloadProposal, walkingIncluded: Bool, lastRecovery: LastRecovery?)
     /// A deload would be proposed, but this unconfirmed break may already have been the rest it calls for.
     case confirmBreak(DetectedDeload)
 
@@ -161,25 +161,24 @@ public enum DeloadAssessment: Hashable, Sendable {
         func lastRecovery(_ periods: [DetectedDeload]) -> LastRecovery? {
             RecoveryHistory.lastRecovery(deloads: profile.deloads, detected: periods, before: today, calendar: calendar)
         }
-        func propose(_ periods: [DetectedDeload]) -> DeloadProposal? {
+        func propose(after rest: LastRecovery?) -> DeloadProposal? {
             DeloadAdvisor.proposal(
-                lifts: lifts, lastRecovery: lastRecovery(periods), weeklyLoad: weeklyLoad, recovery: recovery,
+                lifts: lifts, lastRecovery: rest, weeklyLoad: weeklyLoad, recovery: recovery,
                 now: now, settings: settings, calendar: calendar, currentExerciseIDs: currentExerciseIDs
             )
         }
-        guard let proposal = propose(detected) else { return nil }
-        let questions = RecoveryHistory.recentQuestions(
-            in: detected, after: lastRecovery(detected), today: today, calendar: calendar
-        )
+        let last = lastRecovery(detected)
+        guard let proposal = propose(after: last) else { return nil }
+        let questions = RecoveryHistory.recentQuestions(in: detected, after: last, today: today, calendar: calendar)
         if let pending = questions.first(where: { $0.discipline != .running }),
-           propose(detected + [DetectedDeload(
+           propose(after: lastRecovery(detected + [DetectedDeload(
                start: pending.start, end: pending.end, reason: pending.reason, needsConfirmation: false,
                discipline: pending.discipline
-           )]) == nil {
+           )])) == nil {
             // Ask first: if the break was the rest the signals call for, a deload now would repeat it.
             return .confirmBreak(pending)
         }
-        return .proposed(proposal, walkingIncluded: (weeklyLoad?.walkingLastWeek ?? 0) > 0)
+        return .proposed(proposal, walkingIncluded: (weeklyLoad?.walkingLastWeek ?? 0) > 0, lastRecovery: last)
     }
 
     private static func weeklyLoad(

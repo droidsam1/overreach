@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today gives one main reason for a suggested deload. Open the explanation for all the signals, your last rest
+  and recovery history, the changes to your next strength session and the supporting research.
 - Today and Plan ask about the latest lighter training periods, with the strength and running activity recorded
   for those dates. Plan offers up to two recent questions and keeps the rest under Older periods.
 - Count weeks without recorded training as rest separately for strength and running. After longer breaks, Today
