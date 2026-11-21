@@ -157,6 +157,8 @@ struct GarminMappingTests {
         #expect(night.hrvBaselineHighMs == 44)
         #expect(night.hrvStatus == "UNBALANCED")
         #expect(night.sleepSeconds == 22_497)
+        let interval = try #require(night.sleepInterval)
+        #expect(interval.upperBound.timeIntervalSince(interval.lowerBound) >= 22_497)
         #expect(night.sleepScore == 65)
         #expect(night.restingHeartRate == 53)
         #expect(night.steps == 19_022)

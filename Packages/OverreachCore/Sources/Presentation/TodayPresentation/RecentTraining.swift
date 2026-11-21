@@ -7,43 +7,52 @@ public struct RecentTrainingDay: Identifiable, Hashable, Sendable {
     public let date: String
     public let recovery: String?
     public let workouts: [String]
+    /// The same workouts with their timing, for comparisons with the moment a reading was taken (ADR-0034).
+    let activities: [RecentTraining.Activity]
 }
 
 /// Align observed recovery and completed exercise by local calendar day. This is a record of what happened.
 struct RecentTraining {
-    struct Activity {
+    struct Activity: Hashable, Sendable {
         let startedAt: Date
+        /// The recorded end, or the start when the duration is unknown.
+        let endedAt: Date
         let text: String
+        /// A recorded run the athlete linked to a planned race. Names and pace never make a race (ADR-0034).
+        var isRace = false
     }
 
     let calendar: Calendar
     let format: Format
 
+    /// `races` are the athlete's confirmed links between a planned race and a recording.
     func days(
         in range: ClosedRange<CalendarDay>, through now: Date, metrics: [DailyMetrics], checkIns: [CheckIn],
-        runs: [RunActivity], sessions: [StrengthSession], recordings: [RecordedStrengthActivity], exercises: [Exercise]
+        runs: [RunActivity], sessions: [StrengthSession], recordings: [RecordedStrengthActivity], exercises: [Exercise],
+        races: [PlannedRunCompletion] = []
     ) -> [RecentTrainingDay] {
         let workouts = completedActivities(through: now, runs: runs, sessions: sessions, recordings: recordings,
-                                            exercises: exercises)
+                                            exercises: exercises, races: races)
         let byDay = Dictionary(grouping: workouts) { CalendarDay($0.startedAt, calendar: calendar) }
         let metricsByDay = Dictionary(metrics.map { ($0.day, $0) }, uniquingKeysWith: { first, _ in first })
         let checkInsByDay = Dictionary(checkIns.map { ($0.day, $0) }, uniquingKeysWith: { first, _ in first })
         let style = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
         let dates = Set(byDay.keys).union(metricsByDay.keys).union(checkInsByDay.keys)
         return dates.filter(range.contains).sorted(by: >).compactMap { day in
-            let workouts = byDay[day, default: []].map(\.text)
+            let activities = byDay[day, default: []]
+            let workouts = activities.map(\.text)
             let recovery = recoverySummary(metricsByDay[day], checkIn: checkInsByDay[day])
             guard !workouts.isEmpty || recovery != nil else { return nil }
             return RecentTrainingDay(
                 id: day, date: day.startDate(in: calendar).formatted(style.weekday(.abbreviated).day().month(.abbreviated)),
-                recovery: recovery, workouts: workouts
+                recovery: recovery, workouts: workouts, activities: activities
             )
         }
     }
 
     private func completedActivities(
         through now: Date, runs: [RunActivity], sessions: [StrengthSession], recordings: [RecordedStrengthActivity],
-        exercises: [Exercise]
+        exercises: [Exercise], races: [PlannedRunCompletion]
     ) -> [Activity] {
         // Match across the window boundary before grouping. Logged sets are authoritative for matched lifts.
         let completedSessions = sessions.filter { Self.isCompleted($0, through: now) }
@@ -53,13 +62,18 @@ struct RecentTraining {
         let runActivities = RunDeduplication.removingDuplicates(runs.filter {
             $0.durationSeconds.isFinite && $0.startedAt.addingTimeInterval(max(0, $0.durationSeconds)) <= now
         }).map { run in
-            activity(
-                startedAt: run.startedAt, title: run.name ?? L10n.text("Run"), duration: run.durationSeconds,
+            let isRace = races.contains { $0.matches(run) }
+            let name = run.name ?? L10n.text("Run")
+            var activity = activity(
+                startedAt: run.startedAt, title: isRace ? L10n.format("Race: {1}", name) : name,
+                duration: run.durationSeconds,
                 details: [
                     run.distanceMeters.finitePositive.map { format.number($0 / 1_000) + " km" },
                     run.averageHeartRate.flatMap(\.finitePositive).map { format.number($0, maxFractionDigits: 0) + " bpm" },
                 ]
             )
+            activity.isRace = isRace
+            return activity
         }
         let loggedStrength = completedSessions.map { session in
             let recording = matched.activity(for: session.id)
@@ -96,7 +110,8 @@ struct RecentTraining {
         let time = startedAt.formatted(style.hour().minute())
         let minutes = duration.flatMap(\.finitePositive).map { format.number($0 / 60, maxFractionDigits: 1) + " min" }
         let text = ([time, title] + ([minutes] + details).compactMap { $0 }).joined(separator: " · ")
-        return Activity(startedAt: startedAt, text: text)
+        let end = duration.flatMap(\.finitePositive).map { startedAt.addingTimeInterval($0) } ?? startedAt
+        return Activity(startedAt: startedAt, endedAt: end, text: text)
     }
 
     private func recoverySummary(_ metrics: DailyMetrics?, checkIn: CheckIn?) -> String? {

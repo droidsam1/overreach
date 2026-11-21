@@ -54,6 +54,10 @@ public struct DailyMetrics: Hashable, Codable, Sendable {
     public var sleepSeconds: Double?
     /// Which source supplied `sleepSeconds` after a merge. `nil` when the day has a single source.
     public var sleepSource: DataSourceKind?
+    /// When the night behind `sleepSeconds` started and ended, from the same source. `nil` when the source did not
+    /// report it (ADR-0034).
+    public var sleepStart: Date?
+    public var sleepEnd: Date?
     public var deepSleepSeconds: Double?
     public var remSleepSeconds: Double?
     public var lightSleepSeconds: Double?
@@ -112,6 +116,19 @@ public struct DailyMetrics: Hashable, Codable, Sendable {
         sleepSeconds == nil ? nil : sleepSource ?? singleSource
     }
 
+    /// The night behind `sleepSeconds`, when its source reported a valid start and end.
+    public var sleepInterval: ClosedRange<Date>? {
+        guard sleepSeconds != nil, let sleepStart, let sleepEnd, sleepStart < sleepEnd else { return nil }
+        return sleepStart...sleepEnd
+    }
+
+    /// When the readings behind the night's value of `metric` were taken: the night's sleep, when the same source
+    /// reported both. `nil` for daytime readings or an unknown interval; callers then fall back to calendar days.
+    public func hrvReadingInterval(_ metric: HRVMetric) -> ClosedRange<Date>? {
+        guard hrvWindow(metric) == .sleep, sleepOrigin == metric.source else { return nil }
+        return sleepInterval
+    }
+
     private var singleSource: DataSourceKind? {
         sources.count == 1 ? sources.first : nil
     }
@@ -147,6 +164,9 @@ public struct DailyMetrics: Hashable, Codable, Sendable {
         merged.spo2Average = spo2Average ?? other.spo2Average
         merged.sleepSeconds = sleepSeconds ?? other.sleepSeconds
         merged.sleepSource = sleepOrigin ?? other.sleepOrigin
+        // The interval belongs to the night that supplied the duration, never to another source.
+        merged.sleepStart = sleepSeconds != nil ? sleepStart : other.sleepStart
+        merged.sleepEnd = sleepSeconds != nil ? sleepEnd : other.sleepEnd
         merged.deepSleepSeconds = deepSleepSeconds ?? other.deepSleepSeconds
         merged.remSleepSeconds = remSleepSeconds ?? other.remSleepSeconds
         merged.lightSleepSeconds = lightSleepSeconds ?? other.lightSleepSeconds
