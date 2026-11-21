@@ -9,12 +9,12 @@ and the logger come before review tools, and work that only a person with an iPh
 ## Ready to implement
 
 1. **One source of truth per training question** —
-   [training services, tasks 1–5](design/training-services.md) (ADR-0035). Screens read sources and combine rules
-   on their own, so Today, Plan, Workout and the AI context give different answers (51 vs 2 weeks since the last
-   deload, unmerged metrics for the Assistant).
+   [training services, tasks 3–5](design/training-services.md#3-lift-status-and-progression-settings) (ADR-0035). Screens read sources and combine rules
+   on their own, so Today, Plan, Workout and the AI context could give different answers. Reading and the last
+   recovery are shared; lift status, readiness and the deload composition remain.
 2. **Correct deload signals** —
-   [deloads and breaks, task 2](design/deloads-and-breaks.md#2-count-only-lifts-in-current-training-and-say-which);
-   task 1 there is done by training services task 2. Stalls count lifts no longer trained.
+   [deloads and breaks, task 2](design/deloads-and-breaks.md#2-count-only-lifts-in-current-training-and-say-which).
+   Stalls count lifts no longer trained.
 3. **Breaks per discipline, counted automatically** —
    [tasks 3–4](design/deloads-and-breaks.md#3-breaks-per-discipline-counted-automatically). A setting that counts a
    week without lifting or running as rest, and Plan asking only about recent periods.

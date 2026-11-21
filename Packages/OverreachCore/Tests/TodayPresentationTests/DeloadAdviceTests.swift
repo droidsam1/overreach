@@ -1,3 +1,4 @@
+import Analytics
 import Domain
 import Fixtures
 import Foundation
@@ -72,6 +73,48 @@ struct DeloadAdviceTests {
         ])
         #expect(reasons.allSatisfy { !$0.evidence.isEmpty })
         #expect(advice.planText == "Same exercises, half of the working sets, about 10 % less load, RPE 7 at most.")
+    }
+
+    /// Eight weeks of training: lighter sessions every 3 days, then the stalled weeks.
+    private var longHistory: [StrengthSession] {
+        stride(from: 61, through: 22, by: -3).map { session($0, 80, [5, 5, 5]) } + stalledSessions
+    }
+
+    private func longAdvice(profile: AthleteProfile) -> [String] {
+        let advice = DeloadAdvice.make(
+            today: today, now: now, sessions: longHistory, exercises: [squat, bench],
+            settings: [squat.id: mainLift, bench.id: mainLift], profile: profile,
+            history: metrics(poorWeek: true), checkIns: [], calendar: calendar, format: format
+        )
+        guard case let .proposed(reasons) = advice?.state else { return [] }
+        return reasons.map(\.text)
+    }
+
+    @Test func withoutAnyDeloadTheIntervalSaysHowMuchHistoryThereIs() {
+        #expect(longAdvice(profile: AthleteProfile()).contains(
+            "No deload or break in the 8 weeks of training logged."
+        ))
+    }
+
+    @Test func todayAndPlanCountFromTheSameDeload() {
+        var profile = AthleteProfile()
+        profile.deloads = [DeloadRecord(start: today.adding(days: -15, calendar: calendar), days: 7)]
+
+        let reasons = longAdvice(profile: profile)
+        let plan = PlanAnalysis.run(
+            profile: profile, sessions: longHistory, exercises: [squat.id: squat, bench.id: bench],
+            settings: [squat.id: mainLift, bench.id: mainLift], now: now, calendar: calendar
+        )
+
+        #expect(!reasons.isEmpty)
+        #expect(!reasons.contains { $0.contains("weeks since") || $0.contains("No deload") })
+        #expect(plan.weeksSinceDeload == 1)
+    }
+
+    @Test func noProposalInTheWeekAfterAnAcceptedDeload() {
+        var profile = AthleteProfile()
+        profile.deloads = [DeloadRecord(start: today.adding(days: -10, calendar: calendar), days: 7)]
+        #expect(longAdvice(profile: profile).isEmpty)
     }
 
     @Test func stallsWithGoodRecoveryAreNotEnough() {

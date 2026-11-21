@@ -66,17 +66,14 @@ No study tests deloads or breaks in concurrent training. Treating strength and r
 
 ### 1. One "last recovery" for Today and Plan
 
-- [ ] Add a pure function in `Analytics` (e.g. `RecoveryHistory.latest`) that returns the last recovery before a
-  day: its last day, its kind (accepted deload week, confirmed or automatic break) and, after task 3, its discipline.
-  Accepted deload weeks end at `start + days - 1`.
-- [ ] Use it in `DeloadAdvisor.proposal` (instead of `lastDeload` plus `detectedDeloads`), in
-  `DeloadAdvice.unconfirmedBreak` and in `PlanAnalysis.run` (`weeksSinceDeload`).
-- [ ] Read runs the same way in Today and Plan: skip unavailable sources, and treat a source as failed only when it
-  is available and throws. Put the shared rule in one place.
-- [ ] Without any recovery in the history, the interval signal says how long the history is ("No deload or break in
-  the 11 months of training logged") instead of a week count from the first session.
-- [ ] Tests: one fixture through `DeloadAdvice.make` and `PlanAnalysis.run` gives the same last recovery and week
-  count; an accepted deload two weeks ago gives no interval signal in Today.
+Shipped through [training services](training-services.md) tasks 1 and 2 (`SourceReader`, `RecoveryHistory`).
+
+- [x] A pure function in `Analytics` (`RecoveryHistory.lastRecovery`) returns the last recovery before a day: its
+  last day and kind. Discipline comes with task 3.
+- [x] `DeloadAdvisor.proposal`, `DeloadAdvice.unconfirmedBreak`, `PlanAnalysis.run` and `WorkoutModel` use it.
+- [x] Today and Plan read runs through `SourceReader`.
+- [x] Without any recovery: "No deload or break in the 8 weeks of training logged."
+- [x] Tests: Today and Plan count from the same deload; an accepted deload gives no interval signal in Today.
 
 Finish line: with the same data, Today and Plan never disagree about the last deload.
 
