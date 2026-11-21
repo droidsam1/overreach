@@ -22,6 +22,7 @@ let package = Package(
         .library(name: "PlanPresentation", targets: ["PlanPresentation"]),
         .library(name: "SettingsPresentation", targets: ["SettingsPresentation"]),
         .library(name: "TodayPresentation", targets: ["TodayPresentation"]),
+        .library(name: "TrendsPresentation", targets: ["TrendsPresentation"]),
         .library(name: "OnboardingPresentation", targets: ["OnboardingPresentation"]),
         .library(name: "AssistantPresentation", targets: ["AssistantPresentation"]),
         // Generated test data (large anonymised history). Tests only; never linked by the app.
@@ -78,6 +79,11 @@ let package = Package(
             path: "Sources/Presentation/TodayPresentation"
         ),
         .target(
+            name: "TrendsPresentation",
+            dependencies: ["Domain", "Analytics", "TrainingServices", "PresentationKit"],
+            path: "Sources/Presentation/TrendsPresentation"
+        ),
+        .target(
             name: "OnboardingPresentation",
             dependencies: ["Domain", "PresentationKit"],
             path: "Sources/Presentation/OnboardingPresentation"
@@ -122,6 +128,10 @@ let package = Package(
         .testTarget(
             name: "SettingsPresentationTests",
             dependencies: ["SettingsPresentation", "PresentationKit", "Domain", "Fixtures"]
+        ),
+        .testTarget(
+            name: "TrendsPresentationTests",
+            dependencies: ["TrendsPresentation", "PresentationKit", "Domain", "TrainingServices"]
         ),
         .testTarget(
             name: "TodayPresentationTests",
