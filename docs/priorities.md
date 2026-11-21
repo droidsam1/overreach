@@ -9,9 +9,9 @@ and the logger come before review tools, and work that only a person with an iPh
 ## Ready to implement
 
 1. **One source of truth per training question** —
-   [training services, tasks 3–5](design/training-services.md#3-lift-status-and-progression-settings) (ADR-0035). Screens read sources and combine rules
-   on their own, so Today, Plan, Workout and the AI context could give different answers. Reading and the last
-   recovery are shared; lift status, readiness and the deload composition remain.
+   [training services, tasks 4–5](design/training-services.md#4-readiness-and-the-deload-recommendation) (ADR-0035). Screens read sources and combine rules
+   on their own, so Today, Plan, Workout and the AI context could give different answers. Reading, the last
+   recovery and lift status are shared; readiness and the deload composition remain.
 2. **Correct deload signals** —
    [deloads and breaks, task 2](design/deloads-and-breaks.md#2-count-only-lifts-in-current-training-and-say-which).
    Stalls count lifts no longer trained.

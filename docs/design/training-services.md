@@ -1,6 +1,6 @@
 # Training services: one source of truth per question
 
-Status: tasks 1–2 shipped (reviewed 2026-11-21). Decision: ADR-0035.
+Status: tasks 1–3 shipped (reviewed 2026-11-21). Decision: ADR-0035.
 
 ## Continue from here
 
@@ -88,14 +88,21 @@ Shipped as pure rules in `Analytics` (`RecoveryHistory`), since they need no rea
 
 ### 3. Lift status and progression settings
 
-- [ ] One function resolves the progression settings of an exercise (stored, else the exercise default, plus the
-  routine prescription when a routine applies). Replace the 13 call sites.
-- [ ] `LiftStatus` per exercise: settings in use, trained recently or not, stall status with its explanation. Use it
-  in `WorkoutModel`, `PlanAnalysis`, `DeloadAdvice` and `ContextPackBuilder`.
-- [ ] Tests: the same lift is stalled or not on every screen and in the AI context.
+Shipped as pure rules in `Analytics`, as in task 2.
 
-Finish line: `StallDetection.status` and `ProgressionSettings(for:)` are called only from `TrainingServices` and
-`Analytics`.
+- [x] `ProgressionTargets.settings(for:stored:focus:prescription:)` is the one resolver: stored settings, else the
+  exercise default (2.5 kg increment when the exercise left the catalog), the focus's scheme, and a routine's
+  prescription on top. `DeloadDetection`, `SessionReview`, `PlanAnalysis`, the deload advice and preview, and the
+  plan importer use it. `ProgressionSettings(for:)` stays only where a screen compares with the defaults before
+  saving.
+- [x] `LiftStatus` per exercise: settings in use (from the latest session that trained it: its routine's
+  prescription and focus), progression history and stall status. `ExposureIndex.progressionExposures` leaves out
+  unfinished exercises, as the logger does; Plan used to count them. `WorkoutModel`, `PlanAnalysis`,
+  `DeloadAdvice` and `ContextPackBuilder` use it. "Trained recently" comes with deloads task 2.
+- [x] Tests: `LiftStatusTests` (unfinished exercises, routine prescription, missing exercise).
+
+Finish line: outside `Analytics`, `StallDetection.status` has no callers and `ProgressionSettings(for:)` only
+compares with defaults.
 
 ### 4. Readiness and the deload recommendation
 

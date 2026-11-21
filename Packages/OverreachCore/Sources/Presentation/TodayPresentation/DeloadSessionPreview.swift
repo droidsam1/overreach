@@ -34,7 +34,7 @@ public struct DeloadSessionPreview: Hashable, Sendable {
                 guard let exercise = byID[entry.exerciseID],
                       let exposure = ExerciseExposure.history(of: entry.exerciseID, in: [session]).last
                 else { return nil }
-                let increment = settings[exercise.id]?.incrementKg ?? ProgressionSettings(for: exercise).incrementKg
+                let increment = ProgressionTargets.settings(for: exercise, stored: settings[exercise.id]).incrementKg
                 let sets = exposure.setsAtWorkingWeight
                 guard let reps = sets.compactMap(\.reps).max() else { return nil }
                 let weight = exposure.workingWeightKg

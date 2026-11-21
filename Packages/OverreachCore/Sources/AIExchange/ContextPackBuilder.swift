@@ -208,14 +208,20 @@ public enum ContextPackBuilder {
     private static func trends(
         _ input: ContextInput, sessions: [StrengthSession], byID: [UUID: Exercise]
     ) -> [ContextPack.ExerciseTrend] {
-        let allSessions = (input.earlierSessions + sessions).sorted { $0.startedAt < $1.startedAt }
+        // The same status the logger, Plan and Today give each lift (ADR-0035).
+        let statuses = Dictionary(
+            LiftStatus.assessAll(
+                index: ExposureIndex(sessions: input.earlierSessions + sessions), exercises: byID,
+                stored: input.settings, routines: input.routines
+            ).map { ($0.exerciseID, $0.status) },
+            uniquingKeysWith: { first, _ in first }
+        )
         var seen = Set<UUID>()
         let ids = sessions.flatMap { $0.entries.map(\.exerciseID) }.filter { seen.insert($0).inserted }
         return ids.compactMap { id -> ContextPack.ExerciseTrend? in
             guard let exercise = byID[id] else { return nil }
             let inPeriod = ExerciseExposure.history(of: id, in: sessions)
-            let settings = input.settings[id] ?? ProgressionSettings(for: exercise)
-            let status = StallDetection.status(history: ExerciseExposure.history(of: id, in: allSessions), settings: settings)
+            let status = statuses[id] ?? .notEnoughData
             let lastWeight = inPeriod.last?.workingWeightKg ?? 0
             return .init(
                 exercise: exercise.name,

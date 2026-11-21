@@ -120,16 +120,11 @@ public enum SessionReviewer {
     private static func configuration(
         for exercise: Exercise, in session: StrengthSession, stored: ProgressionSettings?, routine: Routine?
     ) -> (settings: ProgressionSettings, startFromBaseline: Bool) {
-        var settings = stored ?? ProgressionSettings(for: exercise)
-        if let prescribed = routine?.prescription(for: exercise.id) {
-            settings.scheme = prescribed
-            settings.requiresLoggedEffort = nil
-            return (settings, false)
-        }
-        if stored == nil, let focus = session.focus {
-            settings.scheme = FocusPrescription.for(focus).defaultScheme
-        }
-        return (settings, stored == nil)
+        let prescribed = routine?.prescription(for: exercise.id)
+        let settings = ProgressionTargets.settings(
+            for: exercise, stored: stored, focus: session.focus, prescription: prescribed
+        )
+        return (settings, stored == nil && prescribed == nil)
     }
 
     private static func review(

@@ -42,11 +42,9 @@ public struct PlanAnalysis: Hashable, Sendable {
         )
         let deloadAge = lastRecovery.map { PlanReviewer.days(from: $0.lastDay, to: today, calendar: calendar) }
 
-        let stalled = index.exerciseIDs.filter { id in
-            let config = settings[id] ?? exercises[id].map { ProgressionSettings(for: $0) }
-                ?? ProgressionSettings(incrementKg: 2.5)
-            return StallDetection.status(history: index.exposures(of: id), settings: config).isStalled
-        }.count
+        let stalled = LiftStatus.assessAll(
+            index: index, exercises: exercises, stored: settings, routines: routines
+        ).filter(\.isStalled).count
 
         return PlanAnalysis(
             currentBlock: current,
