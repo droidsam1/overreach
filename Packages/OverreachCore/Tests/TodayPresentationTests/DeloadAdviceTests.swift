@@ -78,6 +78,39 @@ struct DeloadAdviceTests {
         #expect(makeAdvice(poorWeek: false) == nil)
     }
 
+    @Test func extraWalkingCanReinforceAStallBasedDeloadWithAnExplicitReason() throws {
+        let sessions = stalledSessions.enumerated().map { index, original in
+            var session = original
+            session.sessionRPE = 6
+            session.endedAt = session.startedAt.addingTimeInterval(index == 5 ? 36 * 60 : 15 * 60)
+            return session
+        }
+        let activity = (-28 ... -1).map { offset in
+            let day = today.adding(days: offset, calendar: calendar)
+            let duration = offset == -1 ? 150.0 : 30
+            let walk = WalkBout(start: day.startDate(in: calendar), durationSeconds: duration * 60, source: .garmin)
+            return DailyActivity(day: day, steps: 8_000, walks: [walk])
+        }
+        func advice(activity: [DailyActivity]) -> DeloadAdvice? {
+            DeloadAdvice.make(
+                today: today, now: now, sessions: sessions, exercises: [squat, bench],
+                settings: [squat.id: mainLift, bench.id: mainLift], profile: AthleteProfile(),
+                history: metrics(poorWeek: false), checkIns: [], activity: activity, calendar: calendar, format: format
+            )
+        }
+
+        #expect(advice(activity: []) == nil)
+        let result = try #require(advice(activity: activity))
+        guard case let .proposed(reasons) = result.state else {
+            Issue.record("expected a proposal")
+            return
+        }
+        #expect(reasons.map(\.text) == [
+            "2 main lifts have stalled.",
+            "Strength and extra walking load reached 1.6× your usual week.",
+        ])
+    }
+
     @Test func aPostponedProposalStaysHiddenForTheWeek() {
         var profile = AthleteProfile()
         profile.deloadPostponedUntil = today.adding(days: 3, calendar: calendar)

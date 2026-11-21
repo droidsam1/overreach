@@ -22,8 +22,8 @@ public struct ReleaseNotes: Hashable, Sendable {
                 ReleaseHighlight(
                     symbol: "figure.walk", title: L10n.text("Everyday movement"),
                     detail: L10n.text(
-                        "Today compares your steps and walks with your usual day and mentions a long hike or several "
-                            + "very quiet days."
+                        "Today compares steps and walks with your usual day. Extra walking can affect your weekly "
+                            + "load and is flagged before a run or leg session."
                     )
                 ),
                 ReleaseHighlight(

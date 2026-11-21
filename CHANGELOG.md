@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Walking beyond the usual day can contribute to the weekly strength load comparison used for deload advice.
+  Today shows walking minutes against the usual day and suggests an easy warm-up after a walking spike if a
+  leg session or run is scheduled (ADR-0010).
 - Everyday movement counts walks and hikes recorded on a Garmin watch and walks nobody started on a watch, found in
   Apple Health's minute-by-minute steps (at least 10 minutes of steady walking outside any workout). The usual day
   now includes the dog walks and the commute, so only real departures from it stand out (ADR-0010).
