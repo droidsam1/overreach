@@ -43,17 +43,27 @@ public struct SourceReader: Sendable {
         self.sources = sources
     }
 
-    /// One merged record per day in `range` that some source reported, oldest first.
+    /// One merged record per day in `range` that some source reported, oldest first: what Today judges.
     public func dailyMetrics(in range: ClosedRange<CalendarDay>) async -> SourceReading<[DailyMetrics]> {
-        let results = await read { try await $0.dailyMetrics(in: range) }
+        let reading = await dailyMetricsBySource(in: range)
         var byDay: [CalendarDay: DailyMetrics] = [:]
-        for days in results.value {
-            for day in days where range.contains(day.day) {
-                byDay[day.day] = (byDay[day.day] ?? DailyMetrics(day: day.day)).merging(day)
-            }
+        for day in reading.value {
+            byDay[day.day] = (byDay[day.day] ?? DailyMetrics(day: day.day)).merging(day)
         }
         let merged = byDay.values.filter { !$0.sources.isEmpty }.sorted { $0.day < $1.day }
-        return SourceReading(value: merged, readSources: results.readSources, failures: results.failures)
+        return SourceReading(value: merged, readSources: reading.readSources, failures: reading.failures)
+    }
+
+    /// Each source's own records in `range`, by day and then in source order, unmerged: for the AI context, which
+    /// shows every source's values side by side (`docs/ai-exchange.md`).
+    public func dailyMetricsBySource(in range: ClosedRange<CalendarDay>) async -> SourceReading<[DailyMetrics]> {
+        let results = await read { try await $0.dailyMetrics(in: range) }
+        let rows = results.value.enumerated().flatMap { index, days in
+            days.filter { range.contains($0.day) }.map { (index, $0) }
+        }
+        .sorted { ($0.1.day, $0.0) < ($1.1.day, $1.0) }
+        .map(\.1)
+        return SourceReading(value: rows, readSources: results.readSources, failures: results.failures)
     }
 
     /// Runs started in the range, each run once with every source that recorded it, oldest first.

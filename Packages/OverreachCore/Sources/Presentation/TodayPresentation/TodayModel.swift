@@ -389,12 +389,10 @@ public final class TodayModel {
         if optionalStrengthDay != today { optionalStrengthDay = nil }
         let profile = try? await profiles?.profile()
         let cycle = await readCycle(profile: profile, today: today)
-        // The readiness baselines need weeks of history (months for phase baselines, plus the 7 days the deload
-        // signals judge); the screen shows the last 7 days.
-        let historyDays = cycle == nil
-            ? max(6, readinessSettings.baselineDays)
-            : max(6, readinessSettings.maximumPhaseBaselineDays) + RecoveryTrend.windowDays
-        let range = today.adding(days: -historyDays, calendar: calendar)...today
+        // The readiness baselines and the deload's recovery signals need weeks of history; the screen shows 7 days.
+        let range = ReadinessAssessment.historyRange(
+            today: today, tracksCycle: cycle != nil, settings: readinessSettings, calendar: calendar
+        )
         let weekStart = today.adding(days: -6, calendar: calendar)
         let reading = await SourceReader(sources: sources).dailyMetrics(in: range)
 
@@ -426,9 +424,9 @@ public final class TodayModel {
         self.checkIn = checkIn
         isGarminConnected = garminConnected
         wearsGarmin = profile?.wearables.contains(.garmin) ?? false
-        readiness = ReadinessRules.readiness(
-            today: today, history: history, checkIn: checkIn, settings: readinessSettings,
-            tracksNaturalCycle: profile?.usesCyclePhase ?? false, cycle: cycle, calendar: calendar
+        readiness = ReadinessAssessment.assess(
+            today: today, history: history, checkIn: checkIn, profile: profile, cycle: cycle,
+            settings: readinessSettings, calendar: calendar
         )
         let activity = Self.mergeMovement(history: history, activity: dailyActivity, range: movementRange,
                                           calendar: calendar, now: now)

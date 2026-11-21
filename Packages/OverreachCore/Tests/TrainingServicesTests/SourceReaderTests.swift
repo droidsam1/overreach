@@ -3,11 +3,11 @@ import Foundation
 import Testing
 import TrainingServices
 
-private struct ReadFailed: LocalizedError {
+struct ReadFailed: LocalizedError {
     var errorDescription: String? { "offline" }
 }
 
-private struct FakeSource: MetricsSource {
+struct FakeSource: MetricsSource {
     let kind: DataSourceKind
     var available = true
     var fails = false
@@ -104,5 +104,27 @@ struct SourceReaderTests {
         let reading = await reader.runs(from: .distantPast, to: .distantFuture)
         #expect(!reading.didRead)
         #expect(!reading.failed)
+    }
+}
+
+@Suite("Reading each source's metrics")
+struct SourceReaderBySourceTests {
+    private let day = CalendarDay(year: 2026, month: 11, day: 20)
+
+    @Test func eachSourceKeepsItsOwnRowInSourceOrder() async {
+        var garmin = DailyMetrics(day: day)
+        garmin.setHRV(42, .rmssd)
+        garmin.sources = [.garmin]
+        var health = DailyMetrics(day: day)
+        health.setHRV(61, .sdnn)
+        health.sources = [.appleHealth]
+        let reader = SourceReader(sources: [
+            FakeSource(kind: .garmin, metrics: [garmin]), FakeSource(kind: .appleHealth, metrics: [health])
+        ])
+
+        let rows = await reader.dailyMetricsBySource(in: day...day).value
+
+        #expect(rows.map(\.sources) == [[.garmin], [.appleHealth]])
+        #expect(rows.map { $0.hrv(.sdnn) } == [nil, 61])
     }
 }

@@ -165,9 +165,9 @@ public final class AskAIModel {
         message = json.map { ContextMessage.text(json: $0, request: request?.text) }
     }
 
-    /// One merged record per day, as Today shows it (ADR-0035).
+    /// Each source's records, unmerged: the context shows every source's values per day (`docs/ai-exchange.md`).
     private func metrics(in range: ClosedRange<CalendarDay>) async -> [DailyMetrics] {
-        await SourceReader(sources: sources).dailyMetrics(in: range).value
+        await SourceReader(sources: sources).dailyMetricsBySource(in: range).value
     }
 
     private func strengthRecordings(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {

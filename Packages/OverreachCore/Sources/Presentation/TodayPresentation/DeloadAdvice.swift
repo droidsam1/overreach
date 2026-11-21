@@ -2,6 +2,7 @@ import Analytics
 import Domain
 import Foundation
 import PresentationKit
+import TrainingServices
 
 /// One reason behind a deload proposal, with the strength of its evidence.
 public struct DeloadReasonLine: Hashable, Sendable {
@@ -54,41 +55,21 @@ public struct DeloadAdvice: Hashable, Sendable {
             format.number((1 - plan.loadMultiplier) * 100, maxFractionDigits: 0) + " %",
             format.number(plan.maximumRPE)
         )
-        if let current = RecoveryHistory.deloadInProgress(profile, on: today, calendar: calendar) {
-            let lastDay = RecoveryHistory.lastDay(of: current, calendar: calendar)
+        let record = TrainingRecord(
+            sessions: sessions, exercises: exercises, settings: settings, routines: routines, runs: runs,
+            runReadFailed: runReadFailed, recordings: recordings, metrics: history, checkIns: checkIns,
+            activity: activity, cycle: cycle
+        )
+        let assessment = DeloadAssessment.assess(
+            today: today, now: now, profile: profile, record: record, readinessSettings: readinessSettings,
+            settings: advisorSettings, calendar: calendar
+        )
+        switch assessment {
+        case nil:
+            return nil
+        case let .inProgress(lastDay):
             return DeloadAdvice(state: .inProgress(lastDay: lastDay.startDate(in: calendar)), planText: planText)
-        }
-        if let postponed = profile.deloadPostponedUntil, today <= postponed { return nil }
-
-        let byID = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        let lifts = LiftStatus.assessAll(
-            index: ExposureIndex(sessions: sessions), exercises: byID, stored: settings, routines: routines,
-            now: now, lookbackDays: advisorSettings.lookbackDays
-        )
-        let recovery = RecoveryTrend.assess(
-            today: today, history: history, checkIns: checkIns, settings: readinessSettings, cycle: cycle,
-            calendar: calendar
-        )
-        let detected = DeloadDetection.periods(
-            sessions: sessions, runs: runs, profile: profile, routines: routines, exercises: byID,
-            settings: settings, runReadFailed: runReadFailed, recordings: recordings, today: today, calendar: calendar
-        )
-        let weeklyLoad = Self.weeklyLoad(sessions: sessions, activity: activity, profile: profile, today: today,
-                                         calendar: calendar)
-        func lastRecovery(_ periods: [DetectedDeload]) -> LastRecovery? {
-            RecoveryHistory.lastRecovery(deloads: profile.deloads, detected: periods, before: today, calendar: calendar)
-        }
-        func propose(_ periods: [DetectedDeload]) -> DeloadProposal? {
-            DeloadAdvisor.proposal(
-                lifts: lifts, lastRecovery: lastRecovery(periods), weeklyLoad: weeklyLoad, recovery: recovery,
-                now: now, settings: advisorSettings, calendar: calendar
-            )
-        }
-        guard let proposal = propose(detected) else { return nil }
-        if let pending = unconfirmedBreak(in: detected, after: lastRecovery(detected), today: today),
-           propose(detected + [DetectedDeload(start: pending.start, end: pending.end, reason: pending.reason,
-                                              needsConfirmation: false)]) == nil {
-            // Ask first: if the break was the rest the signals call for, a deload now would repeat it.
+        case let .confirmBreak(pending):
             let style = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
                 .weekday(.abbreviated).day().month(.abbreviated)
             let start = pending.start.startDate(in: calendar).formatted(style)
@@ -101,35 +82,13 @@ public struct DeloadAdvice: Hashable, Sendable {
                                                    text: text)),
                 planText: planText
             )
+        case let .proposed(proposal, walkingIncluded):
+            let reasons = proposal.signals.map {
+                DeloadReasonLine(text: text(for: $0, format: format, walkingIncluded: walkingIncluded),
+                                 evidence: $0.evidence.level.displayName)
+            }
+            return DeloadAdvice(state: .proposed(reasons: reasons), planText: planText)
         }
-        let walkingIncluded = (weeklyLoad?.walkingLastWeek ?? 0) > 0
-        let reasons = proposal.signals.map {
-            DeloadReasonLine(text: text(for: $0, format: format, walkingIncluded: walkingIncluded),
-                             evidence: $0.evidence.level.displayName)
-        }
-        return DeloadAdvice(state: .proposed(reasons: reasons), planText: planText)
-    }
-
-    private static func weeklyLoad(
-        sessions: [StrengthSession], activity: [DailyActivity], profile: AthleteProfile, today: CalendarDay,
-        calendar: Calendar
-    ) -> WeeklyLoadChange? {
-        let range = today.adding(days: Workload.usualStartOffset, calendar: calendar)...today
-        let training = sessions.filter { range.contains(CalendarDay($0.startedAt, calendar: calendar)) }
-        let loads = training.compactMap { Workload.strengthLoad($0, calendar: calendar) }
-        // A partly recorded week could look easy simply because its sessions lack effort data.
-        guard loads.count == training.count else { return nil }
-        let walking = EverydayMovement.walkingLoads(activity, in: range, profile: profile, calendar: calendar)
-        return Workload.weeklyLoadChange(loads: loads, on: today, calendar: calendar, walking: walking)
-    }
-
-    /// The latest unconfirmed period after the last recovery.
-    private static func unconfirmedBreak(
-        in detected: [DetectedDeload], after lastRecovery: LastRecovery?, today: CalendarDay
-    ) -> DetectedDeload? {
-        detected.filter { period in
-            period.needsConfirmation && period.end < today && lastRecovery.map { period.start > $0.lastDay } ?? true
-        }.max { $0.end < $1.end }
     }
 
     static func text(for signal: DeloadSignal, format: Format, walkingIncluded: Bool = false) -> String {
