@@ -22,7 +22,7 @@ import WorkoutPresentation
 /// Top-level navigation. Cross-feature navigation is wired here, never inside a feature.
 struct RootView: View {
     private enum AppTab: Hashable {
-        case today, train, history, plan, settings
+        case today, train, history, plan, recovery
     }
 
     @State private var todayModel: TodayModel
@@ -43,6 +43,7 @@ struct RootView: View {
     @State private var selectedTab: AppTab
     @State private var onboardingDestination: OnboardingDestination?
     @State private var showsStrongImport = false
+    @State private var showsSettings = false
     @AppStorage(AppAppearance.storageKey) private var appearance = AppAppearance.system
     @Environment(\.scenePhase) private var scenePhase
     private let container: AppContainer
@@ -104,6 +105,12 @@ struct RootView: View {
                     onConnectGarmin: { garminModel.start() },
                     recoveryHistory: { RecoveryHistoryView(model: planModel) }
                 )
+                .settingsButton(
+                    isPresented: $showsSettings,
+                    badgeCount: exercisesModel.needsMappingCount + backupModel.badgeCount + garminModel.badgeCount
+                ) {
+                    settings
+                }
                 .recoveryProgress {
                     TrendsView(model: recoveryModel, section: .recovery, onConnectGarmin: { garminModel.start() })
                 }
@@ -123,25 +130,11 @@ struct RootView: View {
                     }
                 }
             }
-            Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
-                SettingsView(
-                    importModel: importModel, backupModel: backupModel, garminModel: garminModel,
-                    trainingModel: trainingSettingsModel, showsStrongImport: $showsStrongImport
-                ) {
-                    NavigationLink {
-                        ExercisesView(model: exercisesModel)
-                    } label: {
-                        Label("Exercises", systemImage: "figure.strengthtraining.traditional")
-                    }
-                    .badge(exercisesModel.needsMappingCount)
-                    Button {
-                        Task { await onboardingModel.reopen() }
-                    } label: {
-                        Label("Training profile", systemImage: "person.text.rectangle")
-                    }
+            Tab("Recovery", systemImage: "heart.text.square", value: AppTab.recovery) {
+                NavigationStack {
+                    TrendsView(model: recoveryModel, onConnectGarmin: { garminModel.start() })
                 }
             }
-            .badge(exercisesModel.needsMappingCount + backupModel.badgeCount + garminModel.badgeCount)
         }
         .preferredColorScheme(appearance.colorScheme)
         .task {
@@ -220,6 +213,25 @@ struct RootView: View {
         }
     }
 
+    private var settings: some View {
+        SettingsView(
+            importModel: importModel, backupModel: backupModel, garminModel: garminModel,
+            trainingModel: trainingSettingsModel, showsStrongImport: $showsStrongImport
+        ) {
+            NavigationLink {
+                ExercisesView(model: exercisesModel)
+            } label: {
+                Label("Exercises", systemImage: "figure.strengthtraining.traditional")
+            }
+            .badge(exercisesModel.needsMappingCount)
+            Button {
+                Task { await onboardingModel.reopen() }
+            } label: {
+                Label("Training profile", systemImage: "person.text.rectangle")
+            }
+        }
+    }
+
     private func openOnboardingDestination() {
         guard let destination = onboardingDestination else { return }
         onboardingDestination = nil
@@ -227,10 +239,12 @@ struct RootView: View {
         case .train:
             selectedTab = .train
         case .importHistory:
-            selectedTab = .settings
+            selectedTab = .today
+            showsSettings = true
             showsStrongImport = true
         case .restoreBackup:
-            selectedTab = .settings
+            selectedTab = .today
+            showsSettings = true
             backupModel.requestFolderChoice()
         }
     }
