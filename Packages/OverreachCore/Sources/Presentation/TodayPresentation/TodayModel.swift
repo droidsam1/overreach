@@ -482,19 +482,18 @@ public final class TodayModel {
             ScheduledTrainingRow.strength($0, routine: assignedRoutine, sessions: record.sessions,
                                           now: now, calendar: calendar)
         }
+        let activeRuns = goal?.scheduledRuns.filter { $0.day == today && !$0.isPostponed } ?? []
         updateMovement(
             record.activity, today: today, profile: profile,
             schedule: .init(strength: assignment,
                             routine: scheduledStrengthToday?.status == nil ? assignedRoutine : nil,
-                            exercises: record.exercises, runs: goal?.scheduledRuns.filter { $0.day == today } ?? [])
+                            exercises: record.exercises, runs: activeRuns)
         )
         guard assignment == nil || assignedRoutine != nil,
               readiness.level == .amber, !readiness.reasons.contains(where: \.advisesSkippingTraining),
               workouts != nil, !snapshot.sessionsFailed,
               !hasStrengthToday(sessions: snapshot.allSessions, recordings: record.recordings, now: now) else { return }
-        if assignment == nil, goal?.scheduledRuns.contains(where: {
-            $0.day == today && $0.purpose == .race && $0.completion == nil
-        }) == true { return }
+        if assignment == nil, activeRuns.contains(where: { $0.purpose == .race && $0.completion == nil }) { return }
         loadStrengthOption(
             today: today, now: now, profile: profile, assignedRoutine: assignedRoutine, snapshot: snapshot
         )
@@ -505,7 +504,7 @@ public final class TodayModel {
     ) {
         let running = goal?.running
         guard running != nil || runningBreak != nil else { return }
-        let schedule = goal?.scheduledRuns ?? []
+        let schedule = goal?.scheduledRuns.filter { !$0.isPostponed } ?? []
         let yesterday = today.adding(days: -1, calendar: calendar).startDate(in: calendar)
         let latestRun = schedule.compactMap(\.completion).filter {
             $0.durationSeconds.isFinite && $0.durationSeconds > 0

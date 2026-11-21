@@ -31,6 +31,9 @@ struct RunningCalendarEntryView: View {
                         TextField("Planned distance in km (0 if unknown)", value: $draft.distanceKm, format: .number)
                     }
                 }
+                if draft.showsWorkoutDetails {
+                    prescriptionSection
+                }
                 if draft.showsCompletion && !choices.isEmpty {
                     Section {
                         Picker("Recorded run", selection: $draft.completion) {
@@ -59,10 +62,36 @@ struct RunningCalendarEntryView: View {
                     Task { if await model.removeRunningEntry(draft.id) { dismiss() } }
                 }
             }
+            .onChange(of: draft.date) { draft.postponed = false }
             .task(id: draft.date) {
                 choices = []
                 let available = await model.runningCompletionChoices(for: draft)
                 if !Task.isCancelled { choices = available }
+            }
+        }
+    }
+
+    private var prescriptionSection: some View {
+        Section("Run details") {
+            TextField("Repetitions (0 if none)", value: $draft.repetitions, format: .number)
+            if draft.repetitions > 0 {
+                TextField("Recovery seconds (0 if none)", value: $draft.recoverySeconds, format: .number)
+            }
+            Picker("Intensity basis", selection: $draft.intensityBasis) {
+                Text("None").tag(nil as PlannedRun.IntensityBasis?)
+                ForEach(model.runningIntensityOptions) { option in Text(option.name).tag(Optional(option.value)) }
+            }
+            if let label = draft.intensityTargetLabel {
+                TextField(label, value: $draft.intensityTarget, format: .number)
+            }
+            if draft.showsRacePriority {
+                Picker("Race priority", selection: $draft.racePriority) {
+                    Text("None").tag(nil as PlannedRun.RacePriority?)
+                    ForEach(model.racePriorityOptions) { option in Text(option.name).tag(Optional(option.value)) }
+                }
+            }
+            if draft.showsPostpone {
+                Toggle("Postpone this run", isOn: $draft.postponed)
             }
         }
     }

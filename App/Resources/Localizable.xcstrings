@@ -6206,6 +6206,23 @@
         }
       }
     },
+    "Heart rate zone": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zona de frecuencia cardíaca"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zona de frecuencia cardíaca"
+          }
+        }
+      }
+    },
     "Help me plan my next training block.": {
       "extractionState": "manual",
       "localizations": {
@@ -6865,6 +6882,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "En Strong: Axustes → Exportar datos. Importar outra vez o mesmo ficheiro non crea duplicados."
+          }
+        }
+      }
+    },
+    "Intensity basis": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Referencia de intensidad"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Referencia de intensidade"
           }
         }
       }
@@ -10388,6 +10422,23 @@
         }
       }
     },
+    "Perceived effort": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esfuerzo percibido"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esforzo percibido"
+          }
+        }
+      }
+    },
     "Peri- or post-menopause": {
       "extractionState": "manual",
       "localizations": {
@@ -10660,6 +10711,40 @@
         }
       }
     },
+    "Postpone this run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posponer esta carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adiar esta carreira"
+          }
+        }
+      }
+    },
+    "Postponed": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pospuesta"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adiada"
+          }
+        }
+      }
+    },
     "Prefer not to say": {
       "extractionState": "manual",
       "localizations": {
@@ -10741,6 +10826,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Músculos principais"
+          }
+        }
+      }
+    },
+    "Primary race": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición principal"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición principal"
           }
         }
       }
@@ -11153,6 +11255,23 @@
         }
       }
     },
+    "Race priority": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prioridad de competición"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prioridade da competición"
+          }
+        }
+      }
+    },
     "Race: {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -11387,6 +11506,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Períodos de recuperación"
+          }
+        }
+      }
+    },
+    "Recovery seconds (0 if none)": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segundos de recuperación (0 si no hay)"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segundos de recuperación (0 se non hai)"
           }
         }
       }
@@ -11680,6 +11816,23 @@
         }
       }
     },
+    "Repetitions (0 if none)": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeticiones (0 si no hay)"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeticións (0 se non hai)"
+          }
+        }
+      }
+    },
     "Replace exercise": {
       "extractionState": "manual",
       "localizations": {
@@ -11744,6 +11897,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Repeticións: %lld"
+          }
+        }
+      }
+    },
+    "Rescheduled": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reprogramada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reprogramada"
           }
         }
       }
@@ -12411,6 +12581,23 @@
         }
       }
     },
+    "Run details": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detalles de la carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detalles da carreira"
+          }
+        }
+      }
+    },
     "Run {1} km in {2}": {
       "extractionState": "manual",
       "localizations": {
@@ -12883,6 +13070,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Músculos secundarios"
+          }
+        }
+      }
+    },
+    "Secondary race": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición secundaria"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Competición secundaria"
           }
         }
       }
@@ -15029,6 +15233,40 @@
         }
       }
     },
+    "Target effort (1–10)": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esfuerzo objetivo (1–10)"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esforzo obxectivo (1–10)"
+          }
+        }
+      }
+    },
+    "Target heart rate zone": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zona de frecuencia cardíaca objetivo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zona de frecuencia cardíaca obxectivo"
+          }
+        }
+      }
+    },
     "Target minutes": {
       "extractionState": "manual",
       "localizations": {
@@ -15059,6 +15297,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Segundos do obxectivo"
+          }
+        }
+      }
+    },
+    "Target seconds per km": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segundos por km objetivo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segundos por km obxectivo"
           }
         }
       }
@@ -15756,6 +16011,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tres pasos, arredor dun minuto. Ou máis tarde desde Hoxe ou Axustes → Garmin."
+          }
+        }
+      }
+    },
+    "Threshold run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera a ritmo umbral"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira a ritmo limiar"
           }
         }
       }

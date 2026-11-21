@@ -26,7 +26,7 @@ public enum EasyRunAdvisor {
               !readiness.reasons.contains(where: \.advisesSkippingTraining) else { return nil }
         let today = CalendarDay(now, calendar: calendar)
         let tomorrow = today.adding(days: 1, calendar: calendar)
-        let pending = schedule.filter { $0.day >= today && $0.completion == nil }
+        let pending = schedule.filter { $0.day >= today && $0.completion == nil && !$0.isPostponed }
         let due = pending.filter { $0.day == today }
         if due.contains(where: { $0.purpose == .rest }) { return .plannedRest }
         if pending.contains(where: { $0.purpose == .race && $0.day <= tomorrow }) { return .nearEvent }
@@ -62,7 +62,9 @@ public enum EasyRunAdvisor {
         let typical = durations[(durations.count - 1) / 2]
         let fraction = readiness.level == .amber ? 0.75 : 1.0
         let plannedMinutes = next?.durationMinutes.flatMap { $0 > 0 ? Double($0) : nil }
-        let qualityTomorrow = pending.contains { $0.day == tomorrow && [.intervals, .tempo, .long].contains($0.purpose) }
+        let qualityTomorrow = pending.contains {
+            $0.day == tomorrow && [.intervals, .tempo, .threshold, .long].contains($0.purpose)
+        }
         let ceiling = qualityTomorrow ? 15.0 : (goal.aimsForPainFree ? 20.0 : 30.0)
         let planCeiling = plannedMinutes.map { $0 * (scheduledToday ? fraction : 1) } ?? ceiling
         let minutes = Int(min(ceiling, typical * fraction, planCeiling).rounded(.down))

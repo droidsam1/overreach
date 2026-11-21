@@ -1,3 +1,4 @@
+import Domain
 import Foundation
 
 /// Training context exported for an AI assistant (ADR-0017, field reference in `docs/ai-exchange.md`): logged
@@ -95,6 +96,10 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var durationMinutes: Int?
         public var distanceMeters: Int?
         public var completed: Bool?
+        public var prescription: PlannedRun.Prescription?
+        public var racePriority: String?
+        public var originalDay: String?
+        public var postponed: Bool?
     }
 
     public struct Block: Codable, Hashable, Sendable {

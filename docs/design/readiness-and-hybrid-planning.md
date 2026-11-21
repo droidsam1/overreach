@@ -6,8 +6,8 @@ Today should tell the athlete what to do, which signals matter, and how the sugg
 
 ## Continue from here
 
-**Next implementation in this area: running and strength priorities.**
-See [tasks 6–8](#6-add-a-running-objective-to-hybrid-goals) for the remaining work.
+**Next implementation in this area: adjust planned runs.**
+See [task 8](#8-adjust-planned-runs-and-protect-nearby-sessions) for how adjustments should use the shared calendar.
 [Priorities](../priorities.md) ranks it against the rest of the open work.
 [Task 3](#3-ask-a-question-that-changes-the-decision) still needs clinical review before release.
 
@@ -105,7 +105,7 @@ criterion to hybrid goals. Optional goal fields round-trip through backup and ap
 shows progress from explicitly linked recordings and lets the athlete report pain during and after each run.
 Confirmation requires one linked run to satisfy every selected criterion. A timed goal uses the recorded total
 duration. A pain-free goal requires a clear response for both periods. An older link without measured distance can
-still carry a pain report. The running and strength priority control shipped; recommendations do not use it until tasks 7 and 8.
+still carry a pain report. The running and strength priority control shipped; task 8 covers using it in recommendations.
 
 - [x] Can start independently. Extend `TrainingGoal` with optional distance, completion/time target, symptom-free criterion, optional target event/date and running/strength priority. Allow completion plus symptom-free and time plus symptom-free where desired. Add edit and progress surfaces in Plan and an optional onboarding path. Preserve priority lifts. Use recent performance or a recent tolerated run to ground progress and show uncertainty for ambitious targets.
 - **Done when** “finish 5 km”, “run 5 km without pain” and “5 km in 15 min” round-trip in app storage, backup and the relevant versioned plan/context exchange. The last example displays a goal pace of 3:00/km and uses current performance to set training intensity. A pain-free goal tracks athlete-reported symptoms during and after runs and never promises a symptom-free outcome. Old hybrid profiles can continue with no running objective.
@@ -114,10 +114,11 @@ still carry a pain report. The running and strength priority control shipped; re
 
 [#89](https://github.com/droidsam1/overreach/pull/89) supports one manually entered next running day, including a
 race or explicit rest. [#95](https://github.com/droidsam1/overreach/pull/95) adds the multi-day running calendar,
-stable moves and explicit links to completed runs. Dated strength assignments, structured running steps and
-applying proposed changes to the schedule remain open.
+stable moves and explicit links to completed runs. The shared schedule includes dated strength alongside
+structured running entries, with rest, the strength rotation and confirmed run links. [ADR-0040](../adr/0040-structured-running-schedule.md)
+covers the prescription fields, race priority, moves and postponement. Applying proposed changes is task 8.
 
-- [ ] After task 6, add a shared schedule view that preserves the strength rotation. Include dated sessions/rest, undated next items, planned races with priority, completed/adjusted/postponed status and explicit or confirmed links to logged activity. For runs include purpose (easy, long, threshold, intervals, event), duration or distance, optional reps/recovery and an intensity basis (pace, HR zones or perceived effort).
+- [x] After task 6, add a shared schedule view that preserves the strength rotation. Include dated sessions/rest, undated next items, planned races with priority, completed/adjusted/postponed status and explicit or confirmed links to logged activity. For runs include purpose (easy, long, threshold, intervals, event), duration or distance, optional reps/recovery and an intensity basis (pace, HR zones or perceived effort).
 - **Done when** two sessions can share a day, runs and races can be displayed or moved without losing identity, a missed run never implies a completed run, and import/export and restore cover old and new data under ADR-0017/0018. Document calendar and conflict semantics in an ADR before changing persistence.
 
 ### 8. Adjust planned runs and protect nearby sessions
