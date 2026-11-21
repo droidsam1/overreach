@@ -7,6 +7,7 @@ struct DeloadProposalCard<SessionPreview: View>: View {
     let advice: DeloadAdvice
     let explanation: DeloadExplanation
     let recoveryHistory: (() -> AnyView)?
+    let prominent: Bool
     @ViewBuilder let sessionPreview: () -> SessionPreview
 
     var body: some View {
@@ -16,9 +17,11 @@ struct DeloadProposalCard<SessionPreview: View>: View {
                 .foregroundStyle(.orange)
                 .accessibilityAddTraits(.isHeader)
             Text(explanation.summary).font(.subheadline)
-            Button(DeloadProposalText.start) { Task { await model.acceptDeload() } }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+            if prominent {
+                startButton.buttonStyle(.borderedProminent)
+            } else {
+                startButton.buttonStyle(.bordered)
+            }
             Button { Task { await model.postponeDeload() } } label: {
                 Text(DeloadProposalText.postpone).frame(minHeight: 44)
             }
@@ -28,6 +31,11 @@ struct DeloadProposalCard<SessionPreview: View>: View {
                 Text(DeloadProposalText.details).frame(minHeight: 44)
             }
         }
+    }
+
+    private var startButton: some View {
+        Button(DeloadProposalText.start) { Task { await model.acceptDeload() } }
+            .controlSize(.large)
     }
 
     private var detail: some View {

@@ -6,41 +6,63 @@ import TodayPresentation
 
 /// "How should I train today?" — readiness, key recovery metrics and (phase 3) today's proposed session.
 public struct TodayView: View {
-    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var model: TodayModel
     @State private var checkInSheet: CheckInModel?
     private let onConnectGarmin: () -> Void
     private let recoveryHistory: (() -> AnyView)?
 
-    public init(model: TodayModel, onConnectGarmin: @escaping () -> Void = {}) {
+    public enum WorkoutContinuation {
+        case resume(String), reviewDraft
+    }
+
+    private let workoutContinuation: WorkoutContinuation?
+    private let onOpenTrain: () -> Void
+    private let onOpenHistory: () -> Void
+
+    public init(
+        model: TodayModel, workoutContinuation: WorkoutContinuation? = nil,
+        onOpenTrain: @escaping () -> Void = {}, onOpenHistory: @escaping () -> Void = {},
+        onConnectGarmin: @escaping () -> Void = {}
+    ) {
         _model = State(initialValue: model)
+        self.workoutContinuation = workoutContinuation
+        self.onOpenTrain = onOpenTrain
+        self.onOpenHistory = onOpenHistory
         self.onConnectGarmin = onConnectGarmin
         recoveryHistory = nil
     }
 
-    /// - Parameter onConnectGarmin: opens the Garmin setup (wired by the App: it belongs to Settings).
     public init<RecoveryHistory: View>(
-        model: TodayModel, onConnectGarmin: @escaping () -> Void = {},
+        model: TodayModel, workoutContinuation: WorkoutContinuation? = nil,
+        onOpenTrain: @escaping () -> Void = {}, onOpenHistory: @escaping () -> Void = {},
+        onConnectGarmin: @escaping () -> Void = {},
         @ViewBuilder recoveryHistory: @escaping () -> RecoveryHistory
     ) {
         _model = State(initialValue: model)
+        self.workoutContinuation = workoutContinuation
+        self.onOpenTrain = onOpenTrain
+        self.onOpenHistory = onOpenHistory
         self.onConnectGarmin = onConnectGarmin
         self.recoveryHistory = { AnyView(recoveryHistory()) }
-    }
-
-    private var columns: [GridItem] {
-        [GridItem(typeSize.isAccessibilitySize ? .flexible() : .adaptive(minimum: 150), spacing: Spacing.medium)]
     }
 
     public var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.large) {
-                    if model.showsConnectHealth {
-                        connectHealth
+                    if let workoutContinuation {
+                        continueWorkout(workoutContinuation)
+                    }
+                    if primary == .deload, let advice = model.deloadAdvice {
+                        deload(advice, prominent: true)
                     }
                     if model.showsReadinessCard {
-                        readiness
+                        readinessSummary
+                    }
+                    primaryButton
+                    warnings
+                    if model.showsReadinessDetails && model.showsReadinessCard {
+                        TodayReadinessDetails(model: model)
                     }
                     if model.scheduledStrengthToday != nil || !model.scheduledRunsToday.isEmpty {
                         scheduledTraining
@@ -48,7 +70,7 @@ public struct TodayView: View {
                     if let option = model.runningOption {
                         easyRun(option)
                     }
-                    if let advice = model.deloadAdvice {
+                    if primary != .deload, let advice = model.deloadAdvice {
                         deload(advice)
                     }
                     if model.canRequestStrengthOption {
@@ -64,55 +86,28 @@ public struct TodayView: View {
                             }
                         }
                     }
-                    if model.showsCheckIn {
-                        checkIn
+                    if primary != .checkIn, model.showsCheckIn, model.showsReadinessCard {
+                        checkIn(prominent: false)
                     }
                     if !model.movementNotes.isEmpty {
                         movement
                     }
-                    if model.showsMetrics {
-                        metrics
-                    }
-
-                    if model.showsConnectGarmin {
-                        Button(action: onConnectGarmin) {
-                            FeatureHighlightRow(
-                                symbol: "applewatch.radiowaves.left.and.right", title: Text("Connect your Garmin"),
-                                detail: Text(
-                                    "Nightly HRV, sleep score and Body Battery for the readiness light. Three steps."
-                                )
-                            )
-                            .padding(Spacing.medium)
-                            .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
-                        }
-                        .buttonStyle(.plain)
-                    }
-
-                    if let note = model.trainingReadNote {
-                        Label(note, systemImage: "exclamationmark.triangle")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    if model.showsSourceWarning {
-                        VStack(alignment: .leading, spacing: Spacing.small) {
-                            Label("Some sources could not be updated.", systemImage: "exclamationmark.triangle")
-                            if let detail = model.sourceWarningDetail {
-                                Text(detail).textSelection(.enabled)
+                    if model.showsReadinessCard {
+                        DisclosureGroup("Today's metrics") {
+                            TodayMetrics(model: model)
+                            if primary != .connectHealth, model.showsConnectHealth {
+                                connectHealth(prominent: false)
+                            }
+                            if primary != .connectGarmin, model.showsConnectGarmin {
+                                connectGarmin(prominent: false)
                             }
                         }
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        Button("View recent training", systemImage: "calendar", action: onOpenHistory)
                     }
                 }
                 .padding(Spacing.medium)
             }
             .navigationTitle("Today")
-            .overlay {
-                if model.showsLoadingIndicator {
-                    ProgressView()
-                }
-            }
             .sheet(item: $checkInSheet) { sheet in
                 CheckInView(model: sheet) { Task { await model.load() } }
             }
@@ -121,13 +116,97 @@ public struct TodayView: View {
         }
     }
 
+    private var primary: TodayModel.NextAction {
+        workoutContinuation == nil ? model.nextAction : .readiness
+    }
+
+    private func continueWorkout(_ continuation: WorkoutContinuation) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+            switch continuation {
+            case let .resume(name):
+                Button("Resume workout", systemImage: "dumbbell", action: onOpenTrain)
+                Text(name).font(.subheadline)
+            case .reviewDraft:
+                Button("Review saved workout", systemImage: "dumbbell", action: onOpenTrain)
+            }
+        }
+        .buttonStyle(BrandButtonStyle())
+    }
+
+    @ViewBuilder private var primaryButton: some View {
+        switch primary {
+        case .loading:
+            ProgressView("Loading Today…")
+        case .readiness, .deload:
+            EmptyView()
+        case .checkIn:
+            checkIn(prominent: true)
+        case .retry:
+            retryLoad(prominent: true)
+        case .connectHealth:
+            connectHealth(prominent: true)
+        case .connectGarmin:
+            connectGarmin(prominent: true)
+        case .train:
+            Button("Open Train", systemImage: "dumbbell", action: onOpenTrain)
+                .buttonStyle(BrandButtonStyle())
+        }
+    }
+
+    @ViewBuilder private func actionButton(
+        _ title: Text, symbol: String, prominent: Bool, action: @escaping () -> Void
+    ) -> some View {
+        let button = Button(action: action) { Label { title } icon: { Image(systemName: symbol) } }
+        if prominent {
+            button.buttonStyle(BrandButtonStyle())
+        } else {
+            button.buttonStyle(.bordered)
+        }
+    }
+
+    private func retryLoad(prominent: Bool) -> some View {
+        actionButton(Text("Try again"), symbol: "arrow.clockwise", prominent: prominent) {
+            Task { await model.load() }
+        }
+        .disabled(model.isLoading)
+    }
+
+    private func connectGarmin(prominent: Bool) -> some View {
+        actionButton(
+            Text("Connect your Garmin"), symbol: "applewatch.radiowaves.left.and.right",
+            prominent: prominent, action: onConnectGarmin
+        )
+    }
+
+    @ViewBuilder private var warnings: some View {
+        if let note = model.trainingReadNote {
+            Label(note, systemImage: "exclamationmark.triangle")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        if model.showsSourceWarning {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                Label("Some sources could not be updated.", systemImage: "exclamationmark.triangle")
+                if let detail = model.sourceWarningDetail {
+                    Text(detail).textSelection(.enabled)
+                }
+            }
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+        }
+        if primary != .retry, model.showsSourceWarning || model.trainingReadNote != nil {
+            retryLoad(prominent: false)
+        }
+    }
+
     /// A deload proposal with its reasons and the plan, or the deload week in progress.
-    private func deload(_ advice: DeloadAdvice) -> some View {
+    private func deload(_ advice: DeloadAdvice, prominent: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
             switch advice.state {
             case let .proposed(explanation):
                 DeloadProposalCard(
-                    model: model, advice: advice, explanation: explanation, recoveryHistory: recoveryHistory
+                    model: model, advice: advice, explanation: explanation,
+                    recoveryHistory: recoveryHistory, prominent: prominent
                 ) {
                     deloadApplication
                 }
@@ -152,7 +231,7 @@ public struct TodayView: View {
                     .foregroundStyle(.secondary)
                 HStack {
                     Button("Yes, it was rest") { Task { await model.reviewBreak(accepted: true) } }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.bordered)
                     Button("No") { Task { await model.reviewBreak(accepted: false) } }
                         .buttonStyle(.bordered)
                 }
@@ -212,12 +291,11 @@ public struct TodayView: View {
         }
     }
 
-    private var connectHealth: some View {
+    private func connectHealth(prominent: Bool) -> some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
-            Button("Connect Apple Health", systemImage: "heart.text.square") {
+            actionButton(Text("Connect Apple Health"), symbol: "heart.text.square", prominent: prominent) {
                 Task { await model.connectHealth() }
             }
-            .buttonStyle(BrandButtonStyle())
 
             DisclosureGroup("About Apple Health data") {
                 Text("""
@@ -236,68 +314,13 @@ public struct TodayView: View {
         }
     }
 
-    private var readiness: some View {
+    private var readinessSummary: some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
             Text(model.readinessAdvice).font(.headline).accessibilityAddTraits(.isHeader)
             StatusBadge(title: model.readinessTitle, tone: model.readinessLevel.tone)
             if let summary = model.readinessSummary {
                 Text(summary).font(.subheadline)
             }
-            if model.showsReadinessDetails {
-                DisclosureGroup("Why this recommendation?") {
-                    VStack(alignment: .leading, spacing: Spacing.small) {
-                        ForEach(model.readinessLines, id: \.self) { line in
-                            VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                                Text(line.text).font(.subheadline)
-                                    .foregroundStyle(line.kind == .unavailable ? .secondary : .primary)
-                                if let source = line.source {
-                                    Text(line.evidence).font(.caption).foregroundStyle(.secondary)
-                                    Link("Research source", destination: source).font(.caption)
-                                }
-                                ReadingLinks(items: line.readings.map(ReadingLinkItem.init))
-                            }
-                        }
-                        ForEach(model.readinessObservations, id: \.self) { observation in
-                            Text(observation.text).font(.subheadline)
-                                .foregroundStyle(observation.kind == .unavailable ? .secondary : .primary)
-                        }
-                        if let context = model.readinessTrainingContext {
-                            VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                                Text(context.heading).font(.subheadline.weight(.medium))
-                                ForEach(context.workouts.indices, id: \.self) { index in
-                                    Text(context.workouts[index]).font(.subheadline)
-                                }
-                            }
-                        }
-                        if let note = model.hrvCoverageNote {
-                            Text(note).font(.subheadline).foregroundStyle(.secondary)
-                        }
-                        if !model.readinessSources.isEmpty {
-                            readinessSourceDetails
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, Spacing.small)
-                }
-            }
-        }
-    }
-
-    private var readinessSourceDetails: some View {
-        DisclosureGroup("Data sources and coverage") {
-            VStack(alignment: .leading, spacing: Spacing.small) {
-                ForEach(model.readinessSources) { source in
-                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                        Text(source.title).font(.subheadline.weight(.medium))
-                        ForEach(source.details, id: \.self) { detail in
-                            Text(detail).font(.subheadline).foregroundStyle(.secondary)
-                        }
-                    }
-                    .accessibilityElement(children: .combine)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.top, Spacing.small)
         }
     }
 
@@ -370,12 +393,13 @@ public struct TodayView: View {
         .padding(.top, Spacing.small)
     }
 
-    private var checkIn: some View {
+    private func checkIn(prominent: Bool) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xSmall) {
-            Button(model.checkInButtonTitle, systemImage: "face.smiling") {
+            actionButton(
+                Text(model.checkInButtonTitle), symbol: "face.smiling", prominent: prominent
+            ) {
                 checkInSheet = model.makeCheckInModel()
             }
-            .buttonStyle(.bordered)
             .controlSize(.large)
             if let summary = model.checkInSummary {
                 Text(summary).font(.caption).foregroundStyle(.secondary)
@@ -402,45 +426,6 @@ public struct TodayView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Spacing.medium)
         .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
-    }
-
-    private var metrics: some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
-            Text("Today's metrics")
-                .font(.title3.weight(.semibold))
-                .accessibilityAddTraits(.isHeader)
-            LazyVGrid(columns: columns, spacing: Spacing.medium) {
-                if model.showsSleep {
-                    MetricTile(title: "Sleep", value: model.sleepHours, unit: "h", fractionDigits: 1,
-                               caption: model.sleepCaption ?? model.sleepAverageCaption)
-                }
-                if model.showsHRV {
-                    MetricTile(title: "HRV", value: model.hrvMs, unit: "ms", caption: model.hrvCaption)
-                }
-                if model.showsRestingHeartRate {
-                    MetricTile(title: "Resting HR", value: model.restingHeartRate, unit: "bpm",
-                               caption: model.restingHeartRateCaption)
-                }
-                if model.showsSteps {
-                    MetricTile(title: "Steps", value: model.steps, unit: "", caption: model.stepsCaption)
-                }
-                if model.showsBodyBattery {
-                    MetricTile(title: "Body Battery", value: model.bodyBattery, unit: "",
-                               caption: model.bodyBatteryCaption)
-                }
-                if model.showsStress {
-                    MetricTile(title: "Stress", value: model.stress, unit: "", caption: model.stressCaption)
-                }
-                if model.showsVO2Max {
-                    MetricTile(title: "VO2max", value: model.vo2Max, unit: "", fractionDigits: 1,
-                               caption: model.vo2MaxCaption)
-                }
-            }
-
-            if let sources = model.sourcesText {
-                Text(sources).font(.caption).foregroundStyle(.secondary)
-            }
-        }
     }
 }
 

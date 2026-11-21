@@ -80,6 +80,28 @@ public final class TodayModel {
 
     // MARK: Screen state
 
+    public enum NextAction: Equatable {
+        case loading, readiness, checkIn, deload, retry, connectHealth, connectGarmin, train
+    }
+
+    /// Orders existing actions for the first viewport. Readiness can advise an action without a button.
+    public var nextAction: NextAction {
+        guard loadedDay != nil else { return .loading }
+        if readiness.reasons.contains(where: \.advisesSkippingTraining) { return .readiness }
+        if showsCheckIn, suggestedContextQuestion != nil { return .checkIn }
+        if readinessLevel == .red { return .readiness }
+        if case .proposed = deloadAdvice?.state { return .deload }
+        if readinessLevel == .amber { return .readiness }
+        if showsSourceWarning, readinessLevel == .unknown { return .retry }
+        if showsConnectGarmin, !showsMetrics { return .connectGarmin }
+        if showsConnectHealth, !showsMetrics { return .connectHealth }
+        if readinessLevel == .unknown, showsCheckIn, checkIn == nil { return .checkIn }
+        if readinessLevel == .green, hasRunningGoal || !scheduledRunsToday.isEmpty || scheduledStrengthToday != nil {
+            return .readiness
+        }
+        return .train
+    }
+
     public var readinessLevel: ReadinessLevel { readiness.level }
     public var readinessTitle: String { readiness.level.displayName }
 
@@ -162,7 +184,7 @@ public final class TodayModel {
     }
 
     public var showsReadinessDetails: Bool { !readiness.reasons.isEmpty || !readiness.inputs.isEmpty }
-    public var showsReadinessCard: Bool { loadedDay != nil && (readinessLevel != .unknown || hrvCoverageNote != nil) }
+    public var showsReadinessCard: Bool { loadedDay != nil }
 
     public var readinessSummary: String? {
         let reasons = readiness.reasons.filter { observationKind(for: $0) == .supporting }.prefix(2)
@@ -320,7 +342,6 @@ public final class TodayModel {
         return L10n.format("From {1}", names.joined(separator: " · "))
     }
 
-    public var showsLoadingIndicator: Bool { isLoading && metrics == nil }
     public var showsSourceWarning: Bool { !failedSources.isEmpty }
     /// "Apple Health: <system message>" for each failed source, one per line.
     public var sourceWarningDetail: String? {

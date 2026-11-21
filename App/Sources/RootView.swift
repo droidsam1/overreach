@@ -61,9 +61,8 @@ struct RootView: View {
     init(container: AppContainer) {
         self.container = container
         _todayModel = State(initialValue: container.makeTodayModel())
-        let workout = container.makeWorkoutModel()
-        _workoutModel = State(initialValue: workout)
-        _selectedTab = State(initialValue: workout.needsDraftRecovery ? .train : .today)
+        _workoutModel = State(initialValue: container.makeWorkoutModel())
+        _selectedTab = State(initialValue: .today)
         _routinesModel = State(initialValue: container.makeRoutinesModel())
         _historyModel = State(initialValue: container.makeHistoryModel())
         _planModel = State(initialValue: container.makePlanModel())
@@ -78,11 +77,27 @@ struct RootView: View {
         _planImportModel = State(initialValue: container.makePlanImportModel())
     }
 
+    private var workoutContinuation: TodayView.WorkoutContinuation? {
+        if workoutModel.isSessionActive { return .resume(workoutModel.sessionName) }
+        if let name = workoutModel.recoverableWorkoutName { return .resume(name) }
+        if workoutModel.needsDraftRecovery { return .reviewDraft }
+        return nil
+    }
+
+    private func openWorkout() {
+        selectedTab = .train
+        if workoutModel.canResumeWorkout {
+            Task { await workoutModel.resumeSavedWorkout() }
+        }
+    }
+
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Today", systemImage: "gauge.with.needle", value: AppTab.today) {
                 TodayView(
-                    model: todayModel, onConnectGarmin: { garminModel.start() },
+                    model: todayModel, workoutContinuation: workoutContinuation,
+                    onOpenTrain: openWorkout, onOpenHistory: { selectedTab = .history },
+                    onConnectGarmin: { garminModel.start() },
                     recoveryHistory: { RecoveryHistoryView(model: planModel) }
                 )
             }

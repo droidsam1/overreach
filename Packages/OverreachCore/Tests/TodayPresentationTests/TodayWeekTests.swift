@@ -330,6 +330,7 @@ struct TodayWeekTests {
                               workouts: store, calendar: calendar)
         await sick.load(now: now)
         #expect(sick.readinessLevel == .red)
+        #expect(sick.nextAction == .readiness)
         #expect(!sick.canRequestStrengthOption)
         #expect(sick.strengthOption == nil)
 
