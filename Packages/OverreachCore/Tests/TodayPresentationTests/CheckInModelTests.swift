@@ -1,4 +1,5 @@
 import Domain
+import Fixtures
 import Foundation
 import PresentationKit
 import Testing
@@ -261,6 +262,28 @@ struct CheckInModelTests {
         await model.load(now: now)
         #expect(model.readiness.reasons == [.runningPainLimitsTraining])
         #expect(model.runningOption == nil)
+    }
+
+    @Test func warningSignsHideStrengthChoices() async throws {
+        let squat = Exercise(name: "Squat", primaryMuscles: [.quadriceps], equipment: .barbell)
+        let bench = Exercise(name: "Bench Press", primaryMuscles: [.chest], equipment: .barbell)
+        let sessions = [squat, bench].enumerated().map { index, exercise in
+            let start = now.addingTimeInterval(-Double(index + 1) * 86_400)
+            return StrengthSession(
+                name: exercise.name, startedAt: start, endedAt: start.addingTimeInterval(3_600),
+                entries: [ExerciseEntry(exerciseID: exercise.id, sets: [WorkoutSet(weightKg: 45, reps: 6)])]
+            )
+        }
+        let workouts = TestStore(exercises: [squat, bench], sessions: sessions)
+        let checkIns = CheckInStore()
+        let model = TodayModel(sources: [], checkIns: checkIns, workouts: workouts, calendar: calendar)
+        await model.load(now: now)
+        #expect(model.strengthChoices.count == 2)
+
+        try await checkIns.save(CheckIn(day: today, exerciseWarningSigns: true))
+        await model.load(now: now)
+        #expect(model.strengthChoices.isEmpty)
+        #expect(model.strengthChoiceNote == nil)
     }
 
     @Test(arguments: [CheckIn.Context.Question.symptoms, .stress, .fatigue, .runningPain])

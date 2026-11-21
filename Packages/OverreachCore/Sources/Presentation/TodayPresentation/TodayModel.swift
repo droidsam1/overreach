@@ -685,7 +685,8 @@ public final class TodayModel {
     }
 
     private func updateStrengthChoices() {
-        guard let context = recentWorkouts, context.planned == nil else {
+        guard !readiness.reasons.contains(where: \.advisesSkippingTraining),
+              let context = recentWorkouts, context.planned == nil else {
             strengthChoices = []
             strengthChoiceNote = nil
             return
