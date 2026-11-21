@@ -1,6 +1,6 @@
 # Deloads, breaks and stalled lifts
 
-Status: tasks 1–7 implemented (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
+Status: tasks 1–7 implemented, 8–10 open (reviewed 2026-11-21). Rules: [progression engine](progression-engine.md#deload-proposals),
 ADR-0027 and ADR-0029. Evidence keys: `deload-design`, `deload-cost`, `deload-practice`, `deload-recovery-signals`,
 `unplanned-deload`, `stall-heuristics` in [the evidence register](../evidence.md).
 
@@ -171,5 +171,33 @@ another deload proposal that stress could explain ([ADR-0038](../adr/0038-life-s
 - [x] A yes offers a steadier week (`DeloadPlan.stressAware`) with reasons and what may help; a no keeps the deload.
 - [x] An accepted steadier week is stored (`DeloadRecord.forLifeStress`), applied in the logger and named on Today.
 - [x] Tests: answer windows, no points from stress alone, plan choice, explanation, accepted week.
-- [ ] Follow-up: use the same answer to soften running advice, and review wording with a clinician (see
+- [x] Follow-ups moved to tasks 8–10.
+
+### 8. Stress-aware running advice
+
+- [ ] Let `RecoveryTrend.lifeStress == .reported` shape the run advice (`EasyRunAdvisor`, planned runs on Today):
+  keep the run, cap it at easy effort and skip intervals or tempo while stress is reported. Cite
+  [`deload-life-stress`](../evidence.md#deload-life-stress--limited); do not claim that harder runs relieve stress.
+- [ ] Tests: a planned interval session becomes an easy run with the reason shown; a "no" answer changes nothing.
+
+Finish line: strength and running agree on the week an athlete under stress is offered.
+
+### 9. Fewer repeat questions and an expiry the athlete can see
+
+- [ ] A skipped or "not sure" answer asks again the next day while a proposal shows. Decide whether to ask at most
+  every 3 days, and whether the card should say "Answered yes on 14 Nov" with a way to change it.
+- [ ] Let a "yes" end earlier: a later "no" already overrides it; add a way to say "it's over" from the card.
+- [ ] Tests cover skip, unsure, a later no, and the 14-day expiry (`RecoveryTrend.stressWindowDays`).
+
+### 10. Validate the steadier week
+
+- [ ] Real-device check of the card, the question flow and the logger targets under the steadier week; record it in
+  [#21](https://github.com/droidsam1/overreach/issues/21).
+- [ ] Clinical review of the stress question and the "what may help" lines (shared with
   [readiness task 3](readiness-and-hybrid-planning.md#3-ask-a-question-that-changes-the-decision)).
+- [ ] Revisit `DeloadPlan.stressAware` (75 % of sets, about 5 % less load, RPE 8) when evidence appears on training
+  under life stress. Today the multipliers are heuristics, and the athlete's results after accepting a steadier
+  week are not recorded. Consider asking how it went at the end of the week.
+- [ ] Add a plain-language reading on stress and training to `FurtherReading` for `deload-life-stress`; pick a
+  source that agrees with the register and note any caveat.
+- [ ] Optional: ask for a stress answer when readiness alone is low for several days, not only before a deload.
