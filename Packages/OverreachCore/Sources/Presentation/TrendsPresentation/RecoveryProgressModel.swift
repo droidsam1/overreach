@@ -10,9 +10,9 @@ import TrainingServices
 @MainActor
 @Observable
 public final class RecoveryProgressModel {
-    /// The sections of the screen. Today opens `.recovery` directly.
+    /// The sections of the screen. Today opens `.recovery` directly and Plan opens `.progress`.
     public enum Section: String, Hashable, Sendable, CaseIterable {
-        case recovery, recentLoad
+        case recovery, recentLoad, progress
     }
 
     public private(set) var readings: [RecoveryReading] = []

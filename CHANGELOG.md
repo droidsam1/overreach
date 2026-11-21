@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Plan leads with your next scheduled sessions (tap one to move or change it), the current block and a goal
+  summary; goal editing opens from the summary. Recovery periods, lifts to unblock and linked running results moved
+  to a Progress section in Recovery & Progress, one tap from Plan's "View progress". A recent break question stays
+  in Plan beside the block decision it affects.
 - Recovery & Progress has a dedicated Recovery tab for the iPhone navigation trial. Settings opens from the
   gear button on Today, which still links directly to recovery readings.
 - History shows Apple Health strength workouts and credits Apple Health when it supplies a copy of a Garmin workout.

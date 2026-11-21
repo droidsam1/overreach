@@ -7,15 +7,24 @@ import SwiftUI
 // Views only: layout, styling and navigation. Goal rules, texts and options come from `PlanPresentation`
 // (ADR-0014), so this file can be redesigned freely.
 
-/// Goal, current block, what to do next, balance findings and the plan for the coming months (ADR-0013).
-public struct PlanView<Assistant: View>: View {
+/// What is coming up and how to change it: the next sessions and the calendar, the current block, the goal summary
+/// and the plan for the coming months (ADR-0013). Progress lives in Recovery & Progress.
+public struct PlanView<Assistant: View, Progress: View>: View {
     @State private var model: PlanModel
+    @State private var runEditor: RunningCalendarDraft?
+    @State private var strengthEditor: StrengthCalendarDraft?
     private let assistant: Assistant
+    private let progress: Progress
 
-    /// - Parameter assistant: links to other features (e.g. "Ask AI"). Wired by the app.
-    public init(model: PlanModel, @ViewBuilder assistant: () -> Assistant) {
+    /// - Parameters:
+    ///   - assistant: links to other features (e.g. "Ask AI"). Wired by the app.
+    ///   - progress: where "View progress" goes (Recovery & Progress). Wired by the app.
+    public init(
+        model: PlanModel, @ViewBuilder assistant: () -> Assistant, @ViewBuilder progress: () -> Progress
+    ) {
         _model = State(initialValue: model)
         self.assistant = assistant()
+        self.progress = progress()
     }
 
     public var body: some View {
@@ -30,6 +39,15 @@ public struct PlanView<Assistant: View>: View {
                         Text("Analysing your history…").foregroundStyle(.secondary)
                     }
                 }
+                if model.showsHybridCalendar { scheduleSection }
+                if !model.pendingDeloadRows.isEmpty {
+                    Section("Recent break") {
+                        ForEach(model.pendingDeloadRows) { row in
+                            DeloadQuestionView(model: model, row: row)
+                        }
+                    }
+                }
+                currentBlockSection
                 if let next = model.next {
                     Section("Next") {
                         Text(next.headline).font(.headline)
@@ -40,83 +58,76 @@ public struct PlanView<Assistant: View>: View {
                         }
                     }
                 }
-                currentBlockSection
-                if model.hasRecoveryHistory {
-                    Section("Recovery history") {
-                        RecoveryHistoryRows(model: model)
-                    }
-                }
-                if !model.liftsToUnblockRows.isEmpty { LiftsToUnblockSection(model: model) }
+                goalSection
                 planSection
                 if !model.findingLines.isEmpty {
                     Section("Worth a look") {
                         ExplainedLines(lines: model.findingLines)
                     }
                 }
-                goalSection
                 blockSection
+                if Progress.self != EmptyView.self { progressSection }
                 Section { assistant }
             }
             .navigationTitle("Plan")
-            .task { await model.load() }
-            .refreshable { await model.load() }
+            .task { await reload() }
+            .refreshable { await reload() }
+            .calendarEditors(model: model, run: $runEditor, strength: $strengthEditor)
+        }
+    }
+
+    private func reload() async {
+        await model.load()
+        await model.loadCalendarRoutines()
+    }
+
+    /// The next dated sessions, each opening its editor to move or change it, and the whole calendar.
+    private var scheduleSection: some View {
+        Section {
+            if model.nextSessionRows.isEmpty {
+                Text("No dated sessions. Today follows your usual rotation until you schedule one.")
+                    .foregroundStyle(.secondary)
+            }
+            CalendarRows(
+                model: model, rows: model.nextSessionRows, runEditor: $runEditor, strengthEditor: $strengthEditor
+            )
+            NavigationLink(model.hasMoreSessions ? "All training days" : "Hybrid calendar") {
+                HybridCalendarView(model: model)
+            }
+        } header: {
+            Text("Upcoming sessions")
         }
     }
 
     private var goalSection: some View {
         Section("Goal") {
-            Picker("Goal", selection: Binding(
-                get: { model.goalKind },
-                set: { kind in Task { await model.setGoal(kind: kind) } }
-            )) {
-                ForEach(model.goalOptions) { option in
-                    Text(option.name).tag(option.value)
-                }
-            }
-            Toggle("Target date", isOn: Binding(
-                get: { model.hasTargetDate },
-                set: { isOn in Task { await model.setHasTargetDate(isOn) } }
-            ))
-            if model.hasTargetDate {
-                DatePicker(
-                    "Date",
-                    selection: Binding(
-                        get: { model.targetDate },
-                        set: { date in Task { await model.setTargetDate(date) } }
-                    ),
-                    displayedComponents: .date
-                )
-            }
-            if model.showsPriorityLifts {
-                NavigationLink("Priority lifts (\(model.priorityLiftCount))") {
-                    PriorityLiftsView(model: model)
-                }
-            }
-            if model.showsDisciplinePriority {
-                Picker("Priority", selection: Binding(
-                    get: { model.disciplinePriority },
-                    set: { priority in Task { await model.setPriority(priority) } }
-                )) {
-                    ForEach(model.priorityOptions) { option in
-                        Text(option.name).tag(option.value)
+            NavigationLink {
+                GoalEditView(model: model)
+            } label: {
+                VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                    Text(model.goalSummary)
+                    if model.showsRunningPlan, let summary = model.runningGoalSummary {
+                        Text(summary).font(.footnote).foregroundStyle(.secondary)
                     }
                 }
+                .accessibilityElement(children: .combine)
             }
-            if model.showsRunningPlan {
-                NavigationLink {
-                    RunningPlanView(model: model)
-                } label: {
-                    VStack(alignment: .leading) {
-                        Text("Running goal")
-                        if let summary = model.runningGoalSummary {
-                            Text(summary).font(.footnote).foregroundStyle(.secondary)
-                        }
-                    }
+        }
+    }
+
+    private var progressSection: some View {
+        Section {
+            NavigationLink {
+                progress
+            } label: {
+                VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                    Text("View progress")
+                    Text(model.progressSummary).font(.footnote).foregroundStyle(.secondary)
                 }
+                .accessibilityElement(children: .combine)
             }
-            if model.showsHybridCalendar {
-                NavigationLink("Hybrid calendar") { HybridCalendarView(model: model) }
-            }
+        } header: {
+            Text("Progress")
         }
     }
 
@@ -170,6 +181,74 @@ public struct PlanView<Assistant: View>: View {
     }
 }
 
+/// Goal, target date, priorities, running goal and the calendar: everything that changes what the plan aims at.
+private struct GoalEditView: View {
+    let model: PlanModel
+
+    var body: some View {
+        Form {
+            if let message = model.errorMessage {
+                Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+            }
+            Section {
+                Picker("Goal", selection: Binding(
+                    get: { model.goalKind },
+                    set: { kind in Task { await model.setGoal(kind: kind) } }
+                )) {
+                    ForEach(model.goalOptions) { option in
+                        Text(option.name).tag(option.value)
+                    }
+                }
+                Toggle("Target date", isOn: Binding(
+                    get: { model.hasTargetDate },
+                    set: { isOn in Task { await model.setHasTargetDate(isOn) } }
+                ))
+                if model.hasTargetDate {
+                    DatePicker(
+                        "Date",
+                        selection: Binding(
+                            get: { model.targetDate },
+                            set: { date in Task { await model.setTargetDate(date) } }
+                        ),
+                        displayedComponents: .date
+                    )
+                }
+                if model.showsPriorityLifts {
+                    NavigationLink("Priority lifts (\(model.priorityLiftCount))") {
+                        PriorityLiftsView(model: model)
+                    }
+                }
+                if model.showsDisciplinePriority {
+                    Picker("Priority", selection: Binding(
+                        get: { model.disciplinePriority },
+                        set: { priority in Task { await model.setPriority(priority) } }
+                    )) {
+                        ForEach(model.priorityOptions) { option in
+                            Text(option.name).tag(option.value)
+                        }
+                    }
+                }
+                if model.showsRunningPlan {
+                    NavigationLink {
+                        RunningPlanView(model: model)
+                    } label: {
+                        VStack(alignment: .leading) {
+                            Text("Running goal")
+                            if let summary = model.runningGoalSummary {
+                                Text(summary).font(.footnote).foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+                if model.showsHybridCalendar {
+                    NavigationLink("Hybrid calendar") { HybridCalendarView(model: model) }
+                }
+            }
+        }
+        .navigationTitle("Goal")
+    }
+}
+
 /// Rule explanations, each with the strength of its evidence.
 struct ExplainedLines: View {
     let lines: [ExplainedLine]
@@ -213,9 +292,9 @@ private struct PriorityLiftsView: View {
     }
 }
 
-extension PlanView where Assistant == EmptyView {
+extension PlanView where Assistant == EmptyView, Progress == EmptyView {
     public init(model: PlanModel) {
-        self.init(model: model) { EmptyView() }
+        self.init(model: model, assistant: { EmptyView() }, progress: { EmptyView() })
     }
 }
 

@@ -18,10 +18,18 @@ struct HybridCalendarView: View {
                 if model.upcomingCalendarRows.isEmpty {
                     Text("No upcoming training days.").foregroundStyle(.secondary)
                 }
-                rows(model.upcomingCalendarRows)
+                CalendarRows(
+                    model: model, rows: model.upcomingCalendarRows, runEditor: $runEditor,
+                    strengthEditor: $strengthEditor
+                )
             }
             if !model.pastCalendarRows.isEmpty {
-                Section("Past training days") { rows(model.pastCalendarRows) }
+                Section("Past training days") {
+                    CalendarRows(
+                        model: model, rows: model.pastCalendarRows, runEditor: $runEditor,
+                        strengthEditor: $strengthEditor
+                    )
+                }
             }
         }
         .navigationTitle("Hybrid calendar")
@@ -38,44 +46,77 @@ struct HybridCalendarView: View {
             }
         }
         .task { await model.loadCalendarRoutines() }
-        .sheet(item: $runEditor) { draft in
-            RunningCalendarEntryView(model: model, draft: draft)
-        }
-        .sheet(item: $strengthEditor) { draft in
-            StrengthCalendarEntryView(model: model, draft: draft)
-        }
+        .calendarEditors(model: model, run: $runEditor, strength: $strengthEditor)
     }
+}
 
-    private func rows(_ rows: [HybridCalendarRow]) -> some View {
+/// Dated sessions and rest days, each opening its editor (where the date can be moved). Shared by Plan's next
+/// sessions and the full calendar.
+struct CalendarRows: View {
+    let model: PlanModel
+    let rows: [HybridCalendarRow]
+    @Binding var runEditor: RunningCalendarDraft?
+    @Binding var strengthEditor: StrengthCalendarDraft?
+
+    var body: some View {
         ForEach(rows) { row in
             switch row {
             case let .run(run):
                 Button { runEditor = model.editRunningEntry(run.entry) } label: {
-                    rowLabel(title: run.title, date: run.date, status: run.status, symbol: "figure.run")
+                    CalendarRowLabel(
+                        title: run.title, date: run.date, status: run.status,
+                        symbol: "figure.run", isRest: row.isRest
+                    )
                 }
             case let .strength(strength):
                 Button { strengthEditor = model.editStrengthEntry(strength.entry) } label: {
-                    rowLabel(title: strength.title, date: strength.date, status: nil, symbol: "dumbbell")
+                    CalendarRowLabel(
+                        title: strength.title, date: strength.date, status: nil,
+                        symbol: "dumbbell", isRest: row.isRest
+                    )
                 }
             }
         }
     }
+}
 
-    private func rowLabel(title: String, date: String, status: String?, symbol: String) -> some View {
+private struct CalendarRowLabel: View {
+    let title: String
+    let date: String
+    let status: String?
+    let symbol: String
+    let isRest: Bool
+
+    var body: some View {
         Label {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title).foregroundStyle(.primary)
                 Text(date).font(.footnote).foregroundStyle(.secondary)
+                if isRest { Text("Planned rest").font(.footnote).foregroundStyle(.secondary) }
                 if let status { Text(status).font(.footnote).foregroundStyle(.secondary) }
             }
         } icon: {
-            Image(systemName: symbol)
+            Image(systemName: isRest ? "bed.double" : symbol)
         }
         .accessibilityElement(children: .combine)
     }
 }
 
-private struct StrengthCalendarEntryView: View {
+extension View {
+    /// The editors the calendar rows open, as sheets.
+    func calendarEditors(
+        model: PlanModel, run: Binding<RunningCalendarDraft?>, strength: Binding<StrengthCalendarDraft?>
+    ) -> some View {
+        sheet(item: run) { draft in
+            RunningCalendarEntryView(model: model, draft: draft)
+        }
+        .sheet(item: strength) { draft in
+            StrengthCalendarEntryView(model: model, draft: draft)
+        }
+    }
+}
+
+struct StrengthCalendarEntryView: View {
     let model: PlanModel
     @State private var draft: StrengthCalendarDraft
     @Environment(\.dismiss) private var dismiss

@@ -137,6 +137,23 @@
         }
       }
     },
+    "1 lift to unblock": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 ejercicio por desbloquear"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 exercicio por desbloquear"
+          }
+        }
+      }
+    },
     "1 rep left": {
       "extractionState": "manual",
       "localizations": {
@@ -1136,6 +1153,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Todas as fontes"
+          }
+        }
+      }
+    },
+    "All training days": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos los días de entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos os días de adestramento"
           }
         }
       }
@@ -9045,6 +9079,23 @@
         }
       }
     },
+    "No dated sessions. Today follows your usual rotation until you schedule one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin sesiones con fecha. Hoy sigue tu rotación habitual hasta que programes una."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen sesións con data. Hoxe segue a túa rotación habitual ata que programes unha."
+          }
+        }
+      }
+    },
     "No deload or break in the {1} weeks of training logged.": {
       "extractionState": "manual",
       "localizations": {
@@ -9249,6 +9300,40 @@
         }
       }
     },
+    "No progress to show yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no hay progreso que mostrar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda non hai progreso que amosar"
+          }
+        }
+      }
+    },
+    "No progress yet. Log workouts or link runs to see recovery periods, stalled lifts and goal results.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no hay progreso. Registra entrenos o vincula carreras para ver periodos de recuperación, ejercicios estancados y resultados del objetivo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda non hai progreso. Rexistra adestramentos ou vincula carreiras para ver períodos de recuperación, exercicios estancados e resultados do obxectivo."
+          }
+        }
+      }
+    },
     "No reading": {
       "extractionState": "manual",
       "localizations": {
@@ -9364,23 +9449,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen carreira rexistrada vinculada"
-          }
-        }
-      }
-    },
-    "No recovery periods recorded.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No hay períodos de recuperación registrados."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Non hai períodos de recuperación rexistrados."
           }
         }
       }
@@ -10558,6 +10626,23 @@
         }
       }
     },
+    "Planned rest": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descanso planificado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descanso planificado"
+          }
+        }
+      }
+    },
     "Plus Body Battery, stress, SpO2 and respiration.": {
       "extractionState": "manual",
       "localizations": {
@@ -10707,6 +10792,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Levantamentos prioritarios (%lld)"
+          }
+        }
+      }
+    },
+    "Progress": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progreso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progreso"
           }
         }
       }
@@ -11136,6 +11238,23 @@
         }
       }
     },
+    "Recent break": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausa reciente"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausa recente"
+          }
+        }
+      }
+    },
     "Recent load": {
       "extractionState": "manual",
       "localizations": {
@@ -11251,6 +11370,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Historial de recuperación"
+          }
+        }
+      }
+    },
+    "Recovery periods": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Periodos de recuperación"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Períodos de recuperación"
           }
         }
       }
@@ -16474,6 +16610,23 @@
         }
       }
     },
+    "Upcoming sessions": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximas sesiones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Próximas sesións"
+          }
+        }
+      }
+    },
     "Upcoming training days": {
       "extractionState": "manual",
       "localizations": {
@@ -16827,6 +16980,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fortes"
+          }
+        }
+      }
+    },
+    "View progress": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver progreso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver progreso"
           }
         }
       }
@@ -18735,6 +18905,23 @@
         }
       }
     },
+    "{1} lifts to unblock": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} ejercicios por desbloquear"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} exercicios por desbloquear"
+          }
+        }
+      }
+    },
     "{1} lifts you train now have stalled.": {
       "extractionState": "manual",
       "localizations": {
@@ -19156,6 +19343,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} · Sen sesión rexistrada"
+          }
+        }
+      }
+    },
+    "{1} · by {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · para el {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · para o {2}"
           }
         }
       }
