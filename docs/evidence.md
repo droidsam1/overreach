@@ -87,6 +87,9 @@ Only walking above the 28-day personal baseline counts as extra load; weight sta
 Implemented defaults (`EverydayMovement.Settings`): the baseline is the median of the 28 days before, used from
 14 days with data; a walking spike is ≥ 60 min above the usual walking minutes; "far below" is under both half the
 usual steps and 5,000 steps (`low-steps-exercise-resistance`) on each of the last 3 complete days.
+Walks found in step counts (`StepWalkDetection.Settings`): at least 10 minutes of 60–140 steps a minute, with
+pauses of up to 3 minutes inside one walk. 60 steps/min separates walking from pottering about; above ≈ 140
+steps/min people usually run, so those minutes are left out. Both are product heuristics.
 Reviewed 2026-11-21.
 
 ## Progression engine

@@ -10,9 +10,10 @@ and the logger come before review tools, and work that only a person with an iPh
 
 1. **Walks and steps against the personal baseline** — [#103](https://github.com/droidsam1/overreach/issues/103).
    The last open item of v0.2 Recovery. Walking is the athlete's daily background load and recovery tool, and
-   Today ignored it. The first delivery shipped the baselines, signals, Today card and Apple Health walking
-   workouts; the rest is listed in [daily activity](design/daily-activity.md#shipped). Next: Garmin walking
-   activities and walks detected from step samples.
+   Today ignored it. Shipped: the baselines, signals, Today card, Apple Health walking workouts, Garmin walking
+   activities and walks detected from step samples; the rest is listed in
+   [daily activity](design/daily-activity.md#shipped). Next: walking load in the weekly load comparison and leg
+   fatigue.
 2. **Compare today's strength session with an optional alternative** —
    [hybrid backlog task 5](design/readiness-and-hybrid-planning.md#5-compare-against-todays-strength-session-and-offer-an-optional-alternative).
    Rotation, dated routines and the easy example shipped; remaining: load next to sets and reps, the opt-in

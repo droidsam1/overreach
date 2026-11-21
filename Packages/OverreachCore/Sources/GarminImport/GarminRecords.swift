@@ -142,6 +142,7 @@ public struct GarminActivity: Hashable, Sendable {
     public var anaerobicTrainingEffect: Double?
     public var totalSets: Int?
     public var totalReps: Int?
+    public var steps: Int?
 
     public init(
         id: String,
@@ -158,7 +159,8 @@ public struct GarminActivity: Hashable, Sendable {
         aerobicTrainingEffect: Double? = nil,
         anaerobicTrainingEffect: Double? = nil,
         totalSets: Int? = nil,
-        totalReps: Int? = nil
+        totalReps: Int? = nil,
+        steps: Int? = nil
     ) {
         self.id = id
         self.typeKey = typeKey
@@ -175,8 +177,26 @@ public struct GarminActivity: Hashable, Sendable {
         self.anaerobicTrainingEffect = anaerobicTrainingEffect
         self.totalSets = totalSets
         self.totalReps = totalReps
+        self.steps = steps
     }
 
     public var isRun: Bool { typeKey?.contains("run") ?? false }
     public var isStrength: Bool { typeKey?.contains("strength") ?? false }
+    /// Walks and hikes of any kind (`walking`, `casual_walking`, `speed_walking`, `hiking`, …), never a run.
+    public var isWalk: Bool {
+        guard let typeKey, !isRun else { return false }
+        return typeKey.contains("walk") || typeKey.contains("hik")
+    }
+}
+
+/// A Garmin walking or hiking activity, kept with its activity id so a later sync replaces it instead of adding it
+/// twice.
+public struct GarminWalk: Identifiable, Hashable, Codable, Sendable {
+    public var id: String
+    public var walk: WalkBout
+
+    public init(id: String, walk: WalkBout) {
+        self.id = id
+        self.walk = walk
+    }
 }

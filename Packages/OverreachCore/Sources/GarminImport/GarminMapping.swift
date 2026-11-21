@@ -113,6 +113,24 @@ public enum GarminMapping {
         .sorted { ($0.startedAt, $0.id) < ($1.startedAt, $1.id) }
     }
 
+    /// Walking and hiking activities as walks (ADR-0010). Apple Health copies of the same walks are dropped later by
+    /// `EverydayMovement.removingDuplicateWalks`, Garmin first.
+    public static func walks(_ activities: [GarminActivity]) -> [GarminWalk] {
+        activities.filter(\.isWalk).compactMap { activity in
+            guard let duration = activity.durationSeconds, duration > 0 else { return nil }
+            return GarminWalk(id: activity.id, walk: WalkBout(
+                start: activity.startedAt,
+                durationSeconds: duration,
+                steps: activity.steps,
+                distanceMeters: activity.distanceMeters,
+                averageHeartRate: activity.averageHeartRate,
+                elevationGainMeters: activity.elevationGainMeters,
+                source: .garmin
+            ))
+        }
+        .sorted { ($0.walk.start, $0.id) < ($1.walk.start, $1.id) }
+    }
+
     private static func hasValues(_ metrics: DailyMetrics) -> Bool {
         var empty = DailyMetrics(day: metrics.day)
         empty.sources = metrics.sources

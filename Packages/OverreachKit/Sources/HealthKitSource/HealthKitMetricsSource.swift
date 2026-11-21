@@ -73,14 +73,25 @@ public struct HealthKitMetricsSource: MetricsSource, ActivitySource, CycleSource
             .sorted { $0.day < $1.day }
     }
 
-    /// Walking and hiking workouts as walks (ADR-0010). Walks detected from step samples alone come later.
+    /// Walking and hiking workouts as walks, plus walks found in the minute-by-minute steps outside any workout
+    /// (ADR-0010, `StepWalkDetection`). Detected walks carry no heart rate yet: weeks of heart-rate samples are a
+    /// heavy read, and nothing uses it before walking load (TRIMP) does.
     private func walks(from start: Date, to end: Date) async throws -> [WalkBout] {
         let predicate = HKQuery.predicateForSamples(withStart: start, end: end)
         let query = HKSampleQueryDescriptor(
             predicates: [.workout(predicate)], sortDescriptors: [SortDescriptor(\.startDate)]
         )
         let bpm = HKUnit.count().unitDivided(by: .minute())
-        return try await query.result(for: store)
+        let workouts = try await query.result(for: store)
+        let detected = StepWalkDetection.walks(
+            stepsPerMinute: try await stepsPerMinute(from: start, to: end),
+            excluding: workouts.map { DateInterval(start: $0.startDate, end: max($0.startDate, $0.endDate)) }
+        )
+        return workoutWalks(workouts, bpm: bpm) + detected
+    }
+
+    private func workoutWalks(_ workouts: [HKWorkout], bpm: HKUnit) -> [WalkBout] {
+        workouts
             .filter { $0.workoutActivityType == .walking || $0.workoutActivityType == .hiking }
             .map { workout in
                 let distance = workout.statistics(for: HKQuantityType(.distanceWalkingRunning))?.sumQuantity()
@@ -194,6 +205,25 @@ public struct HealthKitMetricsSource: MetricsSource, ActivitySource, CycleSource
         case .awake: .awake
         default: nil
         }
+    }
+
+    /// Steps of each minute that has any, deduplicated across the iPhone and the watch by HealthKit.
+    private func stepsPerMinute(from start: Date, to end: Date) async throws -> [TimedValue] {
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end)
+        let query = HKStatisticsCollectionQueryDescriptor(
+            predicate: .quantitySample(type: HKQuantityType(.stepCount), predicate: predicate),
+            options: .cumulativeSum,
+            anchorDate: calendar.startOfDay(for: start),
+            intervalComponents: DateComponents(minute: 1)
+        )
+        let collection = try await query.result(for: store)
+        var result: [TimedValue] = []
+        collection.enumerateStatistics(from: start, to: end) { statistics, _ in
+            if let sum = statistics.sumQuantity()?.doubleValue(for: .count()), sum > 0 {
+                result.append(TimedValue(date: statistics.startDate, value: sum))
+            }
+        }
+        return result
     }
 
     private func steps(from start: Date, to end: Date) async throws -> [CalendarDay: Int] {

@@ -8,12 +8,18 @@ Status: partly shipped. Decision and evidence: ADR-0010.
   day, the `walkingSpike` and `stepsFarBelowBaseline` signals and cross-source walk dedupe (Garmin first).
   Defaults are in `walking-load-baseline` (`docs/evidence.md`).
 - Apple Health walking and hiking workouts become `WalkBout`s.
+- Garmin walking and hiking activities (`walking`, `casual_walking`, `hiking`, …) become `WalkBout`s with their
+  steps, distance, heart rate and elevation. They are kept in the Garmin cache; a cache from before walks fetches
+  the activities of the first-sync window once more so the walking baseline has its history.
+- `StepWalkDetection` (Domain) finds walks nobody started on the watch in Apple Health's minute-by-minute steps
+  (rules below). Minutes inside any recorded workout and minutes above 140 steps/min (running cadence, e.g. a
+  Garmin run that is not in Apple Health) are never walking. Detected walks carry no heart rate yet: reading weeks
+  of heart-rate samples is heavy, and walking load is its first user.
 - Today: the steps tile shows the usual day, and an **Everyday movement** card lists the signals and, on a red
   day, an easy walk (or "keep your usual walks easy" with a dog or fixed walks). Steps come from the merged daily
   metrics, so Garmin's count wins over Apple Health's.
 
-Still open, in order: Garmin walking/hiking activities, walks detected from step samples (rules below), walking
-load in the weekly load comparison and leg fatigue once those feed a decision, and the remaining
+Still open, in order: walking load in the weekly load comparison and leg fatigue once those feed a decision, and the remaining
 recommendations in the table.
 
 ## Principle
@@ -58,9 +64,9 @@ public protocol ActivitySource: Sendable {
 
 1. Health workouts with activity type walking/hiking, and Garmin walking activities (deduplicated by time
    overlap; Garmin wins).
-2. Otherwise, from Health's step-count samples: a bout is ≥ 10 consecutive minutes with ≥ 60 steps/min,
+2. Otherwise, from Health's step-count samples: a bout is ≥ 10 consecutive minutes with 60–140 steps/min,
    merging gaps ≤ 3 min. HR during the bout is attached when available.
-3. Steps inside run workouts are excluded from walking.
+3. Steps inside run workouts (any recorded workout) and minutes at running cadence are excluded from walking.
 
 ## Baselines and load (phase 2, `Analytics`)
 
