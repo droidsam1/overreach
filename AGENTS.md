@@ -50,7 +50,7 @@ Packages/
                           Exercises, Plan, Assistant, Settings, Onboarding). UI only (ADR-0014).
 docs/                     Product definition, design notes, evidence register and ADRs
 scripts/                  Local checks, merge drivers and test helpers
-.agents/skills/           Shared agent skills; .claude/skills/ holds identical copies for Claude Code
+.agents/skills/           Agent skills (see Skills)
 ```
 
 ## Dependency rules (enforced in Package.swift and SwiftLint)
@@ -99,6 +99,9 @@ Several agents work at once, each in its own branch or worktree.
 - After resolving a String Catalog conflict by hand, run `python3 scripts/check-localization.py --fix`.
 - Commits and PR titles use Conventional Commits with a scope, as in `feat(plan): …` or `fix(history): …`.
 - For implementation requests, open a PR and merge it after its checks pass, unless the user asks otherwise.
+- One task per session: once its PR merges, end with the summary and leave the next task to a new session. Every
+  call re-reads the whole conversation, so a long one makes each step dearer; for the same reason, send long output
+  (full test runs, builds, logs) to a file and read only the failures.
 
 ## Commands
 
@@ -115,6 +118,7 @@ python3 scripts/check-repo.py                         # ADRs, frozen backup fixt
 python3 scripts/check-task-claim.py                   # no other PR claims this branch's task; what landed on main
 python3 scripts/check-localization.py [--fix]          # translations; --fix rewrites catalogs in canonical form
 python3 scripts/add-strings.py --template | <file> | --prune   # missing keys as JSON; add es+gl; drop unused
+python3 scripts/session-usage.py [--days N]            # tokens and estimated cost of each agent session, from local logs
 swift test --package-path Packages/OverreachCore       # pure-Swift core (macOS and Linux)
 ./scripts/test-core.sh                                 # same in Docker (or scripts/test-core.ps1 on Windows)
 swift build --package-path Packages/OverreachKit       # Apple-framework modules (macOS)
