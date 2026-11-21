@@ -48,132 +48,138 @@ minute steps in Health (`StepWalkDetection`). Cross-source dedupe keeps Garmin f
   on a walk Overreach already has: "this one was with the dog".
 - **The collar alone is too sparse for walk boundaries.** At one point every 2–60 min (F7), a 30-min walk has 3–15
   points. Collar history can confirm that the dog was moving during a human walk, not time it precisely.
-- **There is no best public Tractive API.** The best public API in the chain is Strava's, which receives Tractive walks
-  officially (F8, F11). The cheapest official channel is Apple Health, if Strava's write-back carries the walk (F9,
-  unverified).
+- **There is no public Tractive API.** The only official ways out of Tractive are the Strava sync (F8) and the Premium
+  location export (F10).
+- **The athlete does not use Strava** and will not install it for this (decided 2026-11-21). That rules out every
+  Strava route, so the best public API in the chain cannot be used. The athlete has Tractive Premium, so the export is
+  available.
 
 ## Options
 
-| Option | Official | Network code | Credentials | Fragility | Data | Verdict |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1. Apple Health, fed by Tractive → Strava → Health | Yes, every hop | None | None | Low; Strava has toggled Health sync before (F9) | Start, end, distance, type | **First**, if #156 confirms it |
-| 2. Tractive GPX/KML export, imported by file | Yes | None | None | Very low | Collar track points, coarse | **Second**: backfill and no-Strava users |
-| 3. Strava API | Yes | New `StravaSource` | User's own OAuth app | Medium: paid tier since 2026, terms changed twice in 18 months | Full activity, name, device | **Third**, only if 1 fails; own ADR |
-| 4. Tractive community API | No | New client, password | Tractive password | High; unknown terms | Positions, daily health | **Rejected**, same reasons as ADR-0022 |
-| 5. Manual tag in History | — | None | None | None | Tag only | Always available, as the fallback |
+| Option | Official | Credentials | Fragility | Effort for the athlete | Verdict |
+| --- | --- | --- | --- | --- | --- |
+| 1. Suggest "With Nanoq?" on walks at the usual times, confirmed in one tap | — (no Tractive data) | None | None | One tap per walk, less once learned | **Main path** |
+| 2. Tractive GPX/KML export, imported by file | Yes | None | Very low | Download and import a file every few weeks | **Optional backfill**, needs Premium (the athlete has it) |
+| 3. Apple Health fed by Tractive → Strava → Health | Yes | None | Low | Needs a Strava account | Not planned: no Strava |
+| 4. Strava API | Yes | User's own paid Strava app | Medium | Needs a paid Strava subscription | Not planned: no Strava |
+| 5. Tractive community API | No | Tractive password | High; unknown terms | None | **Rejected**, same reasons as ADR-0022 |
 
-Option 4 rejected because it would mean storing the Tractive **password** (there is no token-only flow), copying a
-client id from Tractive's web app, depending on an endpoint that its main client no longer exercises (F3), and
-running against WAF-protected services whose terms we could not read (F4, F5). ADR-0022 rejected Garmin's unofficial
-API for the same reasons after it broke every one to two months.
+Option 5 is rejected because it would mean:
+
+- storing the Tractive **password** (there is no token-only flow);
+- copying a client id from Tractive's web app;
+- depending on an endpoint that its main client no longer exercises (F3);
+- calling WAF-protected services whose terms we could not read (F4, F5).
+
+ADR-0022 rejected Garmin's unofficial API for the same reasons after it broke every one to two months.
+
+Option 1 needs no Tractive data, because the walk is already known (Garmin, Health or step detection). Only "with the
+dog or not" is missing, and the athlete knows it at a glance. Dog walks happen at regular times, so the app can learn
+when to ask and stay quiet otherwise.
 
 ## Design
 
 ```
-Tractive app ──Walk──▶ Strava ──write──▶ Apple Health ──HKWorkout(walking, source=Strava)──┐
-my.tractive.com ──GPX/KML export──▶ Files ──▶ TrackImport (pure) ──movement windows────────┤
-(Strava API, optional) ──▶ StravaSource ──▶ StravaImport (pure) ──windows──────────────────┤
-                                                                                           ▼
-Garmin walks · Health walks · step-detected walks ──▶ EverydayMovement dedupe ──▶ CompanionWalkMatching
-                                                                                           │
-                                                              WalkBout.companion = .dog ◀───┘
+Garmin walks · Health walks · step-detected walks ──▶ EverydayMovement dedupe ──▶ kept walks
+                                                                                   │
+        DogWalkSuggestion (usual times) ──▶ "With Nanoq?" Yes/No ──▶ answer ───────┤
+my.tractive.com ──GPX/KML──▶ Files ──▶ TrackImport (pure) ──windows──▶ CompanionWalkMatching
+                                                                                   ▼
+                                                                 WalkBout.companion = .dog
 ```
 
-All sources produce **companion windows** (start, end, source, confidence). They never produce walks directly. One
-matcher turns windows into tags. This keeps a single rule, lets sources be added or removed without touching
-analytics, and makes every source optional.
+Every walk keeps at most one answer. A manual answer always wins. GPX windows only fill walks nobody answered.
+Confirmed walks, whether from a tap or an import, teach the suggestion its usual times.
 
 ### Matching
 
 `CompanionWalkMatching` (Domain, pure, [#155](https://github.com/droidsam1/overreach/issues/155)):
 
-1. Candidate pair: a walk bout and a window that overlap by ≥ 50 % of the shorter interval (as `RunDeduplication`),
-   with start times at most 10 min apart. The phone is often started after leaving home, and clocks differ.
-2. Assignment: each window tags at most one bout. The largest overlap wins, and ties go to the earlier start, so the
-   result does not depend on input order.
+1. A walk and a window are a candidate pair when they overlap by ≥ 50 % of the shorter interval (as
+   `RunDeduplication`) and their starts are at most 10 min apart. The phone is often started after leaving home, and
+   clocks differ.
+2. Each window tags at most one walk. The largest overlap wins, and ties go to the earlier start, so the result does not
+   depend on input order.
 3. Low-confidence windows (sparse collar tracks) need ≥ 70 % overlap.
-4. A window with no matching bout becomes a tagged bout only when its source recorded the walk itself (Health or
-   Strava, the watch was not worn). Collar-only windows never create walks.
-5. The tag survives dedupe: when `EverydayMovement` drops the Health copy of a Garmin walk, the kept walk inherits the
-   tag.
-6. Idempotent: windows are keyed by source id (HealthKit UUID, Strava activity id), or for file imports by start and
-   end rounded to the minute. Re-imports and re-syncs change nothing.
+4. Windows never create walks.
+5. The tag and the answer survive dedupe. When `EverydayMovement` drops the Health copy of a Garmin walk, the kept walk
+   inherits them.
+6. The matcher is idempotent. Windows are keyed by start and end rounded to the minute, and answers by the kept walk's
+   source and start, so re-imports and re-syncs change nothing.
 
 Thresholds are product heuristics, recorded as `walk-companion-matching` in `docs/evidence.md` when #155 lands.
 
-### Route 1: Apple Health through Strava
+### Suggest and confirm
 
-[#156](https://github.com/droidsam1/overreach/issues/156) (device check) →
-[#157](https://github.com/droidsam1/overreach/issues/157). Health walking workouts whose source bundle is a
-user-selected companion app become windows. Reads are incremental with `HKAnchoredObjectQuery`, and deletions remove
-their window. With no network and no credentials, the failure modes are those of HealthKit, which the app already
-handles.
+`DogWalkSuggestion` (Analytics, pure, [#163](https://github.com/droidsam1/overreach/issues/163)) decides whether to
+ask about a walk of 10 min or more that has no answer:
 
-### Route 2: Tractive location export (GPX/KML)
+- **Cold start.** With fewer than 10 answered walks, it asks on every such walk.
+- **Learned.** It asks only within ±45 min of a usual slot: a time of day with ≥ 3 confirmed dog walks in the last 28
+  days. Weekend slots are learned separately once there are enough answers.
+- **"No" teaches too.** A slot whose last 5 answers were all "No" stops asking. Any walk can still be tagged from
+  History.
 
-[#158](https://github.com/droidsam1/overreach/issues/158). A pure `TrackImport` module turns track points into
-movement windows (speed ≥ 0.5 m/s for ≥ 8 min, joining gaps ≤ 5 min, confidence from point density). It is imported
-through Files like the Strong CSV (ADR-0011), with a preview before saving. Coordinates are discarded after windows are
-computed.
+Today's movement card and the walk row in History show the question with Yes and No. One tap stores the answer, and
+History lets the athlete change it. The question never blocks anything, and an unanswered walk counts as an ordinary
+walk. `WalkingRoutine` gains an optional `dogName` for the wording.
 
-### Route 3: Strava API
+### Tractive location export (GPX/KML)
 
-[#160](https://github.com/droidsam1/overreach/issues/160), only if route 1 fails. It follows the Garmin Personal API
-model (ADR-0022): each user brings their own single-player Strava app, OAuth runs in `ASWebAuthenticationSession`,
-and the refresh token stays in the Keychain. Sync polls on launch and foreground with a high-water mark, a
-header-driven rate limiter, bounded retries and a per-session circuit breaker. Strava-derived fields are kept out of
-AI exchange and reports (F12).
+[#158](https://github.com/droidsam1/overreach/issues/158). This is an optional backfill that tags months of past walks
+without a question for each:
+
+- A pure `TrackImport` module turns track points into movement windows: speed ≥ 0.5 m/s for ≥ 8 min, joining gaps of
+  ≤ 5 min, with confidence from point density.
+- The file is imported through Files like the Strong CSV (ADR-0011), with a preview before saving.
+- Coordinates are discarded once the windows are computed.
 
 ### Use in recommendations
 
-[#159](https://github.com/droidsam1/overreach/issues/159). Movement details count dog walks against
-`usualWalksPerDay`. Fixed walks are never suggested away. Notes name the dog walks they refer to. Load, baseline and
-spikes are unchanged.
+[#159](https://github.com/droidsam1/overreach/issues/159):
+
+- Movement details count dog walks against `usualWalksPerDay`.
+- Recommendations never suggest dropping a fixed walk, and notes name the dog walks they refer to.
+- Load, baseline and spikes are unchanged.
 
 ## Reliability and engineering practices
 
-These apply to every route and are acceptance criteria in the issues.
+These apply to every part and are acceptance criteria in the issues.
 
-- **Optional and isolated.** Each source is a separate module behind a protocol. With every source off, the app
-  behaves exactly as today. A kill switch for each source sits in Settings.
-- **Official channels only.** We accept no password storage and no impersonation of a vendor's client (ADR-0022).
-- **Pure core, thin adapters.** Parsing, movement detection and matching live in OverreachCore and are tested on Linux
-  with synthetic fixtures. HealthKit, Files and network adapters only move bytes.
-- **Idempotent, incremental sync.** Anchors (HealthKit) or high-water marks with a one-day overlap (Strava), and
-  stable keys for every window. Re-running any sync is safe.
-- **Tolerant decoding.** Unknown fields are ignored and every metric is optional. A malformed record is skipped and
-  counted, not fatal. A malformed file is rejected as a whole with a clear message.
-- **Bounded network behaviour (route 3).** Timeouts, at most two retries with jittered exponential backoff, honouring
-  `Retry-After`, stopping at 80 % of the rate window, and a circuit breaker for the rest of the session. Sync runs only
-  on launch and foreground (iOS background refresh is not guaranteed).
-- **Observable.** Each source shows its last sync, items read and its last error in Settings. Logs carry counts and
-  status codes, never tokens, coordinates or names.
-- **Time.** All matching uses absolute `Date`s. Day bucketing happens once, in the user's calendar, outside the
-  matcher. Tests cover DST and midnight.
-- **Privacy.** Routes and coordinates are never stored, which also protects the home location. Tags travel in backups
-  as an optional field (ADR-0018). Credentials never go into backups, reports, AI exchange or logs.
-- **Contract drift.** Fixtures are recorded from real responses and anonymised before they are committed. A failing
-  decode in production shows as a source status, not a crash.
+- **No new credentials, no network.** Both paths use data already on the phone or a file the athlete chose. The
+  feature cannot break because a vendor changed an API.
+- **Official channels only.** No password storage and no impersonation of a vendor's client (ADR-0022).
+- **Optional.** With no dog in the profile, or the question turned off, the app behaves exactly as today.
+- **Pure core, thin adapters.** Suggestion, parsing, movement detection and matching live in OverreachCore and are
+  tested on Linux with synthetic fixtures. Views only render (ADR-0014).
+- **Idempotent.** Stable keys for answers and windows. Re-importing a file or re-syncing never asks again or doubles
+  a tag.
+- **Tolerant parsing.** A malformed point is skipped and counted. A malformed file is rejected as a whole with a clear
+  message, and nothing is imported.
+- **Time.** Matching uses absolute `Date`s. Time-of-day slots use the user's calendar in one place, with tests for DST
+  and midnight.
+- **Privacy.** Routes and coordinates are never stored, which also protects the home location. The tag and answers
+  travel in backups as optional fields (ADR-0018). The dog's name stays out of AI exchange unless the profile is
+  already shared.
 
 ## Plan and priorities
 
-| Order | Issue | Priority | Who | Depends on |
-| --- | --- | --- | --- | --- |
-| 1 | [#155](https://github.com/droidsam1/overreach/issues/155) Companion tag and matcher (Domain) | P2 | Agent | — |
-| 2 | [#156](https://github.com/droidsam1/overreach/issues/156) Device check Tractive → Strava → Health | P2 | Person with iPhone | — (in parallel) |
-| 3 | [#157](https://github.com/droidsam1/overreach/issues/157) Tag walks from companion apps in Health | P2 | Agent | #155, #156 |
-| 4 | [#159](https://github.com/droidsam1/overreach/issues/159) Dog walks in Today and movement details | P2 | Agent | #155 + a source |
-| 5 | [#158](https://github.com/droidsam1/overreach/issues/158) Tractive GPX/KML import | P3 | Agent | #155 |
-| 6 | [#160](https://github.com/droidsam1/overreach/issues/160) Strava API source (conditional, new ADR) | P3 | Agent | #156 negative |
+| Order | Issue | Priority | Depends on |
+| --- | --- | --- | --- |
+| 1 | [#155](https://github.com/droidsam1/overreach/issues/155) Companion tag, answers and matcher (Domain) | P2 | — |
+| 2 | [#163](https://github.com/droidsam1/overreach/issues/163) "With Nanoq?" suggestion and one-tap confirm | P2 | #155 |
+| 3 | [#159](https://github.com/droidsam1/overreach/issues/159) Dog walks in Today and movement details | P2 | #155, #163 |
+| 4 | [#158](https://github.com/droidsam1/overreach/issues/158) Tractive GPX/KML import (backfill) | P3 | #155 |
 
-Why P2 and not P1: the walking baseline already absorbs dog walks correctly. The tag improves explanations and
-protects fixed walks, but does not change today's training decision.
+Not planned: [#156](https://github.com/droidsam1/overreach/issues/156),
+[#157](https://github.com/droidsam1/overreach/issues/157) and [#160](https://github.com/droidsam1/overreach/issues/160)
+(the Strava routes).
+
+The feature is P2, not P1. The walking baseline already absorbs dog walks correctly, so the tag improves explanations
+and protects fixed walks without changing today's training decision.
 
 ## Open questions
 
-- #156: does a Tractive walk reach Health through Strava, with which type, source bundle, name and metadata, and with
-  elapsed or moving time?
-- Tractive's general terms (F5). Read them before any revisit of option 4.
-- Strava's current rate limits and API Agreement text, before #160.
-- Whether the GPX export includes per-point timestamps in UTC (expected for GPX 1.1, to confirm with a real export,
-  which must not be committed).
+- Whether the GPX export has per-point timestamps in UTC. This is expected for GPX 1.1 and must be confirmed with a
+  real export, which must not be committed.
+- Tractive's general terms (F5). Read them before any revisit of option 5.
