@@ -258,6 +258,10 @@ private struct SessionList: View {
                             .pickerStyle(.menu)
                             Button("Add warm-up sets", systemImage: "flame") { model.addWarmUp(to: exercise.id) }
                                 .disabled(!exercise.canAddWarmUp)
+                            Button("Use last time's values", systemImage: "clock.arrow.circlepath") {
+                                model.useLastTime(for: exercise.id)
+                            }
+                            .disabled(!exercise.canUseLastTime)
                             Button("Remove exercise", systemImage: "trash", role: .destructive) {
                                 model.removeExercise(exercise.id)
                             }

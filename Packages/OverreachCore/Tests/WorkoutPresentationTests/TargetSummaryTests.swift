@@ -114,6 +114,35 @@ struct TargetSummaryTests {
         #expect(line.hasSuffix("): 60 kg × 8/8 · 62.5 kg × 6"))
     }
 
+    @Test func lastTimeValuesFillOnlyOpenWorkingSetsWhenAsked() async throws {
+        let model = await model(history: [session(daysAgo: 3, weight: 60, reps: [12, 11, 10])])
+        await model.add(exerciseID: bench.id)
+        let id = try #require(model.exercises.first).id
+        let sets = try #require(model.exercises.first).workingSets
+        model.setDone(true, set: sets[0].id, in: id)
+        let edited = try #require(model.exercises[0].sets.firstIndex { $0.id == sets[1].id })
+        model.exercises[0].sets[edited].weightKg = 70
+        model.exercises[0].sets[edited].rpe = 9
+
+        #expect(model.exercises[0].canUseLastTime)
+        model.useLastTime(for: id)
+
+        let filled = model.exercises[0].workingSets
+        #expect(filled[0].weightKg == sets[0].weightKg)  // done sets are never touched
+        #expect(filled[1].weightKg == 60)
+        #expect(filled[1].reps == 11)
+        #expect(filled[1].rpe == 9)  // effort stays as entered
+        #expect(filled[2].reps == 10)
+        #expect(!model.exercises[0].canUseLastTime)
+    }
+
+    @Test func withoutHistoryThereAreNoLastTimeValuesToUse() async throws {
+        let model = await model()
+        await model.add(exerciseID: bench.id)
+
+        #expect(!model.exercises[0].canUseLastTime)
+    }
+
     @Test func lastTimeShowsTheEffortWhenEverySetSharesIt() async throws {
         let model = await model(history: [session(daysAgo: 3, weight: 60, reps: [12, 12, 11])])
         await model.add(exerciseID: bench.id)

@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- The workout logger can fill the open sets of an exercise with last time's weight and reps from its menu, only when
+  you choose it; effort and sets already done are left as they are.
 - Today puts an unfinished workout first and highlights the next useful action when there is no workout to resume.
   Recommendation details, today's metrics and recent training have labeled entry points.
 - Plan lists the lifts to unblock: each current stalled lift says since when it stopped progressing, its best set
