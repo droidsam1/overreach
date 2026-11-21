@@ -50,7 +50,7 @@ Packages/
                           Exercises, Plan, Assistant, Settings, Onboarding). UI only (ADR-0014).
 docs/                     Product definition, design notes, evidence register and ADRs
 scripts/                  Local checks, merge drivers and test helpers
-.agents/skills/           Shared agent skills; .claude/skills/ holds identical copies for Claude Code
+.agents/skills/           Agent skills (see Skills)
 ```
 
 ## Dependency rules (enforced in Package.swift and SwiftLint)
