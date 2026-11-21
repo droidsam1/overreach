@@ -127,20 +127,23 @@ public enum DeloadDetection {
             }
         }
         if profile.countsBreaksAutomatically {
+            // A period already counted for all training is not repeated per discipline.
             result += disciplineBreaks(
-                history: history, profile: profile, runReadFailed: runReadFailed, counted: result, today: today,
-                calendar: calendar
-            )
+                history: history, profile: profile, runReadFailed: runReadFailed, today: today, calendar: calendar
+            ).filter { gap in
+                !result.contains {
+                    !$0.needsConfirmation && $0.discipline == nil && $0.start == gap.start && $0.end == gap.end
+                }
+            }
         }
         return result.sorted { ($0.end, $0.start) < ($1.end, $1.start) }
     }
 
     /// At least 7 complete days without strength work, or without runs for someone who runs: rest for that discipline
-    /// only (`training-breaks`). A period the athlete said was not rest stays out; one already counted for all
-    /// training is not repeated.
+    /// only (`training-breaks`). A period the athlete said was not rest stays out.
     private static func disciplineBreaks(
-        history: [CalendarDay: Day], profile: AthleteProfile, runReadFailed: Bool, counted: [DetectedDeload],
-        today: CalendarDay, calendar: Calendar
+        history: [CalendarDay: Day], profile: AthleteProfile, runReadFailed: Bool, today: CalendarDay,
+        calendar: Calendar
     ) -> [DetectedDeload] {
         let strengthDays = history.filter { !$0.value.strength.isEmpty }.keys.sorted()
         var breaks = gaps(between: strengthDays, discipline: .strength, today: today, calendar: calendar)
@@ -155,12 +158,7 @@ public enum DeloadDetection {
                 }.count >= 2
             }
         }
-        return breaks.filter { gap in
-            !profile.deloadDecisions.contains { !$0.accepted && $0.start == gap.start }
-                && !counted.contains {
-                    !$0.needsConfirmation && $0.discipline == nil && $0.start == gap.start && $0.end == gap.end
-                }
-        }
+        return breaks.filter { gap in !profile.deloadDecisions.contains { !$0.accepted && $0.start == gap.start } }
     }
 
     /// Runs of at least 7 complete days with no entry in `days`, after the first one and up to yesterday.
