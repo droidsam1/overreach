@@ -7,6 +7,7 @@ import PresentationKit
 /// One reason behind the readiness light, with the strength of its evidence.
 public struct ReadinessLine: Hashable, Sendable {
     public let text: String
+    public let kind: ReadinessObservation.Kind
     public let evidence: String
     public let source: URL?
     /// "Learn more" for this reason (ADR-0030); often empty.
@@ -114,7 +115,8 @@ public final class TodayModel {
             let evidence = ReadinessRules.evidence(for: reason)
             let source = ReadinessRules.evidenceURL(for: reason)
             return ReadinessLine(
-                text: text(for: reason), evidence: evidence.level.displayName, source: source,
+                text: text(for: reason), kind: observationKind(for: reason),
+                evidence: evidence.level.displayName, source: source,
                 // The research source already has its own link.
                 readings: FurtherReading.readings(for: evidence).filter { $0.url != source }
             )
@@ -158,20 +160,33 @@ public final class TodayModel {
         }
     }
 
-    public var showsReadinessDetails: Bool { !readiness.reasons.isEmpty || hrvCoverageNote != nil }
+    public var showsReadinessDetails: Bool { !readiness.reasons.isEmpty || !readiness.inputs.isEmpty }
     public var showsReadinessCard: Bool { loadedDay != nil && (readinessLevel != .unknown || hrvCoverageNote != nil) }
 
     public var readinessSummary: String? {
-        if let summary = explanation.summary { return summary }
-        return readiness.reasons.first.flatMap { $0 == .missingData ? nil : text(for: $0) }
+        let reasons = readiness.reasons.filter { observationKind(for: $0) == .supporting }.prefix(2)
+        let summary = reasons.map { text(for: $0) }.joined(separator: " ")
+        return summary.isEmpty ? nil : summary
     }
-    public var readinessContext: [String] { explanation.context }
+
+    public var readinessObservations: [ReadinessObservation] { explanation.observations }
+    public var readinessSources: [ReadinessSourceDetail] { explanation.sources }
+
+    private func observationKind(for reason: ReadinessReason) -> ReadinessObservation.Kind {
+        if reason == .missingData { return .unavailable }
+        if reason.isContext { return .context }
+        if case .hrvBelowBaseline = reason, readiness.reasons.contains(.hrvMayReflectCycle) {
+            return .context
+        }
+        return .supporting
+    }
     public var readinessTrainingContext: ReadinessTrainingContext? { isLoading ? nil : explanation.trainingContext }
 
     private var explanation: ReadinessExplanation {
-        ReadinessExplanation(readiness: readiness, today: metrics, week: week, nights: recentNights,
-                             training: recentTrainingDays,
-                             calendar: calendar, format: format)
+        ReadinessExplanation(
+            readiness: readiness, nights: recentNights, plausibleHRV: readinessSettings.plausibleHRVMs,
+            training: recentTrainingDays, calendar: calendar, format: format
+        )
     }
 
     /// Recent workouts feed the readiness explanation, the deload and the strength option; History lists them.

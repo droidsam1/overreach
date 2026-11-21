@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today leads with the recommended action and its main reasons. The explanation shows how many comparable HRV
+  readings were low, what other readings say and where the readings and references came from.
 - Today's HRV explanation uses when you actually slept: a run that ends after midnight still counts before last
   night's reading. A recorded run you linked to a planned race is marked as a race, and the explanation shows your
   comparable HRV before and after it (ADR-0034).

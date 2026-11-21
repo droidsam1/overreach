@@ -562,6 +562,23 @@
         }
       }
     },
+    "Above your usual range.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por encima de tu intervalo habitual."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por riba do teu intervalo habitual."
+          }
+        }
+      }
+    },
     "Activity by day": {
       "extractionState": "manual",
       "localizations": {
@@ -1208,6 +1225,23 @@
         }
       }
     },
+    "Another HRV series was used.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se usó otra serie de VFC."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usouse outra serie de VFC."
+          }
+        }
+      }
+    },
     "Another watch or ring": {
       "extractionState": "manual",
       "localizations": {
@@ -1357,6 +1391,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Preguntar á IA"
+          }
+        }
+      }
+    },
+    "At or above the short-sleep threshold.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alcanza o supera el umbral de sueño corto."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acada ou supera o limiar de sono curto."
           }
         }
       }
@@ -1578,6 +1629,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Por debaixo do obxectivo: {1} fronte a {2}"
+          }
+        }
+      }
+    },
+    "Below the short-sleep threshold.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por debajo del umbral de sueño corto."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por debaixo do limiar de sono curto."
+          }
+        }
+      }
+    },
+    "Below your usual range.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por debajo de tu intervalo habitual."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por debaixo do teu intervalo habitual."
           }
         }
       }
@@ -1816,6 +1901,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rexistro diario"
+          }
+        }
+      }
+    },
+    "Check-in available for today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay un registro de cómo te sientes hoy."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hai un rexistro de como te sentes hoxe."
           }
         }
       }
@@ -2190,6 +2292,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Comparar cunha variante suave"
+          }
+        }
+      }
+    },
+    "Compared with its reference.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparado con su referencia."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparado coa súa referencia."
           }
         }
       }
@@ -3520,6 +3639,23 @@
         }
       }
     },
+    "Data sources and coverage": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuentes de datos y cobertura"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fontes de datos e cobertura"
+          }
+        }
+      }
+    },
     "Date": {
       "extractionState": "manual",
       "localizations": {
@@ -3533,6 +3669,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Data"
+          }
+        }
+      }
+    },
+    "Daytime HRV": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC diurna"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC diúrna"
           }
         }
       }
@@ -6750,6 +6903,23 @@
         }
       }
     },
+    "Latest usable reading on {1}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última lectura utilizable el {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última lectura utilizable o {1}."
+          }
+        }
+      }
+    },
     "Learn more": {
       "extractionState": "manual",
       "localizations": {
@@ -8263,6 +8433,23 @@
         }
       }
     },
+    "No recent reading.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay lecturas recientes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai lecturas recentes."
+          }
+        }
+      }
+    },
     "No recorded run linked": {
       "extractionState": "manual",
       "localizations": {
@@ -8361,6 +8548,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non hai días de adestramento próximos."
+          }
+        }
+      }
+    },
+    "No usable data.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay datos utilizables."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai datos utilizables."
           }
         }
       }
@@ -9742,6 +9946,23 @@
         }
       }
     },
+    "Readings outside the plausible range.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lecturas fuera del intervalo plausible."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lecturas fóra do intervalo plausible."
+          }
+        }
+      }
+    },
     "Recorded run": {
       "extractionState": "manual",
       "localizations": {
@@ -9823,6 +10044,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vermello"
+          }
+        }
+      }
+    },
+    "Reference: {1} readings from the previous {2} days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Referencia: {1} lecturas de los {2} días anteriores."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Referencia: {1} lecturas dos {2} días anteriores."
           }
         }
       }
@@ -10286,6 +10524,23 @@
         }
       }
     },
+    "Resting heart rate": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frecuencia cardíaca en reposo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frecuencia cardíaca en repouso"
+          }
+        }
+      }
+    },
     "Resting heart rate is unavailable for today.": {
       "extractionState": "manual",
       "localizations": {
@@ -10303,6 +10558,23 @@
         }
       }
     },
+    "Resting heart rate today is within your usual range ({1} bpm, baseline average {2} bpm).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu pulso en reposo está hoy dentro de tu intervalo habitual ({1} lpm, media de referencia de {2} lpm)."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teu pulso en repouso está hoxe dentro do teu intervalo habitual ({1} lpm, media de referencia de {2} lpm)."
+          }
+        }
+      }
+    },
     "Resting heart rate today is {1} bpm.": {
       "extractionState": "manual",
       "localizations": {
@@ -10316,23 +10588,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hoxe o teu pulso en repouso é de {1} lpm."
-          }
-        }
-      }
-    },
-    "Resting heart rate today is {1} bpm. The average over {2} measured days in the last week is {3} bpm.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hoy tu pulso en reposo es de {1} lpm. La media de los {2} días con datos de la última semana es de {3} lpm."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hoxe o teu pulso en repouso é de {1} lpm. A media dos {2} días con datos da última semana é de {3} lpm."
           }
         }
       }
@@ -11935,6 +12190,23 @@
         }
       }
     },
+    "Sleep HRV": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC durante el sueño"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC durante o sono"
+          }
+        }
+      }
+    },
     "Sleep data for last night is unavailable.": {
       "extractionState": "manual",
       "localizations": {
@@ -12458,6 +12730,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pasos fronte á túa media"
+          }
+        }
+      }
+    },
+    "Still building your baseline.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún se está calculando tu referencia."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda se está calculando a túa referencia."
           }
         }
       }
@@ -13975,6 +14264,23 @@
         }
       }
     },
+    "Too few recent readings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay muy pocas lecturas recientes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hai moi poucas lecturas recentes."
+          }
+        }
+      }
+    },
     "Train": {
       "extractionState": "manual",
       "localizations": {
@@ -15165,6 +15471,23 @@
         }
       }
     },
+    "Within your usual range.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dentro de tu intervalo habitual."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dentro do teu intervalo habitual."
+          }
+        }
+      }
+    },
     "Working": {
       "extractionState": "manual",
       "localizations": {
@@ -15488,40 +15811,6 @@
         }
       }
     },
-    "Your HRV is trending below your usual range and your resting heart rate is higher than usual.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu VFC lleva varios días por debajo de tu rango habitual y tu pulso en reposo está más alto de lo normal."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A túa VFC leva varios días por debaixo do teu rango habitual e o pulso en repouso está máis alto do normal."
-          }
-        }
-      }
-    },
-    "Your HRV is trending below your usual range.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu VFC lleva varios días por debajo de tu rango habitual."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A túa VFC leva varios días por debaixo do teu rango habitual."
-          }
-        }
-      }
-    },
     "Your choice · {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -15688,23 +15977,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "As túas sesións recentes aínda non seguen unha orde fixa. Escolle a que vas facer."
-          }
-        }
-      }
-    },
-    "Your usual range uses {1} comparable readings from the previous {2} days. The latest reading was on {3}.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu rango habitual se calcula con {1} mediciones comparables de los {2} días anteriores. La última medición comparable es del {3}."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O teu rango habitual calcúlase con {1} medicións comparables dos {2} días anteriores. A última medición comparable é do {3}."
           }
         }
       }
@@ -16049,6 +16321,23 @@
         }
       }
     },
+    "{1} ({2})": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} ({2})"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} ({2})"
+          }
+        }
+      }
+    },
     "{1} block {2}, for {3}–{4} weeks.": {
       "extractionState": "manual",
       "localizations": {
@@ -16300,6 +16589,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} pasos"
+          }
+        }
+      }
+    },
+    "{1} usable readings in the last {2} days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} lecturas utilizables en los últimos {2} días."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} lecturas utilizables nos últimos {2} días."
           }
         }
       }

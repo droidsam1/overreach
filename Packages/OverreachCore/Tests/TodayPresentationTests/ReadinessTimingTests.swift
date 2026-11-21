@@ -98,11 +98,16 @@ struct ReadinessTimingTests {
     @Test func aRaceBeforeTheDipShowsTheReadingsAroundIt() async throws {
         let calendar = try madrid()
         let race = run("race", name: "City 10K", at: at(-4, hour: 9, calendar))
-        let model = try await model(calendar, nights: nights(calendar), runs: [race], races: [race])
+        let data = nights(calendar) { offset, night in
+            if offset == 4 { night.hrvRMSSDMs = 5_000 }
+        }
+        let model = try await model(calendar, nights: data, runs: [race], races: [race])
 
         await model.load(now: at(0, hour: 14, calendar))
 
-        let comparison = try #require(model.readinessContext.last)
+        let observation = try #require(model.readinessObservations.last)
+        #expect(observation.kind == .context)
+        let comparison = observation.text
         #expect(comparison.hasPrefix("Confirmed race on "))
         #expect(comparison.contains("Comparable HRV (RMSSD) before it: 50 ms on "))
         #expect(comparison.contains("After it: 32 ms on "))
@@ -117,7 +122,7 @@ struct ReadinessTimingTests {
 
         await model.load(now: at(0, hour: 14, calendar))
 
-        let comparison = try #require(model.readinessContext.last)
+        let comparison = try #require(model.readinessObservations.last?.text)
         #expect(comparison.contains("before it: 32 ms on "))
         #expect(comparison.hasSuffix("No comparable reading after it yet."))
     }
@@ -129,7 +134,7 @@ struct ReadinessTimingTests {
 
         await model.load(now: at(0, hour: 14, calendar))
 
-        #expect(model.readinessContext.contains { $0.hasPrefix("Confirmed race") } == false)
+        #expect(model.readinessObservations.contains { $0.text.hasPrefix("Confirmed race") } == false)
         #expect(model.recentTrainingDays.flatMap(\.workouts).contains { $0.contains("Race: ") } == false)
     }
 
@@ -141,7 +146,7 @@ struct ReadinessTimingTests {
 
         #expect(model.readinessLevel == .amber)
         #expect(model.readinessTrainingContext == nil)
-        #expect(model.readinessContext.contains { $0.hasPrefix("Confirmed race") } == false)
+        #expect(model.readinessObservations.contains { $0.text.hasPrefix("Confirmed race") } == false)
     }
 }
 

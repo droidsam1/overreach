@@ -10,10 +10,8 @@ public struct ReadinessTrainingContext: Hashable, Sendable {
 /// Copy for the signals and observations already available to Today. This does not evaluate training readiness.
 struct ReadinessExplanation {
     let readiness: Readiness
-    let today: DailyMetrics?
-    let week: [DailyMetrics]
-    /// Recent nights, oldest first, reaching back before the week so a race early in it has a reading before it.
     let nights: [DailyMetrics]
+    let plausibleHRV: ClosedRange<Double>
     let training: [RecentTrainingDay]
     let calendar: Calendar
     let format: Format
@@ -22,49 +20,53 @@ struct ReadinessExplanation {
         readiness.reasons.contains { if case .hrvBelowBaseline = $0 { true } else { false } }
     }
 
-    var summary: String? {
-        guard hasLowHRV else { return nil }
-        let hasElevatedPulse = readiness.reasons.contains {
-            if case .restingHeartRateElevated = $0 { true } else { false }
+    var observations: [ReadinessObservation] {
+        guard !readiness.reasons.contains(where: \.advisesSkippingTraining) else { return [] }
+        var observations: [ReadinessObservation] = []
+        if readiness.hrvInput?.status == .compared {
+            observations.append(.init(kind: .context, text: L10n.text(
+                "HRV measures how much the time between heartbeats varies. "
+                    + "A sustained drop can inform training effort. Its cause is uncertain."
+            )))
         }
-        return hasElevatedPulse
-            ? L10n.text("Your HRV is trending below your usual range and your resting heart rate is higher than usual.")
-            : L10n.text("Your HRV is trending below your usual range.")
+        if let pulse = readiness.input(.restingHeartRate) {
+            observations.append(pulseObservation(pulse))
+        }
+        if let sleep = readiness.input(.sleep) {
+            observations.append(sleepObservation(sleep))
+        }
+        if let raceComparison {
+            observations.append(.init(kind: .context, text: raceComparison))
+        }
+        return observations
     }
 
-    var context: [String] {
-        guard hasLowHRV, let coverage = readiness.hrvCoverage else { return [] }
-        let style = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
-        let latest = coverage.latestDay.startDate(in: calendar).formatted(style.day().month(.abbreviated))
-        let baseline = L10n.format(
-            "Your usual range uses {1} comparable readings from the previous {2} days. The latest reading was on {3}.",
-            String(coverage.baselineReadings), String(coverage.baselineDays), latest
-        )
-        let sleep: String
-        if let seconds = today?.sleepSeconds, seconds.isFinite, seconds > 0 {
-            sleep = L10n.format("Sleep last night was {1} h.", format.number(seconds / 3_600, maxFractionDigits: 1))
-        } else {
-            sleep = L10n.text("Sleep data for last night is unavailable.")
+    private func pulseObservation(_ pulse: ReadinessInputAudit) -> ReadinessObservation {
+        guard let value = pulse.value else {
+            return .init(kind: .unavailable, text: L10n.text("Resting heart rate is unavailable for today."))
         }
-        return [
-            L10n.text("HRV measures how much the time between heartbeats varies. "
-                + "A sustained drop can inform training effort. Its cause is uncertain."),
-            baseline, pulseContext, sleep,
-        ] + (raceComparison.map { [$0] } ?? [])
+        let current = format.number(value, maxFractionDigits: 0)
+        if pulse.outcome == .within, let reference = pulse.reference?.value {
+            return .init(kind: .context, text: L10n.format(
+                "Resting heart rate today is within your usual range ({1} bpm, baseline average {2} bpm).",
+                current, format.number(reference, maxFractionDigits: 0)
+            ))
+        }
+        return .init(kind: .context, text: L10n.format("Resting heart rate today is {1} bpm.", current))
     }
 
-    private var pulseContext: String {
-        guard let pulse = today?.restingHeartRate, pulse.isFinite, pulse > 0 else {
-            return L10n.text("Resting heart rate is unavailable for today.")
+    private func sleepObservation(_ sleep: ReadinessInputAudit) -> ReadinessObservation {
+        guard let value = sleep.value else {
+            return .init(kind: .unavailable, text: L10n.text("Sleep data for last night is unavailable."))
         }
-        let recent = week.compactMap(\.restingHeartRate).filter { $0.isFinite && $0 > 0 }
-        let current = format.number(pulse, maxFractionDigits: 0)
-        guard recent.count > 1 else { return L10n.format("Resting heart rate today is {1} bpm.", current) }
-        let average = recent.reduce(0, +) / Double(recent.count)
-        return L10n.format(
-            "Resting heart rate today is {1} bpm. The average over {2} measured days in the last week is {3} bpm.",
-            current, String(recent.count), format.number(average, maxFractionDigits: 0)
-        )
+        return .init(kind: .context, text: L10n.format(
+            "Sleep last night was {1} h.", format.number(value, maxFractionDigits: 1)
+        ))
+    }
+
+    var sources: [ReadinessSourceDetail] {
+        guard !readiness.reasons.contains(where: \.advisesSkippingTraining) else { return [] }
+        return readiness.inputs.map { ReadinessSourceDetail(audit: $0, calendar: calendar, format: format) }
     }
 
     private var activities: [RecentTraining.Activity] {
@@ -77,7 +79,7 @@ struct ReadinessExplanation {
     }
 
     private func night(_ day: CalendarDay) -> DailyMetrics? {
-        nights.last { $0.day == day } ?? week.last { $0.day == day }
+        nights.last { $0.day == day }
     }
 
     var trainingContext: ReadinessTrainingContext? {
@@ -116,12 +118,13 @@ struct ReadinessExplanation {
     /// The most recent confirmed race this week next to the closest comparable readings before and after it. It
     /// shows the order of events; it does not say the race caused a change (ADR-0034).
     var raceComparison: String? {
-        guard let coverage = readiness.hrvCoverage, let metric = coverage.metric, let window = coverage.window,
+        guard hasLowHRV, let coverage = readiness.hrvCoverage, let metric = coverage.metric,
+              let window = coverage.window,
               let race = activities.last(where: \.isRace) else { return nil }
         let raceDay = CalendarDay(race.startedAt, calendar: calendar)
         let readings = nights.compactMap { night -> Reading? in
-            guard night.hrvWindow(metric) == window, let value = night.hrv(metric), value.isFinite, value > 0
-            else { return nil }
+            guard night.hrvWindow(metric) == window, let value = night.hrv(metric),
+                  plausibleHRV.contains(value) else { return nil }
             return Reading(day: night.day, value: value, interval: night.hrvReadingInterval(metric))
         }
         let before = readings.last { reading in

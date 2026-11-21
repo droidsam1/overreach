@@ -152,15 +152,22 @@ struct TodayWeekTests {
         await model.load(now: now)
 
         #expect(model.readinessLevel == .amber)
-        #expect(model.readinessSummary == "Your HRV is trending below your usual range.")
+        #expect(model.readinessSummary?.contains("4 of 5 comparable readings low in the last 7 days") == true)
+        #expect(model.readinessLines.first?.kind == .supporting)
         #expect(model.readinessAdvice == "Keep it easy today. Run at a pace you can talk at, or lift with light effort.")
         #expect(model.readinessLines.first?.text.contains("4 of 5 comparable readings low") == true)
         #expect(model.readinessLines.first?.source?.absoluteString == "https://doi.org/10.3390/ijerph181910299")
-        #expect(model.readinessContext.contains("Sleep last night was 7.6 h."))
-        #expect(model.readinessContext.contains(
-            "Resting heart rate today is 60 bpm. The average over 7 measured days in the last week is 59 bpm."
-        ))
+        #expect(model.readinessObservations.contains {
+            $0.kind == .context && $0.text == "Sleep last night was 7.6 h."
+        })
+        #expect(model.readinessObservations.contains {
+            $0.kind == .context
+                && $0.text == "Resting heart rate today is within your usual range (60 bpm, baseline average 59 bpm)."
+        })
         #expect(model.readinessTrainingContext == nil)
+        let hrv = model.readinessSources.first
+        #expect(hrv?.title == "Sleep HRV (SDNN, Apple Health)")
+        #expect(hrv?.details.contains("5 usable readings in the last 7 days.") == true)
     }
 
     @Test func showsOnlyWorkoutsFromTheDayBeforeTheLatestComparableReading() async throws {
@@ -179,8 +186,12 @@ struct TodayWeekTests {
         let context = try #require(model.readinessTrainingContext)
         #expect(context.workouts.count == 1)
         #expect(context.workouts.first?.contains("Intervals") == true)
-        #expect(model.readinessContext.contains("Resting heart rate is unavailable for today."))
-        #expect(model.readinessContext.contains("Sleep data for last night is unavailable."))
+        #expect(model.readinessObservations.contains {
+            $0.kind == .unavailable && $0.text == "Resting heart rate is unavailable for today."
+        })
+        #expect(model.readinessObservations.contains {
+            $0.kind == .unavailable && $0.text == "Sleep data for last night is unavailable."
+        })
     }
 
     @Test func theDevicesEstimatesSayWhatTheyAre() {

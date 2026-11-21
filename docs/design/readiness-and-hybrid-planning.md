@@ -6,10 +6,9 @@ Today should tell the athlete what to do, which signals matter, and how the sugg
 
 ## Continue from here
 
-**Next implementation: ship the explanatory card.** [Task 2](#2-join-recovery-with-completed-training) now orders
-workouts by the sleep behind each reading and tags confirmed races ([ADR-0034](../adr/0034-reading-timing-and-race-tags.md)),
-so continue with [task 4](#4-ship-the-explanatory-card-in-today). [Task 3](#3-ask-a-question-that-changes-the-decision)
-has an implemented check-in flow with a pending clinical review before release.
+**Next implementation: compare today's strength session with an optional alternative.**
+See [task 5](#5-compare-against-todays-strength-session-and-offer-an-optional-alternative) for the remaining work.
+[Task 3](#3-ask-a-question-that-changes-the-decision) still needs clinical review before release.
 
 ## Shipped baseline
 
@@ -74,12 +73,15 @@ An athlete can report warning symptoms from any check-in and edit the answer lat
 
 ### 4. Ship the explanatory card in Today
 
-The first delivery ([#78](https://github.com/droidsam1/overreach/pull/78)) expands the action with a short summary, actual data coverage,
-recovery observations, previous-day workouts when present and links to the research. Direct session changes are
-covered by tasks 5 and 8. Precise measurement and workout timing still depends on earlier data work.
+Today leads with an action and up to two observations that support it. The HRV summary uses the count of
+eligible readings. **Why this recommendation?** explains the signals, shows baseline comparisons and missing
+context, and links research beside the claim it supports. **Data sources and coverage** shows which readings
+the rule compared. The shared report uses the same rule result and research links under its existing privacy rules.
 
-- [ ] After tasks 1–3, replace the generic explanation with an action and short synthesis of the leading observations. In `TodayPresentation`, provide typed support, contradictory or stable context, and missing context, with localized text and links. Keep rule logic in `Analytics` and rendering in `FeatureToday`. Keep the report consistent with the same reasons and sources. Use the screenshot as a copy fixture, including the measured denominator and no invented workout or baseline. The adjustment can be generic until task 5.
-- **Done when** readers can tell what the VFC measures (variation in time between heartbeats), why a sustained change matters, what else changed, and what action follows. VoiceOver, large text and en/es/gl work. Show stable signals where informative and collapse source details by default. A Garmin estimate cannot strengthen confidence by repeating a physiological input the rule already used.
+- [x] Present the leading observations and supporting detail with en, es and gl copy. Use the measured
+  HRV denominator and show stable or unavailable measurements when the checks support it.
+- [ ] Verify large text and VoiceOver on an iPhone. Use the [repeatable usability check](iphone-ux.md#repeatable-beforeafter-check)
+  and record the results in [#21](https://github.com/droidsam1/overreach/issues/21).
 
 ### 5. Compare against today's strength session and offer an optional alternative
 
