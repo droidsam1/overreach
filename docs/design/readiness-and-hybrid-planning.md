@@ -6,8 +6,9 @@ Today should tell the athlete what to do, which signals matter, and how the sugg
 
 ## Continue from here
 
-**Next implementation: compare today's strength session with an optional alternative.**
+**Next implementation in this area: compare today's strength session with an optional alternative.**
 See [task 5](#5-compare-against-todays-strength-session-and-offer-an-optional-alternative) for the remaining work.
+[Priorities](../priorities.md) ranks it against the rest of the open work.
 [Task 3](#3-ask-a-question-that-changes-the-decision) still needs clinical review before release.
 
 ## Shipped baseline

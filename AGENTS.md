@@ -82,8 +82,8 @@ rework when missed:
 
 Several agents work at once, each in its own branch or worktree.
 
-- Start from a fresh `origin/main`. When resuming a feature after a merge, check the previous PR and continue from
-  the [hybrid planning backlog](docs/design/readiness-and-hybrid-planning.md#continue-from-here).
+- Start from a fresh `origin/main`. To choose what to build, take the first open item in [Priorities](docs/priorities.md).
+  When resuming a feature after a merge, check the previous PR.
 - ADR numbers: take the highest number on `origin/main` plus one, and re-check after rebasing. `check-repo.py`
   fails on duplicates.
 - `CHANGELOG.md` merges with git's union driver; `*.xcstrings` merges per key with `scripts/merge-xcstrings.py`,

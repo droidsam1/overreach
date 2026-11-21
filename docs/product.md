@@ -48,7 +48,7 @@ Today · Train · History · Trends · Exercises · Plan · Assistant · Setting
 
 ## Phases
 
-The [readiness and hybrid planning backlog](design/readiness-and-hybrid-planning.md#continue-from-here) records shipped work and the next implementation task.
+[Priorities](priorities.md) orders the open work across phases. The [readiness and hybrid planning backlog](design/readiness-and-hybrid-planning.md#continue-from-here) records shipped work in that area.
 
 0. Foundation — repo, modules, CI, design system, domain model (incl. athlete profile, cycle and daily-activity types), docs.
 1. Replace Strong (v0.1) — logger, CSV import, write workouts to Health, JSON backup in iCloud Drive, and the
