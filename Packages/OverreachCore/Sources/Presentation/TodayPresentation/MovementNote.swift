@@ -29,14 +29,6 @@ public struct MovementNote: Hashable, Sendable {
         }
     }
 
-    static func walkingSummary(minutes: Double, usual: Double, format: Format) -> MovementNote? {
-        guard minutes >= 1 else { return nil }
-        let text = L10n.format("Walking today: {1} min. Usually {2} min a day.",
-                               format.number(minutes, maxFractionDigits: 0),
-                               format.number(usual, maxFractionDigits: 0))
-        return MovementNote(text: text, evidence: nil)
-    }
-
     /// Localized movement signals and optional activity advice that respects fixed walks and safety guidance.
     static func notes(
         signals: [EverydayMovement.Signal], suggestsRecoveryWalk: Bool, routine: WalkingRoutine, today: CalendarDay,

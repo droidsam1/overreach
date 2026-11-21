@@ -800,12 +800,6 @@ public final class TodayModel {
             routine: profile?.walkingRoutine ?? WalkingRoutine(), today: today, format: format,
             suggestActivity: canSuggestActivity, hasLegSession: schedule.hasLegSession && canSuggestActivity
         )
-        if let entry = activity.first(where: { $0.day == today }), let usual = baseline.walkingMinutes,
-           !signals.contains(where: { $0.walkingSpikeDay == today }),
-           let summary = MovementNote.walkingSummary(minutes: EverydayMovement.walkingMinutes(entry), usual: usual,
-                                                     format: format) {
-            movementNotes.insert(summary, at: 0)
-        }
     }
 
     private func has(_ value: (DailyMetrics) -> Double?) -> Bool {

@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Recent load in Recovery & Progress shows today's walking and how it compares with your usual day. Today
+  keeps walking advice relevant to the day's training.
 - The workout logger can fill the open sets of an exercise with last time's weight and reps from its menu, only when
   you choose it; effort and sets already done are left as they are.
 - Recovery & Progress opens from Today with "View recovery". It lists HRV, resting heart rate and sleep against

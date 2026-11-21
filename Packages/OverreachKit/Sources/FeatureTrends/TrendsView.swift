@@ -23,8 +23,8 @@ public struct TrendsView: View {
     public var body: some View {
         Group {
             switch section {
-            case .recovery: RecoveryDetail(model: model, onConnectGarmin: onConnectGarmin)
-            case .recentLoad: RecentLoadDetail(model: model)
+            case .recovery: RecoveryDetail(model: model, onConnectGarmin: onConnectGarmin, linksToRecentLoad: true)
+            case .recentLoad: RecentLoadDetail(model: model, onConnectGarmin: onConnectGarmin)
             case nil: sections
             }
         }
@@ -41,19 +41,27 @@ public struct TrendsView: View {
                         title: "Recovery", systemImage: "heart.text.square", summary: model.recoverySummary
                     )
                 }
-                if model.showsRecentLoad {
-                    NavigationLink(destination: RecentLoadDetail(model: model)) {
-                        SectionRow(
-                            title: "Recent load", systemImage: "chart.bar", summary: model.recentLoadSummary
-                        )
-                    }
-                }
+                RecentLoadLink(model: model, onConnectGarmin: onConnectGarmin)
             }
             .buttonStyle(.plain)
             .padding(Spacing.medium)
         }
         .navigationTitle("Recovery & Progress")
         .navigationBarTitleDisplayModeInline()
+    }
+}
+
+private struct RecentLoadLink: View {
+    let model: RecoveryProgressModel
+    let onConnectGarmin: () -> Void
+
+    var body: some View {
+        if model.showsRecentLoad {
+            NavigationLink(destination: RecentLoadDetail(model: model, onConnectGarmin: onConnectGarmin)) {
+                SectionRow(title: "Recent load", systemImage: "chart.bar", summary: model.recentLoadSummary)
+            }
+            .buttonStyle(.plain)
+        }
     }
 }
 
@@ -112,6 +120,7 @@ private struct SourceStatus: View {
 private struct RecoveryDetail: View {
     let model: RecoveryProgressModel
     let onConnectGarmin: () -> Void
+    var linksToRecentLoad = false
 
     var body: some View {
         ScrollView {
@@ -124,6 +133,9 @@ private struct RecoveryDetail: View {
                     Text("No recovery readings yet. Connect Apple Health or Garmin to see them here.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+                }
+                if linksToRecentLoad {
+                    RecentLoadLink(model: model, onConnectGarmin: onConnectGarmin)
                 }
                 ForEach(model.readings) { reading in
                     ReadingCard(reading: reading)
@@ -170,10 +182,12 @@ private struct ReadingCard: View {
 
 private struct RecentLoadDetail: View {
     let model: RecoveryProgressModel
+    let onConnectGarmin: () -> Void
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.medium) {
+                SourceStatus(model: model, onConnectGarmin: onConnectGarmin)
                 ForEach(model.loadRows) { row in
                     VStack(alignment: .leading, spacing: Spacing.xSmall) {
                         Text(row.title).font(.headline)
