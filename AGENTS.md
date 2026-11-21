@@ -17,8 +17,7 @@ all of it into daily, explainable training recommendations ("Should I train toda
 - Not a medical device. Never present output as a diagnosis.
 
 [Product and roadmap](docs/product.md) · [Evidence](docs/evidence.md) · [ADRs](docs/adr/) ·
-[History import](docs/import.md) · [Installing without a Mac](docs/install-without-mac.md) ·
-[iPhone UX guide](docs/design/iphone-ux.md)
+[History import](docs/import.md) · [Installing without a Mac](docs/install-without-mac.md)
 
 ## Repository layout
 
@@ -76,6 +75,7 @@ A new capability (nutrition, another watch) is a new data module plus a new feat
 Read the sections of [CODING_STANDARDS.md](CODING_STANDARDS.md) for what you touch. The ones that cost the most
 rework when missed:
 
+- iPhone flows and navigation follow the [iPhone UX guide](docs/design/iphone-ux.md).
 - Views only render; logic and texts live in the presentation model ([Presentation](CODING_STANDARDS.md#presentation-adr-0014)).
 - Recommendation rules start from current evidence in `docs/evidence.md` ([Recommendations](CODING_STANDARDS.md#recommendations-adr-0012)).
 - Persisted types stay readable by older backups ([Stored data](CODING_STANDARDS.md#stored-data-adr-0018)).
