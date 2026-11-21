@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Run local Overreach checks for the changes since a branch diverged.
 
-Also fails on CRLF working copies (fix with --fix-eol), warns when HEAD is far behind the base and stops early
-when Docker is needed but not running.
+Also fails on CRLF working copies (fix with --fix-eol), warns when HEAD is far behind the base, checks that no other
+PR claims this branch's task (scripts/check-task-claim.py) and stops early when Docker is needed but not running.
 """
 import argparse
 import hashlib
@@ -204,6 +204,8 @@ def main():
     print(f"Base: {base} | {len(paths)} changed paths | Logs: {logs}", flush=True)
     behind(base)
     statuses = [line_endings(args.fix_eol), run_check("repository", [sys.executable, "scripts/check-repo.py"], logs)]
+    # Its own PASS/WARN/FAIL lines: another agent working on the same task stops this one early.
+    statuses.append(subprocess.run([sys.executable, "scripts/check-task-claim.py"], cwd=ROOT).returncode)
     if translation_check:
         statuses.append(run_check("localization", [sys.executable, "scripts/check-localization.py"], logs))
     if lint_paths:
