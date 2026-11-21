@@ -59,7 +59,8 @@ struct RecentLoad {
         return RecentLoadRow(
             kind: .strength, title: L10n.text("Strength"), value: value,
             comparison: usualText(
-                count: Double(usual.sessions) / 3, noun: L10n.text("sessions"), amount: usual.minutes / 3, unit: "min"
+                frequency: Double(usual.sessions) / 3, noun: L10n.text("sessions"),
+                amount: usual.minutes / 3, unit: "min"
             ),
             details: [L10n.text("Logged sessions in the app, last 7 days against the 3 weeks before.")]
         )
@@ -82,7 +83,7 @@ struct RecentLoad {
         return RecentLoadRow(
             kind: .running, title: L10n.text("Running"), value: value,
             comparison: usualText(
-                count: Double(usual.runs) / 3, noun: L10n.text("runs"), amount: usual.km / 3, unit: "km"
+                frequency: Double(usual.runs) / 3, noun: L10n.text("runs"), amount: usual.km / 3, unit: "km"
             ),
             details: [L10n.text("Each run counts once, even when several sources recorded it.")]
         )
@@ -94,21 +95,46 @@ struct RecentLoad {
         let last = record.activity.filter { (weekStart...today).contains($0.day) }
         let usual = record.activity.filter { (usualStart..<weekStart).contains($0.day) }
         let lastSteps = last.compactMap(\.steps)
-        guard !lastSteps.isEmpty else { return nil }
-        let average = Double(lastSteps.reduce(0, +)) / Double(lastSteps.count)
+        let walks = last.flatMap(\.walks)
+        guard !lastSteps.isEmpty || !walks.isEmpty else { return nil }
         let usualSteps = usual.compactMap(\.steps)
-        let usualAverage = usualSteps.isEmpty ? nil : Double(usualSteps.reduce(0, +)) / Double(usualSteps.count)
-        let walks = last.reduce(0) { $0 + $1.walks.count }
-        var details = [L10n.format("Average over {1} days with steps", String(lastSteps.count))]
-        if walks > 0 { details.append(L10n.format("{1} walks detected", String(walks))) }
+        let walking = walkingToday(last, activity: record.activity, today: today)
+        let value = lastSteps.isEmpty ? L10n.format("{1} walks detected", String(walks.count))
+            : L10n.format("{1} steps a day", format.number(average(lastSteps), maxFractionDigits: 0))
+        var details: [String] = []
+        if !lastSteps.isEmpty {
+            details.append(L10n.format("Average over {1} days with steps", String(lastSteps.count)))
+        }
+        if let walking { details.append(walking) }
+        if !walks.isEmpty {
+            if !lastSteps.isEmpty { details.append(L10n.format("{1} walks detected", String(walks.count))) }
+            let sources = Set(walks.map(\.source)).map(\.displayName).sorted()
+            details.append(L10n.format("From {1}", sources.formatted(.list(type: .and))))
+        }
         return RecentLoadRow(
-            kind: .movement, title: L10n.text("Everyday movement"),
-            value: L10n.format("{1} steps a day", format.number(average, maxFractionDigits: 0)),
-            comparison: usualAverage.map {
-                L10n.format("Usually {1} a day", format.number($0, maxFractionDigits: 0))
-            },
+            kind: .movement, title: L10n.text("Everyday movement"), value: value,
+            comparison: lastSteps.isEmpty || usualSteps.isEmpty ? nil : L10n.format(
+                "Usually {1} a day", format.number(average(usualSteps), maxFractionDigits: 0)
+            ),
             details: details
         )
+    }
+
+    private func walkingToday(_ recent: [DailyActivity], activity: [DailyActivity], today: CalendarDay) -> String? {
+        guard let entry = recent.first(where: { $0.day == today }) else { return nil }
+        let minutes = EverydayMovement.walkingMinutes(entry)
+        guard minutes >= 1 else { return nil }
+        let duration = format.number(minutes, maxFractionDigits: 0)
+        guard let usual = EverydayMovement.baseline(activity, before: today, calendar: calendar).walkingMinutes else {
+            return L10n.format("Walking today: {1} min", duration)
+        }
+        return L10n.format(
+            "Walking today: {1} min. Usually {2} min a day.", duration, format.number(usual, maxFractionDigits: 0)
+        )
+    }
+
+    private func average(_ steps: [Int]) -> Double {
+        Double(steps.reduce(0, +)) / Double(steps.count)
     }
 
     /// Garmin's own training load estimate: shown as an estimate, never as an Overreach result.
@@ -127,10 +153,10 @@ struct RecentLoad {
         )
     }
 
-    private func usualText(count: Double, noun: String, amount: Double, unit: String) -> String? {
-        guard count > 0 else { return L10n.text("No earlier weeks to compare with") }
+    private func usualText(frequency: Double, noun: String, amount: Double, unit: String) -> String? {
+        guard frequency > 0 else { return L10n.text("No earlier weeks to compare with") }
         return L10n.format(
-            "Usual week: {1} {2} · {3} {4}", format.number(count, maxFractionDigits: 1), noun,
+            "Usual week: {1} {2} · {3} {4}", format.number(frequency, maxFractionDigits: 1), noun,
             format.number(amount, maxFractionDigits: 0), unit
         )
     }

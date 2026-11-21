@@ -15,29 +15,24 @@ and the logger come before review tools, and work that only a person with an iPh
    date under today's target, haptic set completion and a report that leads with the saved confirmation and any
    record. Next: an opt-in "use last time's values" and the one-handed timing on a device
    ([#21](https://github.com/droidsam1/overreach/issues/21)).
-2. **Recovery & Progress from Today** — [#125](https://github.com/droidsam1/overreach/issues/125). Shipped:
-   "View recovery" opens Recovery (readings with source, last update, coverage and baseline) and Recent load
-   (strength, running, everyday movement, Garmin estimate); Today's metric tiles moved there. Next: move the
-   everyday movement details out of Today, keeping what changes the day's decision, and the iPhone, large text
-   and VoiceOver checks ([#21](https://github.com/droidsam1/overreach/issues/21)).
-3. **One activity log** — [#40](https://github.com/droidsam1/overreach/issues/40), in order
+2. **One activity log** — [#40](https://github.com/droidsam1/overreach/issues/40), in order
    [#85](https://github.com/droidsam1/overreach/issues/85) → [#86](https://github.com/droidsam1/overreach/issues/86)
    → [#87](https://github.com/droidsam1/overreach/issues/87) → [#88](https://github.com/droidsam1/overreach/issues/88).
    Correct wrong merges and count every activity once.
-4. **Running priority and the shared schedule** —
+3. **Running priority and the shared schedule** —
    [hybrid backlog tasks 6–8](design/readiness-and-hybrid-planning.md#6-add-a-running-objective-to-hybrid-goals):
    running/strength priority, dated strength in the calendar, structured runs, then adjusting planned runs.
-5. **Planned versus completed work for imported plans** — follow-up of
+4. **Planned versus completed work for imported plans** — follow-up of
    [#34](https://github.com/droidsam1/overreach/issues/34).
-6. **Schedule-first Plan** — [#126](https://github.com/droidsam1/overreach/issues/126). After #125, bring the
+5. **Schedule-first Plan** — [#126](https://github.com/droidsam1/overreach/issues/126). After #125, bring the
    calendar forward and move retrospective detail to Recovery & Progress as shared break and lift results land.
-7. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).
-8. **Hybrid planning research** —
+6. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).
+7. **Hybrid planning research** —
    [hybrid backlog task 9](design/readiness-and-hybrid-planning.md#9-research-and-validate-hybrid-planning-rules-before-automating-plans).
    Runs in parallel. Integrate after the shared schedule work.
-9. **Longer trends** — [#127](https://github.com/droidsam1/overreach/issues/127). After #126, add 30- and
+8. **Longer trends** — [#127](https://github.com/droidsam1/overreach/issues/127). After #126, add 30- and
    90-day views inside the relevant details. Use the activity matching from #40 for combined-source totals.
-10. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
+9. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
 
 ## Needs a person or an iPhone
 
@@ -45,7 +40,7 @@ Agents can prepare these but not finish them.
 
 - Data survives re-signing and reinstall — [#11](https://github.com/droidsam1/overreach/issues/11).
 - Real-device review — [#21](https://github.com/droidsam1/overreach/issues/21). Compare the Today decision,
-  access to recovery and progress details, and Plan scheduling. Use the [iPhone UX guide](design/iphone-ux.md#repeatable-beforeafter-check)
+  access to recovery and everyday movement details (#125), and Plan scheduling. Use the [iPhone UX guide](design/iphone-ux.md#repeatable-beforeafter-check)
   to record large text, VoiceOver and before/after timings. Revisit tab placement with those observations.
 - Clinical review of symptom wording —
   [hybrid backlog task 3](design/readiness-and-hybrid-planning.md#3-ask-a-question-that-changes-the-decision).

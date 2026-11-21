@@ -26,6 +26,14 @@ private actor DaysSource: MetricsSource {
     func runs(from start: Date, to end: Date) async throws -> [RunActivity] { runList }
 }
 
+private struct WalksSource: ActivitySource {
+    let walks: [WalkBout]
+
+    func dailyActivity(in range: ClosedRange<CalendarDay>) async throws -> [DailyActivity] {
+        [DailyActivity(day: range.upperBound, walks: walks)]
+    }
+}
+
 private enum SourceError: Error, LocalizedError {
     case offline
     var errorDescription: String? { "Offline" }
@@ -143,6 +151,37 @@ struct RecoveryProgressModelTests {
         #expect(running?.value == "2 runs · 10 km")
         #expect(running?.comparison?.hasPrefix("Usual week: 1 runs") == true)
         #expect(model.recentLoadSummary == "Running: 2 runs · 10 km")
+    }
+
+    @Test func recentLoadShowsWalkingEvenWithoutSteps() async {
+        let lastWalk = WalkBout(
+            start: CalendarDay(now, calendar: calendar).startDate(in: calendar), durationSeconds: 1_800,
+            source: .garmin
+        )
+        let loadTime = lastWalk.end
+        let model = RecoveryProgressModel(sources: [], activity: [WalksSource(walks: [lastWalk])], calendar: calendar)
+        await model.load(now: loadTime)
+
+        let movement = model.loadRows.first { $0.kind == .movement }
+        #expect(model.showsRecentLoad)
+        #expect(movement?.details == ["Walking today: 30 min", "From Garmin"])
+    }
+
+    @Test func recentLoadComparesWalkingWithTheUsualDay() async {
+        let today = CalendarDay(now, calendar: calendar)
+        let walks = (-14...0).map { offset in
+            WalkBout(
+                start: today.adding(days: offset, calendar: calendar).startDate(in: calendar),
+                durationSeconds: offset == 0 ? 3_600 : 1_800, source: .appleHealth
+            )
+        }
+        let model = RecoveryProgressModel(
+            sources: [], activity: [WalksSource(walks: walks)], calendar: calendar
+        )
+        await model.load(now: today.startDate(in: calendar).addingTimeInterval(3_600))
+
+        let movement = model.loadRows.first { $0.kind == .movement }
+        #expect(movement?.details.contains("Walking today: 60 min. Usually 30 min a day.") == true)
     }
 
     @Test func withoutTrainingTheLoadSectionIsEmpty() async {

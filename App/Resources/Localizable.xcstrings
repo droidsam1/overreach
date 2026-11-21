@@ -16508,6 +16508,23 @@
         }
       }
     },
+    "Walking today: {1} min": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caminando hoy: {1} min"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camiñando hoxe: {1} min"
+          }
+        }
+      }
+    },
     "Walking today: {1} min. Usually {2} min a day.": {
       "extractionState": "manual",
       "localizations": {

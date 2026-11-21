@@ -114,15 +114,13 @@ struct TodayMovementTests {
         }
     }
 
-    @Test func walkingSoFarIsComparedWithTheUsualDay() async {
+    @Test func aUsualWalkDoesNotAddAdvice() async {
         let walk = WalkBout(start: now.addingTimeInterval(-2_400), durationSeconds: 1_800, source: .garmin)
         let model = TodayModel(sources: [source(recent: 9_000)],
                                activity: [WalksSource(walks: walks(hikeMinutes: 30) + [walk])],
                                calendar: calendar, format: format)
         await model.load(now: now)
-        #expect(model.movementNotes == [
-            MovementNote(text: "Walking today: 30 min. Usually 30 min a day.", evidence: nil),
-        ])
+        #expect(model.movementNotes.isEmpty)
     }
 
     @Test func aRedDayAsksToKeepTheDogWalksEasy() {
