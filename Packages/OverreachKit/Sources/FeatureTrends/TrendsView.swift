@@ -36,17 +36,13 @@ public struct TrendsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.large) {
                 SourceStatus(model: model, onConnectGarmin: onConnectGarmin)
-                NavigationLink {
-                    RecoveryDetail(model: model, onConnectGarmin: onConnectGarmin)
-                } label: {
+                NavigationLink(destination: RecoveryDetail(model: model, onConnectGarmin: onConnectGarmin)) {
                     SectionRow(
                         title: "Recovery", systemImage: "heart.text.square", summary: model.recoverySummary
                     )
                 }
                 if model.showsRecentLoad {
-                    NavigationLink {
-                        RecentLoadDetail(model: model)
-                    } label: {
+                    NavigationLink(destination: RecentLoadDetail(model: model)) {
                         SectionRow(
                             title: "Recent load", systemImage: "chart.bar", summary: model.recentLoadSummary
                         )
