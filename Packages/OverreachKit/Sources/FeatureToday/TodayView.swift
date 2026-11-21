@@ -311,7 +311,7 @@ public struct TodayView: View {
             if let evidence = option.evidence, let source = option.source {
                 DisclosureGroup("Why this running option?") {
                     VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                        Text("A conversational pace keeps the effort easy. The duration is a coaching estimate.")
+                        if let explanation = option.explanation { Text(explanation) }
                         Text(evidence).foregroundStyle(.secondary)
                         Link("Research source", destination: source)
                     }

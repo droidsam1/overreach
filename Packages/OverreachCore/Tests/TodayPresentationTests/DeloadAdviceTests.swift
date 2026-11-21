@@ -122,6 +122,32 @@ struct DeloadAdviceTests {
         #expect(plan.weeksSinceDeload == 1)
     }
 
+    @Test func aTwentyDayStrengthBreakAllowsFourWeeksToRebuild() throws {
+        let runs = stride(from: 43, through: 1, by: -3).map { daysAgo in
+            RunActivity(
+                id: String(daysAgo), source: .garmin, startedAt: now.addingTimeInterval(-Double(daysAgo) * 86_400),
+                durationSeconds: 1_800, distanceMeters: 5_000
+            )
+        }
+        let sessions = [session(43, 100, [5, 5, 5]), session(40, 100, [5, 5, 5])] + stalledSessions
+        let profile = AthleteProfile()
+        let record = TrainingRecord(
+            sessions: sessions, exercises: [squat, bench], settings: [squat.id: mainLift, bench.id: mainLift],
+            runs: runs, metrics: metrics(poorWeek: true)
+        )
+        let plan = PlanAnalysis.run(
+            profile: profile, sessions: sessions, exercises: [squat.id: squat, bench.id: bench],
+            settings: record.settings, now: now, runs: runs, calendar: calendar
+        )
+        let period = try #require(plan.deloads.last { $0.discipline == .strength })
+        #expect(period.start.adding(days: 19, calendar: calendar) == period.end)
+        #expect(RecoveryHistory.isRebuildingStrength(after: period, on: today, calendar: calendar))
+        let boundary = period.end.adding(days: 29, calendar: calendar)
+        #expect(!RecoveryHistory.isRebuildingStrength(after: period, on: boundary, calendar: calendar))
+        #expect(advice(for: record, profile: profile) == nil)
+        #expect(advice(for: record, profile: .init(countsBreaksAutomatically: false)) != nil)
+    }
+
     @Test func noProposalInTheWeekAfterAnAcceptedDeload() {
         var profile = AthleteProfile()
         profile.deloads = [DeloadRecord(start: today.adding(days: -10, calendar: calendar), days: 7)]
@@ -384,7 +410,7 @@ struct DeloadAdviceTests {
         let store = TestStore(exercises: [squat, bench], sessions: sessions)
         try await store.save(mainLift, for: squat.id)
         try await store.save(mainLift, for: bench.id)
-        try await store.save(AthleteProfile(goal: TrainingGoal(kind: .hybrid)))
+        try await store.save(AthleteProfile(goal: TrainingGoal(kind: .hybrid), countsBreaksAutomatically: false))
         return store
     }
 

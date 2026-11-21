@@ -26,6 +26,7 @@ public struct DeloadAdvice: Hashable, Sendable {
         public let start: CalendarDay
         public let end: CalendarDay
         public let reason: DeloadReason
+        public let discipline: TrainingDiscipline?
         /// "No training logged from Mon 3 Nov to Tue 11 Nov."
         public let text: String
     }
@@ -57,7 +58,7 @@ public struct DeloadAdvice: Hashable, Sendable {
                 : L10n.format("Much lighter training than usual from {1} to {2}.", start, end)
             return DeloadAdvice(
                 state: .confirmBreak(DetectedBreak(start: pending.start, end: pending.end, reason: pending.reason,
-                                                   text: text)),
+                                                   discipline: pending.discipline, text: text)),
                 planText: planText
             )
         case let .proposed(proposal, walkingIncluded):

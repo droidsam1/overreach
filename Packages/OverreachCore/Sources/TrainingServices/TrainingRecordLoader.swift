@@ -66,18 +66,20 @@ public struct TrainingRecordLoader: Sendable {
         let blockStart = PlanSchedule.runningBlock(profile?.declaredBlocks ?? [], today: today, calendar: calendar)?
             .start.startDate(in: calendar)
         let exportStart = exportFrom?.adding(days: -365, calendar: calendar).startDate(in: calendar)
+        let recoveryStart: Date = profile?.countsBreaksAutomatically == true ? .distantPast : historyStart
         let sessionStart = min(historyStart, blockStart ?? historyStart, exportStart ?? historyStart)
+        let sessionReadStart = min(sessionStart, recoveryStart)
         let metricsRange = ReadinessAssessment.historyRange(
             today: today, tracksCycle: cycle != nil && profile?.usesCyclePhase == true,
             settings: settings, calendar: calendar
         )
 
-        async let logged = try? workouts?.sessions(from: sessionStart, to: now)
+        async let logged = try? workouts?.sessions(from: sessionReadStart, to: now)
         async let catalog = try? exercises?.allExercises()
         async let stored = try? progression?.allProgressionSettings()
         async let templates = try? routines?.allRoutines()
-        async let runs = sources.readRuns(from: historyStart, to: now)
-        async let recordings = recordedStrength?.strengthActivities(from: historyStart, to: now)
+        async let runs = sources.readRuns(from: recoveryStart, to: now)
+        async let recordings = recordedStrength?.strengthActivities(from: recoveryStart, to: now)
         let metricsStart = min(metricsRange.lowerBound, exportFrom ?? today)
         async let allMetrics = sources.dailyMetricsBySource(in: metricsStart...today)
         let checkInStart = min(weekStart, exportFrom ?? today)
@@ -105,7 +107,8 @@ public struct TrainingRecordLoader: Sendable {
         let sessionsFailed = workouts != nil && sessions == nil
         let settingsFailed = self.progression != nil && progression == nil
         return Snapshot(
-            record: record, metrics: metrics, metricsBySource: reading.value, allSessions: sessions ?? [],
+            record: record, metrics: metrics, metricsBySource: reading.value,
+            allSessions: (sessions ?? []).filter { $0.startedAt >= sessionStart },
             allCheckIns: history + (checkIn.map { [$0] } ?? []), checkIn: checkIn,
             sessionsFailed: sessionsFailed, settingsFailed: settingsFailed,
             localReadFailed: sessionsFailed || settingsFailed || (self.exercises != nil && exercises == nil)

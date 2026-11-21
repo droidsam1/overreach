@@ -202,6 +202,10 @@ final class AppContainer {
         OnboardingModel(profiles: profiles, workouts: workouts, status: onboardingStatus)
     }
 
+    func makeTrainingSettingsModel() -> TrainingSettingsModel {
+        TrainingSettingsModel(profiles: profiles)
+    }
+
     func makeGarminSetupModel() -> GarminSetupModel {
         GarminSetupModel(account: garmin ?? NoGarminAccount(), reminders: LocalReminders())
     }

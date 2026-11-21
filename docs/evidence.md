@@ -222,6 +222,16 @@ performance drops only compare sessions since the last recovery period (ADR-0033
 accepted deload week or counted period (`RecoveryHistory`), and no deload is proposed in the 7 days after it.
 Reviewed 2026-11-21.
 
+### `training-breaks` — heuristic
+
+[Coleman et al. 2024](https://peerj.com/articles/16777/) found similar hypertrophy after a one-week strength break
+in a nine-week trial, with greater strength gains in the continuous-training group.
+[Chen et al. 2022](https://pubmed.ncbi.nlm.nih.gov/33517866/) found lower VO₂max after two weeks of detraining in
+15 endurance-trained men. These studies examine cessation in single disciplines. Counting seven complete days as
+rest, using 14 days to start a return period, requiring four weeks before a strength deload and advising an easy
+pace for the first two runs are product heuristics. See [ADR-0037](adr/0037-training-breaks-by-discipline.md).
+Reviewed 2026-11-21.
+
 ### `stall-heuristics` — heuristic
 Stall = no e1RM gain > 1 % over the last 3 exposures vs the 6 before, with ≥ 2 missed targets. Linear reset
 −10 % after 3 misses; microload at half the increment when the miss was by 1 rep; variation swap 3–4 weeks.

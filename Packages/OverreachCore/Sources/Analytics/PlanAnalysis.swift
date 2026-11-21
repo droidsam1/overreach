@@ -12,6 +12,7 @@ public struct PlanAnalysis: Hashable, Sendable {
     public var stalledLifts: Int
     public var deloads: [DetectedDeload]
     public var weeksSinceDeload: Int?
+    public var lastRecoveryKind: LastRecovery.Kind?
 
     /// - Parameters:
     ///   - sessions: Training history (any order); the Plan reads the last year.
@@ -29,8 +30,11 @@ public struct PlanAnalysis: Hashable, Sendable {
         recordings: [RecordedStrengthActivity] = [],
         calendar: Calendar = .current
     ) -> PlanAnalysis {
-        let index = ExposureIndex(sessions: sessions)
         let today = CalendarDay(now, calendar: calendar)
+        let analysisStart = today.adding(days: -DeloadDetection.historyDays, calendar: calendar)
+            .startDate(in: calendar)
+        let recentSessions = sessions.filter { $0.startedAt >= analysisStart }
+        let index = ExposureIndex(sessions: recentSessions)
         let inferred = BlockAdvisor.inferBlocks(index: index, calendar: calendar)
         let current = FocusBalance.activeDeclaredBlock(in: profile, now: now, calendar: calendar) ?? inferred.last
         let completed = sessions.filter { $0.isCompleted(through: now) }
@@ -42,9 +46,15 @@ public struct PlanAnalysis: Hashable, Sendable {
             deloads: profile.deloads, detected: deloads, before: today, calendar: calendar
         )
         let deloadAge = lastRecovery.map { PlanReviewer.days(from: $0.lastDay, to: today, calendar: calendar) }
+        let strengthBreak = profile.countsBreaksAutomatically
+            ? RecoveryHistory.lastLongBreak(in: deloads, discipline: .strength, before: today, calendar: calendar)
+            : nil
+        let rebuilding = strengthBreak.map {
+            RecoveryHistory.isRebuildingStrength(after: $0, on: today, calendar: calendar)
+        } ?? false
 
         let currentIDs = LiftStatus.currentExerciseIDs(
-            sessions: sessions, routines: routines, profile: profile, now: now, calendar: calendar
+            sessions: recentSessions, routines: routines, profile: profile, now: now, calendar: calendar
         )
         let stalled = LiftStatus.assessAll(
             index: index, exercises: exercises, stored: settings, routines: routines, now: now
@@ -56,7 +66,8 @@ public struct PlanAnalysis: Hashable, Sendable {
                 goal: profile.goal, current: current, today: today, stalledLifts: stalled, calendar: calendar
             ),
             plan: BlockAdvisor.plan(
-                goal: profile.goal, current: current, today: today, recentlyDeloaded: deloadAge.map { $0 <= 7 } ?? false,
+                goal: profile.goal, current: current, today: today,
+                recentlyDeloaded: rebuilding || (deloadAge.map { $0 <= 7 } ?? false),
                 calendar: calendar
             ),
             findings: FocusBalance.findings(
@@ -64,7 +75,8 @@ public struct PlanAnalysis: Hashable, Sendable {
             ),
             stalledLifts: stalled,
             deloads: deloads,
-            weeksSinceDeload: deloadAge.map { $0 / 7 }
+            weeksSinceDeload: deloadAge.map { $0 / 7 },
+            lastRecoveryKind: lastRecovery?.kind
         )
     }
 }

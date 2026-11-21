@@ -251,7 +251,7 @@ struct PlanModelTests {
             return session
         }
         let store = TestStore(exercises: [squat], sessions: history)
-        try await store.save(AthleteProfile(goal: TrainingGoal(kind: .hybrid)))
+        try await store.save(AthleteProfile(goal: TrainingGoal(kind: .hybrid), countsBreaksAutomatically: false))
         let fixedNow = now
         let model = PlanModel(
             profiles: store, workouts: store, exercises: store, progression: store, clock: { fixedNow }, calendar: calendar
@@ -260,7 +260,7 @@ struct PlanModelTests {
         let pending = try #require(model.pendingDeloadRows.first)
         #expect(model.lastDeloadSummary == nil)
 
-        await model.reviewDeload(start: pending.id, accepted: accepted)
+        await model.reviewDeload(id: pending.id, accepted: accepted)
         await model.load()
 
         #expect(model.pendingDeloadRows.isEmpty)

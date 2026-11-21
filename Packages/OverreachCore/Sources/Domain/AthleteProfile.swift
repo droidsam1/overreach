@@ -91,6 +91,8 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
     /// A deload proposal was postponed until this day (inclusive).
     public var deloadPostponedUntil: CalendarDay?
     public var deloadDecisions: [DeloadDecision]
+    /// Counts gaps in recorded training as recovery for the discipline that stopped.
+    public var countsBreaksAutomatically: Bool
 
     public init(
         sex: BiologicalSex? = nil,
@@ -106,7 +108,8 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         wearables: Set<Wearable> = [],
         deloads: [DeloadRecord] = [],
         deloadPostponedUntil: CalendarDay? = nil,
-        deloadDecisions: [DeloadDecision] = []
+        deloadDecisions: [DeloadDecision] = [],
+        countsBreaksAutomatically: Bool = true
     ) {
         self.sex = sex
         self.birthYear = birthYear
@@ -122,6 +125,12 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         self.deloads = deloads
         self.deloadPostponedUntil = deloadPostponedUntil
         self.deloadDecisions = deloadDecisions
+        self.countsBreaksAutomatically = countsBreaksAutomatically
+    }
+
+    public mutating func recordDeloadDecision(_ decision: DeloadDecision) {
+        deloadDecisions.removeAll { $0.start == decision.start && $0.discipline == decision.discipline }
+        deloadDecisions.append(decision)
     }
 
     /// Whether cycle-aware logic applies: only when the user chose a natural cycle explicitly.
@@ -132,6 +141,7 @@ extension AthleteProfile {
     private enum CodingKeys: String, CodingKey {
         case sex, birthYear, bodyMassKg, maxHeartRate, restingHeartRate, cycleTracking, walkingRoutine, goal
         case declaredBlocks, effortScale, wearables, deloads, deloadPostponedUntil, deloadDecisions
+        case countsBreaksAutomatically
     }
 
     /// Tolerant decoding: fields added in later versions fall back to their defaults, so older stores and
@@ -156,7 +166,9 @@ extension AthleteProfile {
             ),
             deloads: try container.decodeIfPresent([DeloadRecord].self, forKey: .deloads) ?? [],
             deloadPostponedUntil: try container.decodeIfPresent(CalendarDay.self, forKey: .deloadPostponedUntil),
-            deloadDecisions: try container.decodeIfPresent([DeloadDecision].self, forKey: .deloadDecisions) ?? []
+            deloadDecisions: try container.decodeIfPresent([DeloadDecision].self, forKey: .deloadDecisions) ?? [],
+            countsBreaksAutomatically: try container.decodeIfPresent(Bool.self, forKey: .countsBreaksAutomatically)
+                ?? true
         )
     }
 }

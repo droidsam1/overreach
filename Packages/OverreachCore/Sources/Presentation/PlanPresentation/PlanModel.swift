@@ -36,7 +36,12 @@ public struct PlanRow: Identifiable, Hashable, Sendable {
 }
 
 public struct DeloadRow: Identifiable, Hashable, Sendable {
-    public let id: CalendarDay
+    public struct Identifier: Hashable, Sendable {
+        public let start: CalendarDay
+        public let discipline: TrainingDiscipline?
+    }
+
+    public let id: Identifier
     public let start: Date
     public let end: Date
     public let reason: ExplainedLine
@@ -66,6 +71,7 @@ public final class PlanModel {
     public private(set) var isReviewingDeload = false
     private var deloads: [DetectedDeload] = []
     private var weeksSinceDeload: Int?
+    private var lastRecoveryKind: LastRecovery.Kind?
 
     // Editable state of the screen.
     /// Whether the goal has a target date. Change it with `setHasTargetDate(_:)`.
@@ -176,7 +182,14 @@ public final class PlanModel {
 
     public var lastDeloadSummary: String? {
         weeksSinceDeload.map {
-            switch $0 {
+            if lastRecoveryKind == .detectedBreak, profile.countsBreaksAutomatically {
+                switch $0 {
+                case 0: return L10n.text("Last strength rest period less than a week ago")
+                case 1: return L10n.text("Last strength rest period 1 week ago")
+                default: return L10n.format("Last strength rest period {1} weeks ago", $0)
+                }
+            }
+            return switch $0 {
             case 0: L10n.text("Last deload less than a week ago")
             case 1: L10n.text("Last deload 1 week ago")
             default: L10n.format("Last deload {1} weeks ago", $0)
@@ -184,22 +197,27 @@ public final class PlanModel {
         }
     }
 
+    public var hasRecoveryHistory: Bool { weeksSinceDeload != nil || !deloads.isEmpty }
+
     public var deloadRows: [DeloadRow] { deloadRows(needsConfirmation: false) }
     public var pendingDeloadRows: [DeloadRow] { deloadRows(needsConfirmation: true) }
 
     private func deloadRows(needsConfirmation: Bool) -> [DeloadRow] {
         deloads.reversed().filter { $0.needsConfirmation == needsConfirmation }.map { period in
             let text: String
-            switch period.reason {
-            case .noTraining: text = L10n.text("No training recorded")
-            case .easyRuns:
+            switch (period.reason, period.discipline) {
+            case (.noTraining, .strength): text = L10n.text("No strength workouts recorded")
+            case (.noTraining, .running): text = L10n.text("No runs recorded")
+            case (.noTraining, nil): text = L10n.text("No training recorded")
+            case (.easyRuns, _):
                 text = period.needsConfirmation
                     ? L10n.text("Running may have been lighter than usual")
                     : L10n.text("Only light running recorded")
-            case .reducedStrength: text = L10n.text("Strength training load was well below usual or planned")
+            case (.reducedStrength, _): text = L10n.text("Strength training load was well below usual or planned")
             }
             return DeloadRow(
-                id: period.start, start: period.start.startDate(in: calendar), end: period.end.startDate(in: calendar),
+                id: DeloadRow.Identifier(start: period.start, discipline: period.discipline),
+                start: period.start.startDate(in: calendar), end: period.end.startDate(in: calendar),
                 reason: ExplainedLine(text: text, evidence: period.evidence)
             )
         }
@@ -227,8 +245,8 @@ public final class PlanModel {
             exerciseNames = Exercise.displayNames(catalog)
             let now = clock()
             let day = CalendarDay(now, calendar: calendar)
-            let start = day.adding(days: -TrainingRecordLoader.historyDays, calendar: calendar)
-                .startDate(in: calendar)
+            let start: Date = profile.countsBreaksAutomatically ? .distantPast
+                : day.adding(days: -TrainingRecordLoader.historyDays, calendar: calendar).startDate(in: calendar)
             let sessions = try await workouts.sessions(from: start, to: now)
             errorMessage = nil
             if showsHybridCalendar { await loadCalendarRoutines() }
@@ -240,17 +258,18 @@ public final class PlanModel {
 
     // MARK: Actions
 
-    public func reviewDeload(start: CalendarDay, accepted: Bool) async {
-        guard !isReviewingDeload, let period = deloads.first(where: { $0.start == start && $0.needsConfirmation })
-        else { return }
+    public func reviewDeload(id: DeloadRow.Identifier, accepted: Bool) async {
+        guard !isReviewingDeload, let period = deloads.first(where: {
+            $0.start == id.start && $0.discipline == id.discipline && $0.needsConfirmation
+        }) else { return }
         isReviewingDeload = true
         defer { isReviewingDeload = false }
         do {
             var updated = try await profiles.profile()
-            updated.deloadDecisions.removeAll { $0.start == period.start }
-            updated.deloadDecisions.append(
-                DeloadDecision(start: period.start, end: period.end, reason: period.reason, accepted: accepted)
-            )
+            updated.recordDeloadDecision(DeloadDecision(
+                start: period.start, end: period.end, reason: period.reason, accepted: accepted,
+                discipline: period.discipline
+            ))
             try await profiles.save(updated)
             await load()
         } catch {
@@ -375,6 +394,7 @@ public final class PlanModel {
         findings = analysis.findings
         deloads = analysis.deloads
         weeksSinceDeload = analysis.weeksSinceDeload
+        lastRecoveryKind = analysis.lastRecoveryKind
     }
 }
 
