@@ -14,6 +14,7 @@ public enum ReadinessEvidence {
     /// Self-reported well-being tracks training load better than common objective markers (Saw et al. 2016).
     public static let subjective = EvidenceReference(key: "readiness-subjective", level: .moderate)
     public static let reportedSymptoms = EvidenceReference(key: "readiness-reported-symptoms", level: .limited)
+    public static let contextPrompt = EvidenceReference(key: "readiness-context-prompt", level: .heuristic)
     /// Vagally mediated HRV is lower in the luteal than the follicular phase (Schmalenberger et al. 2019).
     public static let cyclePhase = EvidenceReference(key: "hrv-cycle-phase", level: .moderate)
     /// Resting HR rises and RMSSD falls in the luteal window, so a confident estimate compares like with like
@@ -133,17 +134,24 @@ public enum ReadinessRules {
             Readiness(level: level, reasons: reasons, hrvCoverage: hrv?.coverage, inputs: signals.audits)
         }
 
+        if checkIn?.exerciseWarningSigns == true {
+            return result(.red, [.exerciseWarningSigns])
+        }
         if checkIn?.isSick == true {
             return result(.red, [.markedSick])
         }
-        if checkIn?.context == CheckIn.Context(question: .symptoms, answer: .yes) {
-            return result(.red, [.symptomsLimitTraining])
+        let confirmedContext = checkIn?.context.flatMap { $0.answer == .yes ? $0.question : nil }
+        switch confirmedContext {
+        case .symptoms: return result(.red, [.symptomsLimitTraining])
+        case .runningPain: return result(.red, [.runningPainLimitsTraining])
+        default: break
         }
 
         var reasons = signals.reasons
         var evaluated = signals.evaluated
         if let checkIn {
-            evaluated = evaluated || checkIn.energy != nil || checkIn.soreness != nil || checkIn.context == nil
+            evaluated = evaluated || checkIn.energy != nil || checkIn.soreness != nil
+                || (checkIn.context == nil && checkIn.exerciseWarningSigns == nil)
             if let energy = checkIn.energy, energy <= settings.lowEnergy {
                 reasons.append(.lowEnergy(score: energy))
             }
@@ -156,7 +164,13 @@ public enum ReadinessRules {
             reasons.append(.phaseBaseline(window: phase.window, cycles: cycles))
         }
 
-        guard evaluated else { return result(.unknown, [.missingData]) }
+        // An affirmative fatigue answer can lower the advice to amber. Count the energy scale only once.
+        if confirmedContext == .fatigue {
+            evaluated = true
+            if checkIn?.energy.map({ $0 <= settings.lowEnergy }) != true { reasons.append(.unusualFatigue) }
+        }
+        if confirmedContext == .stress { reasons.append(.unusualStress) }
+        guard evaluated else { return result(.unknown, [.missingData] + reasons) }
         if reasons.allSatisfy(\.isContext) { return result(.green, reasons) }
         // With a natural cycle, low HRV is context: neither it nor its note counts as a signal for red.
         let cycleContext = reasons.contains(.hrvMayReflectCycle)
@@ -173,13 +187,14 @@ public enum ReadinessRules {
     public static func evidence(for reason: ReadinessReason) -> EvidenceReference {
         switch reason {
         case .markedSick: PlanEvidence.illness
-        case .symptomsLimitTraining: ReadinessEvidence.reportedSymptoms
+        case .symptomsLimitTraining, .exerciseWarningSigns: ReadinessEvidence.reportedSymptoms
+        case .runningPainLimitsTraining, .unusualStress: ReadinessEvidence.contextPrompt
         case .hrvBelowBaseline: ReadinessEvidence.hrv
         case .hrvMayReflectCycle: ReadinessEvidence.cyclePhase
         case .phaseBaseline, .possibleLutealShift: ReadinessEvidence.cyclePhaseBaselines
         case .restingHeartRateElevated: ReadinessEvidence.restingHeartRate
         case .shortSleep: ReadinessEvidence.sleep
-        case .lowEnergy, .highSoreness: ReadinessEvidence.subjective
+        case .lowEnergy, .highSoreness, .unusualFatigue: ReadinessEvidence.subjective
         case .missingData: ReadinessEvidence.combination
         }
     }
@@ -188,33 +203,41 @@ public enum ReadinessRules {
     public static func evidenceURL(for reason: ReadinessReason) -> URL? {
         let address: String
         switch reason {
-        case .markedSick, .symptomsLimitTraining: address = "https://doi.org/10.1136/bjsports-2022-105759"
+        case .markedSick, .symptomsLimitTraining, .exerciseWarningSigns:
+            address = "https://doi.org/10.1136/bjsports-2022-105759"
+        case .runningPainLimitsTraining:
+            address = "https://www.brighamandwomens.org/assets/bwh/patients-and-families/rehabilitation-services/pdfs/"
+                + "le-running-injury-prevention-tips-and-return-to-running-program-bwh.pdf"
+        case .unusualStress: address = "https://pubmed.ncbi.nlm.nih.gov/39032150/"
         case .hrvBelowBaseline: address = "https://doi.org/10.3390/ijerph181910299"
         case .hrvMayReflectCycle: address = "https://doi.org/10.3390/jcm8111946"
         case .phaseBaseline: address = "https://doi.org/10.1007/s40279-025-02388-y"
         case .possibleLutealShift: address = "https://doi.org/10.2147/IJWH.S341917"
         case .restingHeartRateElevated: address = "https://pubmed.ncbi.nlm.nih.gov/18308872/"
         case .shortSleep: address = "https://doi.org/10.1007/s40279-022-01706-y"
-        case .lowEnergy, .highSoreness: address = "https://pubmed.ncbi.nlm.nih.gov/26423706/"
+        case .lowEnergy, .highSoreness, .unusualFatigue: address = "https://pubmed.ncbi.nlm.nih.gov/26423706/"
         case .missingData: return nil
         }
         return URL(string: address)
     }
 
     /// Decide what is worth asking, without inferring stress or illness from the device (`readiness-context-prompt`).
-    public static func contextQuestion(for readiness: Readiness) -> CheckIn.Context.Question? {
-        var hasLowHRV = false
-        var hasElevatedPulse = false
-        for reason in readiness.reasons {
-            switch reason {
-            case .markedSick, .symptomsLimitTraining: return nil
-            case .hrvBelowBaseline: hasLowHRV = true
-            case .restingHeartRateElevated: hasElevatedPulse = true
-            default: break
-            }
-        }
-        guard hasLowHRV else { return nil }
-        return hasElevatedPulse ? .symptoms : .stress
+    public static func contextQuestion(
+        for readiness: Readiness, recentRunPain: Bool = false, trainedRecently: Bool = false
+    ) -> CheckIn.Context.Question? {
+        guard !readiness.reasons.contains(where: \.advisesSkippingTraining) else { return nil }
+        let hrv = readiness.hrvInput
+        let pulse = readiness.input(.restingHeartRate)
+        let lowHRV = hrv?.status == .compared && hrv?.outcome == .below
+        let highPulse = pulse?.status == .compared && pulse?.outcome == .above
+        if lowHRV && highPulse { return .symptoms }
+        if recentRunPain { return .runningPain }
+        if lowHRV { return trainedRecently ? .fatigue : .stress }
+
+        let lowEnergy = readiness.reasons.contains { if case .lowEnergy = $0 { true } else { false } }
+        let stableComparison = readiness.inputs.contains { $0.status == .compared && $0.outcome == .within }
+        if lowEnergy && stableComparison && !highPulse && !trainedRecently { return .stress }
+        return nil
     }
 
     // MARK: - HRV

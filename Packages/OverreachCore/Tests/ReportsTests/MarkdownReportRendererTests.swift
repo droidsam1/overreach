@@ -62,6 +62,14 @@ struct MarkdownReportRendererTests {
         #expect(markdown.contains("[research source](https://doi.org/10.3390/ijerph181910299)"))
     }
 
+    @Test func reportsOmitPrivateCheckInReasonsAndTheDecisionsTheyOverride() {
+        let readiness = Readiness(level: .red, reasons: [.exerciseWarningSigns])
+        let markdown = MarkdownReportRenderer.render(TrainingReport(generatedAt: .now, readiness: readiness))
+
+        #expect(!markdown.contains("Readiness: **red**"))
+        #expect(!markdown.contains("10.1136/bjsports-2022-105759"))
+    }
+
     @Test func readinessReportListsEachInputWithItsProvenance() {
         let day = CalendarDay(year: 2026, month: 11, day: 16)
         let readiness = Readiness(level: .amber, reasons: [.hrvBelowBaseline(nights: 4)], inputs: [

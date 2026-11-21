@@ -9,6 +9,7 @@ import PresentationKit
 @Observable
 public final class CheckInModel: Identifiable {
     public var isSick: Bool
+    public var hasExerciseWarningSigns: Bool
     /// 1 (exhausted) … 5 (great); `nil` = not answered.
     public var energy: Int?
     /// 0 (none) … 3 (very sore); `nil` = not answered.
@@ -34,6 +35,7 @@ public final class CheckInModel: Identifiable {
         self.contextQuestion = existing?.context?.question ?? contextQuestion
         self.contextAnswer = existing?.context?.answer
         self.isSick = existing?.isSick ?? false
+        self.hasExerciseWarningSigns = existing?.exerciseWarningSigns ?? false
         self.energy = existing?.energy
         self.soreness = existing?.soreness
         self.note = existing?.note ?? ""
@@ -48,6 +50,8 @@ public final class CheckInModel: Identifiable {
         switch question {
         case .symptoms: L10n.text("Do new symptoms make you feel too unwell to train today?")
         case .stress: L10n.text("Have you felt more stressed than usual lately?")
+        case .fatigue: L10n.text("Do you feel more fatigued than usual today?")
+        case .runningPain: L10n.text("Did the pain get worse or change your stride on your last run?")
         case nil: nil
         }
     }
@@ -55,7 +59,8 @@ public final class CheckInModel: Identifiable {
     public var contextOptions: [Option<CheckIn.Context.Answer>] {
         [
             Option(value: .yes, name: L10n.text("Yes")),
-            Option(value: .no, name: L10n.text("No")),
+            Option(value: .no, name: contextQuestion == .symptoms
+                ? L10n.text("No symptoms affecting training") : L10n.text("No")),
             Option(value: .unsure, name: L10n.text("Not sure")),
             Option(value: .skipped, name: L10n.text("Skip for today")),
         ]
@@ -86,9 +91,14 @@ public final class CheckInModel: Identifiable {
         let context = contextQuestion.flatMap { question in
             contextAnswer.map { CheckIn.Context(question: question, answer: $0) }
         }
+        let warningSigns: Bool? = if hasExerciseWarningSigns || original?.exerciseWarningSigns != nil {
+            hasExerciseWarningSigns
+        } else {
+            nil
+        }
         return CheckIn(
             day: day, isSick: isSick, energy: energy, soreness: soreness, note: trimmed.isEmpty ? nil : trimmed,
-            context: context
+            context: context, exerciseWarningSigns: warningSigns
         )
     }
 
@@ -96,7 +106,8 @@ public final class CheckInModel: Identifiable {
     public var canSave: Bool {
         guard !isSaving else { return false }
         if let original { return draft != original }
-        return isSick || energy != nil || soreness != nil || draft.note != nil || draft.context != nil
+        return isSick || hasExerciseWarningSigns || energy != nil || soreness != nil
+            || draft.note != nil || draft.context != nil
     }
 
     /// Saves and returns `true`; on failure keeps the sheet open with `errorMessage`.

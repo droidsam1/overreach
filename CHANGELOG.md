@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today asks one optional check-in question about symptoms, fatigue, running pain or unusual stress when the
+  answer can inform the session. Editing the response updates today's advice, and the new answers stay local.
 - Readiness records every input it read: where it came from, whether it was compared, missing, stale or out of
   range, the reference it was compared with and the outcome. The AI report lists them, and Today says when HRV
   was skipped because a watch stopped syncing or its readings were implausible. Daytime and sleep HRV readings

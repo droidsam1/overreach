@@ -6,9 +6,9 @@ Today should tell the athlete what to do, which signals matter, and how the sugg
 
 ## Continue from here
 
-**Next delivery: ask a question that changes the decision.** Task 1 is done, so [task 3](#3-ask-a-question-that-changes-the-decision) can extend the check-in from the audited inputs. `Readiness.inputs` says which signals were compared, stale or missing, so a question can target the input that would change today's action. [Task 2](#2-join-recovery-with-completed-training) is also unblocked and can run in parallel.
-
-Start with `ReadinessRules.contextQuestion`, `CheckIn.Context` and the check-in flow in `TodayModel`. Keep the old check-in format readable (ADR-0018). [Input audit](../adr/0032-auditable-readiness-inputs.md) · [HRV series](../adr/0025-hrv-one-series-per-metric.md)
+**Next implementation: join recovery with completed training.** Start with the remaining timing and race-tag work in
+[task 2](#2-join-recovery-with-completed-training). [Task 3](#3-ask-a-question-that-changes-the-decision) has an
+implemented check-in flow with a pending clinical review before release.
 
 ## Shipped baseline
 
@@ -61,11 +61,12 @@ interval remain open. Calendar-day order alone supports a visual comparison acro
 
 ### 3. Ask a question that changes the decision
 
-The first delivery ([#76](https://github.com/droidsam1/overreach/pull/76)) asks one optional question about unusual stress or new
-symptoms. A report that symptoms make training feel unsuitable changes today's advice. Local pain and a
-clinically reviewed pathway for specific symptoms and return to exercise remain open.
+The first delivery ([#76](https://github.com/droidsam1/overreach/pull/76)) asked about unusual stress or new
+symptoms. Today now uses audited input comparisons and recent linked running pain to select a prompt.
+An athlete can report warning symptoms from any check-in and edit the answer later.
 
-- [ ] After task 1, extend the existing local check-in to distinguish new symptoms, fatigue, local soreness or pain, unusual life stress and uncertainty. Ask one context-sensitive question when an answer could change the action or materially improve its explanation. Include “none”, “unsure” and skip. Recompute after save. Use neutral wording and let the athlete correct the answer. Review the symptom escalation and return paths against `illness-return` and the IOC guidance before release.
+- [x] Extend the local check-in to distinguish new symptoms, fatigue, local running pain, muscle soreness, unusual stress and uncertainty. Ask one optional question and recompute after save or correction.
+- [ ] Obtain clinical review of the symptom wording, escalation and return guidance before release. Start with [`illness-return`](../evidence.md#illness-return--limited) and the [IOC consensus](https://doi.org/10.1136/bjsports-2022-105759).
 - **Decision examples.** With a low trend, elevated resting HR and ambiguous context, ask about new symptoms first. With an otherwise stable pattern and no recorded unusual training, ask whether life stress or another recent change might explain how the athlete feels. With local pain after running, ask whether it worsened or affected their stride. Fever or symptoms such as chest discomfort, unusual breathlessness or dizziness need the appropriate rest or care pathway. Determine the exact wording and escalation with clinical review. Keep unrelated questions out of the daily flow.
 - **Done when** an isolated low trend can prompt a question, reported stress can add context, reported illness or exercise-limiting symptoms can change the action, and skipped answers preserve uncertainty. An old check-in never silently answers for today. No illness or stress classification comes from wearable readings alone. Test backup round-trips and keep new health context local unless explicitly shared.
 

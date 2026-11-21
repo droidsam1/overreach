@@ -90,6 +90,7 @@ Several agents work at once, each in its own branch or worktree.
   which `scripts/check-local.py` registers in the repository's git config.
 - After resolving a String Catalog conflict by hand, run `python3 scripts/check-localization.py --fix`.
 - Commits and PR titles use Conventional Commits with a scope, as in `feat(plan): …` or `fix(history): …`.
+- For implementation requests, open a PR and merge it after its checks pass, unless the user asks otherwise.
 
 ## Commands
 

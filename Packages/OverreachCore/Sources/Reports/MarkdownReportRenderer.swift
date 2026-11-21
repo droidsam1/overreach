@@ -44,8 +44,10 @@ public enum MarkdownReportRenderer {
     private static func today(_ report: TrainingReport) -> [String] {
         var lines = ["## Today", ""]
         if let readiness = report.readiness {
-            lines.append("- Readiness: **\(readiness.level.rawValue)**")
-            for reason in readiness.reasons {
+            if !readiness.reasons.contains(where: { $0.isPrivateCheckInContext && !$0.isContext }) {
+                lines.append("- Readiness: **\(readiness.level.rawValue)**")
+            }
+            for reason in readiness.reasons where !reason.isPrivateCheckInContext {
                 let source = ReadinessRules.evidenceURL(for: reason).map { " ([research source](\($0.absoluteString)))" } ?? ""
                 lines.append("  - \(describe(reason, hrvCoverage: readiness.hrvCoverage))\(source)")
             }
@@ -264,8 +266,8 @@ public enum MarkdownReportRenderer {
         switch reason {
         case .markedSick:
             "Marked as sick in today's check-in"
-        case .symptomsLimitTraining:
-            "Today's check-in says symptoms make training feel unsuitable"
+        case .symptomsLimitTraining, .exerciseWarningSigns, .runningPainLimitsTraining, .unusualFatigue, .unusualStress:
+            "Private check-in context"
         case .hrvBelowBaseline(let nights):
             if let coverage = hrvCoverage {
                 "HRV\(seriesNote(coverage.metric)) below its normal range (\(nights) of \(coverage.recentReadings) "
