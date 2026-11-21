@@ -117,7 +117,9 @@ struct HistoryModelTests {
         )
         let (model, store) = await model([older, logged], recordings: [matched, watchOnly])
 
-        #expect(model.rows.map(\.id) == [.recording(watchOnly.id), .session(logged.id), .session(older.id)])
+        #expect(model.rows.map(\.id) == [
+            .recording(StrengthRecordingID(watchOnly)), .session(logged.id), .session(older.id),
+        ])
         let detail = try #require(model.detail(for: logged.id, format: format))
         #expect(detail.recording?.source == "Garmin")
         #expect(detail.recording?.metrics.map(\.value) == ["125 bpm", "42.5", "2.5"])
@@ -134,10 +136,10 @@ struct HistoryModelTests {
         )
         let (model, _) = await model([], recordings: [recording])
         #expect(!model.showsEmptyState)
-        #expect(model.rows.map(\.id) == [.recording(recording.id)])
+        #expect(model.rows.map(\.id) == [.recording(StrengthRecordingID(recording))])
 
         model.didSave(logged)
-        #expect(model.rows.map(\.id) == [.recording(recording.id), .session(logged.id)])
+        #expect(model.rows.map(\.id) == [.recording(StrengthRecordingID(recording)), .session(logged.id)])
         var edited = logged
         edited.startedAt = recording.startedAt
         edited.endedAt = recording.endedAt
@@ -146,7 +148,49 @@ struct HistoryModelTests {
         #expect(model.detail(for: logged.id)?.recording?.id == recording.id)
 
         await model.delete(logged.id)
-        #expect(model.rows.map(\.id) == [.recording(recording.id)])
+        #expect(model.rows.map(\.id) == [.recording(StrengthRecordingID(recording))])
+    }
+
+    @Test func healthStrengthShowsItsSourceAndCoalescesWithGarminAndLoggedSets() async throws {
+        let logged = session("Lower", daysAgo: 2, sets: [WorkoutSet(weightKg: 100, reps: 5)])
+        let garmin = RecordedStrengthActivity(
+            id: "g1", source: .garmin, startedAt: logged.startedAt, durationSeconds: 3_600, trainingLoad: 42
+        )
+        let copy = RecordedStrengthActivity(
+            id: "h1", source: .appleHealth, startedAt: logged.startedAt, durationSeconds: 3_600, averageHeartRate: 118
+        )
+        let healthOnly = RecordedStrengthActivity(
+            id: "h2", source: .appleHealth, startedAt: logged.endedAt ?? logged.startedAt,
+            durationSeconds: 1_800, averageHeartRate: 106
+        )
+        let (model, _) = await model([logged], recordings: [garmin, copy, healthOnly])
+        model.sourceFilter = .appleHealth
+        let expectedRows: [HistoryRow.Identifier] = [.recording(StrengthRecordingID(healthOnly)), .session(logged.id)]
+
+        #expect(model.rows.map(\.id) == expectedRows)
+        let detail = try #require(model.detail(for: logged.id, format: format))
+        #expect(detail.recording?.source == "Garmin · Apple Health")
+        #expect(detail.recording?.metrics.map(\.value) == ["118 bpm", "42"])
+        #expect(detail.entries.first?.sets.map(\.text) == ["100 kg × 5"])
+
+        await model.load()
+        #expect(model.rows.map(\.id) == expectedRows)
+
+        model.separateStrengthMatch(for: logged.id)
+        #expect(model.rows.map(\.id) == [
+            .recording(StrengthRecordingID(healthOnly)), .recording(StrengthRecordingID(garmin)),
+        ])
+        #expect(model.detail(for: logged.id)?.recording == nil)
+    }
+
+    @Test func withoutHealthReadHistoryKeepsGarminAndLoggedStrength() async {
+        let logged = session("Lower", daysAgo: 2, sets: [])
+        let garmin = RecordedStrengthActivity(
+            id: "g1", source: .garmin, startedAt: logged.startedAt, durationSeconds: 3_600
+        )
+        let (model, _) = await model([logged], recordings: [garmin])
+        #expect(model.rows.map(\.id) == [.session(logged.id)])
+        #expect(model.detail(for: logged.id)?.recording?.source == "Garmin")
     }
 
     @Test func filtersRetainOneRowForAMultiSourceRunOrStrengthSession() async throws {
@@ -267,10 +311,12 @@ struct LogWatchWorkoutTests {
             recordedStrength: StrengthRecordings(activities: [recording]), clock: { fixedNow }
         )
         await model.load()
-        #expect(model.rows.map(\.id) == [.recording("g1")])
-        #expect(model.makeEditor(forRecording: "missing") == nil)
+        #expect(model.rows.map(\.id) == [.recording(StrengthRecordingID(recording))])
+        var missing = recording
+        missing.source = .appleHealth
+        #expect(model.makeEditor(forRecording: StrengthRecordingID(missing)) == nil)
 
-        let editor = try #require(model.makeEditor(forRecording: "g1"))
+        let editor = try #require(model.makeEditor(forRecording: StrengthRecordingID(recording)))
         #expect(editor.draft.startedAt == recording.startedAt)
         #expect(editor.draft.endedAt == recording.endedAt)
         editor.addExercise(squat)

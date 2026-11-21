@@ -246,12 +246,12 @@ public final class HistoryCalendarModel {
                 .filter { CalendarDay($0.startedAt, calendar: calendar) == day }
                 .map { session in
                     var summary = SessionSummary(session: session, names: exerciseNames)
-                    summary.matchedSource = strengthMatches.activity(for: session.id)?.source
+                    summary.matchedSources = strengthMatches.sources(for: session.id)
                     return summary
                 },
             recordings: monthRecordings
                 .filter { CalendarDay($0.startedAt, calendar: calendar) == day }
-                .map { HistoryStrengthActivity($0, format: format) },
+                .map { HistoryStrengthActivity($0, sources: strengthMatches.sources(for: $0), format: format) },
             runs: runRecords
                 .filter { CalendarDay($0.activity.startedAt, calendar: calendar) == day }
                 .map { HistoryRunActivity($0, format: format) },
