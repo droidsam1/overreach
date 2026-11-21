@@ -39,8 +39,7 @@ public enum StepWalkDetection {
         let heartRate = heartRate.sorted { $0.date < $1.date }
         let maximumGap = Double(settings.maximumGapMinutes + 1) * 60
         var walks: [WalkBout] = []
-        // The walk being built: its first minute, its last walking minute and the steps up to that minute.
-        var current: (start: Date, last: Date, steps: Double, stepsAtLast: Double)?
+        var current: OpenWalk?
 
         func close() {
             defer { current = nil }
@@ -73,11 +72,21 @@ public enum StepWalkDetection {
                 }
                 current = walk
             } else if isWalking {
-                current = (minute.date, minute.date, minute.value, minute.value)
+                current = OpenWalk(
+                    start: minute.date, last: minute.date, steps: minute.value, stepsAtLast: minute.value
+                )
             }
         }
         close()
         return walks
+    }
+
+    /// The walk being built: its first minute, its last walking minute, all steps so far and those up to that minute.
+    private struct OpenWalk {
+        var start: Date
+        var last: Date
+        var steps: Double
+        var stepsAtLast: Double
     }
 
     private static func averageHeartRate(_ samples: [TimedValue], from start: Date, to end: Date) -> Double? {
