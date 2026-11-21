@@ -65,10 +65,14 @@ public enum ProgressionTargets {
     /// The logger and previews use the same history and setting priorities.
     public static let historyWindow: TimeInterval = 365 * 86_400
 
+    /// The settings an exercise is progressed with: the stored ones, else the exercise's defaults (a 2.5 kg increment
+    /// when the exercise is no longer in the catalog) with the focus's scheme; a routine's prescription wins. Every
+    /// screen resolves settings here (ADR-0035).
     public static func settings(
-        for exercise: Exercise, stored: ProgressionSettings?, focus: TrainingFocus?, prescription: ProgressionScheme?
+        for exercise: Exercise?, stored: ProgressionSettings?, focus: TrainingFocus? = nil,
+        prescription: ProgressionScheme? = nil
     ) -> ProgressionSettings {
-        var settings = stored ?? ProgressionSettings(for: exercise)
+        var settings = stored ?? exercise.map { ProgressionSettings(for: $0) } ?? ProgressionSettings(incrementKg: 2.5)
         if stored == nil, let focus {
             settings.scheme = FocusPrescription.for(focus).defaultScheme
         }

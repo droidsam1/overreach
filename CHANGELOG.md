@@ -117,6 +117,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings → Appearance: light, dark or the same as the iPhone (the default).
 
 ### Fixed
+- A lift is stalled or progressing in the same way in the workout, Plan, Today's deload advice and the AI context:
+  all use the settings of the routine the lift was last trained in, and Plan no longer counts exercises left
+  unfinished (ADR-0035).
 - Today, Plan and the workout count from the same last deload or break. Today no longer says "51 weeks since your
   last deload" when Plan shows one two weeks ago, and proposes no new deload in the week after one. With no deload in
   the history it says how many weeks of training it looked at (ADR-0035).

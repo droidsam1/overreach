@@ -577,7 +577,7 @@ public final class WorkoutModel {
         } else {
             choices = []
         }
-        let status = StallDetection.status(history: history, settings: settings)
+        let status = LiftStatus.assess(exerciseID: exercise.id, history: history, settings: settings).status
         let primed = isPrimed(exercise, before: id)
         let fallbackWeightKg = history.last?.workingWeightKg
         let plan = Self.warmUpPlan(

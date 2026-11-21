@@ -61,13 +61,9 @@ public struct DeloadAdvice: Hashable, Sendable {
         if let postponed = profile.deloadPostponedUntil, today <= postponed { return nil }
 
         let byID = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        let used = Set(sessions.flatMap { $0.entries.map(\.exerciseID) })
-        let lifts = used.compactMap { id -> DeloadAdvisor.Lift? in
-            guard let exercise = byID[id] else { return nil }
-            let history = ExerciseExposure.history(of: id, in: sessions)
-            guard !history.isEmpty else { return nil }
-            return DeloadAdvisor.Lift(history: history, settings: settings[id] ?? ProgressionSettings(for: exercise))
-        }
+        let lifts = LiftStatus.assessAll(
+            index: ExposureIndex(sessions: sessions), exercises: byID, stored: settings, routines: routines
+        ).map { DeloadAdvisor.Lift(history: $0.history, settings: $0.settings) }
         let recovery = RecoveryTrend.assess(
             today: today, history: history, checkIns: checkIns, settings: readinessSettings, cycle: cycle,
             calendar: calendar
