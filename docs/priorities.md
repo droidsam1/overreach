@@ -15,8 +15,11 @@ and the logger come before review tools, and work that only a person with an iPh
    date under today's target, haptic set completion and a report that leads with the saved confirmation and any
    record, and an opt-in "Use last time's values" in the exercise menu. Next: the one-handed timing on a device
    ([#21](https://github.com/droidsam1/overreach/issues/21)), which needs a person.
-2. **Recovery & Progress from Today** — [#125](https://github.com/droidsam1/overreach/issues/125). After #94
-   and shared readiness, open the new destination and move the metrics and everyday movement details together.
+2. **Recovery & Progress from Today** — [#125](https://github.com/droidsam1/overreach/issues/125). Shipped:
+   "View recovery" opens Recovery (readings with source, last update, coverage and baseline) and Recent load
+   (strength, running, everyday movement, Garmin estimate); Today's metric tiles moved there. Next: move the
+   everyday movement details out of Today, keeping what changes the day's decision, and the iPhone, large text
+   and VoiceOver checks ([#21](https://github.com/droidsam1/overreach/issues/21)).
 3. **One activity log** — [#40](https://github.com/droidsam1/overreach/issues/40), in order
    [#85](https://github.com/droidsam1/overreach/issues/85) → [#86](https://github.com/droidsam1/overreach/issues/86)
    → [#87](https://github.com/droidsam1/overreach/issues/87) → [#88](https://github.com/droidsam1/overreach/issues/88).

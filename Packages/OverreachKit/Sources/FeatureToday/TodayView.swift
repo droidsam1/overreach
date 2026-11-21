@@ -10,6 +10,7 @@ public struct TodayView: View {
     @State private var checkInSheet: CheckInModel?
     private let onConnectGarmin: () -> Void
     private let recoveryHistory: (() -> AnyView)?
+    private var recoveryDestination: (() -> AnyView)?
 
     public enum WorkoutContinuation {
         case resume(String), reviewDraft
@@ -44,6 +45,16 @@ public struct TodayView: View {
         self.onOpenHistory = onOpenHistory
         self.onConnectGarmin = onConnectGarmin
         self.recoveryHistory = { AnyView(recoveryHistory()) }
+    }
+
+    /// Where "View recovery" goes: the readings and recent load that used to sit in Today's metrics. Pushed in
+    /// Today's own stack, so going back returns to the decision.
+    public func recoveryProgress<Destination: View>(
+        @ViewBuilder _ destination: @escaping () -> Destination
+    ) -> TodayView {
+        var copy = self
+        copy.recoveryDestination = { AnyView(destination()) }
+        return copy
     }
 
     public var body: some View {
@@ -90,16 +101,18 @@ public struct TodayView: View {
                         checkIn(prominent: false)
                     }
                     if !model.movementNotes.isEmpty {
-                        movement
+                        TodayMovement(model: model)
                     }
                     if model.showsReadinessCard {
-                        DisclosureGroup("Today's metrics") {
-                            TodayMetrics(model: model)
-                            if primary != .connectHealth, model.showsConnectHealth {
-                                connectHealth(prominent: false)
-                            }
-                            if primary != .connectGarmin, model.showsConnectGarmin {
-                                connectGarmin(prominent: false)
+                        if primary != .connectHealth, model.showsConnectHealth {
+                            connectHealth(prominent: false)
+                        }
+                        if primary != .connectGarmin, model.showsConnectGarmin {
+                            connectGarmin(prominent: false)
+                        }
+                        if let recoveryDestination {
+                            NavigationLink(destination: recoveryDestination()) {
+                                Label("View recovery", systemImage: "heart.text.square")
                             }
                         }
                         Button("View recent training", systemImage: "calendar", action: onOpenHistory)
@@ -405,27 +418,6 @@ public struct TodayView: View {
                 Text(summary).font(.caption).foregroundStyle(.secondary)
             }
         }
-    }
-
-    /// Steps and walks against the usual day: context for today's training, with its evidence.
-    private var movement: some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
-            Label("Everyday movement", systemImage: "figure.walk")
-                .font(.headline)
-                .accessibilityAddTraits(.isHeader)
-            ForEach(model.movementNotes, id: \.self) { note in
-                VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                    Text(note.text).font(.subheadline)
-                    if let evidence = note.evidence {
-                        Text(evidence).font(.caption).foregroundStyle(.secondary)
-                    }
-                }
-                .accessibilityElement(children: .combine)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Spacing.medium)
-        .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
     }
 }
 
