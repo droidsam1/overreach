@@ -17,6 +17,7 @@ import Persistence
 import PlanPresentation
 import SettingsPresentation
 import TodayPresentation
+import TrendsPresentation
 import WorkoutPresentation
 
 /// Composition root: the only place that knows the concrete implementations (ADR-0002).
@@ -156,6 +157,14 @@ final class AppContainer {
             checkIns: checkIns, backup: backup, garmin: garmin, profiles: profiles, workouts: workouts,
             exercises: exercises, recordedStrength: recordedStrength, routines: routines, progression: progression,
             cycle: cycleSource
+        )
+    }
+
+    func makeRecoveryProgressModel() -> RecoveryProgressModel {
+        RecoveryProgressModel(
+            sources: metricsSources, activity: activitySources, checkIns: checkIns, garmin: garmin,
+            profiles: profiles, workouts: workouts, exercises: exercises, recordedStrength: recordedStrength,
+            routines: routines, progression: progression, cycle: cycleSource
         )
     }
 

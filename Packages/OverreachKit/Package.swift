@@ -68,7 +68,9 @@ let package = Package(
         .target(name: "FeatureHistory", dependencies: uiDependencies + [
             .product(name: "HistoryPresentation", package: core),
         ]),
-        .target(name: "FeatureTrends", dependencies: uiDependencies),
+        .target(name: "FeatureTrends", dependencies: uiDependencies + [
+            .product(name: "TrendsPresentation", package: core),
+        ]),
         .target(name: "FeatureExercises", dependencies: uiDependencies + [
             .product(name: "ExercisesPresentation", package: core),
         ]),
