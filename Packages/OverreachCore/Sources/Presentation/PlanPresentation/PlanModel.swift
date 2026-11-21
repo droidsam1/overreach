@@ -105,7 +105,7 @@ public final class PlanModel {
     private let progression: any ProgressionSettingsRepository
     private let routines: (any RoutineRepository)?
     private let clock: @Sendable () -> Date
-    private let calendar: Calendar
+    let calendar: Calendar
     private let runSources: [any MetricsSource]
     private let recordedStrength: (any RecordedStrengthSource)?
 

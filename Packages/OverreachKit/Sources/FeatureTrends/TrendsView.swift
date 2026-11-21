@@ -3,20 +3,27 @@ import SwiftUI
 import TrendsPresentation
 
 /// "Recovery & Progress": one row per section with a short summary, each opening its detail. Today's "View
-/// recovery" opens the recovery detail directly. Pushed inside the caller's navigation stack, so going back keeps
-/// the caller in context.
-public struct TrendsView: View {
+/// recovery" opens the recovery detail and Plan's "View progress" the progress detail directly. Pushed inside the
+/// caller's navigation stack, so going back keeps the caller in context.
+public struct TrendsView<Progress: View>: View {
     @State private var model: RecoveryProgressModel
     private let section: RecoveryProgressModel.Section?
+    private let progressSummary: String
+    private let progress: Progress
     private let onConnectGarmin: () -> Void
 
-    /// - Parameter section: open this section's detail instead of the list of sections.
+    /// - Parameters:
+    ///   - section: open this section's detail instead of the list of sections.
+    ///   - progressSummary: the line under the Progress row.
+    ///   - progress: the Progress detail. It comes from the Plan feature, so the app wires it.
     public init(
-        model: RecoveryProgressModel, section: RecoveryProgressModel.Section? = nil,
-        onConnectGarmin: @escaping () -> Void = {}
+        model: RecoveryProgressModel, section: RecoveryProgressModel.Section? = nil, progressSummary: String = "",
+        onConnectGarmin: @escaping () -> Void = {}, @ViewBuilder progress: () -> Progress
     ) {
         _model = State(initialValue: model)
         self.section = section
+        self.progressSummary = progressSummary
+        self.progress = progress()
         self.onConnectGarmin = onConnectGarmin
     }
 
@@ -25,6 +32,7 @@ public struct TrendsView: View {
             switch section {
             case .recovery: RecoveryDetail(model: model, onConnectGarmin: onConnectGarmin, linksToRecentLoad: true)
             case .recentLoad: RecentLoadDetail(model: model, onConnectGarmin: onConnectGarmin)
+            case .progress: progress
             case nil: sections
             }
         }
@@ -42,12 +50,28 @@ public struct TrendsView: View {
                     )
                 }
                 RecentLoadLink(model: model, onConnectGarmin: onConnectGarmin)
+                if Progress.self != EmptyView.self {
+                    NavigationLink(destination: progress) {
+                        SectionRow(
+                            title: "Progress", systemImage: "chart.line.uptrend.xyaxis", summary: progressSummary
+                        )
+                    }
+                }
             }
             .buttonStyle(.plain)
             .padding(Spacing.medium)
         }
         .navigationTitle("Recovery & Progress")
         .navigationBarTitleDisplayModeInline()
+    }
+}
+
+extension TrendsView where Progress == EmptyView {
+    public init(
+        model: RecoveryProgressModel, section: RecoveryProgressModel.Section? = nil,
+        onConnectGarmin: @escaping () -> Void = {}
+    ) {
+        self.init(model: model, section: section, onConnectGarmin: onConnectGarmin) { EmptyView() }
     }
 }
 
