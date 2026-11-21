@@ -71,6 +71,8 @@ struct DeloadProposalCard<SessionPreview: View>: View {
             }
         }
         .navigationTitle(DeloadProposalText.details)
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
     }
 }
