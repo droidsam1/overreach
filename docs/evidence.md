@@ -492,6 +492,12 @@ least one of HRV or resting HR → red. Subjective and sleep signals alone never
 (no baseline, no sleep, no check-in) → unknown. Phase-aware baselines for naturally cycling users (ADR-0009)
 are not applied yet. All thresholds configurable. Reviewed 2026-11-19.
 
+### `readiness-input-quality` — heuristic
+Data-quality defaults for the readiness inputs (ADR-0032). HRV outside 3–300 ms, resting HR outside 25–150 bpm and
+sleep of 0 h or above 18 h are treated as measurement errors and ignored. Sleep and daytime HRV readings are
+separate series, as HRV depends on posture, activity and time of day. An earlier day never stands in for today's
+resting HR or sleep. The ranges are wide engineering limits, not physiological norms. Reviewed 2026-11-21.
+
 ## Wearable data
 
 How Today presents numbers from the devices (evidence review 2026-11, §5). Only measured values and Overreach's own

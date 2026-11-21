@@ -6,13 +6,15 @@ Today should tell the athlete what to do, which signals matter, and how the sugg
 
 ## Continue from here
 
-**Next delivery: dated strength assignments.** Show a dated routine alongside runs and races in the hybrid calendar. Today should compare a routine assigned to today with a lighter variant on amber days. Preserve the undated strength rotation and label that fallback as “up next”. Cover a day with both strength and running, explicit rest, and a dated session that is already complete. The delivery lives under [strength adjustments](#5-compare-against-todays-strength-session-and-offer-an-optional-alternative) and [calendar integration](#7-represent-planned-runs-races-and-dates).
+**Next delivery: ask a question that changes the decision.** Task 1 is done, so [task 3](#3-ask-a-question-that-changes-the-decision) can extend the check-in from the audited inputs. `Readiness.inputs` says which signals were compared, stale or missing, so a question can target the input that would change today's action. [Task 2](#2-join-recovery-with-completed-training) is also unblocked and can run in parallel.
 
-The dated-strength implementation is tracked in [#99](https://github.com/droidsam1/overreach/pull/99). Start with `PlanSchedule` and `TrainingBlock` for the strength rotation, `PlannedRun` and `PlanModel` for dated entries, and `TodayModel` and `StrengthOption` for the amber comparison. Follow the storage and ID conventions already used by the calendar. [Strength rotation](../adr/0019-training-plans.md) · [Running calendar](../adr/0028-running-calendar.md)
+Start with `ReadinessRules.contextQuestion`, `CheckIn.Context` and the check-in flow in `TodayModel`. Keep the old check-in format readable (ADR-0018). [Input audit](../adr/0032-auditable-readiness-inputs.md) · [HRV series](../adr/0025-hrv-one-series-per-metric.md)
 
 ## Shipped baseline
 
 - Today has an explainable readiness card, a contextual check-in and a seven-day training and recovery timeline. `MetricsSource` and `WorkoutRepository` supply the timeline, with `RunDeduplication` and `StrengthActivityMatching` for mirrored workouts. [Timeline PR](https://github.com/droidsam1/overreach/pull/75) · [Explanation PR](https://github.com/droidsam1/overreach/pull/78)
+- The readiness result lists every input with its source, status (compared, missing, stale, out of range, building baseline), recent coverage, reference window and outcome. Sleep and daytime HRV readings are separate series, and implausible readings are ignored and counted. [Input audit ADR](../adr/0032-auditable-readiness-inputs.md)
+- Plan assigns routines and strength rest days to dates next to runs, and Today compares the assigned routine with a lighter option on amber days. [Dated strength PR](https://github.com/droidsam1/overreach/pull/99)
 - Plan stores hybrid running goals, dated runs, races and rest days. A planned run can link explicitly to an imported recording. Today uses recovery, recent runs and the calendar for easy-run advice. Strength currently uses an undated rotation and an optional amber example. [Strength PR](https://github.com/droidsam1/overreach/pull/79) · [Running goal PR](https://github.com/droidsam1/overreach/pull/89) · [Calendar PR](https://github.com/droidsam1/overreach/pull/95)
 
 ## What Today should show
@@ -43,9 +45,9 @@ Each task includes the portions already shipped and criteria for the remaining w
 
 ### 1. Make the readiness inputs auditable
 
-Coverage counts and missing-data reasons shipped in [#73](https://github.com/droidsam1/overreach/pull/73). Separate HRV series shipped in [#84](https://github.com/droidsam1/overreach/pull/84). The remaining audit covers per-signal provenance, measurement protocol, baseline overlap and coverage of the other readiness inputs.
+Coverage counts and missing-data reasons shipped in [#73](https://github.com/droidsam1/overreach/pull/73). Separate HRV series shipped in [#84](https://github.com/droidsam1/overreach/pull/84). Per-signal provenance, measurement protocol, plausible ranges, baseline overlap and the coverage of every input shipped with [ADR-0032](../adr/0032-auditable-readiness-inputs.md). The baseline keeps the nights it shares with the trend window and records how many. Device identity within Apple Health is not available.
 
-- [ ] Extend the readiness result with per-signal provenance, coverage, recency, measured values, reference window and comparison outcome. Keep device, statistic and measurement protocol comparable. Distinguish missing, stale and out-of-range data. Evaluate baseline overlap with the recent window and record the chosen policy. Keep the seven-day display summary distinct from the long-term baseline. [HRV series](../adr/0025-hrv-one-series-per-metric.md)
+- [x] Extend the readiness result with per-signal provenance, coverage, recency, measured values, reference window and comparison outcome. Keep device, statistic and measurement protocol comparable. Distinguish missing, stale and out-of-range data. Evaluate baseline overlap with the recent window and record the chosen policy. Keep the seven-day display summary distinct from the long-term baseline. [HRV series](../adr/0025-hrv-one-series-per-metric.md)
 - **Done when** fixtures cover Garmin RMSSD and Apple SDNN together, sparse or invalid samples, a device switch, daytime fallback, a source outage and no data today. The low-night count always uses the eligible measured denominator and can explain why HRV was skipped. Old caches and backups decode or follow the documented rebuild path.
 
 ### 2. Join recovery with completed training

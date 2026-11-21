@@ -120,6 +120,22 @@ struct TodayWeekTests {
         #expect(model.hrvCoverageNote == "Too few comparable HRV readings (SDNN, Apple Health) in the last 7 days (1 available, 3 needed).")
     }
 
+    @Test func aSourceOutageSaysWhenHRVWasLastRead() async {
+        // The watch stopped syncing ten days ago: the series has a baseline but nothing recent (ADR-0032).
+        let baseline = (10...40).map { day(-$0, sleepHours: nil, hrv: 55, steps: nil) }
+        let model = TodayModel(
+            sources: [WeekSource(days: baseline)], calendar: calendar,
+            format: Format(locale: Locale(identifier: "en_US"))
+        )
+
+        await model.load(now: now)
+
+        #expect(model.readinessLevel == .unknown)
+        #expect(model.showsReadinessCard)
+        let note = model.hrvCoverageNote ?? ""
+        #expect(note.hasPrefix("HRV not used today: no recent reading (SDNN, Apple Health). The latest was on"))
+    }
+
     @Test func lowHRVExplainsTheComparisonWithoutInventingMissingNightsOrWorkouts() async {
         let days = (0...30).map { offset in
             let hrv: Double? = switch offset {

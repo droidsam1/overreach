@@ -62,6 +62,36 @@ struct MarkdownReportRendererTests {
         #expect(markdown.contains("[research source](https://doi.org/10.3390/ijerph181910299)"))
     }
 
+    @Test func readinessReportListsEachInputWithItsProvenance() {
+        let day = CalendarDay(year: 2026, month: 11, day: 16)
+        let readiness = Readiness(level: .amber, reasons: [.hrvBelowBaseline(nights: 4)], inputs: [
+            ReadinessInputAudit(
+                input: .hrv(HRVSeriesID(.rmssd, .sleep)), status: .compared, source: .garmin, latestDay: day,
+                value: 34.6, recentDays: 7, recentReadings: 5, rejectedReadings: 1,
+                reference: ReadinessReference(
+                    kind: .personalBaseline, days: 60, readings: 24, minimumReadings: 14, overlappingReadings: 4,
+                    value: 43.2
+                ),
+                outcome: .below
+            ),
+            ReadinessInputAudit(
+                input: .hrv(HRVSeriesID(.sdnn, .sleep)), status: .stale, source: .appleHealth,
+                latestDay: CalendarDay(year: 2026, month: 11, day: 2), recentDays: 7
+            ),
+            ReadinessInputAudit(input: .sleep, status: .missing),
+        ])
+        let markdown = MarkdownReportRenderer.render(TrainingReport(generatedAt: .now, readiness: readiness))
+
+        #expect(markdown.contains(
+            "    - HRV (RMSSD, sleep) from Garmin: compared; latest 2026-11-16; recent mean 35 ms; "
+                + "5 usable readings in the last 7 days; baseline 43 ms from 24 readings over 60 days (minimum 14), "
+                + "4 of them inside the recent window; 1 implausible readings ignored; below the reference"
+        ))
+        let stale = "    - HRV (SDNN, sleep) from Apple Health: no recent data, not used; latest 2026-11-02"
+        #expect(markdown.contains(stale))
+        #expect(markdown.contains("    - Sleep: no data"))
+    }
+
     @Test func formatsPaceAsMinutesAndSeconds() {
         #expect(MarkdownReportRenderer.formatPace(305) == "5:05 /km")
         #expect(MarkdownReportRenderer.formatPace(nil) == "–")

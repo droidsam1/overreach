@@ -97,7 +97,8 @@ public final class TodayModel {
     }
 
     public var hrvCoverageNote: String? {
-        guard let coverage = readiness.hrvCoverage, !coverage.canCompare else { return nil }
+        guard let coverage = readiness.hrvCoverage else { return hrvSkippedNote }
+        guard !coverage.canCompare else { return nil }
         let series = coverage.metric?.seriesLabel ?? L10n.text("HRV")
         if coverage.baselineReadings < coverage.minimumBaselineReadings {
             return L10n.format(
@@ -109,6 +110,27 @@ public final class TodayModel {
             "Too few comparable HRV readings ({1}) in the last {2} days ({3} available, {4} needed).",
             series, String(coverage.recentDays), String(coverage.recentReadings), String(coverage.minimumRecentReadings)
         )
+    }
+
+    /// Why no HRV series was judged when none had a usable reading in the recent window (ADR-0032).
+    private var hrvSkippedNote: String? {
+        guard let input = readiness.hrvInput, case .hrv(let series?) = input.input else { return nil }
+        switch input.status {
+        case .stale:
+            guard let latest = input.latestDay else { return nil }
+            let style = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
+            return L10n.format(
+                "HRV not used today: no recent reading ({1}). The latest was on {2}.",
+                series.metric.seriesLabel, latest.startDate(in: calendar).formatted(style.day().month(.abbreviated))
+            )
+        case .outOfRange:
+            return L10n.format(
+                "HRV not used today: the recent readings ({1}) are outside the plausible range.",
+                series.metric.seriesLabel
+            )
+        default:
+            return nil
+        }
     }
 
     public var showsReadinessDetails: Bool { !readiness.reasons.isEmpty || hrvCoverageNote != nil }
