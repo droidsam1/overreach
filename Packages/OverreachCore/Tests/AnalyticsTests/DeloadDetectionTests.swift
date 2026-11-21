@@ -14,8 +14,9 @@ struct DeloadDetectionTests {
     }
 
     private func session(_ offset: Int, weight: Double = 80, rpe: Double? = 8, routine: UUID? = nil) -> StrengthSession {
-        StrengthSession(
-            name: "Strength", startedAt: day(offset).startDate(in: calendar),
+        let start = day(offset).startDate(in: calendar)
+        return StrengthSession(
+            name: "Strength", startedAt: start, endedAt: start.addingTimeInterval(3_600),
             entries: [ExerciseEntry(
                 exerciseID: lift, sets: (0..<3).map { _ in WorkoutSet(weightKg: weight, reps: 8, rpe: rpe) }
             )],

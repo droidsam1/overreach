@@ -1,12 +1,10 @@
 # Training services: one source of truth per question
 
-Status: tasks 1–3 and part of 4 shipped (reviewed 2026-11-21). Decision: ADR-0035.
+Status: tasks 1–5 implemented (reviewed 2026-11-21). Decision: ADR-0035.
 
 ## Continue from here
 
-Take the first task below whose boxes are not all checked. Each task is one pull request and leaves `main`
-working. Task 2 replaces task 1 of [deloads and breaks](deloads-and-breaks.md): check its box there when done.
-Keep `AGENTS.md` (layout and dependency rules) current as services move in.
+Continue with [breaks per discipline](deloads-and-breaks.md#3-breaks-per-discipline-counted-automatically).
 
 ## Inventory of drift
 
@@ -71,7 +69,7 @@ it to every model that needs it.
   Assistant's rows per source.
 - [x] Tests with fake sources: unavailable, failing, duplicated runs, two sources for one day.
 
-Finish line: presentation modules call `runs(from:to:)` and `dailyMetrics(in:)` only on `SourceReader`.
+Finish line: presentation reads runs through `SourceReader` and daily metrics through `TrainingRecordLoader`.
 
 ### 2. Recovery status
 
@@ -114,21 +112,22 @@ compares with defaults.
   baseline; without cycle tracking it used to stop at 60 days.
 - [x] `SourceReader.dailyMetricsBySource` keeps the AI context's documented rows per day and source (task 1 had
   merged them, which dropped Apple Watch SDNN on days with Garmin HRV).
-- [ ] A `TrainingRecord` loader in `TrainingServices` that reads, for a day, the year of sessions, exercises,
+- [x] A `TrainingRecord` loader in `TrainingServices` that reads, for a day, the year of sessions, exercises,
   settings, routines, runs, watch recordings, merged metrics, the week's check-ins, walks and the cycle context.
   `TodayModel` and `AskAIModel` use it; `AppContainer` passes `AskAIModel` the activity and cycle sources it lacks.
-  Today passes only completed sessions to `DeloadDetection` and Plan passes all of them: decide once there.
-- [ ] Give the AI context pack the same readiness and deload answers Today shows: an optional `today` field
+  Today and Plan use the same completion criterion for `DeloadDetection`. The Assistant preserves the selected
+  export period while it assesses Today over the full baseline.
+- [x] Give the AI context pack the same readiness and deload answers Today shows: an optional `today` field
   (readiness level and reasons, deload state and signals, as rule names), documented in `docs/ai-exchange.md`
   (optional field, version stays 1). `AIExchange` may depend on `TrainingServices`.
-- [ ] Distinct names for the per-reading and 7-day-trend HRV counts (`RecoveryTrend.hrvLowDays` and its text);
-  coordinate the wording with [deloads task 5](deloads-and-breaks.md#5-today-deload-card-summary-first-details-on-demand).
+- [x] Distinct names for the per-reading and 7-day-trend HRV counts (`RecoveryTrend.hrvLowDays` and its text);
+  Today calls the deload signal the 7-day HRV average.
 
 Finish line: the AI context and Today state the same readiness level and deload proposal for the same day.
 
 ### 5. Guard the boundary
 
-- [ ] Add a check (SwiftLint `custom_rules` or `scripts/check-repo.py`) that fails when a file under
+- [x] Add a check (`scripts/check-repo.py`) that fails when a file under
   `Packages/OverreachCore/Sources/Presentation` calls `.runs(from`, `.dailyMetrics(in`, `DeloadDetection.`,
   `DeloadAdvisor.`, `StallDetection.status` or `ReadinessRules.readiness`.
 - [x] Mark ADR-0035 accepted and add `TrainingServices` to the layout and dependency rules in `AGENTS.md`.

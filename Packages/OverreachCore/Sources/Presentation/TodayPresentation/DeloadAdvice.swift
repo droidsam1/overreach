@@ -34,39 +34,17 @@ public struct DeloadAdvice: Hashable, Sendable {
     /// "Same exercises, half the working sets, about 10 % less load, RPE 7 at most."
     public let planText: String
 
-    /// - Parameters:
-    ///   - sessions: logged sessions (a year is enough for stalls and drops).
-    ///   - history: merged daily metrics covering the readiness baseline (60 days before the last 7).
-    ///   - checkIns: check-ins of the last 7 days.
-    ///   - cycle: menstrual events and tracking mode, for phase-aware recovery baselines.
-    public static func make(
-        today: CalendarDay, now: Date, sessions: [StrengthSession], exercises: [Exercise],
-        settings: [UUID: ProgressionSettings], profile: AthleteProfile, history: [DailyMetrics], checkIns: [CheckIn],
-        runs: [RunActivity] = [], runReadFailed: Bool = false, routines: [Routine] = [],
-        recordings: [RecordedStrengthActivity] = [], cycle: CycleContext? = nil, activity: [DailyActivity] = [],
-        readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(),
-        advisorSettings: DeloadAdvisor.Settings = DeloadAdvisor.Settings(),
-        calendar: Calendar = .current, format: Format = Format()
-    ) -> DeloadAdvice? {
-        let plan = advisorSettings.plan
+    static func make(
+        _ assessment: DeloadAssessment, exercises: [Exercise], plan: DeloadPlan = .standard,
+        calendar: Calendar, format: Format
+    ) -> DeloadAdvice {
         let planText = L10n.format(
             "Same exercises, {1} of the working sets, about {2} less load, RPE {3} at most.",
             plan.setMultiplier == 0.5 ? L10n.text("half") : format.number(plan.setMultiplier * 100) + " %",
             format.number((1 - plan.loadMultiplier) * 100, maxFractionDigits: 0) + " %",
             format.number(plan.maximumRPE)
         )
-        let record = TrainingRecord(
-            sessions: sessions, exercises: exercises, settings: settings, routines: routines, runs: runs,
-            runReadFailed: runReadFailed, recordings: recordings, metrics: history, checkIns: checkIns,
-            activity: activity, cycle: cycle
-        )
-        let assessment = DeloadAssessment.assess(
-            today: today, now: now, profile: profile, record: record, readinessSettings: readinessSettings,
-            settings: advisorSettings, calendar: calendar
-        )
         switch assessment {
-        case nil:
-            return nil
         case let .inProgress(lastDay):
             return DeloadAdvice(state: .inProgress(lastDay: lastDay.startDate(in: calendar)), planText: planText)
         case let .confirmBreak(pending):
@@ -83,9 +61,17 @@ public struct DeloadAdvice: Hashable, Sendable {
                 planText: planText
             )
         case let .proposed(proposal, walkingIncluded):
-            let reasons = proposal.signals.map {
-                DeloadReasonLine(text: text(for: $0, format: format, walkingIncluded: walkingIncluded),
-                                 evidence: $0.evidence.level.displayName)
+            let namesByID = Exercise.displayNames(exercises)
+            let names = proposal.stalledExerciseIDs.compactMap { namesByID[$0] }.sorted()
+            let reasons = proposal.signals.map { signal in
+                let summary = text(for: signal, format: format, walkingIncluded: walkingIncluded)
+                if case .liftsStalled = signal, !names.isEmpty {
+                    return DeloadReasonLine(
+                        text: L10n.format("{1} The stalled exercises are {2}.", summary, names.joined(separator: ", ")),
+                        evidence: signal.evidence.level.displayName
+                    )
+                }
+                return DeloadReasonLine(text: summary, evidence: signal.evidence.level.displayName)
             }
             return DeloadAdvice(state: .proposed(reasons: reasons), planText: planText)
         }
@@ -113,7 +99,7 @@ public struct DeloadAdvice: Hashable, Sendable {
         case let .weeklyLoadSpike(ratio):
             L10n.format("Training load rose fast this week ({1}× your usual).", format.number(ratio, maxFractionDigits: 1))
         case let .hrvSuppressed(days):
-            L10n.format("HRV below your usual range on {1} of the last 7 days.", days)
+            L10n.format("Your 7-day HRV average was below your usual range on {1} of the last 7 days.", days)
         case let .restingHeartRateElevated(days):
             L10n.format("Resting HR above your usual on {1} of the last 7 days.", days)
         case let .shortSleep(nights):

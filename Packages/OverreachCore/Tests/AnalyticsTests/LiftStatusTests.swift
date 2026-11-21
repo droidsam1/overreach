@@ -49,6 +49,26 @@ struct LiftStatusTests {
         #expect(status.settings.scheme == scheme)
     }
 
+    @Test func aKnownRotationUsesCurrentTemplatesInsteadOfRemovedExercises() {
+        let oldLift = UUID()
+        let lower = Routine(name: "Legs", exerciseIDs: [squat.id])
+        let upper = Routine(name: "Upper", exerciseIDs: [UUID()])
+        let oldRoutine = Routine(name: "Old", exerciseIDs: [oldLift])
+        let sessions = [
+            session(0, 70, [5, 5, 5], routine: oldRoutine),
+            session(3, 80, [5, 5, 5], routine: lower), session(6, 80, [5, 5, 5], routine: upper),
+            session(9, 80, [5, 5, 5], routine: lower), session(12, 80, [5, 5, 5], routine: upper),
+        ]
+
+        let ids = LiftStatus.currentExerciseIDs(
+            sessions: sessions, routines: [lower, upper, oldRoutine], profile: nil,
+            now: start.addingTimeInterval(13 * 86_400)
+        )
+
+        #expect(ids == Set(lower.exerciseIDs + upper.exerciseIDs))
+        #expect(ids?.contains(oldLift) == false)
+    }
+
     @Test func anExerciseMissingFromTheCatalogUsesTheSameFallbackEverywhere() {
         let settings = ProgressionTargets.settings(for: nil, stored: nil)
         #expect(settings == ProgressionSettings(incrementKg: 2.5))

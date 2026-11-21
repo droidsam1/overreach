@@ -90,6 +90,20 @@ public enum StallDetection {
         ))
     }
 
+    /// Details of the flat window that caused the stall, with the working set behind its best estimate.
+    static func explanation(
+        exerciseID: UUID, history: [ExerciseExposure], status: ExerciseStatus, facts: StallFacts?
+    ) -> StallExplanation? {
+        guard case let .stalled(suggestions) = status, let facts else { return nil }
+        let recent = history.suffix(facts.recentSessions)
+        guard let first = recent.first, let last = recent.last,
+              let best = recent.compactMap(\.bestEstimatedSet).max(by: { $0.kg < $1.kg }) else { return nil }
+        return StallExplanation(
+            exerciseID: exerciseID, stalledSince: first.date, bestEstimatedOneRepMax: best.kg,
+            bestSet: best.set, lastExposure: last.date, suggestions: suggestions
+        )
+    }
+
     /// The numbers behind the status, to explain it; `nil` without enough history.
     public static func facts(
         history: [ExerciseExposure], settings: ProgressionSettings, thresholds: Thresholds = Thresholds()
@@ -165,4 +179,13 @@ public struct StallFacts: Hashable, Codable, Sendable {
     public let misses: Int
     /// Reps missing in the last missed session.
     public let lastShortfall: Int?
+}
+
+public struct StallExplanation: Hashable, Sendable {
+    public let exerciseID: UUID
+    public let stalledSince: Date
+    public let bestEstimatedOneRepMax: Double
+    public let bestSet: WorkoutSet
+    public let lastExposure: Date
+    public let suggestions: [StallSuggestion]
 }

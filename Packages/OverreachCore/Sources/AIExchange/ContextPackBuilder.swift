@@ -17,6 +17,7 @@ public struct ContextInput: Sendable {
     public var runs: [RunActivity]
     /// Strength workouts recorded by watches; those that match a session are attached to it.
     public var strengthRecordings: [RecordedStrengthActivity]
+    public var today: ContextPack.Today?
     public var appVersion: String?
 
     public init(
@@ -30,6 +31,7 @@ public struct ContextInput: Sendable {
         dailyMetrics: [DailyMetrics] = [],
         runs: [RunActivity] = [],
         strengthRecordings: [RecordedStrengthActivity] = [],
+        today: ContextPack.Today? = nil,
         appVersion: String? = nil
     ) {
         self.sessions = sessions
@@ -42,6 +44,7 @@ public struct ContextInput: Sendable {
         self.dailyMetrics = dailyMetrics
         self.runs = runs
         self.strengthRecordings = strengthRecordings
+        self.today = today
         self.appVersion = appVersion
     }
 }
@@ -91,13 +94,14 @@ public enum ContextPackBuilder {
                 shared.watch = watchBySession[session.id].map(watch)
                 return shared
             },
-            exerciseTrends: trends(input, sessions: sessions, byID: byID, now: now),
+            exerciseTrends: trends(input, sessions: sessions, byID: byID, now: now, calendar: calendar),
             checkIns: input.checkIns.sorted { $0.day < $1.day }.map { checkIn in
                 .init(date: checkIn.day.description, isSick: checkIn.isSick, energy: checkIn.energy,
                       soreness: checkIn.soreness, note: checkIn.note)
             },
             dailyMetrics: input.dailyMetrics.sorted { $0.day < $1.day }.map(metrics),
             runs: input.runs.sorted { $0.startedAt < $1.startedAt }.map { run(from: $0, calendar: calendar) },
+            today: input.today,
             imports: [.init(format: PlanMessage.formatName, version: PlanMessage.currentVersion,
                             reference: PlanMessage.referenceURL, schema: PlanMessage.schemaURL)]
         )
@@ -206,14 +210,21 @@ public enum ContextPackBuilder {
     }
 
     private static func trends(
-        _ input: ContextInput, sessions: [StrengthSession], byID: [UUID: Exercise], now: Date
+        _ input: ContextInput, sessions: [StrengthSession], byID: [UUID: Exercise], now: Date, calendar: Calendar
     ) -> [ContextPack.ExerciseTrend] {
+        let history = input.earlierSessions + sessions
+        let currentIDs = LiftStatus.currentExerciseIDs(
+            sessions: history, routines: input.routines, profile: input.profile, now: now, calendar: calendar
+        )
         // The same status the logger, Plan and Today give each lift (ADR-0035).
         let statuses = Dictionary(
             LiftStatus.assessAll(
-                index: ExposureIndex(sessions: input.earlierSessions + sessions), exercises: byID,
+                index: ExposureIndex(sessions: history), exercises: byID,
                 stored: input.settings, routines: input.routines, now: now
-            ).map { ($0.exerciseID, $0.status) },
+            ).map { lift in
+                let excludedStall = lift.isStalled && currentIDs?.contains(lift.exerciseID) == false
+                return (lift.exerciseID, excludedStall ? ExerciseStatus.notEnoughData : lift.status)
+            },
             uniquingKeysWith: { first, _ in first }
         )
         var seen = Set<UUID>()
@@ -230,7 +241,9 @@ public enum ContextPackBuilder {
                 lastWorkingWeightKg: lastWeight > 0 ? lastWeight : nil,
                 estimatedOneRepMaxKg: inPeriod.compactMap { exposure in
                     exposure.bestEstimatedOneRepMax.map {
-                        .init(date: CalendarDay(exposure.date).description, kg: rounded($0, places: 1))
+                        .init(
+                            date: CalendarDay(exposure.date, calendar: calendar).description, kg: rounded($0, places: 1)
+                        )
                     }
                 }
             )

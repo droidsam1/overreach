@@ -55,7 +55,7 @@ struct RecentTraining {
         exercises: [Exercise], races: [PlannedRunCompletion]
     ) -> [Activity] {
         // Match across the window boundary before grouping. Logged sets are authoritative for matched lifts.
-        let completedSessions = sessions.filter { Self.isCompleted($0, through: now) }
+        let completedSessions = sessions.filter { $0.isCompleted(through: now) }
         let completedRecordings = recordings.filter { $0.durationSeconds.isFinite && $0.endedAt <= now }
         let matched = StrengthActivityMatching.match(sessions: completedSessions, activities: completedRecordings)
         let exerciseByID = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
@@ -96,13 +96,6 @@ struct RecentTraining {
                      details: [$0.source.displayName])
         }
         return (runActivities + loggedStrength + watchOnly).sorted { ($0.startedAt, $0.text) < ($1.startedAt, $1.text) }
-    }
-
-    static func isCompleted(_ session: StrengthSession, through now: Date) -> Bool {
-        guard session.startedAt <= now else { return false }
-        if let end = session.endedAt { return end <= now }
-        // Older imports can have sets but no end time. An in-progress app session has no place here.
-        return session.source == .strongImport && session.entries.contains { !$0.sets.isEmpty }
     }
 
     private func activity(startedAt: Date, title: String, duration: Double?, details: [String?]) -> Activity {

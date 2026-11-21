@@ -82,14 +82,13 @@ An exercise is **stalled** when, over its last 3 exposures (or 3 weeks), the e1R
 
 Planned changes to these rules, breaks and the deload card: [deloads and breaks](deloads-and-breaks.md).
 
-A deload week = same exercises, −50 % sets, −10 % load, RPE ≤ 7 (`DeloadPlan.standard`). Training is reduced,
-not stopped: a full week off mid-programme cost some strength in the only RCT (`deload-cost`). Time since the
-last deload alone never triggers one; a proposal needs a score ≥ 3, i.e. at least one performance signal.
-Proposed when the score of these signals crosses a threshold (weights and thresholds configurable):
+A deload week = same exercises, −50 % sets, −10 % load, RPE ≤ 7 (`DeloadPlan.standard`). A full week off mid-programme cost some strength in Coleman et al.
+(`deload-cost`). A proposal needs a score ≥ 3, a signal from the lifts, and at least one fatigue signal
+([ADR-0036](../adr/0036-deload-needs-fatigue.md)). Weights and thresholds are configurable:
 
 | Signal | Available from |
 | --- | --- |
-| Two or more main lifts stalled at the same time | v0.1 |
+| Two or more current lifts stalled (main lifts when designated) | v0.1 |
 | RPE creep on several lifts over the last 2 weeks | v0.1 |
 | Performance drop: e1RM down > 3–5 % on several lifts | v0.1 |
 | Weeks since last deload ≥ planned interval (default 6) | v0.1 |
@@ -100,10 +99,10 @@ Proposed when the score of these signals crosses a threshold (weights and thresh
 | Low energy (≤ 2/5) or high soreness (3/3) in ≥ 3 check-ins of the last 7 days | v0.2 |
 | Sickness in a check-in of the last 7 days → return-to-training note instead of a deload | v0.2 |
 
-Recovery signals (`deload-recovery-signals`) add 1 point each, at most 2 together, and never propose a deload on
-their own: a proposal needs at least one performance signal (stalls, e1RM drop or RPE creep). Garmin stress and Body
-Battery are not used (proprietary, unvalidated for this). Today shows the proposal with its reasons; accepting
-records a deload week, which also resets the "weeks since the last deload" signal (ADR-0027).
+Recovery signals (`deload-recovery-signals`) add 1 point each, up to 2 together. The lift signals are a stall,
+an e1RM drop or RPE creep. Fatigue can come from an e1RM drop, RPE creep, a weekly load spike or sustained
+recovery changes. Today names the stalled exercises behind a proposal. Accepting records a deload week
+and resets the interval (ADR-0027).
 
 For naturally cycling users, the HRV and resting-HR signals compare against phase-aware baselines, so normal
 luteal shifts don't fire a deload (`docs/design/cycle-aware-training.md`, ADR-0009).

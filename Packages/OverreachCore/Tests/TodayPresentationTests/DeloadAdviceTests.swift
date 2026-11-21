@@ -1,11 +1,13 @@
 import Analytics
 import AIExchange
+import AssistantPresentation
 import Domain
 import Fixtures
 import Foundation
 import PresentationKit
 import Testing
-import TodayPresentation
+@testable import TodayPresentation
+import TrainingServices
 import WorkoutPresentation
 
 /// A stalled squat and bench (main lifts) over the last three weeks, and a week of poor recovery.
@@ -55,11 +57,18 @@ struct DeloadAdviceTests {
     }
 
     private func makeAdvice(profile: AthleteProfile = AthleteProfile(), poorWeek: Bool = true) -> DeloadAdvice? {
-        DeloadAdvice.make(
-            today: today, now: now, sessions: stalledSessions, exercises: [squat, bench],
-            settings: [squat.id: mainLift, bench.id: mainLift], profile: profile,
-            history: metrics(poorWeek: poorWeek), checkIns: [], calendar: calendar, format: format
+        let record = TrainingRecord(
+            sessions: stalledSessions, exercises: [squat, bench], settings: [squat.id: mainLift, bench.id: mainLift],
+            metrics: metrics(poorWeek: poorWeek)
         )
+        return advice(for: record, profile: profile)
+    }
+
+    private func advice(for record: TrainingRecord, profile: AthleteProfile) -> DeloadAdvice? {
+        let assessment = DeloadAssessment.assess(
+            today: today, now: now, profile: profile, record: record, calendar: calendar
+        )
+        return assessment.map { DeloadAdvice.make($0, exercises: record.exercises, calendar: calendar, format: format) }
     }
 
     @Test func stalledLiftsAndAPoorWeekProposeADeloadWithReasons() throws {
@@ -69,8 +78,8 @@ struct DeloadAdviceTests {
             return
         }
         #expect(reasons.map(\.text) == [
-            "2 main lifts have stalled.",
-            "HRV below your usual range on 7 of the last 7 days.",
+            "2 main lifts have stalled. The stalled exercises are Back Squat, Bench Press.",
+            "Your 7-day HRV average was below your usual range on 7 of the last 7 days.",
             "Less than 6 h of sleep on 7 of the last 7 nights.",
         ])
         #expect(reasons.allSatisfy { !$0.evidence.isEmpty })
@@ -83,11 +92,11 @@ struct DeloadAdviceTests {
     }
 
     private func longAdvice(profile: AthleteProfile) -> [String] {
-        let advice = DeloadAdvice.make(
-            today: today, now: now, sessions: longHistory, exercises: [squat, bench],
-            settings: [squat.id: mainLift, bench.id: mainLift], profile: profile,
-            history: metrics(poorWeek: true), checkIns: [], calendar: calendar, format: format
+        let record = TrainingRecord(
+            sessions: longHistory, exercises: [squat, bench], settings: [squat.id: mainLift, bench.id: mainLift],
+            metrics: metrics(poorWeek: true)
         )
+        let advice = advice(for: record, profile: profile)
         guard case let .proposed(reasons) = advice?.state else { return [] }
         return reasons.map(\.text)
     }
@@ -159,10 +168,11 @@ struct DeloadAdviceTests {
             repeating: historyIsOld ? "notEnoughData" : "stalled", count: 2
         ))
 
-        let advice = DeloadAdvice.make(
-            today: today, now: now, sessions: sessions, exercises: exercises, settings: [:], profile: profile,
-            history: metrics(poorWeek: true), checkIns: [], routines: [routine], calendar: calendar, format: format
+        let record = TrainingRecord(
+            sessions: sessions, exercises: exercises, settings: [:], routines: [routine],
+            metrics: metrics(poorWeek: true)
         )
+        let advice = advice(for: record, profile: profile)
         if historyIsOld {
             #expect(advice == nil)
         } else {
@@ -171,7 +181,8 @@ struct DeloadAdviceTests {
                 Issue.record("Expected a proposal with two stalled lifts")
                 return
             }
-            #expect(reasons.first?.text == "2 lifts you train now have stalled.")
+            let expected = "2 lifts you train now have stalled. The stalled exercises are Back Squat, Bench Press."
+            #expect(reasons.first?.text == expected)
         }
     }
 
@@ -193,11 +204,11 @@ struct DeloadAdviceTests {
             return DailyActivity(day: day, steps: 8_000, walks: [walk])
         }
         func advice(activity: [DailyActivity]) -> DeloadAdvice? {
-            DeloadAdvice.make(
-                today: today, now: now, sessions: sessions, exercises: [squat, bench],
-                settings: [squat.id: mainLift, bench.id: mainLift], profile: AthleteProfile(),
-                history: metrics(poorWeek: false), checkIns: [], activity: activity, calendar: calendar, format: format
+            let record = TrainingRecord(
+                sessions: sessions, exercises: [squat, bench], settings: [squat.id: mainLift, bench.id: mainLift],
+                metrics: metrics(poorWeek: false), activity: activity
             )
+            return self.advice(for: record, profile: AthleteProfile())
         }
 
         #expect(advice(activity: []) == nil)
@@ -207,7 +218,7 @@ struct DeloadAdviceTests {
             return
         }
         #expect(reasons.map(\.text) == [
-            "2 main lifts have stalled.",
+            "2 main lifts have stalled. The stalled exercises are Back Squat, Bench Press.",
             "Strength and extra walking load reached 1.6× your usual week.",
         ])
     }
@@ -248,6 +259,49 @@ struct DeloadAdviceTests {
         )
         await model.load(now: now)
         #expect(model.deloadAdvice == nil)
+    }
+
+    @Test(arguments: [false, true])
+    func exportedDecisionMatchesTodayAndKeepsPrivateCheckInContextLocal(warningSigns: Bool) async throws {
+        let store = TestStore(exercises: [squat, bench], sessions: stalledSessions)
+        try await store.save(mainLift, for: squat.id)
+        try await store.save(mainLift, for: bench.id)
+        let source = DayMetrics(days: metrics(poorWeek: true))
+        let checkIns = FixedCheckIn(checkIn: CheckIn(day: today, exerciseWarningSigns: warningSigns))
+        let model = TodayModel(
+            sources: [source], checkIns: checkIns, profiles: store, workouts: store, exercises: store,
+            progression: store, calendar: calendar, format: format
+        )
+        await model.load(now: now)
+
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fixedNow = now
+        let assistant = AskAIModel(
+            workouts: store, exercises: store, progression: store, profiles: store, routines: store,
+            checkIns: checkIns, sources: [source], clock: { fixedNow }, calendar: calendar, directory: directory
+        )
+        await assistant.setPeriod(.fourWeeks)
+        let url = try #require(assistant.fileURL)
+        let data = try Data(contentsOf: url)
+        let pack = try ContextMessage.decode(data)
+        #expect(pack.version == 1)
+        #expect(pack.dailyMetrics.count == 28)
+        #expect(pack.today?.readiness == model.readiness.level.rawValue)
+        if warningSigns {
+            #expect(model.deloadAdvice == nil)
+            #expect(pack.today?.deload.state == "none")
+            let json = try #require(String(data: data, encoding: .utf8))
+            #expect(!json.contains("exerciseWarningSigns"))
+        } else {
+            guard case .proposed = model.deloadAdvice?.state else {
+                Issue.record("Expected the shared proposal in Today")
+                return
+            }
+            #expect(pack.today?.deload.state == "proposed")
+            #expect(pack.today?.deload.signals == ["liftsStalled", "hrvTrendBelowBaseline", "shortSleep"])
+        }
     }
 
     @Test func acceptingRecordsTheDeloadWeekAndPostponingHidesIt() async throws {
@@ -381,4 +435,14 @@ private struct DayMetrics: MetricsSource {
         days.filter { range.contains($0.day) }
     }
     func runs(from start: Date, to end: Date) async throws -> [RunActivity] { [] }
+}
+
+private struct FixedCheckIn: CheckInRepository {
+    let checkIn: CheckIn
+
+    func checkIn(for day: CalendarDay) async throws -> CheckIn? { checkIn.day == day ? checkIn : nil }
+    func checkIns(in range: ClosedRange<CalendarDay>) async throws -> [CheckIn] {
+        range.contains(checkIn.day) ? [checkIn] : []
+    }
+    func save(_ checkIn: CheckIn) async throws {}
 }

@@ -44,8 +44,11 @@ public struct SourceReader: Sendable {
     }
 
     /// One merged record per day in `range` that some source reported, oldest first: what Today judges.
-    public func dailyMetrics(in range: ClosedRange<CalendarDay>) async -> SourceReading<[DailyMetrics]> {
-        let reading = await dailyMetricsBySource(in: range)
+    public func readDailyMetrics(in range: ClosedRange<CalendarDay>) async -> SourceReading<[DailyMetrics]> {
+        Self.mergedDailyMetrics(await dailyMetricsBySource(in: range))
+    }
+
+    static func mergedDailyMetrics(_ reading: SourceReading<[DailyMetrics]>) -> SourceReading<[DailyMetrics]> {
         var byDay: [CalendarDay: DailyMetrics] = [:]
         for day in reading.value {
             byDay[day.day] = (byDay[day.day] ?? DailyMetrics(day: day.day)).merging(day)
@@ -67,7 +70,7 @@ public struct SourceReader: Sendable {
     }
 
     /// Runs started in the range, each run once with every source that recorded it, oldest first.
-    public func runs(from start: Date, to end: Date) async -> SourceReading<[RunDeduplication.CombinedRun]> {
+    public func readRuns(from start: Date, to end: Date) async -> SourceReading<[RunDeduplication.CombinedRun]> {
         let results = await read { try await $0.runs(from: start, to: end) }
         return SourceReading(
             value: RunDeduplication.combiningSources(results.value.flatMap { $0 }),

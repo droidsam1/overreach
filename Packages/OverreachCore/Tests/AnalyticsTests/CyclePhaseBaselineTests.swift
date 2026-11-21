@@ -195,7 +195,7 @@ struct CyclePhaseBaselineTests {
         )
         let overall = RecoveryTrend.assess(today: today, history: days, checkIns: [], calendar: calendar)
 
-        #expect(phaseAware.hrvLowDays == 0)
-        #expect(overall.hrvLowDays > 0)
+        #expect(phaseAware.hrvTrendLowDays == 0)
+        #expect(overall.hrvTrendLowDays > 0)
     }
 }

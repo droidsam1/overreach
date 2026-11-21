@@ -39,7 +39,7 @@ let package = Package(
         // Markdown report shared with ChatGPT/Claude, and context for the in-app assistant.
         .target(name: "Reports", dependencies: ["Domain", "Analytics"]),
         // Versioned messages exchanged with AI chat apps (ADR-0017, docs/ai-exchange.md).
-        .target(name: "AIExchange", dependencies: ["Domain", "Analytics"]),
+        .target(name: "AIExchange", dependencies: ["Domain", "Analytics", "TrainingServices"]),
         // Application layer (ADR-0035): one reading of the sources and one answer per shared training question.
         .target(name: "TrainingServices", dependencies: ["Domain", "Analytics"]),
 
@@ -127,6 +127,7 @@ let package = Package(
             name: "TodayPresentationTests",
             dependencies: [
                 "TodayPresentation", "PresentationKit", "Domain", "Fixtures", "AIExchange", "WorkoutPresentation",
+                "AssistantPresentation", "TrainingServices",
             ]
         ),
         .testTarget(

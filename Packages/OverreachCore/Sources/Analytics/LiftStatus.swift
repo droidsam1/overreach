@@ -5,6 +5,7 @@ import Foundation
 /// The one answer the logger, Plan, the deload advice and the AI context use (ADR-0035).
 public struct LiftStatus: Hashable, Sendable {
     public static let recentDays = 28
+    public static let rotationHistoryDays = 120
 
     public let exerciseID: UUID
     /// Exposures that count for progression, oldest first.
@@ -13,6 +14,10 @@ public struct LiftStatus: Hashable, Sendable {
     public let status: ExerciseStatus
     public let trainedRecently: Bool
     public let facts: StallFacts?
+
+    public var stallExplanation: StallExplanation? {
+        StallDetection.explanation(exerciseID: exerciseID, history: history, status: status, facts: facts)
+    }
 
     public var isStalled: Bool { status.isStalled }
     public var lastTrained: Date? { history.last?.date }
@@ -55,5 +60,32 @@ public struct LiftStatus: Hashable, Sendable {
             )
         }
         .sorted { $0.exerciseID.uuidString < $1.exerciseID.uuidString }
+    }
+
+    /// The current block's routines, a dated routine, a repeated rotation, or the last used routine.
+    /// With no such structure, recency alone determines whether a lift counts.
+    public static func currentExerciseIDs(
+        sessions: [StrengthSession], routines: [Routine], profile: AthleteProfile?, now: Date,
+        calendar: Calendar = .current
+    ) -> Set<UUID>? {
+        let today = CalendarDay(now, calendar: calendar)
+        let byID = Dictionary(routines.map { ($0.id, $0.exerciseIDs) }, uniquingKeysWith: { first, _ in first })
+        let block = PlanSchedule.runningBlock(profile?.declaredBlocks ?? [], today: today, calendar: calendar)
+        let assigned = profile?.goal?.scheduledStrength.first { $0.day == today }?.routineID
+        let planned = (block?.routineIDs ?? []) + (assigned.map { [$0] } ?? [])
+        let templates = planned.compactMap { byID[$0] }
+        if !templates.isEmpty { return Set(templates.flatMap { $0 }) }
+
+        let start = today.adding(days: -rotationHistoryDays, calendar: calendar).startDate(in: calendar)
+        let recent = sessions.filter { $0.startedAt >= start && $0.isCompleted(through: now) }
+            .sorted { $0.startedAt > $1.startedAt }
+        if let rotation = SessionRotation.detect(in: recent) {
+            return Set(rotation.order.flatMap { slot -> [UUID] in
+                guard let latest = recent.first(where: { SessionRotation.slot(for: $0).id == slot.id })
+                else { return [] }
+                return latest.routineID.flatMap { byID[$0] } ?? latest.entries.map(\.exerciseID)
+            })
+        }
+        return recent.first?.routineID.flatMap { byID[$0] }.map(Set.init)
     }
 }

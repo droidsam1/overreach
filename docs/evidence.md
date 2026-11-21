@@ -179,7 +179,10 @@ Halperin et al. 2022 (RIR accuracy). Reviewed 2026-11-20.
 ### `deload-design` — limited
 Expert Delphi consensus defines a deload as a period of reduced training stress to mitigate fatigue and
 enhance preparedness; typically reduced volume and/or intensity of effort, not complete rest.
-Refs: Bell et al. 2023, Sports Med Open 9:87. Reviewed 2026-11-16.
+[Pancar et al. 2026](https://doi.org/10.1038/s41598-026-40612-5) found similar eight-week hypertrophy
+and strength-endurance with two reduced-volume weeks in untrained men. The trial did not test when to prescribe
+a reduction. Overreach's fatigue requirement is a product heuristic ([ADR-0036](adr/0036-deload-needs-fatigue.md)).
+Refs: Bell et al. 2023, Sports Med Open 9:87. Reviewed 2026-11-21.
 
 ### `deload-cost` — moderate
 A 1-week training break mid-programme slightly reduced lower-body strength gains and did not change
@@ -194,7 +197,8 @@ rise (parasympathetic hyperactivity, Manresa-Rocamora 2021), so a low-HRV rule m
 never decisive. Self-reported well-being tracks load more sensitively than objective markers (Saw 2016), and short
 sleep lowers performance (Craven 2022).
 → Recovery signals only reinforce a deload that training already suggests: each adds 1 point, at most 2 in total,
-and a proposal still needs at least one performance signal (stalls, an e1RM drop or RPE creep). They count only when
+and a proposal still needs a lift signal (stalls, an e1RM drop or RPE creep). A proposal also needs at least one
+fatigue signal. Recovery signals count only when
 sustained over the last 7 days (HRV 7-day trend below the personal range on ≥ 5 days, judged within one HRV
 statistic, ADR-0024; resting HR ≥ 5 bpm above its baseline on ≥ 4 days; < 6 h sleep on ≥ 4 nights; low energy or
 high soreness in ≥ 3 check-ins). Being sick in the last 7 days replaces the deload with a return-to-training note
@@ -221,8 +225,9 @@ Reviewed 2026-11-21.
 ### `stall-heuristics` — heuristic
 Stall = no e1RM gain > 1 % over the last 3 exposures vs the 6 before, with ≥ 2 missed targets. Linear reset
 −10 % after 3 misses; microload at half the increment when the miss was by 1 rep; variation swap 3–4 weeks.
-Current stall assessments require a progression-eligible exposure in the last 28 days. This is an Overreach
-heuristic for deciding which lifts still have current evidence. The [2026 ACSM position stand](https://pubmed.ncbi.nlm.nih.gov/41843416/)
+Current stall assessments require a progression-eligible exposure in the last 28 days. Deload and Plan signals
+also use active routine or rotation membership when it is known. Stalls and elapsed time alone do not imply
+accumulated fatigue. These are Overreach heuristics ([ADR-0036](adr/0036-deload-needs-fatigue.md)). The [2026 ACSM position stand](https://pubmed.ncbi.nlm.nih.gov/41843416/)
 reviews prescription variables for strength and hypertrophy. The thresholds above are product choices.
 Reviewed 2026-11-21.
 

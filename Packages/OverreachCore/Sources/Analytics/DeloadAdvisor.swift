@@ -35,6 +35,13 @@ public enum DeloadSignal: Hashable, Sendable {
         default: false
         }
     }
+
+    var isFatigueSignal: Bool {
+        switch self {
+        case .liftsStalled, .weeksSinceDeload, .noDeloadInHistory: false
+        default: true
+        }
+    }
 }
 
 /// A deload week: same exercises, fewer sets, a bit less load, easier efforts. Training is reduced, not stopped:
@@ -77,6 +84,7 @@ public struct DeloadPlan: Hashable, Sendable {
 
 public struct DeloadProposal: Hashable, Sendable {
     public var signals: [DeloadSignal]
+    public var stalledExerciseIDs: [UUID]
     public var score: Double
     public var plan: DeloadPlan
 }
@@ -87,7 +95,7 @@ public struct DeloadProposal: Hashable, Sendable {
 /// them as reduced training stress to manage fatigue (Bell et al. 2023), and the only RCT found a cost to strength
 /// from a routine 1-week break (Coleman et al. 2024). No recovery marker is decisive on its own (Meeusen et al.
 /// 2013; Bellenger et al. 2016), so recovery adds at most `recoveryWeightCap` and a proposal always needs a
-/// performance signal. Being sick recently gives no proposal: return to training gradually instead
+/// performance signal and a sign of fatigue. After recent illness the rules suppress deload advice
 /// (`illness-return`). Weights and thresholds are heuristics and configurable.
 public enum DeloadAdvisor {
     public struct Settings: Hashable, Sendable {
@@ -109,7 +117,7 @@ public enum DeloadAdvisor {
         public var recoveryWeight = 1.0
         public var recoveryWeightCap = 2.0
         /// Days of the last 7 each recovery signal needs to count.
-        public var hrvLowDays = 5
+        public var hrvTrendLowDays = 5
         public var restingHeartRateHighDays = 4
         public var shortSleepNights = 4
         public var poorWellbeingCheckIns = 3
@@ -126,7 +134,8 @@ public enum DeloadAdvisor {
         recovery: RecoveryTrend? = nil,
         now: Date,
         settings: Settings = Settings(),
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        currentExerciseIDs: Set<UUID>? = nil
     ) -> DeloadProposal? {
         if recovery?.sickRecently == true { return nil }
         let today = CalendarDay(now, calendar: calendar)
@@ -135,15 +144,17 @@ public enum DeloadAdvisor {
             return nil
         }
         let recoveryEnd = lastRecovery.map { $0.lastDay.adding(days: 1, calendar: calendar).startDate(in: calendar) }
-        let current = lifts.filter(\.trainedRecently)
+        let current = lifts.filter { lift in
+            lift.trainedRecently && (currentExerciseIDs?.contains(lift.exerciseID) ?? true)
+        }
         let mainLifts = current.filter(\.settings.isMainLift)
         let considered = mainLifts.isEmpty ? current : mainLifts
         var signals: [DeloadSignal] = []
         var score = 0.0
 
-        let stalled = considered.filter { $0.status.isStalled }.count
-        if stalled >= 2 {
-            signals.append(.liftsStalled(count: stalled, mainLifts: !mainLifts.isEmpty))
+        let stalled = considered.filter(\.isStalled).map(\.exerciseID)
+        if stalled.count >= 2 {
+            signals.append(.liftsStalled(count: stalled.count, mainLifts: !mainLifts.isEmpty))
             score += settings.stalledWeight
         }
 
@@ -186,8 +197,8 @@ public enum DeloadAdvisor {
 
         if let recovery {
             var recoverySignals: [DeloadSignal] = []
-            if recovery.hrvLowDays >= settings.hrvLowDays {
-                recoverySignals.append(.hrvSuppressed(days: recovery.hrvLowDays))
+            if recovery.hrvTrendLowDays >= settings.hrvTrendLowDays {
+                recoverySignals.append(.hrvSuppressed(days: recovery.hrvTrendLowDays))
             }
             if recovery.restingHeartRateHighDays >= settings.restingHeartRateHighDays {
                 recoverySignals.append(.restingHeartRateElevated(days: recovery.restingHeartRateHighDays))
@@ -202,8 +213,11 @@ public enum DeloadAdvisor {
             score += min(settings.recoveryWeightCap, Double(recoverySignals.count) * settings.recoveryWeight)
         }
 
-        guard score >= settings.threshold, signals.contains(where: \.isPerformanceSignal) else { return nil }
-        return DeloadProposal(signals: signals, score: score, plan: settings.plan)
+        guard score >= settings.threshold, signals.contains(where: \.isPerformanceSignal),
+              signals.contains(where: \.isFatigueSignal) else { return nil }
+        return DeloadProposal(
+            signals: signals, stalledExerciseIDs: stalled.count >= 2 ? stalled : [], score: score, plan: settings.plan
+        )
     }
 
     /// Latest e1RM more than `fraction` below the best of the earlier exposures in the window.

@@ -55,7 +55,7 @@ struct HistoryRunReadings: Sendable {
     }
 
     static func load(sources: [any MetricsSource], from start: Date, to end: Date) async -> Self {
-        let reading = await SourceReader(sources: sources).runs(from: start, to: end)
+        let reading = await SourceReader(sources: sources).readRuns(from: start, to: end)
         return Self(runs: reading.value, didRead: reading.didRead, failedSources: Set(reading.failedSources))
     }
 }
