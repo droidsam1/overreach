@@ -1,6 +1,6 @@
 # Daily activity and walks
 
-Status: partly shipped. Decision and evidence: ADR-0010.
+Recovery phase shipped ([#103](https://github.com/droidsam1/overreach/issues/103)). Decision: ADR-0010.
 
 ## Shipped
 
@@ -13,14 +13,16 @@ Status: partly shipped. Decision and evidence: ADR-0010.
   the activities of the first-sync window once more so the walking baseline has its history.
 - `StepWalkDetection` (Domain) finds walks nobody started on the watch in Apple Health's minute-by-minute steps
   (rules below). Minutes inside any recorded workout and minutes above 140 steps/min (running cadence, e.g. a
-  Garmin run that is not in Apple Health) are never walking. Detected walks carry no heart rate yet: reading weeks
-  of heart-rate samples is heavy, and walking load is its first user.
+  Garmin run that is not in Apple Health) are excluded. Detected walks use the fallback load estimate to avoid
+  querying weeks of heart-rate samples.
 - Today: the steps tile shows the usual day, and an **Everyday movement** card lists the signals and, on a red
   day, an easy walk (or "keep your usual walks easy" with a dog or fixed walks). Steps come from the merged daily
   metrics, so Garmin's count wins over Apple Health's.
 
-Still open, in order: walking load in the weekly load comparison and leg fatigue once those feed a decision, and the remaining
-recommendations in the table.
+- The deload check compares strength and excess walking load with the usual week. On Today, a spike before a
+  scheduled run or a lower-body routine adds a warm-up cue. An explicit rest day can suggest an easy walk.
+
+See the recommendations table for later planning and simulation work.
 
 ## Principle
 
@@ -65,16 +67,20 @@ public protocol ActivitySource: Sendable {
 1. Health workouts with activity type walking/hiking, and Garmin walking activities (deduplicated by time
    overlap; Garmin wins).
 2. Otherwise, from Health's step-count samples: a bout is ≥ 10 consecutive minutes with 60–140 steps/min,
-   merging gaps ≤ 3 min. HR during the bout is attached when available.
+   merging gaps ≤ 3 min. Recorded workouts can supply HR.
 3. Steps inside run workouts (any recorded workout) and minutes at running cadence are excluded from walking.
 
 ## Baselines and load (phase 2, `Analytics`)
 
 - Baseline: 28-day median of steps and walking minutes (and walks per day).
-- `walkingLoad(day)` = load of walking *above* baseline only. With HR: TRIMP of the bouts minus baseline
-  share. Without HR: minutes above baseline × a low intensity factor, × 1.3 if elevation gain is high.
-- That load goes into the weekly load comparison (with a configurable weight, default low) and into the
-  lower-limb fatigue model (quads, calves, glutes), so a 2-hour hilly walk the day before squats is visible.
+- `EverydayMovement.walkingLoads` applies each day's prior baseline. It assigns excess minutes across bouts
+  in proportion to their duration and estimates effort from heart-rate reserve when the profile supplies resting
+  and maximum HR. The effort falls back to 1, or 1.3 at 50 m of ascent per kilometre. The estimated effort-minutes
+  receive a configurable weight of 0.25.
+- The weekly comparison uses duration × logged session RPE, or the mean of all working-set RPEs, for strength.
+  An incomplete strength record omits the comparison. The deload rule still requires a performance signal.
+- The movement card uses a recent walking spike as possible leg fatigue and suggests a warm-up check before a
+  scheduled run or lower-body routine.
 - Signals: `stepsFarBelowBaseline(days:)`, `walkingSpike(percentAboveBaseline:)`.
 
 ## Recommendations (phase 3)

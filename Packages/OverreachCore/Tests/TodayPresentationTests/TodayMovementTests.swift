@@ -91,6 +91,40 @@ struct TodayMovementTests {
         #expect(model.movementNotes.isEmpty)
     }
 
+    @Test func aWalkingSpikeAddsAWarmupCueForLegWorkAndRuns() {
+        let squat = Exercise(name: "Squat", primaryMuscles: [.quadriceps])
+        let routine = Routine(name: "Legs", exerciseIDs: [squat.id])
+        let strength = PlannedStrength(day: today, routineID: routine.id)
+        let strengthDay = MovementNote.Schedule(strength: strength, routine: routine, exercises: [squat], runs: [])
+        let runDay = MovementNote.Schedule(strength: nil, routine: nil, exercises: [],
+                                           runs: [PlannedRun(day: today, purpose: .tempo)])
+        let restDay = MovementNote.Schedule(strength: PlannedStrength(day: today), routine: nil,
+                                            exercises: [], runs: [])
+        #expect(restDay.isRest)
+        #expect(!restDay.hasLegSession)
+        for schedule in [strengthDay, runDay] {
+            #expect(!schedule.isRest)
+            let notes = MovementNote.notes(
+                signals: [.walkingSpike(day: today, minutes: 120, baselineMinutes: 30)],
+                suggestsRecoveryWalk: false, routine: WalkingRoutine(), today: today, format: format,
+                hasLegSession: schedule.hasLegSession
+            )
+            #expect(notes.last?.text ==
+                    "Start with an easy warm-up and check how your legs feel before increasing the effort.")
+        }
+    }
+
+    @Test func walkingSoFarIsComparedWithTheUsualDay() async {
+        let walk = WalkBout(start: now.addingTimeInterval(-2_400), durationSeconds: 1_800, source: .garmin)
+        let model = TodayModel(sources: [source(recent: 9_000)],
+                               activity: [WalksSource(walks: walks(hikeMinutes: 30) + [walk])],
+                               calendar: calendar, format: format)
+        await model.load(now: now)
+        #expect(model.movementNotes == [
+            MovementNote(text: "Walking today: 30 min. Usually 30 min a day.", evidence: nil),
+        ])
+    }
+
     @Test func aRedDayAsksToKeepTheDogWalksEasy() {
         let notes = { (routine: WalkingRoutine) in
             MovementNote.notes(signals: [], suggestsRecoveryWalk: true, routine: routine, today: self.today,

@@ -19,6 +19,23 @@ public enum Workload {
         max(0, rpe) * max(0, durationMinutes)
     }
 
+    /// Logged strength load. When whole-session RPE is absent, the mean working-set RPE is a proxy
+    /// only if every working set has a recorded effort.
+    public static func strengthLoad(_ session: StrengthSession, calendar: Calendar = .current) -> DailyLoad? {
+        guard let seconds = session.durationSeconds, seconds.isFinite, seconds > 0 else { return nil }
+        let working = session.entries.flatMap(\.sets).filter(\.isWorking)
+        let efforts = session.sessionRPE.map { [$0] } ?? working.compactMap(\.rpe)
+        guard session.sessionRPE != nil || efforts.count == working.count, !efforts.isEmpty,
+              efforts.allSatisfy({ (1...10).contains($0) }) else { return nil }
+        let rpe = efforts.reduce(0, +) / Double(efforts.count)
+        return DailyLoad(day: CalendarDay(session.startedAt, calendar: calendar),
+                         load: sessionRPELoad(rpe: rpe, durationMinutes: seconds / 60))
+    }
+
+    /// Offsets of the two windows used by the comparison.
+    public static let usualStartOffset = -27
+    private static let lastWeekStartOffset = -6
+
     /// This week's load against the person's usual week (`weekly-load-change` in `docs/evidence.md`).
     ///
     /// - Last week: total load of the 7 days ending on `day` (inclusive).
@@ -31,10 +48,11 @@ public enum Workload {
     public static func weeklyLoadChange(
         loads: [DailyLoad],
         on day: CalendarDay,
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        walking: [EverydayMovement.WalkingLoad] = []
     ) -> WeeklyLoadChange? {
-        let lastWeekStart = day.adding(days: -6, calendar: calendar)
-        let usualStart = day.adding(days: -27, calendar: calendar)
+        let lastWeekStart = day.adding(days: lastWeekStartOffset, calendar: calendar)
+        let usualStart = day.adding(days: usualStartOffset, calendar: calendar)
 
         var lastWeek = 0.0
         var usualTotal = 0.0
@@ -48,7 +66,13 @@ public enum Workload {
 
         let usualWeek = usualTotal / 3
         guard usualWeek > 0 else { return nil }
-        return WeeklyLoadChange(lastWeek: lastWeek, usualWeek: usualWeek)
+        // Keep a training reference even when walks contribute to both windows.
+        let walkingLastWeek = walking.filter { (lastWeekStart...day).contains($0.dailyLoad.day) }
+            .reduce(0) { $0 + $1.dailyLoad.load }
+        let walkingUsual = walking.filter { $0.dailyLoad.day >= usualStart && $0.dailyLoad.day < lastWeekStart }
+            .reduce(0) { $0 + $1.dailyLoad.load } / 3
+        return WeeklyLoadChange(lastWeek: lastWeek + walkingLastWeek, usualWeek: usualWeek + walkingUsual,
+                                walkingLastWeek: walkingLastWeek)
     }
 }
 
@@ -57,9 +81,12 @@ public struct WeeklyLoadChange: Hashable, Sendable {
     public let lastWeek: Double
     public let usualWeek: Double
 
-    public init(lastWeek: Double, usualWeek: Double) {
+    public let walkingLastWeek: Double
+
+    public init(lastWeek: Double, usualWeek: Double, walkingLastWeek: Double = 0) {
         self.lastWeek = lastWeek
         self.usualWeek = usualWeek
+        self.walkingLastWeek = walkingLastWeek
     }
 
     /// Last week divided by the usual week (1 = as usual).

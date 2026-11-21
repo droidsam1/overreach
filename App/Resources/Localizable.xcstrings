@@ -12700,6 +12700,23 @@
         }
       }
     },
+    "Start with an easy warm-up and check how your legs feel before increasing the effort.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empieza con un calentamiento suave y comprueba cómo tienes las piernas antes de aumentar el esfuerzo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comeza cun quecemento suave e comproba como tes as pernas antes de aumentar o esforzo."
+          }
+        }
+      }
+    },
     "Start with the exercise catalog": {
       "extractionState": "manual",
       "localizations": {
@@ -12883,6 +12900,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Forza"
+          }
+        }
+      }
+    },
+    "Strength and extra walking load reached {1}× your usual week.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La carga de fuerza y de caminar más de lo habitual llegó a {1} veces la de tu semana habitual."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A carga de forza e de camiñar máis do habitual chegou a {1} veces a da túa semana habitual."
           }
         }
       }
@@ -14094,19 +14128,19 @@
         }
       }
     },
-    "Today compares your steps and walks with your usual day and mentions a long hike or several very quiet days.": {
+    "Today compares steps and walks with your usual day. Extra walking can affect your weekly load and is flagged before a run or leg session.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hoy compara tus pasos y paseos con tu día habitual y te avisa de una caminata larga o de varios días muy tranquilos."
+            "value": "Hoy compara tus pasos y caminatas con un día habitual. Caminar más puede influir en tu carga semanal y la app te avisa antes de correr o entrenar piernas."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hoxe compara os teus pasos e paseos co teu día habitual e avísache dunha camiñada longa ou de varios días moi tranquilos."
+            "value": "Hoxe compara os teus pasos e paseos cun día habitual. Camiñar máis pode influír na túa carga semanal e a aplicación avísate antes de correr ou adestrar pernas."
           }
         }
       }
@@ -15144,6 +15178,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Paseos"
+          }
+        }
+      }
+    },
+    "Walking today: {1} min. Usually {2} min a day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy has caminado {1} min. Lo habitual son {2} min al día."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe camiñaches {1} min. O habitual son {2} min ao día."
           }
         }
       }

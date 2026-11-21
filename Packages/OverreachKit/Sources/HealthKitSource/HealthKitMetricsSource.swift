@@ -74,8 +74,8 @@ public struct HealthKitMetricsSource: MetricsSource, ActivitySource, CycleSource
     }
 
     /// Walking and hiking workouts as walks, plus walks found in the minute-by-minute steps outside any workout
-    /// (ADR-0010, `StepWalkDetection`). Detected walks carry no heart rate yet: weeks of heart-rate samples are a
-    /// heavy read, and nothing uses it before walking load (TRIMP) does.
+    /// (ADR-0010, `StepWalkDetection`). Detected walks use the fallback load estimate to avoid an additional
+    /// query for weeks of heart-rate samples.
     private func walks(from start: Date, to end: Date) async throws -> [WalkBout] {
         let predicate = HKQuery.predicateForSamples(withStart: start, end: end)
         let query = HKSampleQueryDescriptor(

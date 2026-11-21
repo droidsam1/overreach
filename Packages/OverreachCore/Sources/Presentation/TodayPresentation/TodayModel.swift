@@ -413,10 +413,14 @@ public final class TodayModel {
             }
         }
 
-        var walks: [WalkBout] = []
+        let movementStart = today.adding(
+            days: Workload.usualStartOffset - EverydayMovement.Settings().baselineDays, calendar: calendar
+        )
+        let movementRange = movementStart...today
+        var dailyActivity: [DailyActivity] = []
         for source in activitySources {
             // A failed walk read leaves steps and the rest of Today untouched; the metric source reports the outage.
-            walks += (try? await source.dailyActivity(in: range))?.flatMap(\.walks) ?? []
+            dailyActivity += (try? await source.dailyActivity(in: movementRange)) ?? []
         }
 
         let checkIn = (try? await checkIns?.checkIn(for: today)).flatMap { $0.day == today ? $0 : nil }
@@ -439,15 +443,15 @@ public final class TodayModel {
             today: today, history: history, checkIn: checkIn, settings: readinessSettings,
             tracksNaturalCycle: profile?.usesCyclePhase ?? false, cycle: cycle, calendar: calendar
         )
-        updateMovement(history: history, walks: walks, range: range, today: today,
-                       routine: profile?.walkingRoutine ?? WalkingRoutine())
+        let activity = Self.mergeMovement(history: history, activity: dailyActivity, range: movementRange,
+                                          calendar: calendar, now: now)
         await loadRecentTraining(in: weekStart...today, now: now, sources: availableSources, profile: profile,
-                                 loadID: loadID, metricsHistory: history)
+                                 loadID: loadID, metricsHistory: history, activity: activity)
     }
 
     private func loadRecentTraining(
         in range: ClosedRange<CalendarDay>, now: Date, sources: [any MetricsSource], profile: AthleteProfile?,
-        loadID: UUID, metricsHistory: [DailyMetrics]
+        loadID: UUID, metricsHistory: [DailyMetrics], activity: [DailyActivity]
     ) async {
         // Include the previous day so copies across midnight can match before filtering to the visible week.
         let start = range.lowerBound.adding(days: -1, calendar: calendar).startDate(in: calendar)
@@ -484,7 +488,7 @@ public final class TodayModel {
             now: now, history: metricsHistory, profile: profile,
             training: DeloadTraining(
                 runs: runResult.activities, runReadFailed: runResult.failed,
-                recordings: recordings ?? [], catalog: allExercises ?? []
+                recordings: recordings ?? [], catalog: allExercises ?? [], activity: activity
             ),
             loadID: loadID
         )
@@ -500,9 +504,16 @@ public final class TodayModel {
             scheduledStrengthToday = ScheduledTrainingRow.strength(
                 assignment, routine: assignedRoutine, sessions: sessions ?? [], now: now, calendar: calendar
             )
-            // A rest day or a missing assigned routine suppresses the undated fallback.
-            guard assignedRoutine != nil else { return }
         }
+        updateMovement(
+            activity, today: today, profile: profile,
+            schedule: .init(strength: assignment,
+                            routine: scheduledStrengthToday?.status == nil ? assignedRoutine : nil,
+                            exercises: allExercises ?? [],
+                            runs: goal?.scheduledRuns.filter { $0.day == today } ?? [])
+        )
+        // A rest day or a missing assigned routine suppresses the undated fallback.
+        guard assignment == nil || assignedRoutine != nil else { return }
         guard readiness.level == .amber, !readiness.reasons.contains(where: \.advisesSkippingTraining),
               let sessions,
               !hasStrengthToday(sessions: sessions, recordings: recentRecordings, now: now) else { return }
@@ -569,6 +580,7 @@ public final class TodayModel {
         let runReadFailed: Bool
         let recordings: [RecordedStrengthActivity]
         let catalog: [Exercise]
+        let activity: [DailyActivity]
     }
 
     private func loadDeloadAdvice(
@@ -597,7 +609,7 @@ public final class TodayModel {
                 today: today, now: now, sessions: completed, exercises: training.catalog, settings: settings ?? [:],
                 profile: profile, history: history, checkIns: recentCheckIns ?? [],
                 runs: training.runs, runReadFailed: training.runReadFailed, routines: routines ?? [],
-                recordings: training.recordings, cycle: cycle,
+                recordings: training.recordings, cycle: cycle, activity: training.activity,
                 readinessSettings: readinessSettings, calendar: calendar, format: format
             )
         }.value
@@ -898,24 +910,42 @@ public final class TodayModel {
         }
     }
 
-    /// Steps come from the merged metrics (Garmin first); walks from the activity sources, each walk once.
-    private func updateMovement(
-        history: [DailyMetrics], walks: [WalkBout], range: ClosedRange<CalendarDay>, today: CalendarDay,
-        routine: WalkingRoutine
-    ) {
+    /// Use activity-source steps for older walking baselines and prefer merged metric steps where available.
+    private static func mergeMovement(
+        history: [DailyMetrics], activity: [DailyActivity], range: ClosedRange<CalendarDay>, calendar: Calendar,
+        now: Date
+    ) -> [DailyActivity] {
+        let walks = activity.flatMap(\.walks).filter {
+            $0.durationSeconds.isFinite && $0.durationSeconds > 0 && $0.end <= now
+        }
         let walksByDay = Dictionary(grouping: EverydayMovement.removingDuplicateWalks(walks)) {
             CalendarDay($0.start, calendar: calendar)
         }
-        let steps = Dictionary(history.compactMap { day in day.steps.map { (day.day, $0) } }, uniquingKeysWith: { $1 })
+        var steps: [CalendarDay: Int] = [:]
+        for entry in activity.reversed() { steps[entry.day] = entry.steps ?? steps[entry.day] }
+        for entry in history { steps[entry.day] = entry.steps ?? steps[entry.day] }
         let days = Set(steps.keys).union(walksByDay.keys).filter(range.contains)
-        let activity = days.sorted().map { DailyActivity(day: $0, steps: steps[$0], walks: walksByDay[$0] ?? []) }
-        usualSteps = EverydayMovement.baseline(activity, before: today, calendar: calendar).steps
-        let suggestsRecoveryWalk = readiness.level == .red
-            && !readiness.reasons.contains(where: \.advisesSkippingTraining)
+        return days.sorted().map { DailyActivity(day: $0, steps: steps[$0], walks: walksByDay[$0] ?? []) }
+    }
+
+    private func updateMovement(
+        _ activity: [DailyActivity], today: CalendarDay, profile: AthleteProfile?, schedule: MovementNote.Schedule
+    ) {
+        let baseline = EverydayMovement.baseline(activity, before: today, calendar: calendar)
+        usualSteps = baseline.steps
+        let signals = EverydayMovement.signals(activity, today: today, calendar: calendar)
+        let canSuggestActivity = !readiness.reasons.contains(where: \.advisesSkippingTraining)
         movementNotes = MovementNote.notes(
-            signals: EverydayMovement.signals(activity, today: today, calendar: calendar),
-            suggestsRecoveryWalk: suggestsRecoveryWalk, routine: routine, today: today, format: format
+            signals: signals, suggestsRecoveryWalk: canSuggestActivity && (readiness.level == .red || schedule.isRest),
+            routine: profile?.walkingRoutine ?? WalkingRoutine(), today: today, format: format,
+            suggestActivity: canSuggestActivity, hasLegSession: schedule.hasLegSession && canSuggestActivity
         )
+        if let entry = activity.first(where: { $0.day == today }), let usual = baseline.walkingMinutes,
+           !signals.contains(where: { $0.walkingSpikeDay == today }),
+           let summary = MovementNote.walkingSummary(minutes: EverydayMovement.walkingMinutes(entry), usual: usual,
+                                                     format: format) {
+            movementNotes.insert(summary, at: 0)
+        }
     }
 
     private func has(_ value: (DailyMetrics) -> Double?) -> Bool {

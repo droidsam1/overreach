@@ -54,6 +54,44 @@ struct EverydayMovementTests {
         #expect(EverydayMovement.extraWalkingMinutes(usual, baseline: baseline) == 0)
     }
 
+    @Test func walkingLoadUsesEachDaysPriorBaselineAndOnlyCountsTheExcess() throws {
+        let routine = DailyActivity(day: today, walks: [walk(0, minutes: 40)])
+        let month = commuteMonth()
+        let profile = AthleteProfile()
+        #expect(EverydayMovement.walkingLoads(month + [routine], in: today...today, profile: profile,
+                                              calendar: calendar).isEmpty)
+
+        var hike = walk(0, minutes: 160)
+        hike.distanceMeters = 8_000
+        hike.elevationGainMeters = 500
+        let active = DailyActivity(day: today, walks: [hike])
+        let withoutHistory = EverydayMovement.walkingLoads([active], in: today...today, profile: profile,
+                                                           calendar: calendar)
+        #expect(withoutHistory.isEmpty)
+        let contributions = EverydayMovement.walkingLoads(month + [active], in: today...today, profile: profile,
+                                                           calendar: calendar)
+        let contribution = try #require(contributions.first)
+        #expect(contribution.extraMinutes == 120)
+        #expect(contribution.baselineMinutes == 40)
+        #expect(contribution.evidence == MovementEvidence.walkingAboveBaseline)
+        #expect(contribution.dailyLoad.load == 39)
+
+        let strength = [DailyLoad(day: day(-8), load: 300), DailyLoad(day: today, load: 110)]
+        let weekly = Workload.weeklyLoadChange(loads: strength, on: today, calendar: calendar, walking: contributions)
+        #expect(weekly == WeeklyLoadChange(lastWeek: 149, usualWeek: 100, walkingLastWeek: 39))
+    }
+
+    @Test func heartRateReserveWeightsTheExcessWhenProfileValuesAreAvailable() throws {
+        var hike = walk(0, minutes: 100)
+        hike.averageHeartRate = 88
+        let activity = commuteMonth() + [DailyActivity(day: today, walks: [hike])]
+        let profile = AthleteProfile(maxHeartRate: 200, restingHeartRate: 60)
+        let contributions = EverydayMovement.walkingLoads(activity, in: today...today, profile: profile,
+                                                           calendar: calendar)
+        let contribution = try #require(contributions.first)
+        #expect(contribution.dailyLoad.load == 30)
+    }
+
     @Test func aSaturdayHikeIsASpikeTheNextDay() {
         var activity = commuteMonth()
         activity[activity.count - 1] = DailyActivity(day: day(-1), steps: 24_000,

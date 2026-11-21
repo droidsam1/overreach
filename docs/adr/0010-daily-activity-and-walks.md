@@ -33,9 +33,10 @@ What the evidence supports:
    walking workouts, Garmin walking activities, or ≥ 10 min of continuous steps in Health's step samples).
 2. Personal baseline: 28-day median steps and walking minutes. Only *deviations* from the baseline count as
    extra load; habitual walking is part of the user's normal state and is not penalised.
-3. Load: walking above baseline adds a small lower-limb load (HR-based TRIMP when available, otherwise a
-   conservative minutes-based estimate) to the acute:chronic ratio and to leg fatigue. Weight is
-   configurable and starts low.
+3. Walking above baseline contributes to the uncoupled weekly strength load comparison. A bounded
+   heart-rate-reserve proxy supplies estimated effort on the same scale as strength RPE. A low fallback
+   covers bouts without heart-rate reserve. The estimate carries a configurable low weight. A walking
+   spike before a scheduled leg session or run provides leg-fatigue context for the warm-up.
 4. Recommendations use walks as a tool, always with the reason:
    - Red day or day after a hard leg session / long run: easy walk 20–40 min suggested as active recovery.
    - Very low steps for several days: nudge to move more (no fixed goal; relative to baseline).

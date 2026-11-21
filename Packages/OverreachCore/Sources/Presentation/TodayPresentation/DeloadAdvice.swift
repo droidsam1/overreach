@@ -42,7 +42,7 @@ public struct DeloadAdvice: Hashable, Sendable {
         today: CalendarDay, now: Date, sessions: [StrengthSession], exercises: [Exercise],
         settings: [UUID: ProgressionSettings], profile: AthleteProfile, history: [DailyMetrics], checkIns: [CheckIn],
         runs: [RunActivity] = [], runReadFailed: Bool = false, routines: [Routine] = [],
-        recordings: [RecordedStrengthActivity] = [], cycle: CycleContext? = nil,
+        recordings: [RecordedStrengthActivity] = [], cycle: CycleContext? = nil, activity: [DailyActivity] = [],
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(),
         advisorSettings: DeloadAdvisor.Settings = DeloadAdvisor.Settings(),
         calendar: Calendar = .current, format: Format = Format()
@@ -77,9 +77,12 @@ public struct DeloadAdvice: Hashable, Sendable {
             settings: settings, runReadFailed: runReadFailed, recordings: recordings, today: today, calendar: calendar
         )
         let lastDeload = profile.deloads.last.map { $0.start.startDate(in: calendar) }
+        let weeklyLoad = Self.weeklyLoad(sessions: sessions, activity: activity, profile: profile, today: today,
+                                         calendar: calendar)
         func propose(_ periods: [DetectedDeload]) -> DeloadProposal? {
             DeloadAdvisor.proposal(
-                lifts: lifts, lastDeload: lastDeload, recovery: recovery, now: now, settings: advisorSettings,
+                lifts: lifts, lastDeload: lastDeload, weeklyLoad: weeklyLoad, recovery: recovery,
+                now: now, settings: advisorSettings,
                 detectedDeloads: periods, calendar: calendar
             )
         }
@@ -101,10 +104,25 @@ public struct DeloadAdvice: Hashable, Sendable {
                 planText: planText
             )
         }
+        let walkingIncluded = (weeklyLoad?.walkingLastWeek ?? 0) > 0
         let reasons = proposal.signals.map {
-            DeloadReasonLine(text: text(for: $0, format: format), evidence: $0.evidence.level.displayName)
+            DeloadReasonLine(text: text(for: $0, format: format, walkingIncluded: walkingIncluded),
+                             evidence: $0.evidence.level.displayName)
         }
         return DeloadAdvice(state: .proposed(reasons: reasons), planText: planText)
+    }
+
+    private static func weeklyLoad(
+        sessions: [StrengthSession], activity: [DailyActivity], profile: AthleteProfile, today: CalendarDay,
+        calendar: Calendar
+    ) -> WeeklyLoadChange? {
+        let range = today.adding(days: Workload.usualStartOffset, calendar: calendar)...today
+        let training = sessions.filter { range.contains(CalendarDay($0.startedAt, calendar: calendar)) }
+        let loads = training.compactMap { Workload.strengthLoad($0, calendar: calendar) }
+        // A partly recorded week could look easy simply because its sessions lack effort data.
+        guard loads.count == training.count else { return nil }
+        let walking = EverydayMovement.walkingLoads(activity, in: range, profile: profile, calendar: calendar)
+        return Workload.weeklyLoadChange(loads: loads, on: today, calendar: calendar, walking: walking)
     }
 
     /// The latest unconfirmed period after the last deload or confirmed break, within the planned interval.
@@ -118,7 +136,7 @@ public struct DeloadAdvice: Hashable, Sendable {
         }.max { $0.end < $1.end }
     }
 
-    static func text(for signal: DeloadSignal, format: Format) -> String {
+    static func text(for signal: DeloadSignal, format: Format, walkingIncluded: Bool = false) -> String {
         switch signal {
         case let .liftsStalled(count):
             L10n.format("{1} main lifts have stalled.", count)
@@ -128,6 +146,9 @@ public struct DeloadAdvice: Hashable, Sendable {
             L10n.format("The same weights feel harder on {1} lifts (RPE up).", lifts)
         case let .weeksSinceDeload(weeks):
             L10n.format("{1} weeks since your last deload.", weeks)
+        case let .weeklyLoadSpike(ratio) where walkingIncluded:
+            L10n.format("Strength and extra walking load reached {1}× your usual week.",
+                        format.number(ratio, maxFractionDigits: 1))
         case let .weeklyLoadSpike(ratio):
             L10n.format("Training load rose fast this week ({1}× your usual).", format.number(ratio, maxFractionDigits: 1))
         case let .hrvSuppressed(days):
