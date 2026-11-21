@@ -11,6 +11,9 @@ public struct TodayView: View {
     private let onConnectGarmin: () -> Void
     private let recoveryHistory: (() -> AnyView)?
     private var recoveryDestination: (() -> AnyView)?
+    private var settingsDestination: (() -> AnyView)?
+    private var showsSettings = Binding.constant(false)
+    private var settingsBadgeCount = 0
 
     public enum WorkoutContinuation {
         case resume(String), reviewDraft
@@ -54,6 +57,16 @@ public struct TodayView: View {
     ) -> TodayView {
         var copy = self
         copy.recoveryDestination = { AnyView(destination()) }
+        return copy
+    }
+
+    public func settingsButton<Destination: View>(
+        isPresented: Binding<Bool>, badgeCount: Int, @ViewBuilder destination: @escaping () -> Destination
+    ) -> TodayView {
+        var copy = self
+        copy.showsSettings = isPresented
+        copy.settingsDestination = { AnyView(destination()) }
+        copy.settingsBadgeCount = badgeCount
         return copy
     }
 
@@ -121,6 +134,29 @@ public struct TodayView: View {
                 .padding(Spacing.medium)
             }
             .navigationTitle("Today")
+            .toolbar {
+                if settingsDestination != nil {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            showsSettings.wrappedValue = true
+                        } label: {
+                            Label("Settings", systemImage: "gearshape")
+                                .overlay(alignment: .topTrailing) {
+                                    if settingsBadgeCount > 0 {
+                                        Circle()
+                                            .fill(.red)
+                                            .frame(width: 8, height: 8)
+                                            .accessibilityHidden(true)
+                                    }
+                                }
+                        }
+                        .accessibilityValue(Text(verbatim: settingsBadgeCount > 0 ? String(settingsBadgeCount) : ""))
+                    }
+                }
+            }
+            .navigationDestination(isPresented: showsSettings) {
+                settingsDestination?()
+            }
             .sheet(item: $checkInSheet) { sheet in
                 CheckInView(model: sheet) { Task { await model.load() } }
             }

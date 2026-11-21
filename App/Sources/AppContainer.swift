@@ -48,6 +48,7 @@ final class AppContainer {
     /// The person's Garmin account (ADR-0022). Also in `metricsSources`.
     let garmin: (any GarminAccount)?
     private let recordedStrength: (any RecordedStrengthSource)?
+    private let historyRecordedStrength: (any RecordedStrengthSource)?
 
     init(
         workouts: any WorkoutRepository,
@@ -67,7 +68,8 @@ final class AppContainer {
         activitySources: [any ActivitySource]? = nil,
         cycleSource: (any CycleSource)? = nil,
         garmin: (any GarminAccount)? = nil,
-        recordedStrength: (any RecordedStrengthSource)? = nil
+        recordedStrength: (any RecordedStrengthSource)? = nil,
+        historyRecordedStrength: (any RecordedStrengthSource)? = nil
     ) {
         self.workouts = workouts
         self.workoutDraftStore = workoutDraftStore
@@ -90,6 +92,7 @@ final class AppContainer {
         self.cycleSource = cycleSource
         self.garmin = garmin
         self.recordedStrength = recordedStrength
+        self.historyRecordedStrength = historyRecordedStrength ?? recordedStrength
     }
 
     /// Production wiring: SwiftData on disk (ADR-0004). If the store cannot be opened, the app still runs on an
@@ -100,7 +103,9 @@ final class AppContainer {
         let sources: [any MetricsSource] = [garmin, healthKit]
         // Garmin's strength records plus other apps' strength workouts in Apple Health (e.g. the Apple Watch), each
         // workout once.
-        let recordedStrength = CombinedRecordedStrengthSource([garmin, HealthKitWorkoutWriter()])
+        let strengthSources: [any RecordedStrengthSource] = [garmin, HealthKitWorkoutWriter()]
+        let recordedStrength = CombinedRecordedStrengthSource(strengthSources)
+        let historyRecordedStrength = CombinedRecordedStrengthSource(strengthSources, preserveOriginals: true)
         do {
             let store = SwiftDataStore.make(container: try PersistenceContainer.make())
             return AppContainer(
@@ -108,7 +113,7 @@ final class AppContainer {
                 routines: store, workoutDraftStore: FileWorkoutDraftStore(),
                 metricsSources: sources, healthSource: healthKit, activitySources: [garmin, healthKit],
                 cycleSource: healthKit, garmin: garmin,
-                recordedStrength: recordedStrength
+                recordedStrength: recordedStrength, historyRecordedStrength: historyRecordedStrength
             )
         } catch {
             let store = InMemoryStore(exercises: ExerciseCatalog.builtIn)
@@ -117,7 +122,7 @@ final class AppContainer {
                 routines: store,
                 metricsSources: sources, healthSource: healthKit, activitySources: [garmin, healthKit],
                 cycleSource: healthKit, garmin: garmin,
-                recordedStrength: recordedStrength
+                recordedStrength: recordedStrength, historyRecordedStrength: historyRecordedStrength
             )
         }
     }
@@ -195,7 +200,7 @@ final class AppContainer {
         return HistoryModel(
             workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
             profiles: profiles, progression: progression, activity: healthSource, runSources: metricsSources,
-            recordedStrength: recordedStrength, runChoices: choices,
+            recordedStrength: historyRecordedStrength, runChoices: choices,
             saveRunChoices: { choices in
                 if let data = try? JSONEncoder().encode(choices) {
                     defaults.set(data, forKey: key)

@@ -49,12 +49,15 @@ public struct RecordedStrengthActivity: Identifiable, Hashable, Codable, Sendabl
 }
 
 /// Several recording sources as one (Garmin's records, other apps' strength workouts in Apple Health), with each
-/// workout once: `StrengthActivityMatching.removingDuplicates`, Garmin first.
+/// workout once by default. History requests the original recordings so it can apply saved choices.
 public struct CombinedRecordedStrengthSource: RecordedStrengthSource {
     private let sources: [any RecordedStrengthSource]
 
-    public init(_ sources: [any RecordedStrengthSource]) {
+    private let preserveOriginals: Bool
+
+    public init(_ sources: [any RecordedStrengthSource], preserveOriginals: Bool = false) {
         self.sources = sources
+        self.preserveOriginals = preserveOriginals
     }
 
     public func strengthActivities(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
@@ -62,7 +65,7 @@ public struct CombinedRecordedStrengthSource: RecordedStrengthSource {
         for source in sources {
             all += await source.strengthActivities(from: start, to: end)
         }
-        return StrengthActivityMatching.removingDuplicates(all)
+        return preserveOriginals ? all : StrengthActivityMatching.removingDuplicates(all)
     }
 }
 
@@ -73,10 +76,24 @@ public struct StrengthActivityMatches: Hashable, Sendable {
     /// Recordings with no logged session (trained without logging in the app), oldest first. They are never turned
     /// into sessions: there is nothing reliable to log from them.
     public var unmatched: [RecordedStrengthActivity]
+    private let mirrors: [StrengthRecordingID: StrengthRecordingID]
 
-    public init(bySession: [UUID: RecordedStrengthActivity] = [:], unmatched: [RecordedStrengthActivity] = []) {
+    public init(
+        bySession: [UUID: RecordedStrengthActivity] = [:], unmatched: [RecordedStrengthActivity] = [],
+        mirrors: [StrengthRecordingID: StrengthRecordingID] = [:]
+    ) {
         self.bySession = bySession
         self.unmatched = unmatched
+        self.mirrors = mirrors
+    }
+
+    public func sources(for activity: RecordedStrengthActivity) -> [DataSourceKind] {
+        let id = StrengthRecordingID(activity)
+        return [id.source] + (mirrors[id].map { [$0.source] } ?? [])
+    }
+
+    public func sources(for sessionID: UUID) -> [DataSourceKind] {
+        activity(for: sessionID).map { sources(for: $0) } ?? []
     }
 
     public func activity(for sessionID: UUID) -> RecordedStrengthActivity? {
@@ -116,7 +133,7 @@ public enum StrengthActivityMatching {
         return kept.sorted { ($0.startedAt, $0.id) < ($1.startedAt, $1.id) }
     }
 
-    private static func overlaps(_ lhs: RecordedStrengthActivity, _ rhs: RecordedStrengthActivity) -> Bool {
+    static func overlaps(_ lhs: RecordedStrengthActivity, _ rhs: RecordedStrengthActivity) -> Bool {
         let shorter = min(lhs.durationSeconds, rhs.durationSeconds)
         guard shorter > 0 else { return abs(lhs.startedAt.timeIntervalSince(rhs.startedAt)) < startTolerance }
         let overlap = min(lhs.endedAt, rhs.endedAt).timeIntervalSince(max(lhs.startedAt, rhs.startedAt))

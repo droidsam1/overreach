@@ -55,10 +55,11 @@ extension StrengthActivityMatching {
         choices: [StrengthMatchPair: StrengthMatchChoice]
     ) -> StrengthMatchResolution {
         var seen: Set<StrengthRecordingID> = []
-        let recordings = activities.filter { seen.insert(StrengthRecordingID($0)).inserted }
+        let originals = activities.filter { seen.insert(StrengthRecordingID($0)).inserted }
             .sorted { ($0.startedAt, $0.source.rawValue, $0.id) < ($1.startedAt, $1.source.rawValue, $1.id) }
         let sessionIDs = Set(sessions.map(\.id))
         let activeChoices = choices.filter { sessionIDs.contains($0.key.sessionID) }
+        let (recordings, mirrors) = mergeMirrors(originals, choices: activeChoices)
         let links = activeChoices.keys.filter { activeChoices[$0] == .linked }
         let reservedSessions = Set(links.map(\.sessionID))
         let reservedRecordings = Set(links.map(\.recordingID))
@@ -93,10 +94,54 @@ extension StrengthActivityMatching {
         return StrengthMatchResolution(
             matches: StrengthActivityMatches(
                 bySession: selection.matches,
-                unmatched: recordings.filter { !selection.used.contains(StrengthRecordingID($0)) }
+                unmatched: recordings.filter { !selection.used.contains(StrengthRecordingID($0)) },
+                mirrors: mirrors
             ),
             candidates: review
         )
+    }
+
+    /// Only isolated cross-source pairs are merged. Both originals remain available to History on the next resolve.
+    private static func mergeMirrors(
+        _ originals: [RecordedStrengthActivity], choices: [StrengthMatchPair: StrengthMatchChoice]
+    ) -> ([RecordedStrengthActivity], [StrengthRecordingID: StrengthRecordingID]) {
+        let health = originals.filter { $0.source == .appleHealth }
+        let lookback = max(health.map(\.durationSeconds).max() ?? 0, startTolerance)
+        let pairs = originals.filter { $0.source == .garmin }.flatMap { garmin in
+            let start = firstRecording(onOrAfter: garmin.startedAt.addingTimeInterval(-lookback), in: health)
+            let end = max(garmin.endedAt, garmin.startedAt.addingTimeInterval(startTolerance))
+            return health[start...].prefix { $0.startedAt <= end }.filter { overlaps(garmin, $0) }
+                .map { (garmin: garmin, health: $0) }
+        }
+        let byGarmin = Dictionary(grouping: pairs, by: { $0.garmin.id })
+        let byHealth = Dictionary(grouping: pairs, by: { $0.health.id })
+        let decided = Set(choices.keys.map(\.recordingID))
+        var mirrors: [StrengthRecordingID: StrengthRecordingID] = [:]
+        var merged: [StrengthRecordingID: RecordedStrengthActivity] = [:]
+        for pair in pairs where byGarmin[pair.garmin.id]?.count == 1 && byHealth[pair.health.id]?.count == 1 {
+            let garminID = StrengthRecordingID(pair.garmin)
+            let healthID = StrengthRecordingID(pair.health)
+            // Preserve independent choices about both originals, including an explicit separation.
+            if decided.contains(garminID) && decided.contains(healthID) { continue }
+            let (primary, other) = decided.contains(healthID) ? (healthID, garminID) : (garminID, healthID)
+            var preferred = pair.garmin
+            if primary == healthID {
+                preferred = pair.health
+                preferred.trainingLoad = pair.garmin.trainingLoad
+                preferred.aerobicTrainingEffect = pair.garmin.aerobicTrainingEffect
+                preferred.anaerobicTrainingEffect = pair.garmin.anaerobicTrainingEffect
+            }
+            preferred.averageHeartRate = pair.garmin.averageHeartRate ?? pair.health.averageHeartRate
+            preferred.maxHeartRate = pair.garmin.maxHeartRate ?? pair.health.maxHeartRate
+            mirrors[primary] = other
+            merged[primary] = preferred
+        }
+        let hidden = Set(mirrors.values)
+        let recordings = originals.compactMap { activity -> RecordedStrengthActivity? in
+            let id = StrengthRecordingID(activity)
+            return hidden.contains(id) ? nil : (merged[id] ?? activity)
+        }
+        return (recordings, mirrors)
     }
 
     private static func savedCandidates(

@@ -14,8 +14,8 @@ and the logger come before review tools, and work that only a person with an iPh
    [deloads and breaks tasks 8–10](design/deloads-and-breaks.md#8-stress-aware-running-advice): running advice under
    reported stress, fewer repeat questions, then device and clinical review. Task 7 shipped in
    [#145](https://github.com/droidsam1/overreach/pull/145).
-2. **One activity log** — [#40](https://github.com/droidsam1/overreach/issues/40), in order
-   [#87](https://github.com/droidsam1/overreach/issues/87) → [#88](https://github.com/droidsam1/overreach/issues/88).
+2. **One activity log** — [#40](https://github.com/droidsam1/overreach/issues/40), continue with
+   [#88](https://github.com/droidsam1/overreach/issues/88).
    Correct wrong merges and count every activity once.
 3. **Running priority and the shared schedule** —
    [hybrid backlog tasks 7–8](design/readiness-and-hybrid-planning.md#7-represent-planned-runs-races-and-dates):
