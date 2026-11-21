@@ -9317,19 +9317,19 @@
         }
       }
     },
-    "No progress yet. Log workouts or link runs to see recovery periods, stalled lifts and goal results.": {
+    "No progress yet. Log workouts or link runs to see recovery, stalled lifts and goal results.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aún no hay progreso. Registra entrenos o vincula carreras para ver periodos de recuperación, ejercicios estancados y resultados del objetivo."
+            "value": "Aún no hay progreso. Registra entrenos o vincula carreras para ver recuperación, ejercicios estancados y resultados del objetivo."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aínda non hai progreso. Rexistra adestramentos ou vincula carreiras para ver períodos de recuperación, exercicios estancados e resultados do obxectivo."
+            "value": "Aínda non hai progreso. Rexistra adestramentos ou vincula carreiras para ver recuperación, exercicios estancados e resultados do obxectivo."
           }
         }
       }

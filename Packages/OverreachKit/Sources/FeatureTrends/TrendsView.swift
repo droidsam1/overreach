@@ -52,7 +52,9 @@ public struct TrendsView<Progress: View>: View {
                 RecentLoadLink(model: model, onConnectGarmin: onConnectGarmin)
                 if Progress.self != EmptyView.self {
                     NavigationLink(destination: progress) {
-                        SectionRow(title: "Progress", systemImage: "chart.line.uptrend.xyaxis", summary: progressSummary)
+                        SectionRow(
+                            title: "Progress", systemImage: "chart.line.uptrend.xyaxis", summary: progressSummary
+                        )
                     }
                 }
             }

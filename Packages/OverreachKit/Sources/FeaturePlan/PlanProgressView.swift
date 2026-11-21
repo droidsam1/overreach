@@ -20,8 +20,10 @@ public struct PlanProgressView: View {
                 ProgressView("Loading…")
             } else if !model.hasProgress {
                 Section {
-                    Text("No progress yet. Log workouts or link runs to see recovery periods, stalled lifts and goal results.")
-                        .foregroundStyle(.secondary)
+                    Text(
+                        "No progress yet. Log workouts or link runs to see recovery, stalled lifts and goal results."
+                    )
+                    .foregroundStyle(.secondary)
                 }
             }
             if model.hasRecoveryHistory {
