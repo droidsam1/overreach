@@ -154,7 +154,9 @@ public enum DeloadAdvisor {
             score += settings.stalledWeight
         }
 
-        let since = now.addingTimeInterval(-Double(settings.lookbackDays) * 86_400)
+        // Lighter sessions during and right after a deload or a break are detraining, not accumulated fatigue:
+        // drops and RPE creep only compare sessions since the last recovery period.
+        let since = max(now.addingTimeInterval(-Double(settings.lookbackDays) * 86_400), lastRecovery ?? .distantPast)
         let dropped = considered.filter {
             hasPerformanceDrop($0.history, since: since, fraction: settings.performanceDropFraction)
         }.count

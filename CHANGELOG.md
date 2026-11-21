@@ -11,6 +11,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   range, the reference it was compared with and the outcome. The AI report lists them, and Today says when HRV
   was skipped because a watch stopped syncing or its readings were implausible. Daytime and sleep HRV readings
   are no longer mixed in one baseline, and implausible readings are ignored (ADR-0032).
+- Today recognises the order you rotate through your workouts (A, B, C, D, then A again) and bases the easy
+  strength option and the deload on the session you have next. Without a plan you can choose the next session, and a
+  deload proposal shows each exercise of that session with fewer sets and less load, or a general example.
+- Before suggesting a deload, Today asks whether a recent break it could not confirm was a rest; if it was, no new
+  deload is suggested. Lighter sessions after a break no longer count as a performance drop.
 - After the first session with an exercise, Train repeats it as a starting point and lets you preview and choose
   how to progress (reps, load or a wave); progression then waits for logged effort before advancing.
 - Built-in exercises show their Spanish name when the app is in Spanish or Galician; search finds exercises by
@@ -144,6 +149,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Each exercise in the logger can have its own focus (e.g. bench for strength in a hypertrophy session), from its
   menu. It recomputes the target, keeps sets already done and is remembered for the exercise.
 - "How to log sets" in the logger: what to change after a set, the RPE scale and what notes are for.
+
+### Removed
+- The seven-day "Recent training and recovery" list on Today: History has the record, and the readiness explanation
+  keeps the workouts that matter for today's light.
 
 ## [0.1.0] - 2026-11-18
 

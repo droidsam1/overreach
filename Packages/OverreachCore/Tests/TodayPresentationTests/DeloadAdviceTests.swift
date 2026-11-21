@@ -142,6 +142,100 @@ struct DeloadAdviceTests {
             return
         }
     }
+
+    @Test func theProposalShowsTheNextSessionWithTheDeloadApplied() async throws {
+        let store = TestStore(exercises: [squat, bench], sessions: stalledSessions)
+        try await store.save(mainLift, for: squat.id)
+        try await store.save(mainLift, for: bench.id)
+        let model = TodayModel(
+            sources: [DayMetrics(days: metrics(poorWeek: true))], profiles: store, workouts: store, exercises: store,
+            progression: store, calendar: calendar, format: format
+        )
+        await model.load(now: now)
+        let session = try #require(model.deloadSession)
+        #expect(session.heading == "Next in your rotation: Full body")
+        #expect(session.rows.map(\.reference) == ["Last time · 3 × 4 · 102.5 kg", "Last time · 3 × 4 · 102.5 kg"])
+        #expect(session.rows.map(\.deload) == ["Deload · 2 × 4 · 92.5 kg", "Deload · 2 × 4 · 92.5 kg"])
+        #expect(model.deloadHowTo == "Apply it to every session of the week, starting with the next one:")
+    }
+
+    @Test func withoutAKnownNextSessionTheDeloadIsExplainedInGeneral() async throws {
+        let names = ["Upper", "Legs", "Gym", "Full body", "Push", "Pull"]
+        let sessions = zip(stalledSessions, names).map { original, name in
+            var session = original
+            session.name = name
+            return session
+        }
+        let store = TestStore(exercises: [squat, bench], sessions: sessions)
+        try await store.save(mainLift, for: squat.id)
+        try await store.save(mainLift, for: bench.id)
+        let model = TodayModel(
+            sources: [DayMetrics(days: metrics(poorWeek: true))], profiles: store, workouts: store, exercises: store,
+            progression: store, calendar: calendar, format: format
+        )
+        await model.load(now: now)
+
+        #expect(model.deloadSession == nil)
+        #expect(model.deloadHowTo?.hasPrefix("Apply it to every session of the week. For example, 4 × 6") == true)
+        #expect(model.showsNextSessionInDeload)
+        #expect(model.strengthChoices.count == 6)
+
+        let pull = try #require(model.strengthChoices.first { $0.title == "Legs" })
+        model.chooseStrengthSession(pull.id)
+        #expect(model.deloadSession?.heading == "Your choice: Legs")
+    }
+
+    /// A hybrid athlete whose runs could not be read: a week without lifting needs their confirmation (ADR-0029).
+    private func breakStore() async throws -> TestStore {
+        let sessions = stalledSessions.map { original in
+            var session = original
+            session.startedAt = original.startedAt.addingTimeInterval(-5 * 86_400)
+            session.endedAt = original.endedAt?.addingTimeInterval(-5 * 86_400)
+            return session
+        }
+        let store = TestStore(exercises: [squat, bench], sessions: sessions)
+        try await store.save(mainLift, for: squat.id)
+        try await store.save(mainLift, for: bench.id)
+        try await store.save(AthleteProfile(goal: TrainingGoal(kind: .hybrid)))
+        return store
+    }
+
+    @Test func anUnconfirmedBreakIsAskedAboutBeforeProposingADeload() async throws {
+        let store = try await breakStore()
+        let model = TodayModel(
+            sources: [DayMetrics(days: metrics(poorWeek: true))], profiles: store, workouts: store, exercises: store,
+            progression: store, calendar: calendar, format: format
+        )
+        await model.load(now: now)
+
+        guard case let .confirmBreak(period) = model.deloadAdvice?.state else {
+            Issue.record("expected the break question")
+            return
+        }
+        #expect(period.text.hasPrefix("No training logged from "))
+        #expect(period.end == today.adding(days: -1, calendar: calendar))
+        #expect(model.deloadSession == nil)
+        #expect(model.deloadHowTo == nil)
+
+        await model.reviewBreak(accepted: true, now: now)
+        #expect(model.deloadAdvice == nil)
+        #expect(try await store.profile().deloadDecisions.map(\.accepted) == [true])
+    }
+
+    @Test func declaringTheBreakNotARestLetsTheProposalThrough() async throws {
+        let store = try await breakStore()
+        let model = TodayModel(
+            sources: [DayMetrics(days: metrics(poorWeek: true))], profiles: store, workouts: store, exercises: store,
+            progression: store, calendar: calendar, format: format
+        )
+        await model.load(now: now)
+        await model.reviewBreak(accepted: false, now: now)
+
+        guard case .proposed = model.deloadAdvice?.state else {
+            Issue.record("expected a proposal")
+            return
+        }
+    }
 }
 
 private struct DayMetrics: MetricsSource {
