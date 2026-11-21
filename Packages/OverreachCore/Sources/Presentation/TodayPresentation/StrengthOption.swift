@@ -3,6 +3,13 @@ import Domain
 import Foundation
 import PresentationKit
 
+/// A workout the athlete can say they will do next (Today, when there is no plan).
+public struct StrengthChoice: Identifiable, Hashable, Sendable {
+    public let id: String
+    public let title: String
+    public var isSelected = false
+}
+
 public struct StrengthOption: Hashable, Sendable {
     public struct ExerciseRow: Identifiable, Hashable, Sendable {
         public let id: UUID
@@ -16,9 +23,22 @@ public struct StrengthOption: Hashable, Sendable {
     public let guidance: String
     public let evidence: String
 
+    /// The workout the example is based on when there is no plan: the next one of a detected rotation, or the one
+    /// the athlete chose.
+    enum Basis: Hashable {
+        case rotation(SessionRotation.Slot)
+        case chosen(SessionRotation.Slot)
+
+        var slot: SessionRotation.Slot {
+            switch self {
+            case let .rotation(slot), let .chosen(slot): slot
+            }
+        }
+    }
+
     static func make(
         routine: Routine?, isDated: Bool, sessions: [StrengthSession], exercises: [Exercise],
-        settings: [UUID: ProgressionSettings], historyStart: Date, familiarityStart: Date
+        settings: [UUID: ProgressionSettings], historyStart: Date, familiarityStart: Date, basis: Basis? = nil
     ) -> StrengthOption {
         let context = StrengthOptionContext(
             progressionSessions: sessions.filter { $0.startedAt >= historyStart },
@@ -30,6 +50,21 @@ public struct StrengthOption: Hashable, Sendable {
             if isDated { return option(heading: nil, rows: rows, isDated: true) }
             if !rows.isEmpty {
                 return option(heading: L10n.format("Up next in your plan · {1}", routine.name), rows: rows)
+            }
+        }
+        if let basis, let session = sessions.filter({ SessionRotation.slot(for: $0).id == basis.slot.id })
+            .max(by: { $0.startedAt < $1.startedAt }) {
+            var seen: Set<UUID> = []
+            let entries = session.entries.filter { seen.insert($0.exerciseID).inserted }
+            let rows = Array(entries.lazy.compactMap {
+                context.row(for: $0.exerciseID, previous: session)
+            }.prefix(EasyStrengthAdjustment.maximumExercises))
+            if !rows.isEmpty {
+                let heading = switch basis {
+                case .rotation: L10n.format("Next in your rotation · {1}", session.name)
+                case .chosen: L10n.format("Your choice · {1}", session.name)
+                }
+                return option(heading: heading, rows: rows)
             }
         }
         // Pick a recent session with enough recorded work to offer a familiar alternative.
