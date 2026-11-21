@@ -80,6 +80,8 @@ An exercise is **stalled** when, over its last 3 exposures (or 3 weeks), the e1R
 
 ## Deload proposals
 
+Planned changes to these rules, breaks and the deload card: [deloads and breaks](deloads-and-breaks.md).
+
 A deload week = same exercises, −50 % sets, −10 % load, RPE ≤ 7 (`DeloadPlan.standard`). Training is reduced,
 not stopped: a full week off mid-programme cost some strength in the only RCT (`deload-cost`). Time since the
 last deload alone never triggers one; a proposal needs a score ≥ 3, i.e. at least one performance signal.
