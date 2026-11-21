@@ -10,9 +10,9 @@ and the logger come before review tools, and work that only a person with an iPh
 
 ## Ready to implement
 
-1. **Running priority and the shared schedule** —
-   [hybrid backlog tasks 7–8](design/readiness-and-hybrid-planning.md#7-represent-planned-runs-races-and-dates):
-   structured runs in the shared schedule, then adjusting planned runs. The priority control shipped.
+1. **Adjust planned runs and protect nearby sessions** —
+   [hybrid backlog task 8](design/readiness-and-hybrid-planning.md#8-adjust-planned-runs-and-protect-nearby-sessions).
+   Plan already supports running and strength priorities and structured runs in the shared schedule.
 2. **Planned versus completed work for imported plans** — follow-up of
    [#34](https://github.com/droidsam1/overreach/issues/34).
 3. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).

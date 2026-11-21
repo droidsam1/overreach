@@ -32,18 +32,48 @@ public struct RunningGoal: Hashable, Codable, Sendable {
 
 /// A dated entry entered by the athlete. It remains separate from recorded run history.
 public struct PlannedRun: Identifiable, Hashable, Codable, Sendable {
-    public enum Purpose: String, CaseIterable, Codable, Sendable { case easy, intervals, tempo, long, race, rest }
+    public enum Purpose: String, CaseIterable, Codable, Sendable {
+        case easy, intervals, tempo, threshold, long, race, rest
+    }
+
+    public enum RacePriority: String, CaseIterable, Codable, Sendable { case primary, secondary }
+
+    public enum IntensityBasis: String, CaseIterable, Codable, Sendable { case pace, heartRateZone, perceivedEffort }
+
+    public struct Prescription: Hashable, Codable, Sendable {
+        public let repetitions: Int?
+        public let recoverySeconds: Int?
+        public let intensityBasis: IntensityBasis?
+        public let intensityTarget: Int?
+
+        public init(
+            repetitions: Int? = nil, recoverySeconds: Int? = nil,
+            intensityBasis: IntensityBasis? = nil, intensityTarget: Int? = nil
+        ) {
+            self.repetitions = repetitions
+            self.recoverySeconds = repetitions == nil ? nil : recoverySeconds
+            self.intensityBasis = intensityBasis
+            self.intensityTarget = intensityBasis == nil ? nil : intensityTarget
+        }
+    }
 
     public let id: UUID
     public let day: CalendarDay
     public let purpose: Purpose
     public let durationMinutes: Int?
     public let distanceMeters: Int?
-    public let completion: PlannedRunCompletion?
+    public let prescription: Prescription?
+    public let racePriority: RacePriority?
+    public let originalDay: CalendarDay?
+    public let postponed: Bool?
+    public var isPostponed: Bool { postponed == true }
+    public var isAdjusted: Bool { originalDay != nil && originalDay != day }
+    public private(set) var completion: PlannedRunCompletion?
 
     public init(
         id: UUID = UUID(), day: CalendarDay, purpose: Purpose, durationMinutes: Int? = nil, distanceMeters: Int? = nil,
-        completion: PlannedRunCompletion? = nil
+        completion: PlannedRunCompletion? = nil, prescription: Prescription? = nil,
+        racePriority: RacePriority? = nil, originalDay: CalendarDay? = nil, postponed: Bool = false
     ) {
         self.id = id
         self.day = day
@@ -51,9 +81,22 @@ public struct PlannedRun: Identifiable, Hashable, Codable, Sendable {
         self.durationMinutes = purpose == .rest ? nil : durationMinutes
         self.distanceMeters = purpose == .rest ? nil : distanceMeters
         self.completion = purpose == .rest ? nil : completion
+        self.prescription = purpose == .rest ? nil : prescription
+        self.racePriority = purpose == .race ? racePriority : nil
+        self.originalDay = originalDay
+        self.postponed = postponed && purpose != .rest && completion == nil ? true : nil
     }
 
-    private enum CodingKeys: String, CodingKey { case id, day, purpose, durationMinutes, distanceMeters, completion }
+    public func updatingCompletion(_ completion: PlannedRunCompletion) -> Self {
+        var updated = self
+        if purpose != .rest && !isPostponed { updated.completion = completion }
+        return updated
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, day, purpose, durationMinutes, distanceMeters, completion
+        case prescription, racePriority, originalDay, postponed
+    }
 
     public init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
@@ -64,7 +107,11 @@ public struct PlannedRun: Identifiable, Hashable, Codable, Sendable {
         let id = try values.decodeIfPresent(UUID.self, forKey: .id)
             ?? UUID.stable("planned-run/\(day)/\(purpose.rawValue)/\(minutes ?? 0)")
         self.init(id: id, day: day, purpose: purpose, durationMinutes: minutes, distanceMeters: distance,
-                  completion: try values.decodeIfPresent(PlannedRunCompletion.self, forKey: .completion))
+                  completion: try values.decodeIfPresent(PlannedRunCompletion.self, forKey: .completion),
+                  prescription: try values.decodeIfPresent(Prescription.self, forKey: .prescription),
+                  racePriority: try values.decodeIfPresent(RacePriority.self, forKey: .racePriority),
+                  originalDay: try values.decodeIfPresent(CalendarDay.self, forKey: .originalDay),
+                  postponed: try values.decodeIfPresent(Bool.self, forKey: .postponed) ?? false)
     }
 }
 

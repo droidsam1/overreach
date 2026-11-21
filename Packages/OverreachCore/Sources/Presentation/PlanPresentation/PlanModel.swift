@@ -144,6 +144,10 @@ public final class PlanModel {
     }
     public let focusOptions: [Option<TrainingFocus>] = Option.trainingFocuses
     public let runningSessionOptions = PlannedRun.Purpose.allCases.map { Option(value: $0, name: $0.displayName) }
+    public let runningIntensityOptions = PlannedRun.IntensityBasis.allCases.map {
+        Option(value: $0, name: $0.displayName)
+    }
+    public let racePriorityOptions = PlannedRun.RacePriority.allCases.map { Option(value: $0, name: $0.displayName) }
     public let priorityOptions = DisciplinePriority.allCases.map { Option(value: $0, name: $0.displayName) }
     public var disciplinePriority: DisciplinePriority { profile.goal?.effectivePriority ?? .balanced }
     /// Only a hybrid goal has two disciplines to rank.
@@ -480,10 +484,7 @@ extension PlanModel {
             }
             result.painDuring = during
             result.painAfter = after
-            let entry = schedule[index]
-            schedule[index] = PlannedRun(id: entry.id, day: entry.day, purpose: entry.purpose,
-                                         durationMinutes: entry.durationMinutes, distanceMeters: entry.distanceMeters,
-                                         completion: result)
+            schedule[index] = schedule[index].updatingCompletion(result)
             goal.setRunningSchedule(schedule)
             updated.goal = goal
             try await profiles.save(updated)
@@ -552,8 +553,12 @@ extension PlanModel {
         let status: String?
         if entry.completion != nil {
             status = L10n.text("Completed")
+        } else if entry.isPostponed {
+            status = L10n.text("Postponed")
         } else if isPast, entry.purpose != .rest {
             status = L10n.text("No recorded run linked")
+        } else if entry.isAdjusted {
+            status = L10n.text("Rescheduled")
         } else {
             status = nil
         }
@@ -600,7 +605,8 @@ extension PlanModel {
     }
 
     private func canSchedule(_ entry: PlannedRun, among entries: [PlannedRun]) -> Bool {
-        let others = entries.filter { $0.id != entry.id }
+        if entry.isPostponed { return true }
+        let others = entries.filter { $0.id != entry.id && !$0.isPostponed }
         if others.contains(where: { $0.day == entry.day && ($0.purpose == .rest || entry.purpose == .rest) }) {
             errorMessage = L10n.text("A running rest day must be the only entry on that date.")
             return false

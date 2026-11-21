@@ -133,7 +133,9 @@ public enum ContextPackBuilder {
                     } : nil,
                     priority: goal.kind == .hybrid && goal.effectivePriority != .balanced
                         ? goal.effectivePriority.rawValue : nil,
-                    nextRun: schedule.first { $0.day >= today && $0.completion == nil }.map(runningEntry),
+                    nextRun: schedule.first {
+                        $0.day >= today && $0.completion == nil && !$0.isPostponed
+                    }.map(runningEntry),
                     runningSchedule: schedule.isEmpty ? nil : schedule.map(runningEntry)
                 )
             },
@@ -149,7 +151,9 @@ public enum ContextPackBuilder {
     private static func runningEntry(_ entry: PlannedRun) -> ContextPack.NextRun {
         ContextPack.NextRun(id: entry.id, day: entry.day.description, purpose: entry.purpose.rawValue,
                             durationMinutes: entry.durationMinutes, distanceMeters: entry.distanceMeters,
-                            completed: entry.completion != nil)
+                            completed: entry.completion != nil, prescription: entry.prescription,
+                            racePriority: entry.racePriority?.rawValue, originalDay: entry.originalDay?.description,
+                            postponed: entry.postponed)
     }
 
     private static func exerciseInfo(_ exercise: Exercise, settings: ProgressionSettings?) -> ContextPack.ExerciseInfo {
