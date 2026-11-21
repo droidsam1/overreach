@@ -1,6 +1,7 @@
 import Domain
 import Foundation
 import PresentationKit
+import TrainingServices
 
 /// Display values for a run in the timeline, calendar and activity detail.
 public struct HistoryRunActivity: Identifiable, Hashable, Sendable {
@@ -41,14 +42,8 @@ public struct HistoryRunActivity: Identifiable, Hashable, Sendable {
     }
 }
 
-/// Reads available run sources in parallel. A failure in one source leaves the successful reads visible.
+/// Runs for History from `SourceReader` (ADR-0035). A failure in one source leaves the successful reads visible.
 struct HistoryRunReadings: Sendable {
-    private enum SourceResult: Sendable {
-        case unavailable
-        case success([RunActivity])
-        case failure(DataSourceKind)
-    }
-
     let runs: [RunDeduplication.CombinedRun]
     let didRead: Bool
     let failedSources: Set<DataSourceKind>
@@ -60,32 +55,7 @@ struct HistoryRunReadings: Sendable {
     }
 
     static func load(sources: [any MetricsSource], from start: Date, to end: Date) async -> Self {
-        await withTaskGroup(of: SourceResult.self) { group in
-            for source in sources {
-                group.addTask {
-                    guard await source.isAvailable() else { return .unavailable }
-                    do {
-                        return .success(try await source.runs(from: start, to: end))
-                    } catch {
-                        return .failure(source.kind)
-                    }
-                }
-            }
-            var runs: [RunActivity] = []
-            var didRead = false
-            var failures: Set<DataSourceKind> = []
-            for await result in group {
-                switch result {
-                case .unavailable:
-                    break
-                case let .success(activities):
-                    didRead = true
-                    runs += activities
-                case let .failure(source):
-                    failures.insert(source)
-                }
-            }
-            return Self(runs: RunDeduplication.combiningSources(runs), didRead: didRead, failedSources: failures)
-        }
+        let reading = await SourceReader(sources: sources).runs(from: start, to: end)
+        return Self(runs: reading.value, didRead: reading.didRead, failedSources: Set(reading.failedSources))
     }
 }

@@ -117,6 +117,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings → Appearance: light, dark or the same as the iPhone (the default).
 
 ### Fixed
+- The context shared with an AI app has one row of health metrics per day, merged as Today shows them (Garmin
+  first), instead of one row per source. Every screen now reads Apple Health and Garmin the same way (ADR-0035).
 - Garmin sync counts each activity once when the same activity appears on multiple API pages.
 - The progression engine ignored the kind of set: warm-up sets in the history now no longer count for targets,
   stalls or the working weight.

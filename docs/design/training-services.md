@@ -1,12 +1,12 @@
 # Training services: one source of truth per question
 
-Status: planned (reviewed 2026-11-21). Decision: ADR-0035.
+Status: task 1 shipped (reviewed 2026-11-21). Decision: ADR-0035.
 
 ## Continue from here
 
 Take the first task below whose boxes are not all checked. Each task is one pull request and leaves `main`
 working. Task 2 replaces task 1 of [deloads and breaks](deloads-and-breaks.md): check its box there when done.
-After task 5, update the layout and dependency rules in `AGENTS.md` and `CODING_STANDARDS.md`.
+Keep `AGENTS.md` (layout and dependency rules) current as services move in.
 
 ## Inventory of drift
 
@@ -61,16 +61,17 @@ it to every model that needs it.
 
 ### 1. Module and shared reading
 
-- [ ] Add the `TrainingServices` target and library to `Packages/OverreachCore/Package.swift` (depends on `Domain`,
+- [x] Add the `TrainingServices` target and library to `Packages/OverreachCore/Package.swift` (depends on `Domain`,
   `Analytics`) and a test target.
-- [ ] Move run reading into it: skip unavailable sources, record an available source that throws as failed, remove
-  duplicates with `RunDeduplication`. Same for daily metrics (merged per day in source order, as `TodayModel` does)
-  and watch strength recordings.
-- [ ] Switch `TodayModel`, `PlanModel`, `HistoryRunReadings` and `AskAIModel` to it. The Assistant now sends one
+- [x] Move run reading into it (`SourceReader`): skip unavailable sources, record an available source that throws as
+  failed, remove duplicates with `RunDeduplication`. Same for daily metrics (merged per day in source order, as
+  `TodayModel` did). Watch strength recordings and walks (`ActivitySource`) are read in one call each and move with
+  the services that use them (tasks 2–4).
+- [x] Switch `TodayModel`, `PlanModel`, `HistoryRunReadings` and `AskAIModel` to it. The Assistant now sends one
   merged row per day.
-- [ ] Tests with fake sources: unavailable, failing, duplicated runs, two sources for one day.
+- [x] Tests with fake sources: unavailable, failing, duplicated runs, two sources for one day.
 
-Finish line: `grep -rn "\.runs(from\|dailyMetrics(in" Packages/OverreachCore/Sources/Presentation` finds nothing.
+Finish line: presentation modules call `runs(from:to:)` and `dailyMetrics(in:)` only on `SourceReader`.
 
 ### 2. Recovery status
 
@@ -109,6 +110,6 @@ Finish line: the AI context and Today state the same readiness level and deload 
 - [ ] Add a check (SwiftLint `custom_rules` or `scripts/check-repo.py`) that fails when a file under
   `Packages/OverreachCore/Sources/Presentation` calls `.runs(from`, `.dailyMetrics(in`, `DeloadDetection.`,
   `DeloadAdvisor.`, `StallDetection.status` or `ReadinessRules.readiness`.
-- [ ] Mark ADR-0035 accepted and add `TrainingServices` to the layout and dependency rules in `AGENTS.md`.
+- [x] Mark ADR-0035 accepted and add `TrainingServices` to the layout and dependency rules in `AGENTS.md`.
 
 Finish line: the check passes on `main` and fails on a test file that breaks the rule.

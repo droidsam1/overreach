@@ -3,6 +3,7 @@ import Domain
 import Foundation
 import Observation
 import PresentationKit
+import TrainingServices
 
 /// One reason behind the readiness light, with the strength of its evidence.
 public struct ReadinessLine: Hashable, Sendable {
@@ -395,23 +396,7 @@ public final class TodayModel {
             : max(6, readinessSettings.maximumPhaseBaselineDays) + RecoveryTrend.windowDays
         let range = today.adding(days: -historyDays, calendar: calendar)...today
         let weekStart = today.adding(days: -6, calendar: calendar)
-        var byDay: [CalendarDay: DailyMetrics] = [:]
-        var failures: [DataSourceKind] = []
-        var reasons: [DataSourceKind: String] = [:]
-        var availableSources: [any MetricsSource] = []
-
-        for source in sources {
-            guard await source.isAvailable() else { continue }
-            availableSources.append(source)
-            do {
-                for day in try await source.dailyMetrics(in: range) where range.contains(day.day) {
-                    byDay[day.day] = (byDay[day.day] ?? DailyMetrics(day: day.day)).merging(day)
-                }
-            } catch {
-                failures.append(source.kind)
-                reasons[source.kind] = error.localizedDescription
-            }
-        }
+        let reading = await SourceReader(sources: sources).dailyMetrics(in: range)
 
         let movementStart = today.adding(
             days: Workload.usualStartOffset - EverydayMovement.Settings().baselineDays, calendar: calendar
@@ -430,12 +415,14 @@ public final class TodayModel {
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         hasRunningGoal = goal?.running.map { $0.distanceMeters > 0 } ?? false
         loadedDay = today
-        let history = byDay.values.filter { !$0.sources.isEmpty }.sorted { $0.day < $1.day }
+        let history = reading.value
         week = history.filter { $0.day >= weekStart }
         recentNights = history.filter { $0.day >= weekStart.adding(days: -7, calendar: calendar) }
-        metrics = byDay[today].flatMap { $0.sources.isEmpty ? nil : $0 }
-        failedSources = failures
-        failureReasons = reasons
+        metrics = history.last { $0.day == today }
+        failedSources = reading.failedSources
+        failureReasons = Dictionary(
+            reading.failures.map { ($0.source, $0.reason) }, uniquingKeysWith: { first, _ in first }
+        )
         self.checkIn = checkIn
         isGarminConnected = garminConnected
         wearsGarmin = profile?.wearables.contains(.garmin) ?? false
@@ -445,7 +432,7 @@ public final class TodayModel {
         )
         let activity = Self.mergeMovement(history: history, activity: dailyActivity, range: movementRange,
                                           calendar: calendar, now: now)
-        await loadRecentTraining(in: weekStart...today, now: now, sources: availableSources, profile: profile,
+        await loadRecentTraining(in: weekStart...today, now: now, sources: sources, profile: profile,
                                  loadID: loadID, metricsHistory: history, activity: activity)
     }
 
@@ -838,18 +825,10 @@ public final class TodayModel {
     nonisolated private static func readRecentRuns(
         sources: [any MetricsSource], from start: Date, to end: Date
     ) async -> (activities: [RunActivity], failed: Bool) {
-        await withTaskGroup(of: [RunActivity]?.self) { group in
-            for source in sources {
-                group.addTask { try? await source.runs(from: start, to: end) }
-            }
-            var activities: [RunActivity] = []
-            var failed = false
-            for await result in group {
-                if let result { activities += result } else { failed = true }
-            }
-            return (activities, failed)
-        }
+        let reading = await SourceReader(sources: sources).runs(from: start, to: end)
+        return (reading.activities, reading.failed)
     }
+
 
     /// Asks every source for access (the Apple Health permission sheet), then reloads.
     public func connectHealth(now: Date = .now) async {
