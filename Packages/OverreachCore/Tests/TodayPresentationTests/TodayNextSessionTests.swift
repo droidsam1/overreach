@@ -42,12 +42,17 @@ struct TodayNextSessionTests {
         let model = TodayModel(sources: [amber], workouts: store, exercises: store, calendar: calendar, format: format)
         await model.load(now: now)
 
+        #expect(model.canRequestStrengthOption)
+        #expect(model.strengthOption == nil)
+        model.setShowsOptionalStrength(true)
         let option = try #require(model.strengthOption)
         #expect(option.heading == "Next in your rotation · A")
         #expect(option.exerciseRows.map(\.title) == ["Back Squat"])
         #expect(model.strengthChoices.map(\.title) == ["A", "B", "C", "D"])
         #expect(model.strengthChoices.first?.isSelected == true)
         #expect(model.strengthChoiceNote == "You rotate through A → B → C → D. Next up: A.")
+        model.setShowsOptionalStrength(false)
+        #expect(model.strengthOption == nil)
     }
 
     @Test func theAthleteCanSayWhichSessionComesNext() async throws {
@@ -55,6 +60,7 @@ struct TodayNextSessionTests {
         let model = TodayModel(sources: [amber], workouts: store, exercises: store, calendar: calendar, format: format)
         await model.load(now: now)
 
+        model.setShowsOptionalStrength(true)
         #expect(model.strengthOption?.heading == "Based on a recent session · B")
         #expect(model.strengthChoices.map(\.title) == ["B", "A", "D", "C"])
         #expect(model.strengthChoiceNote

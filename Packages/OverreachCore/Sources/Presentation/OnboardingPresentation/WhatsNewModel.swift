@@ -43,7 +43,10 @@ public struct ReleaseNotes: Hashable, Sendable {
                 ),
                 ReleaseHighlight(
                     symbol: "calendar.badge.plus", title: L10n.text("Hybrid calendar"),
-                    detail: L10n.text("Schedule strength alongside running and compare an easier option on amber days.")
+                    detail: L10n.text(
+                        "Compare your planned lift with an easy option on amber days, including a starting weight when "
+                            + "recent easy sets support it."
+                    )
                 ),
                 ReleaseHighlight(
                     symbol: "calendar.badge.checkmark", title: L10n.text("Recovery history"),
