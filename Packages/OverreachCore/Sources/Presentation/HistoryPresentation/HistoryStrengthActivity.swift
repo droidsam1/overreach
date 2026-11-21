@@ -20,7 +20,7 @@ public enum HistoryActivityFilter: String, CaseIterable, Identifiable, Sendable 
 public enum HistoryRow: Identifiable, Sendable {
     public enum Identifier: Hashable, Sendable {
         case session(UUID)
-        case recording(String)
+        case recording(StrengthRecordingID)
         case run(String)
     }
 
@@ -31,7 +31,7 @@ public enum HistoryRow: Identifiable, Sendable {
     public var id: Identifier {
         switch self {
         case let .session(summary): .session(summary.id)
-        case let .recording(activity): .recording(activity.id)
+        case let .recording(activity): .recording(activity.recordingID)
         case let .run(activity): .run(activity.id)
         }
     }
@@ -54,7 +54,7 @@ public enum HistoryRow: Identifiable, Sendable {
     var sources: [DataSourceKind] {
         switch self {
         case let .session(summary): summary.sources
-        case let .recording(activity): [activity.sourceKind]
+        case let .recording(activity): activity.sources
         case let .run(activity): activity.sources
         }
     }
@@ -62,7 +62,7 @@ public enum HistoryRow: Identifiable, Sendable {
     var sortID: String {
         switch id {
         case let .session(id): "session:" + id.uuidString
-        case let .recording(id): "recording:" + id
+        case let .recording(id): "recording:\(id.source.rawValue):\(id.id)"
         case let .run(id): "run:" + id
         }
     }
@@ -93,8 +93,8 @@ public struct HistoryMetric: Identifiable, Hashable, Sendable {
 public struct HistoryStrengthActivity: Identifiable, Hashable, Sendable {
     public let id: String
     public let recordingID: StrengthRecordingID
-    let sourceKind: DataSourceKind
-    public var source: String { sourceKind.displayName }
+    let sources: [DataSourceKind]
+    public var source: String { sources.map(\.displayName).joined(separator: " · ") }
     public let startedAt: Date
     public let durationSeconds: Double
     public let metrics: [HistoryMetric]
@@ -102,10 +102,10 @@ public struct HistoryStrengthActivity: Identifiable, Hashable, Sendable {
     public var title: String { L10n.text("Strength workout") }
     public var subtitle: String { L10n.format("{1} · No logged session", source) }
 
-    init(_ activity: RecordedStrengthActivity, format: Format) {
+    init(_ activity: RecordedStrengthActivity, sources: [DataSourceKind]? = nil, format: Format) {
         id = activity.id
         recordingID = StrengthRecordingID(activity)
-        sourceKind = activity.source
+        self.sources = sources ?? [activity.source]
         startedAt = activity.startedAt
         durationSeconds = activity.durationSeconds
         metrics = [

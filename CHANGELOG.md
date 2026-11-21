@@ -9,6 +9,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - Recovery & Progress has a dedicated Recovery tab for the iPhone navigation trial. Settings opens from the
   gear button on Today, which still links directly to recovery readings.
+- History shows Apple Health strength workouts and credits Apple Health when it supplies a copy of a Garmin workout.
 - Today asks whether you have felt more stressed than usual before proposing a deload. If you say yes, it offers
   a steadier week (about 75 % of the sets, RPE 8 at most, keep moving) instead of a deload, explains why, and the
   workout logger applies it. The answer stays on your device and out of shared context.
