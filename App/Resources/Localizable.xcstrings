@@ -5985,6 +5985,23 @@
         }
       }
     },
+    "Further reading": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más lectura"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis lectura"
+          }
+        }
+      }
+    },
     "Garmin": {
       "extractionState": "manual",
       "localizations": {
@@ -15420,6 +15437,23 @@
         }
       }
     },
+    "Sources and coverage": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuentes y cobertura"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fontes e cobertura"
+          }
+        }
+      }
+    },
     "Stalled": {
       "extractionState": "manual",
       "localizations": {
@@ -17898,6 +17932,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Estado de adestramento: {1}"
+          }
+        }
+      }
+    },
+    "Training that counts": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamiento que cuenta"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramento que conta"
           }
         }
       }
@@ -21128,6 +21179,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} de {2} sesións feitas esta semana"
+          }
+        }
+      }
+    },
+    "{1} readings": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} lecturas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} lecturas"
           }
         }
       }
