@@ -15,6 +15,7 @@ public struct WorkoutView: View {
     @State private var isPickingExercise = false
     @State private var isConfirmingDiscard = false
     @State private var isShowingGuide = false
+    @State private var isReorderingExercises = false
 
     public init(model: WorkoutModel, routines: RoutinesModel) {
         _model = State(initialValue: model)
@@ -58,6 +59,9 @@ public struct WorkoutView: View {
             }
             .sheet(item: $routineEditor) { editor in
                 RoutineEditorView(model: editor)
+            }
+            .sheet(isPresented: $isReorderingExercises) {
+                ReorderExercisesSheet(model: model)
             }
             .sheet(isPresented: $isShowingGuide) {
                 SetLoggingGuide(showsRepsInReserve: Binding(
@@ -104,6 +108,8 @@ public struct WorkoutView: View {
             ToolbarItem(placement: .cancellationAction) {
                 Menu {
                     Button("How to log sets", systemImage: "questionmark.circle") { isShowingGuide = true }
+                    Button("Reorder exercises", systemImage: "arrow.up.arrow.down") { isReorderingExercises = true }
+                        .disabled(model.exercises.count < 2)
                     Picker(selection: Binding(
                         get: { model.sessionFocus },
                         set: { focus in Task { await model.setSessionFocus(focus) } }
@@ -238,7 +244,13 @@ private struct SessionList: View {
                                 }
                             }
                     }
-                    Button("Add set", systemImage: "plus") { model.addSet(to: exercise.id) }
+                    // Both adds sit under the sets they extend, so neither hides in a menu.
+                    HStack {
+                        Button("Add set", systemImage: "plus") { model.addSet(to: exercise.id) }
+                        Spacer()
+                        Button(exercise.addWarmUpTitle, systemImage: "flame") { model.addWarmUp(to: exercise.id) }
+                    }
+                    .buttonStyle(.borderless)
                     TextField("Notes", text: $exercise.notes, axis: .vertical)
                         .lineLimit(1...4)
                 } header: {
@@ -256,8 +268,10 @@ private struct SessionList: View {
                                 }
                             }
                             .pickerStyle(.menu)
-                            Button("Add warm-up sets", systemImage: "flame") { model.addWarmUp(to: exercise.id) }
-                                .disabled(!exercise.canAddWarmUp)
+                            Button("Move up", systemImage: "arrow.up") { model.moveExercise(exercise.id, by: -1) }
+                                .disabled(!model.canMoveExercise(exercise.id, by: -1))
+                            Button("Move down", systemImage: "arrow.down") { model.moveExercise(exercise.id, by: 1) }
+                                .disabled(!model.canMoveExercise(exercise.id, by: 1))
                             Button("Use last time's values", systemImage: "clock.arrow.circlepath") {
                                 model.useLastTime(for: exercise.id)
                             }
@@ -304,6 +318,32 @@ private struct SessionList: View {
                 RestTimerView(model: model.rest)
             }
         }
+    }
+}
+
+/// Drag handles over the exercise names only, so the order is easy to change mid-session.
+private struct ReorderExercisesSheet: View {
+    @Bindable var model: WorkoutModel
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(model.exercises) { exercise in
+                    Text(exercise.name)
+                }
+                .onMove { model.moveExercises(from: $0, to: $1) }
+            }
+            .navigationTitle("Reorder exercises")
+            .inlineTitle(true)
+            .alwaysEditing()
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
     }
 }
 
@@ -442,6 +482,16 @@ extension View {
     fileprivate func inlineTitle(_ isInline: Bool) -> some View {
         #if os(iOS)
         navigationBarTitleDisplayMode(isInline ? .inline : .automatic)
+        #else
+        self
+        #endif
+    }
+
+    /// Shows a list's drag handles without an Edit button.
+    @ViewBuilder
+    fileprivate func alwaysEditing() -> some View {
+        #if os(iOS)
+        environment(\.editMode, .constant(.active))
         #else
         self
         #endif

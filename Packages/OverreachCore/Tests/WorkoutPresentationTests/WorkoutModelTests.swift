@@ -80,6 +80,31 @@ struct WorkoutModelTests {
         #expect(model.exercises[0].sets.count == 4)
         #expect(model.exercises[0].sets[3].weightKg == 40)
     }
+
+    @Test func exercisesCanBeReorderedWithoutLosingTheirSets() async {
+        let squat = Exercise(name: "Squat", primaryMuscles: [.quadriceps], equipment: .barbell)
+        let row = Exercise(name: "Row", primaryMuscles: [.back], equipment: .barbell)
+        let store = TestStore(exercises: [bench, squat, row])
+        let fixedNow = now
+        let model = WorkoutModel(workouts: store, exercises: store, progression: store, clock: { fixedNow })
+        model.start()
+        for exercise in [bench, squat, row] { await model.add(exercise) }
+        model.exercises[0].sets[0].weightKg = 42
+        let ids = model.exercises.map(\.id)
+
+        model.moveExercises(from: [0], to: 3)  // a drag of bench to the end
+        #expect(model.exercises.map(\.id) == [ids[1], ids[2], ids[0]])
+        #expect(model.exercises[2].sets[0].weightKg == 42)
+
+        #expect(!model.canMoveExercise(ids[1], by: -1))
+        #expect(model.canMoveExercise(ids[1], by: 1))
+        model.moveExercise(ids[1], by: 1)
+        #expect(model.exercises.map(\.id) == [ids[2], ids[1], ids[0]])
+        model.moveExercise(ids[0], by: -1)
+        #expect(model.exercises.map(\.id) == [ids[2], ids[0], ids[1]])
+        model.moveExercise(ids[2], by: -1)  // already first: no change
+        #expect(model.exercises.map(\.id) == [ids[2], ids[0], ids[1]])
+    }
 }
 
 @MainActor
