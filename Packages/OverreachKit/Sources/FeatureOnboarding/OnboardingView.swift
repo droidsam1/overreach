@@ -177,6 +177,10 @@ public struct OnboardingView: View {
     private var walkingStep: some View {
         Section {
             Toggle("I walk a dog", isOn: $model.hasDog)
+            if model.hasDog {
+                TextField("Dog's name", text: $model.dogName)
+                    .textInputAutocapitalization(.words)
+            }
             Picker("Usual walks per day", selection: $model.usualWalksPerDay) {
                 Text("Not sure").tag(Int?.none)
                 ForEach(model.walkOptions) { option in

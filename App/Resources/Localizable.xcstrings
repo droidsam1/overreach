@@ -4625,6 +4625,23 @@
         }
       }
     },
+    "Dog's name": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre del perro"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome do can"
+          }
+        }
+      }
+    },
     "Don't use": {
       "extractionState": "manual",
       "localizations": {
