@@ -128,9 +128,9 @@ struct CompanionWalkMatchingTests {
     @Test func inputOrderDoesNotMatter() {
         let walks = [walk(0, 30), walk(1, 30, source: .appleHealth), walk(200, 40)]
         let windows = [window(0, 29), window(200, 40, .low)]
-        let a = CompanionWalkMatching.tagging(walks, windows: windows)
-        let b = CompanionWalkMatching.tagging(walks.reversed(), windows: windows.reversed())
-        #expect(Set(a) == Set(b))
+        let forward = CompanionWalkMatching.tagging(walks, windows: windows)
+        let backward = CompanionWalkMatching.tagging(walks.reversed(), windows: windows.reversed())
+        #expect(Set(forward) == Set(backward))
     }
 
     @Test func olderStoredWalksDecodeWithoutACompanion() throws {
