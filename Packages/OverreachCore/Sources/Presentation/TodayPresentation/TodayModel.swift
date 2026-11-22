@@ -63,17 +63,27 @@ public final class TodayModel {
     /// The person said they use a Garmin (first-run setup).
     private var wearsGarmin = false
     /// Steps and walks against the usual day (ADR-0010): spikes, very low days and recovery walks.
-    public private(set) var movementNotes: [MovementNote] = []
+    public var movementNotes: [MovementNote] {
+        guard let now = movementNow,
+              let day = calendar.dateInterval(of: .day, for: now) else { return movementAdvice }
+        let summary = MovementNote.dogWalkSummary(
+            walks: movementWalks, answers: companionAnswers.values, routine: movementRoutine,
+            during: day, format: format
+        )
+        return movementAdvice + (summary.map { [$0] } ?? [])
+    }
+
+    private var movementAdvice: [MovementNote] = []
     /// "With Nanoq?" for the latest recent walk nobody has answered yet.
     public var dogWalkQuestion: DogWalkQuestion? {
         guard let now = movementNow else { return nil }
         return DogWalkQuestion.next(
-            activity: movementActivity, answers: companionAnswers.values, routine: movementRoutine, now: now,
+            walks: movementWalks, answers: companionAnswers.values, routine: movementRoutine, now: now,
             in: .init(calendar: calendar, format: format)
         )
     }
     private let companionAnswers: DogWalkAnswers
-    private var movementActivity: [DailyActivity] = []
+    private var movementWalks: [WalkBout] = []
     private var movementRoutine = WalkingRoutine()
     private var movementNow: Date?
     private var usualSteps: Double?
@@ -501,7 +511,7 @@ public final class TodayModel {
         }
         let activeRuns = goal?.scheduledRuns.filter { $0.day == today && !$0.isPostponed } ?? []
         updateMovement(
-            record.activity, today: today, now: now, profile: profile,
+            snapshot, today: today, now: now, profile: profile,
             schedule: .init(strength: assignment,
                             routine: scheduledStrengthToday?.status == nil ? assignedRoutine : nil,
                             exercises: record.exercises, runs: activeRuns)
@@ -867,19 +877,20 @@ public final class TodayModel {
 
     /// Use activity-source steps for older walking baselines and prefer merged metric steps where available.
     private func updateMovement(
-        _ activity: [DailyActivity], today: CalendarDay, now: Date, profile: AthleteProfile?,
+        _ snapshot: TrainingRecordLoader.Snapshot, today: CalendarDay, now: Date, profile: AthleteProfile?,
         schedule: MovementNote.Schedule
     ) {
-        movementActivity = activity
+        let activity = snapshot.record.activity
+        movementWalks = snapshot.walkOriginals
         movementRoutine = profile?.walkingRoutine ?? WalkingRoutine()
         movementNow = now
         let baseline = EverydayMovement.baseline(activity, before: today, calendar: calendar)
         usualSteps = baseline.steps
         let signals = EverydayMovement.signals(activity, today: today, calendar: calendar)
         let canSuggestActivity = !readiness.reasons.contains(where: \.advisesSkippingTraining)
-        movementNotes = MovementNote.notes(
+        movementAdvice = MovementNote.notes(
             signals: signals, suggestsRecoveryWalk: canSuggestActivity && (readiness.level == .red || schedule.isRest),
-            routine: profile?.walkingRoutine ?? WalkingRoutine(), today: today, format: format,
+            routine: movementRoutine, today: today, format: format,
             suggestActivity: canSuggestActivity, hasLegSession: schedule.hasLegSession && canSuggestActivity
         )
     }
@@ -887,7 +898,7 @@ public final class TodayModel {
     /// One tap on Yes or No. The answer is kept for this walk and teaches the usual dog walk times.
     public func answerDogWalk(withDog: Bool) {
         guard let question = dogWalkQuestion else { return }
-        companionAnswers.answer(question.walk, among: movementActivity.flatMap(\.walks), withDog: withDog)
+        companionAnswers.answer(question.walk, among: movementWalks, withDog: withDog)
     }
 
     private func has(_ value: (DailyMetrics) -> Double?) -> Bool {

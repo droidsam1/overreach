@@ -128,7 +128,13 @@ struct TodayMovementTests {
             MovementNote.notes(signals: [], suggestsRecoveryWalk: true, routine: routine, today: self.today,
                                format: self.format).map(\.text)
         }
+        #expect(notes(WalkingRoutine(hasDog: true, dogName: "Nanoq", walksAreFixed: true)) == [
+            "Keep your walks with Nanoq easy today.",
+        ])
         #expect(notes(WalkingRoutine(hasDog: true)) == [
+            "Keep your walks with your dog easy today.",
+        ])
+        #expect(notes(WalkingRoutine(walksAreFixed: true)) == [
             "Keep your usual walks easy today. Easy movement eases soreness and fatigue a little more than full rest.",
         ])
         #expect(notes(WalkingRoutine()) == [

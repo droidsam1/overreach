@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today shows confirmed dog walks separately, with their time, recorded distance and progress against your usual
+  daily walks. Easy-walk advice refers to your dog by name when you have entered one.
 - The report after finishing a workout leads with every real record of the session, not only the first: a new best
   estimated 1RM, more reps than ever at a load and, new, the most volume ever for a lift in one session. Equal is
   not a record and a lift's first session has nothing to beat. Completing a set now animates its checkmark (not

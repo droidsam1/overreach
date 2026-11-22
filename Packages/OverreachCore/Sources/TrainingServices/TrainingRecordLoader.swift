@@ -36,6 +36,7 @@ public struct TrainingRecordLoader: Sendable {
 
     public struct Snapshot: Sendable {
         public let record: TrainingRecord
+        public let walkOriginals: [WalkBout]
         public let runOriginals: [RunActivity]
         public let strengthOriginals: [RecordedStrengthActivity]
         public let metrics: SourceReading<[DailyMetrics]>
@@ -95,7 +96,12 @@ public struct TrainingRecordLoader: Sendable {
         let reading = await allMetrics
         let metrics = SourceReader.mergedDailyMetrics(reading)
         let historyMetrics = metrics.value.filter { metricsRange.contains($0.day) }
-        let movement = Self.mergeMovement(history: historyMetrics, activity: await walks, now: now, calendar: calendar)
+        let activity = await walks
+        let walkOriginals = activity.flatMap(\.walks).filter {
+            $0.durationSeconds.isFinite && $0.durationSeconds > 0 && $0.end <= now
+        }
+        let movement = Self.mergeMovement(history: historyMetrics, activity: activity, walks: walkOriginals,
+                                          calendar: calendar)
         let (sessions, exercises, progression, routines) = await (logged, catalog, stored, templates)
         let (runReading, strength, checkIns, latest) = await (runs, recordings, checkInHistory, current)
         let checkIn = latest.flatMap { $0.day == today ? $0 : nil } ?? checkIns?.last { $0.day == today }
@@ -115,7 +121,8 @@ public struct TrainingRecordLoader: Sendable {
         let sessionsFailed = workouts != nil && sessions == nil
         let settingsFailed = self.progression != nil && progression == nil
         return Snapshot(
-            record: record, runOriginals: runReading.value, strengthOriginals: strength ?? [],
+            record: record, walkOriginals: walkOriginals,
+            runOriginals: runReading.value, strengthOriginals: strength ?? [],
             metrics: metrics, metricsBySource: reading.value,
             allSessions: (sessions ?? []).filter { $0.startedAt >= sessionStart },
             allCheckIns: history + (checkIn.map { [$0] } ?? []), checkIn: checkIn,
@@ -144,11 +151,8 @@ public struct TrainingRecordLoader: Sendable {
     }
 
     private static func mergeMovement(
-        history: [DailyMetrics], activity: [DailyActivity], now: Date, calendar: Calendar
+        history: [DailyMetrics], activity: [DailyActivity], walks: [WalkBout], calendar: Calendar
     ) -> [DailyActivity] {
-        let walks = activity.flatMap(\.walks).filter {
-            $0.durationSeconds.isFinite && $0.durationSeconds > 0 && $0.end <= now
-        }
         let walksByDay = Dictionary(grouping: EverydayMovement.removingDuplicateWalks(walks)) {
             CalendarDay($0.start, calendar: calendar)
         }
