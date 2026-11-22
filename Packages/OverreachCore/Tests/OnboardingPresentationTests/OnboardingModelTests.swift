@@ -57,6 +57,7 @@ struct OnboardingModelTests {
         model.next()
         #expect(!model.showsWalkDetails)
         model.hasDog = true
+        model.dogName = "  Nanoq "
         model.usualWalksPerDay = 3
         model.walksAreFixed = true
         #expect(model.showsWalkDetails)
@@ -76,6 +77,7 @@ struct OnboardingModelTests {
         #expect(profile.sex == .female && profile.cycleTracking == .naturalCycle)
         #expect(profile.walkingRoutine.hasDog && profile.walkingRoutine.usualWalksPerDay == 3)
         #expect(profile.walkingRoutine.walksAreFixed)
+        #expect(profile.walkingRoutine.dogName == "Nanoq")
         #expect(profile.wearables == [.garmin, .appleWatch])
     }
 

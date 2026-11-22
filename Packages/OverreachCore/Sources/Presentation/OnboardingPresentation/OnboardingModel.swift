@@ -43,6 +43,8 @@ public final class OnboardingModel {
     }
     public var cycleTracking: CycleTrackingMode = .off
     public var hasDog = false
+    /// The dog's name, for the "With …?" question. Blank means no name.
+    public var dogName = ""
     public var usualWalksPerDay: Int?
     public var walksAreFixed = false
     public var canRunDuringWalks = false
@@ -236,6 +238,8 @@ public final class OnboardingModel {
         updated.sex = sex
         updated.cycleTracking = cycleTracking
         updated.walkingRoutine.hasDog = hasDog
+        let trimmedDogName = dogName.trimmingCharacters(in: .whitespacesAndNewlines)
+        updated.walkingRoutine.dogName = hasDog && !trimmedDogName.isEmpty ? trimmedDogName : nil
         updated.walkingRoutine.usualWalksPerDay = usualWalksPerDay
         updated.walkingRoutine.walksAreFixed = showsWalkDetails && walksAreFixed
         updated.walkingRoutine.canRunDuringWalks = showsWalkDetails && canRunDuringWalks
@@ -257,6 +261,7 @@ public final class OnboardingModel {
 
     private func applyWalking(_ routine: WalkingRoutine) {
         hasDog = routine.hasDog
+        dogName = routine.dogName ?? ""
         usualWalksPerDay = routine.usualWalksPerDay
         walksAreFixed = routine.walksAreFixed
         canRunDuringWalks = routine.canRunDuringWalks
