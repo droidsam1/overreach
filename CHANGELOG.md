@@ -11,6 +11,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   start, end, distance and confidence, never coordinates, and a preview says which walks it would tag as walks with
   the dog. Re-importing the same or an overlapping file changes nothing, and walks you answered keep your answer.
   The guided import screen follows in a later change.
+- When the advice is to rest, Today's action is **Rest today**: it logs the day as a deliberate rest and
+  confirms with "Rest logged. Recovery is training too.", tomorrow's plan when there is one, and an undo.
+  History marks the day with a small moon, not as an activity. There is no streak to break.
 - Today ends with one row of links: **Why · Other options · Recovery · History**. Reasons, evidence, guidance,
   the deload details and everyday movement moved to **Why this recommendation?**; the optional run and easy
   strength session moved to **Other options**. A test keeps Today to four blocks.

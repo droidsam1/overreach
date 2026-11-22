@@ -210,7 +210,8 @@ private struct DayCellButton: View {
     private var day: some View {
         CalendarDayView(
             number: cell.number, ringFraction: cell.stepsFraction, showsStrength: cell.hasStrength,
-            showsRun: cell.hasRun, isToday: cell.isToday, isFuture: cell.isFuture, isSelected: cell.isSelected
+            showsRun: cell.hasRun, isToday: cell.isToday, isFuture: cell.isFuture, isSelected: cell.isSelected,
+            isRest: cell.isRest
         )
     }
 }

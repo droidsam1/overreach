@@ -320,7 +320,13 @@ public struct TodayView: View {
         case .runEasy, .reviewRun:
             actionButton(Text(title), symbol: "figure.run", prominent: true) { showsRun = true }
         case .rest:
-            actionButton(Text(title), symbol: "heart.text.square", prominent: true) { showsRestRecovery = true }
+            actionButton(Text(title), symbol: "heart.text.square", prominent: true) {
+                Task { await model.logRest() }
+            }
+        case .restLogged:
+            actionButton(Text(title), symbol: "arrow.uturn.backward", prominent: false) {
+                Task { await model.undoRest() }
+            }
         case .deload:
             primaryDeload(title: title)
         case .checkIn:

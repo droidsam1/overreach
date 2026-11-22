@@ -12581,6 +12581,40 @@
         }
       }
     },
+    "Rest day. Recovery is training too.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día de descanso. Recuperarse también es entrenar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día de descanso. Recuperarse tamén é adestrar."
+          }
+        }
+      }
+    },
+    "Rest logged. Recovery is training too.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descanso registrado. Recuperarse también es entrenar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descanso rexistrado. Recuperarse tamén é adestrar."
+          }
+        }
+      }
+    },
     "Rest over": {
       "extractionState": "manual",
       "localizations": {
@@ -17205,6 +17239,23 @@
         }
       }
     },
+    "Tomorrow: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mañana: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mañá: {1}"
+          }
+        }
+      }
+    },
     "Too few comparable HRV readings ({1}) in the last {2} days ({3} available, {4} needed).": {
       "extractionState": "manual",
       "localizations": {
@@ -17524,6 +17575,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dúas rutinas comparten o id «{1}»."
+          }
+        }
+      }
+    },
+    "Undo rest": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deshacer descanso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desfacer descanso"
           }
         }
       }

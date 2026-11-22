@@ -18,6 +18,8 @@ public struct CalendarDayCell: Identifiable, Hashable, Sendable {
     public let isToday: Bool
     public let isFuture: Bool
     public let isSelected: Bool
+    /// The day was marked as a deliberate rest on Today. A subtle mark, not an activity.
+    public let isRest: Bool
     /// "Thursday 19 November. Strength: 1. Runs: 1. Steps: 8,412".
     public let accessibilityLabel: String
 
@@ -50,9 +52,12 @@ public struct CalendarDayDetail: Hashable, Sendable {
     public let runs: [HistoryRunActivity]
     /// "8,412 steps"; `nil` without step data.
     public let steps: String?
+    public let isRest: Bool
 
     public var isEmpty: Bool { sessions.isEmpty && recordings.isEmpty && runs.isEmpty && steps == nil }
-    public var emptyText: String { L10n.text("Nothing recorded on this day.") }
+    public var emptyText: String {
+        isRest ? L10n.text("Rest day. Recovery is training too.") : L10n.text("Nothing recorded on this day.")
+    }
 }
 
 /// The month calendar of History: strength days, runs and steps per day (ADR-0014). Sessions come from the
@@ -84,6 +89,8 @@ public final class HistoryCalendarModel {
     public private(set) var runReviews: [HistoryRunReview] = []
     public var runs: [RunActivity] { runRecords.map(\.activity) }
     public private(set) var steps: [CalendarDay: Int] = [:]
+    /// Days marked as a deliberate rest, kept up to date by `HistoryModel`.
+    var restDays: Set<CalendarDay> = []
     /// Whether reading Apple Health failed for the shown month.
     public private(set) var activityFailed = false
     public private(set) var sessionsFailed = false
@@ -164,7 +171,7 @@ public final class HistoryCalendarModel {
             (0..<count).map { index in
                 CalendarDayCell(
                     id: "\(prefix)-\(index)", day: nil, number: "", strengthSessions: 0, runs: 0, stepsFraction: nil,
-                    isToday: false, isFuture: false, isSelected: false, accessibilityLabel: ""
+                    isToday: false, isFuture: false, isSelected: false, isRest: false, accessibilityLabel: ""
                 )
             }
         }
@@ -182,7 +189,10 @@ public final class HistoryCalendarModel {
                 isToday: day == today,
                 isFuture: day > today,
                 isSelected: day == selectedDay,
-                accessibilityLabel: accessibilityLabel(day: day, strength: strength, runs: runCount, steps: daySteps)
+                isRest: restDays.contains(day),
+                accessibilityLabel: accessibilityLabel(
+                    day: day, strength: strength, runs: runCount, steps: daySteps, rest: restDays.contains(day)
+                )
             )
         }
         return blanks("leading", leading) + dayCells + blanks("trailing", trailing)
@@ -191,7 +201,7 @@ public final class HistoryCalendarModel {
     /// The most recent recorded days first. Keep the selected day visible even when it has no activity.
     public var agendaDays: [CalendarDayCell] {
         cells.reversed().filter { cell in
-            cell.isSelected || cell.hasStrength || cell.hasRun || cell.stepsFraction != nil
+            cell.isSelected || cell.hasStrength || cell.hasRun || cell.stepsFraction != nil || cell.isRest
         }
     }
 
@@ -255,7 +265,8 @@ public final class HistoryCalendarModel {
             runs: runRecords
                 .filter { CalendarDay($0.activity.startedAt, calendar: calendar) == day }
                 .map { HistoryRunActivity($0, format: format) },
-            steps: steps[day].map { L10n.format("{1} steps", format.number(Double($0), maxFractionDigits: 0)) }
+            steps: steps[day].map { L10n.format("{1} steps", format.number(Double($0), maxFractionDigits: 0)) },
+            isRest: restDays.contains(day)
         )
     }
 
@@ -405,12 +416,13 @@ public final class HistoryCalendarModel {
             .map { HistoryRunReview($0, format: format) }
     }
 
-    private func accessibilityLabel(day: CalendarDay, strength: Int, runs: Int, steps: Int?) -> String {
+    private func accessibilityLabel(day: CalendarDay, strength: Int, runs: Int, steps: Int?, rest: Bool) -> String {
         let style = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
         var parts = [day.startDate(in: calendar).formatted(style.weekday(.wide).day().month(.wide))]
         if strength > 0 { parts.append(L10n.format("Strength: {1}", strength)) }
         if runs > 0 { parts.append(L10n.format("Runs: {1}", runs)) }
         if let steps { parts.append(L10n.format("{1} steps", format.number(Double(steps), maxFractionDigits: 0))) }
+        if rest { parts.append(L10n.text("Rest day")) }
         return parts.joined(separator: ". ")
     }
 }

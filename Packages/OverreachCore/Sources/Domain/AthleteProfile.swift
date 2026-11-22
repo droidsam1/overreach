@@ -99,6 +99,8 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
     /// A deload proposal was postponed until this day (inclusive).
     public var deloadPostponedUntil: CalendarDay?
     public var deloadDecisions: [DeloadDecision]
+    /// Days the person marked as a deliberate rest (ADR-0041). Absent in older backups.
+    public var restDays: [CalendarDay]
     /// Counts gaps in recorded training as recovery for the discipline that stopped.
     public var countsBreaksAutomatically: Bool
 
@@ -117,6 +119,7 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         deloads: [DeloadRecord] = [],
         deloadPostponedUntil: CalendarDay? = nil,
         deloadDecisions: [DeloadDecision] = [],
+        restDays: [CalendarDay] = [],
         countsBreaksAutomatically: Bool = true
     ) {
         self.sex = sex
@@ -133,12 +136,22 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         self.deloads = deloads
         self.deloadPostponedUntil = deloadPostponedUntil
         self.deloadDecisions = deloadDecisions
+        self.restDays = restDays
         self.countsBreaksAutomatically = countsBreaksAutomatically
     }
 
     public mutating func recordDeloadDecision(_ decision: DeloadDecision) {
         deloadDecisions.removeAll { $0.start == decision.start && $0.discipline == decision.discipline }
         deloadDecisions.append(decision)
+    }
+
+    /// Marks `day` as a deliberate rest. Marking it again changes nothing.
+    public mutating func logRest(on day: CalendarDay) {
+        if !restDays.contains(day) { restDays.append(day) }
+    }
+
+    public mutating func undoRest(on day: CalendarDay) {
+        restDays.removeAll { $0 == day }
     }
 
     /// Whether cycle-aware logic applies: only when the user chose a natural cycle explicitly.
@@ -148,7 +161,7 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
 extension AthleteProfile {
     private enum CodingKeys: String, CodingKey {
         case sex, birthYear, bodyMassKg, maxHeartRate, restingHeartRate, cycleTracking, walkingRoutine, goal
-        case declaredBlocks, effortScale, wearables, deloads, deloadPostponedUntil, deloadDecisions
+        case declaredBlocks, effortScale, wearables, deloads, deloadPostponedUntil, deloadDecisions, restDays
         case countsBreaksAutomatically
     }
 
@@ -175,6 +188,7 @@ extension AthleteProfile {
             deloads: try container.decodeIfPresent([DeloadRecord].self, forKey: .deloads) ?? [],
             deloadPostponedUntil: try container.decodeIfPresent(CalendarDay.self, forKey: .deloadPostponedUntil),
             deloadDecisions: try container.decodeIfPresent([DeloadDecision].self, forKey: .deloadDecisions) ?? [],
+            restDays: try container.decodeIfPresent([CalendarDay].self, forKey: .restDays) ?? [],
             countsBreaksAutomatically: try container.decodeIfPresent(Bool.self, forKey: .countsBreaksAutomatically)
                 ?? true
         )
