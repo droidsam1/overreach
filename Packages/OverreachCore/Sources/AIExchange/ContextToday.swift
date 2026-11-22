@@ -51,11 +51,17 @@ extension ContextPack {
             case .weeksSinceDeload: "weeksSinceDeload"
             case .noDeloadInHistory: "noDeloadInHistory"
             case .weeklyLoadSpike: "weeklyLoadSpike"
+            default: recoverySignalName(signal)
+            }
+        }
+
+        private static func recoverySignalName(_ signal: DeloadSignal) -> String? {
+            switch signal {
             case .hrvSuppressed: "hrvTrendBelowBaseline"
             case .restingHeartRateElevated: "restingHeartRateElevated"
             case .shortSleep: "shortSleep"
             case .poorWellbeing: "poorWellbeing"
-            case .lifeStressReported: nil
+            default: nil
             }
         }
     }

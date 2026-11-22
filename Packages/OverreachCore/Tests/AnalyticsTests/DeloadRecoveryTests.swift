@@ -64,7 +64,9 @@ struct DeloadRecoveryTests {
         #expect(ordinary.lifeStress == .unanswered)
 
         let stressed = RecoveryTrend(hrvTrendLowDays: 6, lifeStress: .reported)
-        let steadier = try #require(DeloadAdvisor.proposal(lifts: lifts, lastRecovery: last, recovery: stressed, now: now))
+        let steadier = try #require(DeloadAdvisor.proposal(
+            lifts: lifts, lastRecovery: last, recovery: stressed, now: now
+        ))
         #expect(steadier.plan == .stressAware)
         #expect(steadier.score == ordinary.score)
         #expect(steadier.signals.last == .lifeStressReported)

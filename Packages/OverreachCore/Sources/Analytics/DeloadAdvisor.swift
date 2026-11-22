@@ -63,7 +63,9 @@ public struct DeloadPlan: Hashable, Sendable {
     /// A steadier week for an athlete who reports unusual stress (`deload-life-stress`): the same training days
     /// at a comfortable effort, a quarter fewer sets and almost the same loads. Stress adds to the load the body
     /// recovers from, but moving still helps how people feel, so this reduces demand less than `standard`.
-    public static let stressAware = DeloadPlan(durationDays: 7, setMultiplier: 0.75, loadMultiplier: 0.95, maximumRPE: 8)
+    public static let stressAware = DeloadPlan(
+        durationDays: 7, setMultiplier: 0.75, loadMultiplier: 0.95, maximumRPE: 8
+    )
 
     /// `target` reduced for a deload week: the same exercise with fewer sets (at least one), less load rounded to the
     /// exercise's increment, and RPE capped. Rep targets stay. The deload reason comes first.
