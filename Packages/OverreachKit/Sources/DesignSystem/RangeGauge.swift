@@ -21,10 +21,10 @@ public struct RangeGauge: View {
     }
 
     /// Position of `x` on the track, 0…1.
-    static func position(_ x: Double, in scale: ClosedRange<Double>) -> Double {
+    static func position(_ point: Double, in scale: ClosedRange<Double>) -> Double {
         let span = scale.upperBound - scale.lowerBound
         guard span > 0 else { return 0 }
-        return min(max((x - scale.lowerBound) / span, 0), 1)
+        return min(max((point - scale.lowerBound) / span, 0), 1)
     }
 
     public var body: some View {
