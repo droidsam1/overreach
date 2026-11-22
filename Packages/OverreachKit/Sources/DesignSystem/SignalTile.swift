@@ -13,7 +13,7 @@ public struct SignalTile<Accessory: View>: View {
     private let action: () -> Void
     private let accessory: Accessory
 
-    /// `accessory` is normally a compact `TrendChart`; pass `EmptyView` when there is no trend.
+    /// `accessory` is normally a compact `SignalTrendChart`; pass `EmptyView` when there is no trend.
     /// `accessibilityLabel` reads the whole tile ("HRV, 34 milliseconds, below your usual range").
     public init(
         title: String, value: String, unit: String? = nil, status: String, tone: StatusTone = .neutral,
@@ -96,12 +96,12 @@ public struct SignalTileRow<Content: View>: View {
         SignalTile(
             title: "HRV", value: "34", unit: "ms", status: "↓ Below usual", tone: .caution, emphasized: true,
             accessibilityLabel: "HRV, 34 milliseconds, below your usual range", action: {},
-            accessory: { TrendChart(values: [50, 52, 49, 41, 38, 36, 34], band: 46...56, tone: .caution) }
+            accessory: { SignalTrendChart(values: [50, 52, 49, 41, 38, 36, 34], band: 46...56, tone: .caution) }
         )
         SignalTile(
             title: "Sleep", value: "7.2", unit: "h", status: "In range",
             accessibilityLabel: "Sleep, 7.2 hours, in range", action: {},
-            accessory: { TrendChart(values: [7, 7.5, nil, 6.8, 7.2], band: 6.5...8, style: .bars) }
+            accessory: { SignalTrendChart(values: [7, 7.5, nil, 6.8, 7.2], band: 6.5...8, style: .bars) }
         )
         SignalTile(
             title: "Resting HR", value: "—", status: "No data", accessibilityLabel: "Resting heart rate, no data",

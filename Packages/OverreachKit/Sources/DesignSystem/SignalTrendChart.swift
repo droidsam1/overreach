@@ -3,7 +3,7 @@ import SwiftUI
 
 /// A small line or bar chart of optional values (gaps allowed) over an optional shaded band, with the points
 /// outside the band in the tone's accent. Display values only. Fewer than two values draw nothing.
-public struct TrendChart: View {
+public struct SignalTrendChart: View {
     public enum Style: Sendable { case line, bars }
     public enum Size: Sendable { case compact, full }
 
@@ -106,12 +106,12 @@ public struct TrendChart: View {
 }
 
 #Preview("In band") {
-    TrendChart(values: [50, 52, 49, 51, 53, 50, 52], band: 46...56, tone: .positive)
+    SignalTrendChart(values: [50, 52, 49, 51, 53, 50, 52], band: 46...56, tone: .positive)
         .padding()
 }
 
 #Preview("Below band, full, dark") {
-    TrendChart(
+    SignalTrendChart(
         values: [50, 52, 49, 41, 38, 36, 34], band: 46...56, tone: .caution, size: .full,
         startLabel: "14 d", endLabel: "Today", summary: "Falling below your usual range"
     )
@@ -120,14 +120,14 @@ public struct TrendChart: View {
 }
 
 #Preview("Gaps") {
-    TrendChart(values: [50, nil, 49, nil, nil, 53, 52], band: 46...56, tone: .caution)
+    SignalTrendChart(values: [50, nil, 49, nil, nil, 53, 52], band: 46...56, tone: .caution)
         .padding()
 }
 
 #Preview("Empty and single point") {
     VStack {
-        TrendChart(values: [])
-        TrendChart(values: [nil, 50, nil])
+        SignalTrendChart(values: [])
+        SignalTrendChart(values: [nil, 50, nil])
     }
     .padding()
 }
