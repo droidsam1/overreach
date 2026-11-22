@@ -194,24 +194,19 @@ public struct TodayView: View {
         }
     }
 
-    /// Level 2: everything that explains the decision.
+    /// Level 2: everything that explains the decision. The cards of running advice, deload and movement keep
+    /// their place below the reasons.
     private var whyScreen: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: Spacing.large) {
-                if model.showsReadinessDetails { TodayReadinessDetails(model: model, startsExpanded: true) }
-                if let option = model.runningOption, !option.isOptional { easyRun(option) }
-                if primary != .deload, let advice = model.deloadAdvice, !advice.isBreakConfirmation {
-                    deload(advice)
-                }
-                if !model.movementNotes.isEmpty { TodayMovement(model: model) }
-                if let note = model.trainingReadNote {
-                    Label(note, systemImage: "exclamationmark.triangle").font(.footnote).foregroundStyle(.secondary)
-                }
+        TodayWhyView(model: model) {
+            if let option = model.runningOption, !option.isOptional { easyRun(option).whyExtraCard() }
+            if primary != .deload, let advice = model.deloadAdvice, !advice.isBreakConfirmation {
+                deload(advice)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(Spacing.medium)
+            if !model.movementNotes.isEmpty { TodayMovement(model: model) }
+            if let note = model.trainingReadNote {
+                Label(note, systemImage: "exclamationmark.triangle").font(.footnote).foregroundStyle(.secondary)
+            }
         }
-        .navigationTitle("Why this recommendation?")
     }
 
     /// Level 2: alternatives to the hero.

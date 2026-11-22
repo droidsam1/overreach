@@ -63,6 +63,8 @@ struct TodayWhyTests {
         #expect(result.cards.first?.evidence == "Moderate")
         #expect(result.cards.first?.source == source)
         #expect(result.cards.last?.isGauge == true)
+        #expect(result.cards.last?.gaugeValue == 1.6)
+        #expect(result.cards.first?.gaugeValue == nil)
         // Sleep is in range and no reason: a normal signal, not a card.
         #expect(result.normal.map(\.kind) == [.sleep])
         #expect(result.normalWeight == 1)
