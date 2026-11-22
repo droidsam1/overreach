@@ -2211,6 +2211,23 @@
         }
       }
     },
+    "Check in": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completa el check-in"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completa o rexistro de benestar"
+          }
+        }
+      }
+    },
     "Check-in": {
       "extractionState": "manual",
       "localizations": {
@@ -9963,6 +9980,23 @@
         }
       }
     },
+    "No recovery signals call for reducing training today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ninguna señal de recuperación indica que debas reducir el entrenamiento hoy."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ningún sinal de recuperación indica que debas reducir o adestramento hoxe."
+          }
+        }
+      }
+    },
     "No run matches to review": {
       "extractionState": "manual",
       "localizations": {
@@ -12564,6 +12598,23 @@
         }
       }
     },
+    "Rest today": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descansa hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descansa hoxe"
+          }
+        }
+      }
+    },
     "Rest today. Ease back into training once you feel well again.": {
       "extractionState": "manual",
       "localizations": {
@@ -13023,6 +13074,23 @@
         }
       }
     },
+    "Review today's run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisa la carrera de hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisa a carreira de hoxe"
+          }
+        }
+      }
+    },
     "Rotate through the rep blocks. The load comes from your estimated 1RM.": {
       "extractionState": "manual",
       "localizations": {
@@ -13159,6 +13227,23 @@
         }
       }
     },
+    "Run easy": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corre a ritmo suave"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corre a ritmo suave"
+          }
+        }
+      }
+    },
     "Run {1} km in {2}": {
       "extractionState": "manual",
       "localizations": {
@@ -13206,6 +13291,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Correr {1} km sen dor"
+          }
+        }
+      }
+    },
+    "Run {1} min easy": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corre {1} min a ritmo suave"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corre {1} min a ritmo suave"
           }
         }
       }
@@ -15076,6 +15178,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Comezar co catálogo de exercicios"
+          }
+        }
+      }
+    },
+    "Start {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empieza {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comeza {1}"
           }
         }
       }
@@ -19105,6 +19224,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Indicaches que estás enfermo. Descansa ata que melloren os síntomas e volve pouco a pouco."
+          }
+        }
+      }
+    },
+    "You marked yourself as sick in today's check-in.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En el check-in de hoy has indicado que estás enfermo/a."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No rexistro de benestar de hoxe indicaches que tes síntomas de doenza."
           }
         }
       }

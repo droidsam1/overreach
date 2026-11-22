@@ -286,6 +286,8 @@ struct TodayWeekTests {
         await model.load(now: now)
 
         #expect(model.strengthOption == nil)
+        #expect(model.nextAction == .startStrength(next))
+        #expect(model.primaryActionTitle() == "Start Lower body")
         model.setShowsOptionalStrength(true)
         let option = try #require(model.strengthOption)
         #expect(option.heading == "Up next in your plan · Lower body")
@@ -330,7 +332,8 @@ struct TodayWeekTests {
                               workouts: store, calendar: calendar)
         await sick.load(now: now)
         #expect(sick.readinessLevel == .red)
-        #expect(sick.nextAction == .readiness)
+        #expect(sick.nextAction == .rest)
+        #expect(sick.primaryActionTitle() == "Rest today")
         #expect(!sick.canRequestStrengthOption)
         #expect(sick.strengthOption == nil)
 
@@ -394,6 +397,8 @@ struct TodayWeekTests {
         #expect(model.scheduledStrengthToday?.id == assignment.id)
         #expect(model.scheduledStrengthToday?.title == "Strength · Lower")
         #expect(model.scheduledRunsToday.map(\.id) == [run.id])
+        #expect(model.nextAction == .startStrength(routine))
+        #expect(model.primaryActionTitle() == "Start Lower")
         #expect(model.runningOption?.advice == "Try 15 min at a conversational pace in place of the planned session.")
         #expect(model.runningOption?.adjustment?.original == run)
         #expect(model.runningOption?.adjustment?.minutes == 15)
@@ -483,6 +488,8 @@ struct TodayWeekTests {
         let model = TodayModel(sources: [source], profiles: store, calendar: calendar)
         await model.load(now: now)
         let adjustment = try #require(model.runningOption?.adjustment)
+        #expect(model.nextAction == .runEasy(minutes: 15))
+        #expect(model.primaryActionTitle() == "Run 15 min easy")
         #expect(adjustment.runID == run.id)
         #expect(adjustment.applyTitle == "Change to 15 min easy")
 

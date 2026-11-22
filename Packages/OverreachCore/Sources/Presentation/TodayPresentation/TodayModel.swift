@@ -43,6 +43,7 @@ public final class TodayModel {
     public private(set) var runningOption: RunningOption?
     private var keptPlannedRunDay: CalendarDay?
     private var hasRunningGoal = false
+    private var heroTrainingAction: NextAction = .train
     /// A deload proposal (training reinforced by recovery, `deload-recovery-signals`) or the deload week in progress.
     public private(set) var deloadAdvice: DeloadAdvice?
     /// The next session with the deload applied, when the app knows which session comes next.
@@ -110,28 +111,62 @@ public final class TodayModel {
 
     public enum NextAction: Equatable {
         case continueWorkout(WorkoutContinuation)
-        case loading, readiness, checkIn, deload, retry, connectHealth, connectGarmin, train
+        case startStrength(Routine)
+        case runEasy(minutes: Int?)
+        case reviewRun
+        case loading, rest, checkIn, deload, retry, connectHealth, connectGarmin, train
+
+        public var title: String? {
+            switch self {
+            case .loading: nil
+            case .continueWorkout(.resume): L10n.text("Resume workout")
+            case .continueWorkout(.reviewDraft): L10n.text("Review saved workout")
+            case let .startStrength(routine): L10n.format("Start {1}", routine.name)
+            case let .runEasy(minutes?):
+                L10n.format("Run {1} min easy", String(minutes))
+            case .runEasy(nil): L10n.text("Run easy")
+            case .reviewRun: L10n.text("Review today's run")
+            case .rest: L10n.text("Rest today")
+            case .checkIn: L10n.text("Check in")
+            case .deload: DeloadProposalText.start(steadier: false)
+            case .retry: L10n.text("Try again")
+            case .connectHealth: L10n.text("Connect Apple Health")
+            case .connectGarmin: L10n.text("Connect your Garmin")
+            case .train: L10n.text("Open Train")
+            }
+        }
     }
 
     public func nextAction(continuing workout: WorkoutContinuation?) -> NextAction {
         workout.map(NextAction.continueWorkout) ?? nextAction
     }
 
-    /// Orders existing actions for the first viewport. Readiness can advise an action without a button.
+    public var heroTitle: String { readinessAdvice }
+    public var heroReason: String {
+        readinessSummary ?? readiness.reasons.first.map { text(for: $0) }
+            ?? L10n.text("No recovery signals call for reducing training today.")
+    }
+
+    public func primaryActionTitle(continuing workout: WorkoutContinuation? = nil) -> String? {
+        if workout == nil, nextAction == .deload, case let .proposed(explanation) = deloadAdvice?.state {
+            return DeloadProposalText.start(steadier: explanation.lifeStress == .reported)
+        }
+        return nextAction(continuing: workout).title
+    }
+
+    /// Orders existing actions for the first viewport.
     public var nextAction: NextAction {
         guard loadedDay != nil else { return .loading }
-        if readiness.reasons.contains(where: \.advisesSkippingTraining) { return .readiness }
+        if readiness.reasons.contains(where: \.advisesSkippingTraining) { return .rest }
         if showsCheckIn, suggestedContextQuestion != nil { return .checkIn }
-        if readinessLevel == .red { return .readiness }
+        if readinessLevel == .red { return .rest }
         if case .proposed = deloadAdvice?.state { return .deload }
-        if readinessLevel == .amber { return .readiness }
+        if readinessLevel == .amber { return heroTrainingAction }
         if showsSourceWarning, readinessLevel == .unknown { return .retry }
         if showsConnectGarmin, !showsMetrics { return .connectGarmin }
         if showsConnectHealth, !showsMetrics { return .connectHealth }
         if readinessLevel == .unknown, showsCheckIn, checkIn == nil { return .checkIn }
-        if readinessLevel == .green, hasRunningGoal || !scheduledRunsToday.isEmpty || scheduledStrengthToday != nil {
-            return .readiness
-        }
+        if readinessLevel == .green { return heroTrainingAction }
         return .train
     }
 
@@ -220,9 +255,11 @@ public final class TodayModel {
     public var showsReadinessCard: Bool { loadedDay != nil }
 
     public var readinessSummary: String? {
-        let reasons = readiness.reasons.filter { observationKind(for: $0) == .supporting }.prefix(2)
-        let summary = reasons.map { text(for: $0) }.joined(separator: " ")
-        return summary.isEmpty ? nil : summary
+        guard let reason = readiness.reasons.first(where: { observationKind(for: $0) == .supporting }) else {
+            return nil
+        }
+        if reason == .markedSick { return L10n.text("You marked yourself as sick in today's check-in.") }
+        return text(for: reason)
     }
 
     public var readinessObservations: [ReadinessObservation] { explanation.observations }
@@ -435,6 +472,7 @@ public final class TodayModel {
         strengthOption = nil
         strengthInputs = nil
         runningOption = nil
+        heroTrainingAction = .train
         recentRunPain = false
         defer {
             if activeLoad == loadID {
@@ -510,6 +548,14 @@ public final class TodayModel {
                                           now: now, calendar: calendar)
         }
         let activeRuns = goal?.scheduledRuns.filter { $0.day == today && !$0.isPostponed } ?? []
+        let pendingRuns = activeRuns.filter { $0.completion == nil }
+        let nextSlot = recentWorkouts?.planned ?? recentWorkouts?.rotation?.next
+        let strength = nextSlot.flatMap { slot in record.routines.first { $0.id.uuidString == slot.id } }
+        let strengthDone = hasStrengthToday(sessions: snapshot.allSessions, recordings: record.recordings, now: now)
+        heroTrainingAction = trainingAction(
+            strength: strengthDone ? nil : strength, strengthRest: assignment != nil && assignment?.routineID == nil,
+            runs: pendingRuns, priority: goal?.effectivePriority ?? .balanced
+        )
         updateMovement(
             snapshot, today: today, now: now, profile: profile,
             schedule: .init(strength: assignment,
@@ -519,11 +565,31 @@ public final class TodayModel {
         guard assignment == nil || assignedRoutine != nil,
               readiness.level == .amber, !readiness.reasons.contains(where: \.advisesSkippingTraining),
               workouts != nil, !snapshot.sessionsFailed,
-              !hasStrengthToday(sessions: snapshot.allSessions, recordings: record.recordings, now: now) else { return }
+              !strengthDone else { return }
         if assignment == nil, activeRuns.contains(where: { $0.purpose == .race && $0.completion == nil }) { return }
         loadStrengthOption(
             today: today, now: now, profile: profile, assignedRoutine: assignedRoutine, snapshot: snapshot
         )
+    }
+
+    private func trainingAction(
+        strength: Routine?, strengthRest: Bool, runs: [PlannedRun], priority: DisciplinePriority
+    ) -> NextAction {
+        if runs.contains(where: { $0.purpose == .race }) { return .reviewRun }
+        let hasScheduledRun = runs.contains { $0.purpose != .rest }
+        let runAction: NextAction? = if let option = runningOption, option.offersEasyRun,
+                                        hasScheduledRun || hasRunningGoal || option.suggestedMinutes != nil {
+            .runEasy(minutes: option.suggestedMinutes)
+        } else if hasScheduledRun {
+            .reviewRun
+        } else {
+            nil
+        }
+        if let runAction, priority == .running, hasScheduledRun { return runAction }
+        if let strength, !strengthRest { return .startStrength(strength) }
+        if let runAction, hasScheduledRun || !strengthRest { return runAction }
+        if strengthRest || runs.contains(where: { $0.purpose == .rest }) { return .rest }
+        return .train
     }
 
     private func loadRunningPlan(
@@ -578,6 +644,7 @@ public final class TodayModel {
     public func keepPlannedRun(now: Date = .now) {
         keptPlannedRunDay = CalendarDay(now, calendar: calendar)
         runningOption = nil
+        if case .runEasy = heroTrainingAction { heroTrainingAction = .reviewRun }
     }
 
     // MARK: Deload

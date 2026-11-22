@@ -7,7 +7,7 @@ struct DeloadProposalCard<SessionPreview: View>: View {
     let advice: DeloadAdvice
     let explanation: DeloadExplanation
     let recoveryHistory: (() -> AnyView)?
-    let prominent: Bool
+    let primaryTitle: String?
     @ViewBuilder let sessionPreview: () -> SessionPreview
 
     var body: some View {
@@ -16,9 +16,9 @@ struct DeloadProposalCard<SessionPreview: View>: View {
                 .font(.headline)
                 .foregroundStyle(.orange)
                 .accessibilityAddTraits(.isHeader)
-            Text(explanation.summary).font(.subheadline)
-            if prominent {
-                startButton.buttonStyle(.borderedProminent)
+            if primaryTitle == nil { Text(explanation.summary).font(.subheadline) }
+            if primaryTitle != nil {
+                startButton.buttonStyle(BrandButtonStyle())
             } else {
                 startButton.buttonStyle(.bordered)
             }
@@ -36,7 +36,7 @@ struct DeloadProposalCard<SessionPreview: View>: View {
     private var steadier: Bool { explanation.lifeStress == .reported }
 
     private var startButton: some View {
-        Button(DeloadProposalText.start(steadier: steadier)) { Task { await model.acceptDeload() } }
+        Button(primaryTitle ?? DeloadProposalText.start(steadier: steadier)) { Task { await model.acceptDeload() } }
             .controlSize(.large)
     }
 

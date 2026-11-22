@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today leads with the readiness verdict, its main reason and one action. Start a strength routine, open the
+  run instructions or view Recovery on a rest day. Further reasons are under “Why this recommendation?”.
 - Today shows confirmed dog walks separately, with their time, recorded distance and progress against your usual
   daily walks. Easy-walk advice refers to your dog by name when you have entered one.
 - The report after finishing a workout leads with every real record of the session, not only the first: a new best
