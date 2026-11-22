@@ -44,7 +44,10 @@ struct TodayPromptTests {
 
     @Test("order: source failure, break, check-in, Health, Garmin, dog walk")
     func order() {
-        #expect(TodayPrompt.allCases == [.sourceFailure, .confirmBreak, .checkIn, .connectHealth, .connectGarmin, .dogWalk])
+        #expect(
+            TodayPrompt.allCases
+                == [.sourceFailure, .confirmBreak, .checkIn, .connectHealth, .connectGarmin, .dogWalk]
+        )
         #expect(TodayPrompt.next(facts(TodayPrompt.allCases)) == .sourceFailure)
     }
 
