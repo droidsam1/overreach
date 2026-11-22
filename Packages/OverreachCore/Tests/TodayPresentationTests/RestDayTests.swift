@@ -14,7 +14,9 @@ private actor SickDay: MetricsSource {
 
 private struct SickCheckIn: CheckInRepository {
     let day: CalendarDay
-    func checkIn(for day: CalendarDay) async throws -> CheckIn? { day == self.day ? CheckIn(day: day, isSick: true) : nil }
+    func checkIn(for day: CalendarDay) async throws -> CheckIn? {
+        day == self.day ? CheckIn(day: day, isSick: true) : nil
+    }
     func checkIns(in range: ClosedRange<CalendarDay>) async throws -> [CheckIn] { [] }
     func save(_ checkIn: CheckIn) async throws {}
 }
@@ -28,7 +30,8 @@ struct RestDayTests {
     private func loadedModel(store: TestStore) async -> TodayModel {
         let today = CalendarDay(now, calendar: calendar)
         let model = TodayModel(
-            sources: [SickDay()], checkIns: SickCheckIn(day: today), profiles: store, workouts: store, calendar: calendar
+            sources: [SickDay()], checkIns: SickCheckIn(day: today), profiles: store, workouts: store,
+            calendar: calendar
         )
         await model.load(now: now)
         return model
