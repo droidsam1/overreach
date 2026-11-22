@@ -118,7 +118,7 @@ public final class TodayModel {
         case startStrength(Routine)
         case runEasy(minutes: Int?)
         case reviewRun
-        case loading, rest, restLogged, checkIn, deload, retry, connectHealth, connectGarmin, train
+        case loading, rest, restLogged, trainedToday, checkIn, deload, retry, connectHealth, connectGarmin, train
 
         public var title: String? {
             switch self {
@@ -132,6 +132,7 @@ public final class TodayModel {
             case .reviewRun: L10n.text("Review today's run")
             case .rest: L10n.text("Rest today")
             case .restLogged: L10n.text("Undo rest")
+            case .trainedToday: L10n.text("Log another workout")
             case .checkIn: L10n.text("Check in")
             case .deload: DeloadProposalText.start(steadier: false)
             case .retry: L10n.text("Try again")
@@ -147,11 +148,15 @@ public final class TodayModel {
     }
 
     public var heroTitle: String {
-        nextAction == .restLogged ? L10n.text("Rest logged. Recovery is training too.") : readinessAdvice
+        switch nextAction {
+        case .restLogged: L10n.text("Rest logged. Recovery is training too.")
+        case .trainedToday: L10n.text("You've trained today. Recovery is part of the plan.")
+        default: readinessAdvice
+        }
     }
 
     public var heroReason: String {
-        if nextAction == .restLogged, let tomorrowOutlook { return tomorrowOutlook }
+        if nextAction == .restLogged || nextAction == .trainedToday, let tomorrowOutlook { return tomorrowOutlook }
         return readinessSummary ?? readiness.reasons.first.map { text(for: $0) }
             ?? L10n.text("No recovery signals call for reducing training today.")
     }
@@ -630,9 +635,12 @@ public final class TodayModel {
         let nextSlot = recentWorkouts?.planned ?? recentWorkouts?.rotation?.next
         let strength = nextSlot.flatMap { slot in record.routines.first { $0.id.uuidString == slot.id } }
         let strengthDone = hasStrengthToday(sessions: snapshot.allSessions, recordings: record.recordings, now: now)
+        let runDone = hasRunToday(record.runs, planned: activeRuns, now: now)
         heroTrainingAction = trainingAction(
             strength: strengthDone ? nil : strength, strengthRest: assignment != nil && assignment?.routineID == nil,
-            runs: pendingRuns, priority: goal?.effectivePriority ?? .balanced
+            runs: pendingRuns, priority: goal?.effectivePriority ?? .balanced,
+            trainedToday: strengthDone || runDone,
+            strengthPlanned: !strengthDone && assignment?.routineID != nil
         )
         updateMovement(
             snapshot, today: today, now: now, profile: profile,
@@ -682,10 +690,13 @@ public final class TodayModel {
     }
 
     private func trainingAction(
-        strength: Routine?, strengthRest: Bool, runs: [PlannedRun], priority: DisciplinePriority
+        strength: Routine?, strengthRest: Bool, runs: [PlannedRun], priority: DisciplinePriority,
+        trainedToday: Bool, strengthPlanned: Bool
     ) -> NextAction {
         if runs.contains(where: { $0.purpose == .race }) { return .reviewRun }
         let hasScheduledRun = runs.contains { $0.purpose != .rest }
+        // Only a dated session still to do justifies a second one; an optional run or the next rotation does not.
+        if trainedToday, !hasScheduledRun, !strengthPlanned { return .trainedToday }
         let runAction: NextAction? = if let option = runningOption, option.offersEasyRun,
                                         hasScheduledRun || hasRunningGoal || option.suggestedMinutes != nil {
             .runEasy(minutes: option.suggestedMinutes)
@@ -790,6 +801,16 @@ public final class TodayModel {
         ))
         try? await profiles.save(profile)
         await load(now: now)
+    }
+
+    /// A run finished today, from the sources or from a planned run linked to a recording.
+    private func hasRunToday(_ runs: [RunActivity], planned: [PlannedRun], now: Date) -> Bool {
+        let start = calendar.startOfDay(for: now)
+        let finishedToday: (Date, Double) -> Bool = { began, seconds in
+            seconds.isFinite && (start...now).contains(began.addingTimeInterval(seconds))
+        }
+        return runs.contains { finishedToday($0.startedAt, $0.durationSeconds) }
+            || planned.contains { $0.completion.map { finishedToday($0.startedAt, $0.durationSeconds) } ?? false }
     }
 
     private func hasStrengthToday(sessions: [StrengthSession], recordings: [RecordedStrengthActivity], now: Date) -> Bool {
