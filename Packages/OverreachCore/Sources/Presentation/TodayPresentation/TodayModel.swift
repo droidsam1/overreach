@@ -471,8 +471,8 @@ public final class TodayModel {
         let today = range.upperBound
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         loadRunningPlan(
-            goal: goal, today: today, now: now, runs: record.runReadFailed ? [] : record.runs,
-            runningBreak: runningBreak
+            goal: goal, today: today, now: now, runs: record.runs,
+            runningBreak: runningBreak, runReadFailed: record.runReadFailed
         )
         loadWorkoutContext(today: today, profile: profile, record: record)
         updateDeloadSession()
@@ -501,10 +501,10 @@ public final class TodayModel {
     }
 
     private func loadRunningPlan(
-        goal: TrainingGoal?, today: CalendarDay, now: Date, runs: [RunActivity], runningBreak: DetectedDeload?
+        goal: TrainingGoal?, today: CalendarDay, now: Date, runs: [RunActivity],
+        runningBreak: DetectedDeload?, runReadFailed: Bool
     ) {
         let running = goal?.running
-        guard running != nil || runningBreak != nil else { return }
         let schedule = goal?.scheduledRuns.filter { !$0.isPostponed } ?? []
         let yesterday = today.adding(days: -1, calendar: calendar).startDate(in: calendar)
         let latestRun = schedule.compactMap(\.completion).filter {
@@ -516,9 +516,14 @@ public final class TodayModel {
         if keptPlannedRunDay == today { return }
         if let decision = EasyRunAdvisor.advise(
             goal: running, targetDay: goal?.targetDate, schedule: schedule, readiness: readiness, metrics: metrics,
-            runs: runs, now: now, calendar: calendar, runningBreak: runningBreak
+            runs: runReadFailed ? [] : runs, now: now, calendar: calendar,
+            runningBreak: runReadFailed ? nil : runningBreak, strength: goal?.scheduledStrength ?? [],
+            priority: goal?.effectivePriority ?? .balanced, allowEffortOnly: !runReadFailed
         ), decision != .plannedRest {
-            runningOption = RunningOption(goal: running, decision: decision, calendar: calendar, format: format)
+            runningOption = RunningOption(
+                goal: goal, decision: decision, hasRunToday: !scheduledRunsToday.isEmpty,
+                calendar: calendar, format: format
+            )
         }
     }
 
@@ -527,10 +532,15 @@ public final class TodayModel {
         guard let adjustment = runningOption?.adjustment, let profiles,
               var profile = try? await profiles.profile(), var goal = profile.goal else { return }
         var schedule = goal.scheduledRuns
-        guard let index = schedule.firstIndex(where: { $0.id == adjustment.runID }),
-              schedule[index].day == CalendarDay(now, calendar: calendar) else { return }
-        let updated = schedule[index].easingTo(minutes: adjustment.minutes)
-        guard updated != schedule[index] else { return }
+        let today = CalendarDay(now, calendar: calendar)
+        let tomorrow = today.adding(days: 1, calendar: calendar)
+        guard adjustment.original.day == today, let index = schedule.firstIndex(of: adjustment.original),
+              goal.targetDate.map({ !(today...tomorrow).contains($0) }) ?? true,
+              !schedule.contains(where: { other in
+                  other.id != adjustment.runID && !other.isPostponed
+                      && (other.day == today || (other.day == tomorrow && other.purpose == .race))
+              }) else { return }
+        let updated = adjustment.original.easingTo(minutes: adjustment.minutes)
         schedule[index] = updated
         goal.setRunningSchedule(schedule)
         profile.goal = goal

@@ -165,6 +165,41 @@ struct PlanModelTests {
         #expect(model.errorMessage == "A running rest day must be the only entry on that date.")
     }
 
+    @Test func movesAnIntactRunOnlyAfterReviewAndRejectsANearbyRace() async throws {
+        let (model, store) = await model()
+        let today = CalendarDay(now, calendar: calendar)
+        let original = PlannedRun(
+            day: today, purpose: .intervals, durationMinutes: 40, distanceMeters: 8_000,
+            prescription: .init(repetitions: 6, recoverySeconds: 90, intensityBasis: .pace, intensityTarget: 300)
+        )
+        var goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000), nextRun: original)
+        try await store.save(AthleteProfile(goal: goal))
+        await model.load()
+
+        let destination = today.adding(days: 3, calendar: calendar)
+        let draft = model.reviewRunMove(original, to: destination)
+        #expect(try await store.profile().goal?.scheduledRuns == [original])
+        let race = PlannedRun(day: destination.adding(days: 1, calendar: calendar), purpose: .race)
+        goal.setRunningSchedule([original, race])
+        try await store.save(AthleteProfile(goal: goal))
+        #expect(!(await model.saveRunningEntry(draft)))
+        #expect(try await store.profile().goal?.scheduledRuns == [original, race])
+
+        goal.setRunningSchedule([original])
+        try await store.save(AthleteProfile(goal: goal))
+        #expect(await model.saveRunningEntry(draft))
+        let updated = try #require(try await store.profile().goal?.scheduledRuns.first)
+        #expect(updated.id == original.id)
+        #expect(updated.day == destination)
+        #expect(updated.originalDay == today)
+        #expect(updated.purpose == original.purpose)
+        #expect(updated.durationMinutes == original.durationMinutes)
+        #expect(updated.distanceMeters == original.distanceMeters)
+        #expect(updated.prescription == original.prescription)
+        #expect(updated.completion == nil)
+        #expect(!(await model.saveRunningEntry(draft)))
+    }
+
     @Test func preservesARacePrescriptionWhenMovingAndRestoringTheCalendar() async throws {
         let (model, store) = await model()
         let goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000))

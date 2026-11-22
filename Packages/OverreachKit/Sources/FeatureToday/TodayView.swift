@@ -14,6 +14,7 @@ public struct TodayView: View {
     private var settingsDestination: (() -> AnyView)?
     private var showsSettings = Binding.constant(false)
     private var settingsBadgeCount = 0
+    private var onReviewRunMove: ((PlannedRun, CalendarDay) -> Void)?
 
     private let workoutContinuation: TodayModel.WorkoutContinuation?
     private let onOpenTrain: () -> Void
@@ -66,6 +67,12 @@ public struct TodayView: View {
         return copy
     }
 
+    public func reviewRunMove(_ action: @escaping (PlannedRun, CalendarDay) -> Void) -> TodayView {
+        var copy = self
+        copy.onReviewRunMove = action
+        return copy
+    }
+
     public var body: some View {
         NavigationStack {
             ScrollView {
@@ -75,7 +82,11 @@ public struct TodayView: View {
                         scheduledTraining
                     }
                     if let option = model.runningOption {
-                        easyRun(option)
+                        if option.isOptional {
+                            DisclosureGroup("I want to run today") { easyRun(option) }
+                        } else {
+                            easyRun(option)
+                        }
                     }
                     if model.showsReadinessDetails && model.showsReadinessCard {
                         TodayReadinessDetails(model: model)
@@ -391,6 +402,9 @@ public struct TodayView: View {
                         .buttonStyle(.bordered)
                 }
                 .padding(.vertical, Spacing.xSmall)
+                if let day = adjustment.moveDay, let title = adjustment.moveTitle, let onReviewRunMove {
+                    Button(title) { onReviewRunMove(adjustment.original, day) }
+                }
             }
             if let evidence = option.evidence, let source = option.source {
                 DisclosureGroup("Why this running option?") {

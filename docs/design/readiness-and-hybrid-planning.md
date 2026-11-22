@@ -6,10 +6,8 @@ Today should tell the athlete what to do, which signals matter, and how the sugg
 
 ## Continue from here
 
-**Next implementation in this area: adjust planned runs.**
-See [task 8](#8-adjust-planned-runs-and-protect-nearby-sessions) for how adjustments should use the shared calendar.
-[Priorities](../priorities.md) ranks it against the rest of the open work.
-[Task 3](#3-ask-a-question-that-changes-the-decision) still needs clinical review before release.
+Use [Priorities](../priorities.md) to choose the next implementation. [Task 3](#3-ask-a-question-that-changes-the-decision)
+has an implemented check-in flow with a pending clinical review before release.
 
 ## Shipped baseline
 
@@ -125,11 +123,12 @@ covers the prescription fields, race priority, moves and postponement. Applying 
 
 [#89](https://github.com/droidsam1/overreach/pull/89) compares a saved session with a conversational run when
 recovery signals and recent running support it. [#95](https://github.com/droidsam1/overreach/pull/95) extends the
-checks to all running entries through tomorrow. Today can apply the easy run to a due hard or long run (the entry
-keeps its identity and first date; declining saves nothing). Moves and recommendations for combined
-strength and running days remain open.
+checks to all running entries through tomorrow. Today distinguishes race day, keeps a running rest day and
+uses discipline priority on strength/run days. A free-day option opens on request.
 
-- [ ] After tasks 5 and 7, extend the comparison to running and race days. Use duration, effort, repetitions, grade or terrain when relevant and available. Prefer plain cues such as conversational effort. Show zones only when their scale and the athlete's settings are known. With a free day and user intent to train, build from the next run/routine/race and remaining weekly context, or offer a familiar easy option when none exists. Inspect upcoming key sessions before offering a replacement or a move.
+- [x] Compare planned runs with easy alternatives using recent duration and conversational effort. Apply
+  a same-day change in Today or review a move in Plan. Search days two through seven for an empty running slot.
+  Leave a day around other quality runs and races, and around dated strength in balanced and strength-first plans.
 - **Done when** tests include hard intervals → easy, easy → shorter or unchanged, long run → a compatible alternative, race today, race soon, a strength/run double, explicit rest and no plan. Declining or skipping keeps the original schedule. Concrete example doses are configurable heuristics and never override the symptom pathway.
 
 ### 9. Research and validate hybrid planning rules before automating plans

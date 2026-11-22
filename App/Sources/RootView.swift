@@ -40,6 +40,7 @@ struct RootView: View {
     @State private var whatsNewModel: WhatsNewModel
     @State private var askAIModel: AskAIModel
     @State private var planImportModel: PlanImportModel
+    @State private var suggestedRun: RunningCalendarDraft?
     @State private var selectedTab: AppTab
     @State private var onboardingDestination: OnboardingDestination?
     @State private var showsStrongImport = false
@@ -114,6 +115,10 @@ struct RootView: View {
                     onConnectGarmin: { garminModel.start() },
                     recoveryHistory: { PlanProgressView(model: planModel) }
                 )
+                .reviewRunMove { entry, day in
+                    suggestedRun = planModel.reviewRunMove(entry, to: day)
+                    selectedTab = .plan
+                }
                 .settingsButton(
                     isPresented: $showsSettings,
                     badgeCount: exercisesModel.needsMappingCount + backupModel.badgeCount + garminModel.badgeCount
@@ -131,7 +136,7 @@ struct RootView: View {
                 HistoryView(model: historyModel)
             }
             Tab("Plan", systemImage: "list.bullet.clipboard", value: AppTab.plan) {
-                PlanView(model: planModel, assistant: {
+                PlanView(model: planModel, suggestedRun: $suggestedRun, assistant: {
                     NavigationLink {
                         AskAIView(model: askAIModel, importer: planImportModel)
                     } label: {

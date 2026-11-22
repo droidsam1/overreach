@@ -2330,6 +2330,23 @@
         }
       }
     },
+    "Choose a duration you are used to.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige una duración a la que estés acostumbrado."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolle unha duración á que esteas afeito."
+          }
+        }
+      }
+    },
     "Choose a familiar exercise and a light load. Finish each set with at least four reps left.": {
       "extractionState": "manual",
       "localizations": {
@@ -4795,6 +4812,23 @@
         }
       }
     },
+    "Easier planned runs": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreras planificadas más suaves"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreiras planificadas máis suaves"
+          }
+        }
+      }
+    },
     "Easier than planned: {1} vs {2}.": {
       "extractionState": "manual",
       "localizations": {
@@ -6546,6 +6580,23 @@
         }
       }
     },
+    "I want to run today": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quiero correr hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quero correr hoxe"
+          }
+        }
+      }
+    },
     "I'm sick": {
       "extractionState": "manual",
       "localizations": {
@@ -7124,6 +7175,23 @@
         }
       }
     },
+    "Keep today's planned easy run at a conversational pace.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén el rodaje suave de hoy a un ritmo que te permita conversar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén a carreira suave de hoxe a un ritmo que che permita conversar."
+          }
+        }
+      }
+    },
     "Keep today's run easy. Try {1} min at a conversational pace.": {
       "extractionState": "manual",
       "localizations": {
@@ -7188,6 +7256,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mantén o día de descanso de carreira previsto."
+          }
+        }
+      }
+    },
+    "Keep your scheduled strength session as the priority.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Da prioridad a tu sesión de fuerza programada."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dálle prioridade á túa sesión de forza programada."
           }
         }
       }
@@ -12411,6 +12496,23 @@
         }
       }
     },
+    "Review move to {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar el cambio al {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar o cambio ao {1}"
+          }
+        }
+      }
+    },
     "Review my routines": {
       "extractionState": "manual",
       "localizations": {
@@ -15093,6 +15195,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cambia a un rango de repeticións (dobre progresión): sumar repeticións antes que peso dáche máis pasos pequenos para progresar."
+          }
+        }
+      }
+    },
+    "Switch to an easier run in Today or review a new date in Plan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambia a un rodaje más suave en Hoy o revisa una nueva fecha en Plan."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambia a unha carreira máis suave en Hoxe ou revisa unha nova data en Plan."
           }
         }
       }
@@ -18667,6 +18786,23 @@
         }
       }
     },
+    "Your race is today. Follow the recovery advice above.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La carrera es hoy. Sigue la recomendación de recuperación de arriba."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A carreira é hoxe. Sigue a recomendación de recuperación de arriba."
+          }
+        }
+      }
+    },
     "Your race or target date is today or tomorrow. Leave the extra run for another day.": {
       "extractionState": "manual",
       "localizations": {
@@ -18697,6 +18833,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "As túas sesións recentes aínda non seguen unha orde fixa. Escolle a que vas facer."
+          }
+        }
+      }
+    },
+    "Your schedule has changed. Review the current plan and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu calendario ha cambiado. Revisa el plan actual y vuelve a intentarlo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teu calendario cambiou. Revisa o plan actual e téntao de novo."
           }
         }
       }

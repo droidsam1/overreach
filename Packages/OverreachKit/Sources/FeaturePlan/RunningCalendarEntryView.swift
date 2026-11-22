@@ -44,11 +44,12 @@ struct RunningCalendarEntryView: View {
                         Text("To move a completed entry, unlink the recorded run first.")
                     }
                 }
-                if !draft.isNew {
+                if !draft.isNew && !draft.isSuggestedRunMove {
                     Button("Remove running day", role: .destructive) { confirmRemoval = true }
                         .disabled(model.isSavingProfile)
                 }
             }
+            .disabled(draft.isSuggestedRunMove)
             .navigationTitle("Running day")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
@@ -65,6 +66,7 @@ struct RunningCalendarEntryView: View {
             .onChange(of: draft.date) { draft.postponed = false }
             .task(id: draft.date) {
                 choices = []
+                guard !draft.isSuggestedRunMove else { return }
                 let available = await model.runningCompletionChoices(for: draft)
                 if !Task.isCancelled { choices = available }
             }

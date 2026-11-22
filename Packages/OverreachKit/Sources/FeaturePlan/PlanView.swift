@@ -13,6 +13,7 @@ public struct PlanView<Assistant: View, Progress: View>: View {
     @State private var model: PlanModel
     @State private var runEditor: RunningCalendarDraft?
     @State private var strengthEditor: StrengthCalendarDraft?
+    @Binding private var suggestedRun: RunningCalendarDraft?
     private let assistant: Assistant
     private let progress: Progress
 
@@ -20,9 +21,11 @@ public struct PlanView<Assistant: View, Progress: View>: View {
     ///   - assistant: links to other features (e.g. "Ask AI"). Wired by the app.
     ///   - progress: where "View progress" goes (Recovery & Progress). Wired by the app.
     public init(
-        model: PlanModel, @ViewBuilder assistant: () -> Assistant, @ViewBuilder progress: () -> Progress
+        model: PlanModel, suggestedRun: Binding<RunningCalendarDraft?> = .constant(nil),
+        @ViewBuilder assistant: () -> Assistant, @ViewBuilder progress: () -> Progress
     ) {
         _model = State(initialValue: model)
+        _suggestedRun = suggestedRun
         self.assistant = assistant()
         self.progress = progress()
     }
@@ -71,6 +74,11 @@ public struct PlanView<Assistant: View, Progress: View>: View {
             }
             .navigationTitle("Plan")
             .task { await reload() }
+            .onChange(of: suggestedRun, initial: true) { _, draft in
+                guard let draft else { return }
+                runEditor = draft
+                suggestedRun = nil
+            }
             .refreshable { await reload() }
             .calendarEditors(model: model, run: $runEditor, strength: $strengthEditor)
         }
