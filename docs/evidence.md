@@ -100,6 +100,13 @@ Reviewed 2026-11-21. [Downhill walking trial](https://pubmed.ncbi.nlm.nih.gov/29
 
 ## Progression engine
 
+### `dog-walk-suggestion` — heuristic
+Overreach asks "With <dog>?" on walks of 10 minutes or more that nobody has answered. With fewer than 10 answered
+walks it asks on every one. Afterwards it asks only within ±45 minutes of a usual slot, a time of day with at least 3
+confirmed dog walks in the last 28 days; a slot whose last 5 answers are all "No" stops asking, and weekend slots are
+learned apart once weekends have 10 answers of their own. Implemented in `DogWalkSuggestion`. Product heuristics to
+keep the question rare once learned; none is a clinical rule. Reviewed 2026-11-22.
+
 ### `walk-companion-matching` — heuristic
 A tracker's movement window tags a walk the app already has when both overlap by at least 50 % of the shorter one
 (70 % for a low-confidence window from a sparse track) and their starts differ by at most 10 minutes. Each window tags
