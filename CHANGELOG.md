@@ -7,8 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
-- The logger can reorder exercises mid-session: "Reorder exercises" in the session options opens a drag list,
-  and each exercise's menu has Move up and Move down. Sets and typed values move with the exercise.
+- The logger can reorder exercises mid-session: long-press an exercise's name (or pick "Reorder exercises" in
+  the session options) and the session collapses to names you drag, then Done. Each exercise's menu also has
+  Move up and Move down. Sets and typed values move with the exercise.
 
 - Warm-up sets are added from a button under each exercise's sets, next to "Add set": the first tap adds the
   suggested warm-up, later taps add one more warm-up set before the working sets.

@@ -4727,6 +4727,23 @@
         }
       }
     },
+    "Drag the exercises into the order you want. Sets and values move with them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrastra los ejercicios al orden que quieras. Las series y los valores se mueven con ellos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrastra os exercicios á orde que queiras. As series e os valores móvense con eles."
+          }
+        }
+      }
+    },
     "Drop set": {
       "extractionState": "manual",
       "localizations": {

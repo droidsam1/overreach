@@ -30,7 +30,9 @@ public struct WorkoutView: View {
                 } else if model.isSavingSession && !model.isSessionActive {
                     ProgressView("Saving workout…")
                 } else if model.isSessionActive {
-                    SessionList(model: model, isPickingExercise: $isPickingExercise)
+                    SessionList(
+                        model: model, isPickingExercise: $isPickingExercise, isReordering: $isReorderingExercises
+                    )
                         .disabled(model.isSavingSession)
                 } else if model.needsDraftRecovery {
                     WorkoutRecoveryView(model: model) { isConfirmingDiscard = true }
@@ -60,9 +62,6 @@ public struct WorkoutView: View {
             .sheet(item: $routineEditor) { editor in
                 RoutineEditorView(model: editor)
             }
-            .sheet(isPresented: $isReorderingExercises) {
-                ReorderExercisesSheet(model: model)
-            }
             .sheet(isPresented: $isShowingGuide) {
                 SetLoggingGuide(showsRepsInReserve: Binding(
                     get: { model.showsRepsInReserve },
@@ -89,7 +88,10 @@ public struct WorkoutView: View {
             }
             // A finished session moves the plan on to its next session.
             .onChange(of: model.isSessionActive) { _, isActive in
-                if !isActive { Task { await routines.load() } }
+                if !isActive {
+                    isReorderingExercises = false
+                    Task { await routines.load() }
+                }
             }
             // Progression settings and routines may have changed in another tab (e.g. imported from an AI).
             .onAppear {
@@ -131,7 +133,9 @@ public struct WorkoutView: View {
                 .disabled(model.isSavingSession)
             }
             ToolbarItem(placement: .confirmationAction) {
-                if model.isSavingSession {
+                if isReorderingExercises {
+                    Button("Done") { isReorderingExercises = false }
+                } else if model.isSavingSession {
                     ProgressView()
                         .accessibilityLabel("Saving workout…")
                 } else {
@@ -195,9 +199,37 @@ private struct WorkoutRecoveryView: View {
 private struct SessionList: View {
     @Bindable var model: WorkoutModel
     @Binding var isPickingExercise: Bool
+    @Binding var isReordering: Bool
     @State private var progressionExercise: DraftExercise.ID?
 
     var body: some View {
+        Group {
+            if isReordering {
+                ExerciseOrderList(model: model)
+            } else {
+                exerciseList
+            }
+        }
+        .animation(.default, value: isReordering)
+        // Confirms the long press switched to reordering.
+        .sensoryFeedback(.impact, trigger: isReordering) { _, isOn in isOn }
+        .sheet(isPresented: Binding(
+            get: { progressionExercise != nil },
+            set: { if !$0 { progressionExercise = nil } }
+        )) {
+            if let id = progressionExercise {
+                ProgressionPicker(model: model, exerciseID: id)
+            }
+        }
+        .keyboardDoneButton()
+        .safeAreaInset(edge: .bottom) {
+            if model.rest.isActive {
+                RestTimerView(model: model.rest)
+            }
+        }
+    }
+
+    private var exerciseList: some View {
         List {
             Text(model.sessionName)
                 .font(.title2.weight(.semibold))
@@ -255,8 +287,14 @@ private struct SessionList: View {
                         .lineLimit(1...4)
                 } header: {
                     HStack {
+                        // Long-pressing the name collapses the session to names to drag (as the session menu does).
                         Text(exercise.name)
-                        Spacer()
+                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                            .contentShape(Rectangle())
+                            .onLongPressGesture { if model.exercises.count > 1 { isReordering = true } }
+                            .accessibilityAction(named: "Reorder exercises") {
+                                if model.exercises.count > 1 { isReordering = true }
+                            }
                         Menu {
                             Picker("Exercise focus", selection: Binding(
                                 get: { exercise.declaredFocus },
@@ -304,46 +342,28 @@ private struct SessionList: View {
             }
         }
         .scrollDismissesKeyboard(.interactively)
-        .sheet(isPresented: Binding(
-            get: { progressionExercise != nil },
-            set: { if !$0 { progressionExercise = nil } }
-        )) {
-            if let id = progressionExercise {
-                ProgressionPicker(model: model, exerciseID: id)
-            }
-        }
-        .keyboardDoneButton()
-        .safeAreaInset(edge: .bottom) {
-            if model.rest.isActive {
-                RestTimerView(model: model.rest)
-            }
-        }
     }
 }
 
-/// Drag handles over the exercise names only, so the order is easy to change mid-session.
-private struct ReorderExercisesSheet: View {
-    @Bindable var model: WorkoutModel
-    @Environment(\.dismiss) private var dismiss
+/// The session collapsed to exercise names, so any exercise can be dragged anywhere without scrolling past sets.
+/// "Done" in the toolbar returns to the sets.
+private struct ExerciseOrderList: View {
+    let model: WorkoutModel
 
     var body: some View {
-        NavigationStack {
-            List {
+        List {
+            Section {
                 ForEach(model.exercises) { exercise in
                     Text(exercise.name)
                 }
                 .onMove { model.moveExercises(from: $0, to: $1) }
-            }
-            .navigationTitle("Reorder exercises")
-            .inlineTitle(true)
-            .alwaysEditing()
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
+            } header: {
+                Text("Reorder exercises")
+            } footer: {
+                Text("Drag the exercises into the order you want. Sets and values move with them.")
             }
         }
-        .presentationDetents([.medium, .large])
+        .alwaysEditing()
     }
 }
 
