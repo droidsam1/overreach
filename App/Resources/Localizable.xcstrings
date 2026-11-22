@@ -698,6 +698,23 @@
         }
       }
     },
+    "Above your usual week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por encima de tu semana habitual"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por riba da túa semana habitual"
+          }
+        }
+      }
+    },
     "Activity by day": {
       "extractionState": "manual",
       "localizations": {
