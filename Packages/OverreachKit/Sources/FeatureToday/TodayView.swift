@@ -14,17 +14,14 @@ public struct TodayView: View {
     private var settingsDestination: (() -> AnyView)?
     private var showsSettings = Binding.constant(false)
     private var settingsBadgeCount = 0
+    private var onReviewRunMove: ((PlannedRun, CalendarDay) -> Void)?
 
-    public enum WorkoutContinuation {
-        case resume(String), reviewDraft
-    }
-
-    private let workoutContinuation: WorkoutContinuation?
+    private let workoutContinuation: TodayModel.WorkoutContinuation?
     private let onOpenTrain: () -> Void
     private let onOpenHistory: () -> Void
 
     public init(
-        model: TodayModel, workoutContinuation: WorkoutContinuation? = nil,
+        model: TodayModel, workoutContinuation: TodayModel.WorkoutContinuation? = nil,
         onOpenTrain: @escaping () -> Void = {}, onOpenHistory: @escaping () -> Void = {},
         onConnectGarmin: @escaping () -> Void = {}
     ) {
@@ -37,7 +34,7 @@ public struct TodayView: View {
     }
 
     public init<RecoveryHistory: View>(
-        model: TodayModel, workoutContinuation: WorkoutContinuation? = nil,
+        model: TodayModel, workoutContinuation: TodayModel.WorkoutContinuation? = nil,
         onOpenTrain: @escaping () -> Void = {}, onOpenHistory: @escaping () -> Void = {},
         onConnectGarmin: @escaping () -> Void = {},
         @ViewBuilder recoveryHistory: @escaping () -> RecoveryHistory
@@ -70,30 +67,31 @@ public struct TodayView: View {
         return copy
     }
 
+    public func reviewRunMove(_ action: @escaping (PlannedRun, CalendarDay) -> Void) -> TodayView {
+        var copy = self
+        copy.onReviewRunMove = action
+        return copy
+    }
+
     public var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.large) {
-                    if let workoutContinuation {
-                        continueWorkout(workoutContinuation)
-                    }
-                    if primary == .deload, let advice = model.deloadAdvice {
-                        deload(advice, prominent: true)
-                    }
-                    if model.showsReadinessCard {
-                        readinessSummary
-                    }
-                    primaryButton
-                    warnings
-                    if model.showsReadinessDetails && model.showsReadinessCard {
-                        TodayReadinessDetails(model: model)
-                    }
+                    primaryDecision
                     if model.scheduledStrengthToday != nil || !model.scheduledRunsToday.isEmpty {
                         scheduledTraining
                     }
                     if let option = model.runningOption {
-                        easyRun(option)
+                        if option.isOptional {
+                            DisclosureGroup("I want to run today") { easyRun(option) }
+                        } else {
+                            easyRun(option)
+                        }
                     }
+                    if model.showsReadinessDetails && model.showsReadinessCard {
+                        TodayReadinessDetails(model: model)
+                    }
+                    warnings
                     if primary != .deload, let advice = model.deloadAdvice {
                         deload(advice)
                     }
@@ -166,10 +164,10 @@ public struct TodayView: View {
     }
 
     private var primary: TodayModel.NextAction {
-        workoutContinuation == nil ? model.nextAction : .readiness
+        model.nextAction(continuing: workoutContinuation)
     }
 
-    private func continueWorkout(_ continuation: WorkoutContinuation) -> some View {
+    private func continueWorkout(_ continuation: TodayModel.WorkoutContinuation) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xSmall) {
             switch continuation {
             case let .resume(name):
@@ -182,12 +180,27 @@ public struct TodayView: View {
         .buttonStyle(BrandButtonStyle())
     }
 
-    @ViewBuilder private var primaryButton: some View {
+    private var primaryDecision: some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            primaryAction
+            if model.showsReadinessCard {
+                readinessSummary
+            }
+        }
+    }
+
+    @ViewBuilder private var primaryAction: some View {
         switch primary {
+        case let .continueWorkout(workout):
+            continueWorkout(workout)
         case .loading:
             ProgressView("Loading Today…")
-        case .readiness, .deload:
+        case .readiness:
             EmptyView()
+        case .deload:
+            if let advice = model.deloadAdvice {
+                deload(advice, prominent: true)
+            }
         case .checkIn:
             checkIn(prominent: true)
         case .retry:
@@ -384,6 +397,18 @@ public struct TodayView: View {
             }
             Text(option.advice).font(.subheadline)
             if let context = option.context { Text(context).font(.caption).foregroundStyle(.secondary) }
+            if let adjustment = option.adjustment {
+                HStack {
+                    Button(adjustment.applyTitle) { Task { await model.applyRunningAdjustment() } }
+                        .buttonStyle(.borderedProminent)
+                    Button(adjustment.keepTitle) { model.keepPlannedRun() }
+                        .buttonStyle(.bordered)
+                }
+                .padding(.vertical, Spacing.xSmall)
+                if let day = adjustment.moveDay, let title = adjustment.moveTitle, let onReviewRunMove {
+                    Button(title) { onReviewRunMove(adjustment.original, day) }
+                }
+            }
             if let evidence = option.evidence, let source = option.source {
                 DisclosureGroup("Why this running option?") {
                     VStack(alignment: .leading, spacing: Spacing.xSmall) {

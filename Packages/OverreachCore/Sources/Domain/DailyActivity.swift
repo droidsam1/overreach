@@ -10,6 +10,10 @@ public struct WalkBout: Hashable, Codable, Sendable {
     public var averageHeartRate: Double?
     public var elevationGainMeters: Double?
     public var source: DataSourceKind
+    /// Who walked with the athlete, when known (docs/design/companion-walks.md). Optional so older backups decode.
+    public var companion: WalkCompanion?
+    /// How the tag got here. Present exactly when `companion` is.
+    public var companionSource: WalkCompanionSource?
 
     public init(
         start: Date,
@@ -18,7 +22,9 @@ public struct WalkBout: Hashable, Codable, Sendable {
         distanceMeters: Double? = nil,
         averageHeartRate: Double? = nil,
         elevationGainMeters: Double? = nil,
-        source: DataSourceKind
+        source: DataSourceKind,
+        companion: WalkCompanion? = nil,
+        companionSource: WalkCompanionSource? = nil
     ) {
         self.start = start
         self.durationSeconds = durationSeconds
@@ -27,6 +33,8 @@ public struct WalkBout: Hashable, Codable, Sendable {
         self.averageHeartRate = averageHeartRate
         self.elevationGainMeters = elevationGainMeters
         self.source = source
+        self.companion = companion
+        self.companionSource = companion == nil ? nil : companionSource
     }
 
     public var end: Date { start.addingTimeInterval(durationSeconds) }

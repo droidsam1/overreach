@@ -37,8 +37,12 @@ Shared from **Plan → Ask AI**. It is raw data with no instructions. Its top-le
 
 - **Hybrid running goal:** `athlete.goal.running` has `distanceMeters`, optional `targetSeconds` and `aimsForPainFree`.
   Optional `athlete.goal.runningSchedule` contains entries with an `id`, local `day`, `purpose` (`easy`,
-  `intervals`, `tempo`, `long`, `race`, `rest`), optional `durationMinutes` and `distanceMeters`, and `completed` when a recorded
-  result has been confirmed. `athlete.goal.nextRun` summarizes the next pending entry for older consumers.
+  `intervals`, `tempo`, `threshold`, `long`, `race`, `rest`), optional `durationMinutes` and `distanceMeters`, and
+  `completed` when a recorded result has been confirmed. Optional `prescription` includes `repetitions`,
+  `recoverySeconds`, `intensityBasis` and `intensityTarget`. The target is seconds per kilometre for `pace`,
+  the zone number for `heartRateZone` and a 1–10 rating for `perceivedEffort`. Optional `racePriority` is
+  `primary` or `secondary`. Moved entries keep their `originalDay`. `athlete.goal.nextRun` skips entries marked
+  `postponed`, which remain in the calendar.
 
 - **Set:** `weightKg`, `reps`, `rpe`, `durationSeconds`, `distanceMeters`. `kind` is absent for working sets,
   otherwise `warmup`, `dropSet` or `failure`.

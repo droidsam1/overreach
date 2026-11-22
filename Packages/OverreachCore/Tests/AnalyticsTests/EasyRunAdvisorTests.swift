@@ -17,14 +17,16 @@ struct EasyRunAdvisorTests {
     private func decision(
         level: ReadinessLevel = .amber, reasons: [ReadinessReason] = [.shortSleep(hours: 5)],
         schedule: [PlannedRun] = [], runs: [RunActivity], withMetrics: Bool = true, painFree: Bool = false,
-        runningBreak: DetectedDeload? = nil
+        runningBreak: DetectedDeload? = nil, strength: [PlannedStrength] = [],
+        priority: DisciplinePriority = .balanced
     ) -> EasyRunAdvisor.Decision? {
         var metrics = DailyMetrics(day: today)
         metrics.sleepSeconds = (level == .green ? 8 : 5) * 3_600
         return EasyRunAdvisor.advise(
             goal: RunningGoal(distanceMeters: 5_000, targetSeconds: 900, aimsForPainFree: painFree),
             targetDay: nil, schedule: schedule, readiness: Readiness(level: level, reasons: reasons),
-            metrics: withMetrics ? metrics : nil, runs: runs, now: now, calendar: calendar, runningBreak: runningBreak
+            metrics: withMetrics ? metrics : nil, runs: runs, now: now, calendar: calendar, runningBreak: runningBreak,
+            strength: strength, priority: priority
         )
     }
 
@@ -76,14 +78,49 @@ struct EasyRunAdvisorTests {
         #expect(decision(level: .green, reasons: [], schedule: [plan],
                          runs: [first, mirror, second], runningBreak: rest) == nil)
         let race = PlannedRun(day: today, purpose: .race)
-        #expect(decision(schedule: [race], runs: [], runningBreak: rest) == .nearEvent)
+        #expect(decision(schedule: [race], runs: [], runningBreak: rest) == .raceToday)
         #expect(decision(level: .red, runs: [], runningBreak: rest) == nil)
+    }
+
+    @Test func respectsStrengthPriorityOnFreeAndDoubleDays() {
+        let lifting = PlannedStrength(day: today, routineID: UUID())
+        let long = PlannedRun(day: today, purpose: .long, durationMinutes: 60)
+        let runs = [run(daysAgo: 2, minutes: 40)]
+        #expect(decision(runs: runs, strength: [lifting]) == .scheduledStrength)
+        #expect(decision(schedule: [long], runs: runs, strength: [lifting])
+            == .example(minutes: 15, plan: long, isToday: true, recentRuns: 1))
+        #expect(decision(schedule: [long], runs: runs, strength: [lifting], priority: .running)
+            == .example(minutes: 30, plan: long, isToday: true, recentRuns: 1))
+    }
+
+    @Test func findsRoomForAMovedQualityRunAroundRestRaceAndStrength() {
+        let original = PlannedRun(day: today, purpose: .intervals)
+        let race = PlannedRun(day: today.adding(days: 3, calendar: calendar), purpose: .race)
+        let rest = PlannedRun(day: today.adding(days: 5, calendar: calendar), purpose: .rest)
+        var goal = TrainingGoal(kind: .hybrid, nextRun: original)
+        goal.setRunningSchedule([original, race, rest])
+        let sixthDay = today.adding(days: 6, calendar: calendar)
+        #expect(EasyRunAdvisor.rescheduleDay(for: original, goal: goal, calendar: calendar) == sixthDay)
+
+        goal.setStrengthSchedule([PlannedStrength(day: sixthDay, routineID: UUID())])
+        #expect(EasyRunAdvisor.rescheduleDay(for: original, goal: goal, calendar: calendar) == nil)
+        goal.priority = .running
+        #expect(EasyRunAdvisor.rescheduleDay(for: original, goal: goal, calendar: calendar) == sixthDay)
+    }
+
+    @Test func keepsAnEasyRunWhenTheGreenDayDoseAlreadyFits() {
+        let easy = PlannedRun(day: today, purpose: .easy, durationMinutes: 20)
+        let runs = [run(daysAgo: 2, minutes: 40)]
+        #expect(decision(level: .green, reasons: [], schedule: [easy], runs: runs)
+            == .example(minutes: 20, plan: easy, isToday: true, recentRuns: 1))
+        #expect(decision(schedule: [easy], runs: runs)
+            == .example(minutes: 15, plan: easy, isToday: true, recentRuns: 1))
     }
 
     @Test func asksForUsableRecoveryAndRecentRunningBeforeSuggestingMinutes() {
         let recent = [run(daysAgo: 1, minutes: 40)]
         #expect(decision(runs: recent, withMetrics: false) == nil)
-        #expect(decision(runs: [run(daysAgo: 15, minutes: 40)]) == nil)
+        #expect(decision(runs: [run(daysAgo: 15, minutes: 40)]) == .familiarEffort)
         #expect(decision(runs: recent + [run(daysAgo: 0, minutes: 30, id: "today")]) == nil)
         #expect(decision(runs: recent, painFree: true) == .example(minutes: 20, plan: nil, isToday: false, recentRuns: 1))
         #expect(decision(reasons: [.highSoreness(score: 3)], runs: recent) == nil)

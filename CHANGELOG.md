@@ -7,6 +7,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Walks can carry a dog tag. A matcher tags the walks a tracker's movement windows overlap, the athlete's own
+  answer always wins, and the tag survives merging the Garmin and Apple Health copies of a walk. No screen yet.
+
+- Recovery & Progress shows 30- and 90-day trends: HRV, resting heart rate and sleep in the Recovery detail,
+  weekly strength sets and running distance in Recent load. Each chart names its metric, unit and interval,
+  keeps days without a reading as gaps, and has a text summary for VoiceOver. Only readings from the series and
+  source of the latest reading are plotted, and a usual-range band appears only when Garmin reports one.
+
+- Recovery & Progress compares completed and planned strength sessions by imported block and week.
+
+- Today compares planned runs with conversational alternatives and accounts for nearby races, quality runs and
+  scheduled strength. Keep the session, switch to the easy run or review a clear date for the original run in Plan.
+
+- Plan supports structured run targets, race priority and postponement in the hybrid calendar.
+- Plan leads with your next scheduled sessions (tap one to move or change it), the current block and a goal
+  summary; goal editing opens from the summary. Recovery periods, lifts to unblock and linked running results moved
+  to a Progress section in Recovery & Progress, one tap from Plan's "View progress". A recent break question stays
+  in Plan beside the block decision it affects.
 - Recovery & Progress has a dedicated Recovery tab for the iPhone navigation trial. Settings opens from the
   gear button on Today, which still links directly to recovery readings.
 - History shows Apple Health strength workouts and credits Apple Health when it supplies a copy of a Garmin workout.
@@ -162,6 +180,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   stalls or the working weight.
 
 ### Changed
+- Today puts the next action first and shows planned training before the detailed recovery explanation.
 - The workout logger leads with the first exercise and its sets. "How to log sets" and the session focus moved to
   the session options menu, and the optional warm-up advice now follows the first exercise. Each exercise shows
   what you did last time, with its date, under today's target, completing a set gives a haptic confirmation, and

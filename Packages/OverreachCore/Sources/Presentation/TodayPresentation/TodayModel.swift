@@ -41,6 +41,7 @@ public final class TodayModel {
     public private(set) var scheduledRunsToday: [ScheduledTrainingRow] = []
     public private(set) var strengthOption: StrengthOption?
     public private(set) var runningOption: RunningOption?
+    private var keptPlannedRunDay: CalendarDay?
     private var hasRunningGoal = false
     /// A deload proposal (training reinforced by recovery, `deload-recovery-signals`) or the deload week in progress.
     public private(set) var deloadAdvice: DeloadAdvice?
@@ -66,6 +67,7 @@ public final class TodayModel {
     private var usualSteps: Double?
 
     private let recordLoader: TrainingRecordLoader
+    private let activityMatchChoices: @MainActor () -> ActivityMatchChoices
     private let sources: [any MetricsSource]
     private let garmin: (any GarminAccount)?
     private let profiles: (any ProfileRepository)?
@@ -80,8 +82,17 @@ public final class TodayModel {
 
     // MARK: Screen state
 
+    public enum WorkoutContinuation: Equatable {
+        case resume(String), reviewDraft
+    }
+
     public enum NextAction: Equatable {
+        case continueWorkout(WorkoutContinuation)
         case loading, readiness, checkIn, deload, retry, connectHealth, connectGarmin, train
+    }
+
+    public func nextAction(continuing workout: WorkoutContinuation?) -> NextAction {
+        workout.map(NextAction.continueWorkout) ?? nextAction
     }
 
     /// Orders existing actions for the first viewport. Readiness can advise an action without a button.
@@ -369,9 +380,11 @@ public final class TodayModel {
         workouts: (any WorkoutRepository)? = nil, exercises: (any ExerciseRepository)? = nil,
         recordedStrength: (any RecordedStrengthSource)? = nil, routines: (any RoutineRepository)? = nil,
         progression: (any ProgressionSettingsRepository)? = nil, cycle: (any CycleSource)? = nil,
+        activityMatchChoices: @escaping @MainActor () -> ActivityMatchChoices = { .init() },
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
+        self.activityMatchChoices = activityMatchChoices
         recordLoader = TrainingRecordLoader(
             sources: sources, activity: activity, checkIns: checkIns, workouts: workouts, exercises: exercises,
             recordedStrength: recordedStrength, routines: routines, progression: progression, cycle: cycle
@@ -451,15 +464,15 @@ public final class TodayModel {
         trainingReadFailed = record.runReadFailed || snapshot.sessionsFailed
         recentTrainingDays = RecentTraining(calendar: calendar, format: format).days(
             in: range, through: now, metrics: week, checkIns: record.checkIns,
-            runs: record.runs, sessions: record.sessions, recordings: record.recordings,
-            exercises: record.exercises,
+            runs: snapshot.runOriginals, sessions: record.sessions, recordings: snapshot.strengthOriginals,
+            exercises: record.exercises, choices: activityMatchChoices(),
             races: (profile?.goal?.scheduledRuns ?? []).compactMap { $0.purpose == .race ? $0.completion : nil }
         )
         let today = range.upperBound
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         loadRunningPlan(
-            goal: goal, today: today, now: now, runs: record.runReadFailed ? [] : record.runs,
-            runningBreak: runningBreak
+            goal: goal, today: today, now: now, runs: record.runs,
+            runningBreak: runningBreak, runReadFailed: record.runReadFailed
         )
         loadWorkoutContext(today: today, profile: profile, record: record)
         updateDeloadSession()
@@ -470,30 +483,29 @@ public final class TodayModel {
             ScheduledTrainingRow.strength($0, routine: assignedRoutine, sessions: record.sessions,
                                           now: now, calendar: calendar)
         }
+        let activeRuns = goal?.scheduledRuns.filter { $0.day == today && !$0.isPostponed } ?? []
         updateMovement(
             record.activity, today: today, profile: profile,
             schedule: .init(strength: assignment,
                             routine: scheduledStrengthToday?.status == nil ? assignedRoutine : nil,
-                            exercises: record.exercises, runs: goal?.scheduledRuns.filter { $0.day == today } ?? [])
+                            exercises: record.exercises, runs: activeRuns)
         )
         guard assignment == nil || assignedRoutine != nil,
               readiness.level == .amber, !readiness.reasons.contains(where: \.advisesSkippingTraining),
               workouts != nil, !snapshot.sessionsFailed,
               !hasStrengthToday(sessions: snapshot.allSessions, recordings: record.recordings, now: now) else { return }
-        if assignment == nil, goal?.scheduledRuns.contains(where: {
-            $0.day == today && $0.purpose == .race && $0.completion == nil
-        }) == true { return }
+        if assignment == nil, activeRuns.contains(where: { $0.purpose == .race && $0.completion == nil }) { return }
         loadStrengthOption(
             today: today, now: now, profile: profile, assignedRoutine: assignedRoutine, snapshot: snapshot
         )
     }
 
     private func loadRunningPlan(
-        goal: TrainingGoal?, today: CalendarDay, now: Date, runs: [RunActivity], runningBreak: DetectedDeload?
+        goal: TrainingGoal?, today: CalendarDay, now: Date, runs: [RunActivity],
+        runningBreak: DetectedDeload?, runReadFailed: Bool
     ) {
         let running = goal?.running
-        guard running != nil || runningBreak != nil else { return }
-        let schedule = goal?.scheduledRuns ?? []
+        let schedule = goal?.scheduledRuns.filter { !$0.isPostponed } ?? []
         let yesterday = today.adding(days: -1, calendar: calendar).startDate(in: calendar)
         let latestRun = schedule.compactMap(\.completion).filter {
             $0.durationSeconds.isFinite && $0.durationSeconds > 0
@@ -501,12 +513,45 @@ public final class TodayModel {
         }.max { $0.startedAt < $1.startedAt }
         recentRunPain = latestRun?.painDuring == true || latestRun?.painAfter == true
         scheduledRunsToday = schedule.filter { $0.day == today }.map { ScheduledTrainingRow.run($0, format: format) }
+        if keptPlannedRunDay == today { return }
         if let decision = EasyRunAdvisor.advise(
             goal: running, targetDay: goal?.targetDate, schedule: schedule, readiness: readiness, metrics: metrics,
-            runs: runs, now: now, calendar: calendar, runningBreak: runningBreak
+            runs: runReadFailed ? [] : runs, now: now, calendar: calendar,
+            runningBreak: runReadFailed ? nil : runningBreak, strength: goal?.scheduledStrength ?? [],
+            priority: goal?.effectivePriority ?? .balanced, allowEffortOnly: !runReadFailed
         ), decision != .plannedRest {
-            runningOption = RunningOption(goal: running, decision: decision, calendar: calendar, format: format)
+            runningOption = RunningOption(
+                goal: goal, decision: decision, hasRunToday: !scheduledRunsToday.isEmpty,
+                calendar: calendar, format: format
+            )
         }
+    }
+
+    /// Replaces today's planned run with the easy run Today proposed. The entry keeps its identity and dates.
+    public func applyRunningAdjustment(now: Date = .now) async {
+        guard let adjustment = runningOption?.adjustment, let profiles,
+              var profile = try? await profiles.profile(), var goal = profile.goal else { return }
+        var schedule = goal.scheduledRuns
+        let today = CalendarDay(now, calendar: calendar)
+        let tomorrow = today.adding(days: 1, calendar: calendar)
+        guard adjustment.original.day == today, let index = schedule.firstIndex(of: adjustment.original),
+              goal.targetDate.map({ !(today...tomorrow).contains($0) }) ?? true,
+              !schedule.contains(where: { other in
+                  other.id != adjustment.runID && !other.isPostponed
+                      && (other.day == today || (other.day == tomorrow && other.purpose == .race))
+              }) else { return }
+        let updated = adjustment.original.easingTo(minutes: adjustment.minutes)
+        schedule[index] = updated
+        goal.setRunningSchedule(schedule)
+        profile.goal = goal
+        guard (try? await profiles.save(profile)) != nil else { return }
+        await load(now: now)
+    }
+
+    /// Keeps the planned run as scheduled and stops proposing a change for the rest of today. Nothing is saved.
+    public func keepPlannedRun(now: Date = .now) {
+        keptPlannedRunDay = CalendarDay(now, calendar: calendar)
+        runningOption = nil
     }
 
     // MARK: Deload

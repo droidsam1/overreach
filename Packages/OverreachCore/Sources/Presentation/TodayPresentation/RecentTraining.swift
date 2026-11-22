@@ -29,10 +29,10 @@ struct RecentTraining {
     func days(
         in range: ClosedRange<CalendarDay>, through now: Date, metrics: [DailyMetrics], checkIns: [CheckIn],
         runs: [RunActivity], sessions: [StrengthSession], recordings: [RecordedStrengthActivity], exercises: [Exercise],
-        races: [PlannedRunCompletion] = []
+        choices: ActivityMatchChoices = .init(), races: [PlannedRunCompletion] = []
     ) -> [RecentTrainingDay] {
         let workouts = completedActivities(through: now, runs: runs, sessions: sessions, recordings: recordings,
-                                            exercises: exercises, races: races)
+                                            exercises: exercises, choices: choices, races: races)
         let byDay = Dictionary(grouping: workouts) { CalendarDay($0.startedAt, calendar: calendar) }
         let metricsByDay = Dictionary(metrics.map { ($0.day, $0) }, uniquingKeysWith: { first, _ in first })
         let checkInsByDay = Dictionary(checkIns.map { ($0.day, $0) }, uniquingKeysWith: { first, _ in first })
@@ -52,16 +52,20 @@ struct RecentTraining {
 
     private func completedActivities(
         through now: Date, runs: [RunActivity], sessions: [StrengthSession], recordings: [RecordedStrengthActivity],
-        exercises: [Exercise], races: [PlannedRunCompletion]
+        exercises: [Exercise], choices: ActivityMatchChoices, races: [PlannedRunCompletion]
     ) -> [Activity] {
         // Match across the window boundary before grouping. Logged sets are authoritative for matched lifts.
         let completedSessions = sessions.filter { $0.isCompleted(through: now) }
         let completedRecordings = recordings.filter { $0.durationSeconds.isFinite && $0.endedAt <= now }
-        let matched = StrengthActivityMatching.match(sessions: completedSessions, activities: completedRecordings)
+        let matched = StrengthActivityMatching.resolve(
+            sessions: completedSessions, activities: completedRecordings, choices: choices.strength
+        ).matches
         let exerciseByID = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        let runActivities = RunDeduplication.removingDuplicates(runs.filter {
+        let completedRuns = runs.filter {
             $0.durationSeconds.isFinite && $0.startedAt.addingTimeInterval(max(0, $0.durationSeconds)) <= now
-        }).map { run in
+        }
+        let runActivities = RunDeduplication.resolve(completedRuns, choices: choices.runs).runs.map { combined in
+            let run = combined.activity
             let isRace = races.contains { $0.matches(run) }
             let name = run.name ?? L10n.text("Run")
             var activity = activity(

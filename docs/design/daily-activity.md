@@ -105,3 +105,5 @@ Each one names its reason and respects `WalkingRoutine`:
 | 0 — Foundation | Domain types above, `ActivitySource` protocol, ADR-0010. |
 | 2 — v0.2 | Health/Garmin implement `ActivitySource`; walk detection; baselines; walking load into ACWR and leg fatigue; Today shows steps and walks vs baseline; onboarding asks about the walking routine (dog, walks per day, fixed or not). |
 | 3 — Intelligence | Walking recommendations above; simulation; walks in the shareable report. |
+
+Telling dog walks apart with a pet tracker (Tractive) is in [companion walks](companion-walks.md) (ADR-0039).

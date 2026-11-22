@@ -6,10 +6,8 @@ Today should tell the athlete what to do, which signals matter, and how the sugg
 
 ## Continue from here
 
-**Next implementation in this area: running and strength priorities.**
-See [tasks 6–8](#6-add-a-running-objective-to-hybrid-goals) for the remaining work.
-[Priorities](../priorities.md) ranks it against the rest of the open work.
-[Task 3](#3-ask-a-question-that-changes-the-decision) still needs clinical review before release.
+Use [Priorities](../priorities.md) to choose the next implementation. [Task 3](#3-ask-a-question-that-changes-the-decision)
+has an implemented check-in flow with a pending clinical review before release.
 
 ## Shipped baseline
 
@@ -105,7 +103,7 @@ criterion to hybrid goals. Optional goal fields round-trip through backup and ap
 shows progress from explicitly linked recordings and lets the athlete report pain during and after each run.
 Confirmation requires one linked run to satisfy every selected criterion. A timed goal uses the recorded total
 duration. A pain-free goal requires a clear response for both periods. An older link without measured distance can
-still carry a pain report. The running and strength priority control shipped; recommendations do not use it until tasks 7 and 8.
+still carry a pain report. The running and strength priority control shipped; task 8 covers using it in recommendations.
 
 - [x] Can start independently. Extend `TrainingGoal` with optional distance, completion/time target, symptom-free criterion, optional target event/date and running/strength priority. Allow completion plus symptom-free and time plus symptom-free where desired. Add edit and progress surfaces in Plan and an optional onboarding path. Preserve priority lifts. Use recent performance or a recent tolerated run to ground progress and show uncertainty for ambitious targets.
 - **Done when** “finish 5 km”, “run 5 km without pain” and “5 km in 15 min” round-trip in app storage, backup and the relevant versioned plan/context exchange. The last example displays a goal pace of 3:00/km and uses current performance to set training intensity. A pain-free goal tracks athlete-reported symptoms during and after runs and never promises a symptom-free outcome. Old hybrid profiles can continue with no running objective.
@@ -114,23 +112,30 @@ still carry a pain report. The running and strength priority control shipped; re
 
 [#89](https://github.com/droidsam1/overreach/pull/89) supports one manually entered next running day, including a
 race or explicit rest. [#95](https://github.com/droidsam1/overreach/pull/95) adds the multi-day running calendar,
-stable moves and explicit links to completed runs. Dated strength assignments, structured running steps and
-applying proposed changes to the schedule remain open.
+stable moves and explicit links to completed runs. The shared schedule includes dated strength alongside
+structured running entries, with rest, the strength rotation and confirmed run links. [ADR-0040](../adr/0040-structured-running-schedule.md)
+covers the prescription fields, race priority, moves and postponement. Applying proposed changes is task 8.
 
-- [ ] After task 6, add a shared schedule view that preserves the strength rotation. Include dated sessions/rest, undated next items, planned races with priority, completed/adjusted/postponed status and explicit or confirmed links to logged activity. For runs include purpose (easy, long, threshold, intervals, event), duration or distance, optional reps/recovery and an intensity basis (pace, HR zones or perceived effort).
+- [x] After task 6, add a shared schedule view that preserves the strength rotation. Include dated sessions/rest, undated next items, planned races with priority, completed/adjusted/postponed status and explicit or confirmed links to logged activity. For runs include purpose (easy, long, threshold, intervals, event), duration or distance, optional reps/recovery and an intensity basis (pace, HR zones or perceived effort).
 - **Done when** two sessions can share a day, runs and races can be displayed or moved without losing identity, a missed run never implies a completed run, and import/export and restore cover old and new data under ADR-0017/0018. Document calendar and conflict semantics in an ADR before changing persistence.
 
 ### 8. Adjust planned runs and protect nearby sessions
 
 [#89](https://github.com/droidsam1/overreach/pull/89) compares a saved session with a conversational run when
 recovery signals and recent running support it. [#95](https://github.com/droidsam1/overreach/pull/95) extends the
-checks to all running entries through tomorrow. Applying an adjustment and recommendations for combined
-strength and running days remain open.
+checks to all running entries through tomorrow. Today distinguishes race day, keeps a running rest day and
+uses discipline priority on strength/run days. A free-day option opens on request.
 
-- [ ] After tasks 5 and 7, extend the comparison to running and race days. Use duration, effort, repetitions, grade or terrain when relevant and available. Prefer plain cues such as conversational effort. Show zones only when their scale and the athlete's settings are known. With a free day and user intent to train, build from the next run/routine/race and remaining weekly context, or offer a familiar easy option when none exists. Inspect upcoming key sessions before offering a replacement or a move.
+- [x] Compare planned runs with easy alternatives using recent duration and conversational effort. Apply
+  a same-day change in Today or review a move in Plan. Search days two through seven for an empty running slot.
+  Leave a day around other quality runs and races, and around dated strength in balanced and strength-first plans.
 - **Done when** tests include hard intervals → easy, easy → shorter or unchanged, long run → a compatible alternative, race today, race soon, a strength/run double, explicit rest and no plan. Declining or skipping keeps the original schedule. Concrete example doses are configurable heuristics and never override the symptom pathway.
 
 ### 9. Research and validate hybrid planning rules before automating plans
 
-- [ ] Start the research in parallel with tasks 1 and 6. Extend the [evidence review](../evidence-readiness-and-hybrid.md#review-protocol-for-future-rules) and add stable keys to `docs/evidence.md` as rules become implementable. Compare aerobic/strength priorities, acute fatigue, long-term adaptations and tissue-specific exposure. Build templates for completion, symptom-sensitive progression and time goals. Integrate only after tasks 6–8. Start from current training, available days, running volume and intensity distribution, strength priorities and target event. Support phases and taper where relevant, with explicit defaults when evidence does not resolve programming choices.
+- [x] Extend the evidence review with [candidate hybrid planning rules and replay cases](../evidence-readiness-and-hybrid.md#candidate-hybrid-planning-rules)
+  for completion, symptom-sensitive and time goals. Record the evidence keys and distinguish candidate defaults
+  from research findings.
+- [ ] After tasks 6–8, validate the candidates with historical replay and coach and clinician review before
+  integrating automatic planning.
 - **Done when** fixtures cover a new runner aiming to finish 5 km, a returning runner aiming to run pain-free, a competitive 5 km target, a lifter prioritizing strength, and a week with a race and two hard lower-body demands. Every proposed change explains the conflicting sessions and intended adaptation. Validate on historical replay and review with a running coach and a sports clinician before using symptom-sensitive or high-stakes prescriptions. Track missing-data behavior, unnecessary prompts, skipped suggestions and adverse recommendations in review fixtures.

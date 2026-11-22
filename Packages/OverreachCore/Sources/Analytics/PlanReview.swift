@@ -83,6 +83,39 @@ public enum PlanReviewer {
         calendar: Calendar = .current
     ) -> PlanReview? {
         guard let block = PlanSchedule.runningBlock(blocks, today: today, calendar: calendar) else { return nil }
+        let weeks = weeklyCounts(block, sessions: sessions, today: today, current: true, calendar: calendar)
+        let yesterday = today.adding(days: -1, calendar: calendar)
+        let isIll = checkIns.contains { $0.isSick && $0.day >= yesterday && $0.day <= today }
+        let lastDay = sessions.map { CalendarDay($0.startedAt, calendar: calendar) }.filter { $0 <= today }.max()
+        let daysOff = lastDay.map { days(from: $0, to: today, calendar: calendar) }
+        let adjustments = self.adjustments(block: block, weeks: weeks, daysOff: daysOff, isIll: isIll)
+        return PlanReview(block: block, weeks: weeks, adjustments: adjustments)
+    }
+
+    /// Weekly comparison for started blocks with planned routines, newest first.
+    public static func blockProgress(
+        blocks: [TrainingBlock], sessions: [StrengthSession], now: Date, calendar: Calendar = .current
+    ) -> [(block: TrainingBlock, weeks: [PlanWeek])] {
+        let today = CalendarDay(now, calendar: calendar)
+        let declared = blocks.filter(\.isDeclared).sorted { $0.start < $1.start }
+        let completed = sessions.filter { $0.isCompleted(through: now) }
+        return declared.indices.reversed().compactMap { index in
+            let block = declared[index]
+            guard !block.routineIDs.isEmpty, block.start <= today else { return nil }
+            let nextStart = declared.dropFirst(index + 1).first?.start
+            let end = [block.end(calendar: calendar), nextStart].compactMap { $0 }.min()
+            let lastDay = end.map { min(today, $0.adding(days: -1, calendar: calendar)) } ?? today
+            guard lastDay >= block.start else { return nil }
+            let weeks = weeklyCounts(
+                block, sessions: completed, today: lastDay, current: lastDay == today, calendar: calendar
+            )
+            return (block, weeks)
+        }
+    }
+
+    private static func weeklyCounts(
+        _ block: TrainingBlock, sessions: [StrengthSession], today: CalendarDay, current: Bool, calendar: Calendar
+    ) -> [PlanWeek] {
         let rotation = Set(block.routineIDs)
         let counted = sessions.filter { session in
             rotation.isEmpty || session.routineID.map(rotation.contains) ?? false
@@ -95,15 +128,12 @@ public enum PlanReviewer {
             guard day >= block.start, day <= today else { continue }
             doneByWeek[week(of: day, in: block, calendar: calendar), default: 0] += 1
         }
-        let weeks = (1...currentWeek).map { number in
-            PlanWeek(week: number, planned: planned, done: doneByWeek[number] ?? 0, isCurrent: number == currentWeek)
+        return (1...currentWeek).map { number in
+            PlanWeek(
+                week: number, planned: planned, done: doneByWeek[number] ?? 0,
+                isCurrent: current && number == currentWeek
+            )
         }
-        let yesterday = today.adding(days: -1, calendar: calendar)
-        let isIll = checkIns.contains { $0.isSick && $0.day >= yesterday && $0.day <= today }
-        let lastDay = sessions.map { CalendarDay($0.startedAt, calendar: calendar) }.filter { $0 <= today }.max()
-        let daysOff = lastDay.map { days(from: $0, to: today, calendar: calendar) }
-        let adjustments = self.adjustments(block: block, weeks: weeks, daysOff: daysOff, isIll: isIll)
-        return PlanReview(block: block, weeks: weeks, adjustments: adjustments)
     }
 
     /// The plan after accepting `adjustment` for `block`. Extending a block moves the declared blocks after it.

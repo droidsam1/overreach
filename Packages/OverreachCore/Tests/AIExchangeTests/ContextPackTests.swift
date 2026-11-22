@@ -75,6 +75,26 @@ struct ContextPackTests {
         #expect(pack.athlete.goal?.runningSchedule?.map(\.id) == [next.id])
     }
 
+    @Test func postponedRunsAreExportedButAreNotTheNextRun() throws {
+        let day = period.upperBound
+        let prescription = PlannedRun.Prescription(intensityBasis: .perceivedEffort, intensityTarget: 4)
+        let race = PlannedRun(day: day, purpose: .race, prescription: prescription, racePriority: .primary,
+                              postponed: true)
+        let next = PlannedRun(day: day.adding(days: 1, calendar: calendar), purpose: .easy)
+        var goal = TrainingGoal(kind: .hybrid, running: .init(distanceMeters: 5_000))
+        goal.setRunningSchedule([race, next])
+        let input = ContextInput(sessions: [], profile: AthleteProfile(goal: goal), appVersion: "0.1.0")
+        let pack = ContextPackBuilder.build(input, period: period, now: now, calendar: calendar)
+        let entries = try #require(pack.athlete.goal?.runningSchedule)
+
+        let decoded = try ContextMessage.decode(ContextMessage.json(pack))
+        #expect(decoded.athlete.goal?.runningSchedule == entries)
+        #expect(entries.first?.postponed == true)
+        #expect(entries.first?.prescription == prescription)
+        #expect(entries.first?.racePriority == "primary")
+        #expect(pack.athlete.goal?.nextRun?.id == next.id)
+    }
+
     @Test func aChosenPriorityIsSharedAndBalancedIsOmitted() {
         func priority(_ goal: TrainingGoal) -> String? {
             let input = ContextInput(sessions: [], profile: AthleteProfile(goal: goal), appVersion: "0.1.0")

@@ -66,6 +66,7 @@ public final class AskAIModel {
 
     private var json: String?
     private let recordLoader: TrainingRecordLoader
+    private let activityMatchChoices: @MainActor () -> ActivityMatchChoices
     private let profiles: any ProfileRepository
     private let appVersion: String?
     private let clock: @Sendable () -> Date
@@ -83,11 +84,13 @@ public final class AskAIModel {
         recordedStrength: (any RecordedStrengthSource)? = nil,
         activity: [any ActivitySource] = [],
         cycle: (any CycleSource)? = nil,
+        activityMatchChoices: @escaping @MainActor () -> ActivityMatchChoices = { .init() },
         appVersion: String? = nil,
         clock: @escaping @Sendable () -> Date = { Date() },
         calendar: Calendar = .current,
         directory: URL = FileManager.default.temporaryDirectory
     ) {
+        self.activityMatchChoices = activityMatchChoices
         recordLoader = TrainingRecordLoader(
             sources: sources, activity: activity, checkIns: checkIns, workouts: workouts, exercises: exercises,
             recordedStrength: recordedStrength, routines: routines, progression: progression, cycle: cycle
@@ -128,6 +131,11 @@ public final class AskAIModel {
             }
             let assessment = snapshot.assessment(profile: profile, now: now, calendar: calendar)
             let record = snapshot.record
+            let choices = activityMatchChoices()
+            let runs = RunDeduplication.resolve(snapshot.runOriginals, choices: choices.runs).runs
+            let strength = StrengthActivityMatching.resolve(
+                sessions: snapshot.allSessions, activities: snapshot.strengthOriginals, choices: choices.strength
+            ).matches
             let input = ContextInput(
                 sessions: snapshot.allSessions.filter { $0.startedAt >= start },
                 earlierSessions: snapshot.allSessions.filter { $0.startedAt < start },
@@ -137,12 +145,13 @@ public final class AskAIModel {
                 profile: profile,
                 checkIns: snapshot.allCheckIns.filter { $0.day >= first },
                 dailyMetrics: snapshot.metricsBySource.filter { $0.day >= first },
-                runs: record.runs.filter { $0.startedAt >= start },
-                strengthRecordings: record.recordings.filter { $0.startedAt >= start },
+                runs: runs.map(\.activity).filter { (start...now).contains($0.startedAt) },
                 today: .init(assessment),
                 appVersion: appVersion
             )
-            let pack = ContextPackBuilder.build(input, period: first...today, now: now, calendar: calendar)
+            let pack = ContextPackBuilder.build(
+                input, period: first...today, now: now, calendar: calendar, matchedStrength: strength
+            )
             let data = try ContextMessage.json(pack)
             let url = directory.appendingPathComponent("overreach-context-\(today).json")
             try data.write(to: url, options: .atomic)

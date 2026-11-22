@@ -40,6 +40,7 @@ struct RootView: View {
     @State private var whatsNewModel: WhatsNewModel
     @State private var askAIModel: AskAIModel
     @State private var planImportModel: PlanImportModel
+    @State private var suggestedRun: RunningCalendarDraft?
     @State private var selectedTab: AppTab
     @State private var onboardingDestination: OnboardingDestination?
     @State private var showsStrongImport = false
@@ -82,7 +83,7 @@ struct RootView: View {
         _planImportModel = State(initialValue: container.makePlanImportModel())
     }
 
-    private var workoutContinuation: TodayView.WorkoutContinuation? {
+    private var workoutContinuation: TodayModel.WorkoutContinuation? {
         if workoutModel.isSessionActive { return .resume(workoutModel.sessionName) }
         if let name = workoutModel.recoverableWorkoutName { return .resume(name) }
         if workoutModel.needsDraftRecovery { return .reviewDraft }
@@ -96,6 +97,15 @@ struct RootView: View {
         }
     }
 
+    /// Recovery & Progress, with the progress detail from Plan's analysis. `section` opens one detail directly.
+    private func recoveryProgress(section: RecoveryProgressModel.Section?) -> some View {
+        TrendsView(
+            model: recoveryModel, section: section, progressSummary: planModel.progressSummary,
+            onConnectGarmin: { garminModel.start() },
+            progress: { PlanProgressView(model: planModel) }
+        )
+    }
+
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Today", systemImage: "gauge.with.needle", value: AppTab.today) {
@@ -103,8 +113,12 @@ struct RootView: View {
                     model: todayModel, workoutContinuation: workoutContinuation,
                     onOpenTrain: openWorkout, onOpenHistory: { selectedTab = .history },
                     onConnectGarmin: { garminModel.start() },
-                    recoveryHistory: { RecoveryHistoryView(model: planModel) }
+                    recoveryHistory: { PlanProgressView(model: planModel) }
                 )
+                .reviewRunMove { entry, day in
+                    suggestedRun = planModel.reviewRunMove(entry, to: day)
+                    selectedTab = .plan
+                }
                 .settingsButton(
                     isPresented: $showsSettings,
                     badgeCount: exercisesModel.needsMappingCount + backupModel.badgeCount + garminModel.badgeCount
@@ -122,17 +136,20 @@ struct RootView: View {
                 HistoryView(model: historyModel)
             }
             Tab("Plan", systemImage: "list.bullet.clipboard", value: AppTab.plan) {
-                PlanView(model: planModel) {
+                PlanView(model: planModel, suggestedRun: $suggestedRun, assistant: {
                     NavigationLink {
                         AskAIView(model: askAIModel, importer: planImportModel)
                     } label: {
                         Label("Ask AI", systemImage: "bubble.left.and.text.bubble.right")
                     }
-                }
+                }, progress: {
+                    recoveryProgress(section: .progress)
+                })
             }
             Tab("Recovery", systemImage: "heart.text.square", value: AppTab.recovery) {
                 NavigationStack {
-                    TrendsView(model: recoveryModel, onConnectGarmin: { garminModel.start() })
+                    recoveryProgress(section: nil)
+                        .task { await planModel.load() }
                 }
             }
         }

@@ -109,13 +109,13 @@ Rules (heuristics, configurable in `DeloadDetection`):
   more makes the next runs easy (`EasyRunAdvisor`).
 
 Shipped in [ADR-0037](../adr/0037-training-breaks-by-discipline.md). Settings → Training controls automatic
-counting. Plan lists strength and running breaks in Recovery history. A strength break resets the deload interval.
+counting. Progress in Recovery & Progress lists strength and running breaks. A strength break resets the deload interval.
 Long breaks trigger a return period, and lower-load weeks remain available for review.
 
 ### 4. Ask about the latest periods only
 
 - [x] Ask about the two newest unanswered periods that fall entirely within 12 weeks and start after the last
-  strength recovery. Keep the other unanswered periods under **Older periods** in Plan's recovery history.
+  strength recovery. Keep the other unanswered periods under **Older periods** in Progress.
 - [x] Show the dates, recorded strength sessions and runs, and the share of usual weekly working sets when
   comparable set counts are available. Flag incomplete run data. Offer **Yes, it was rest** and **No**.
 - [x] Explain how the answer affects deload timing or, for a running-only period, running recovery history.

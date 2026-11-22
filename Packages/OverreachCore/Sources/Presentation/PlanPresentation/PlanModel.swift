@@ -73,6 +73,7 @@ public final class PlanModel {
     public private(set) var errorMessage: String?
     /// True while the history is being analysed (off the main actor).
     public private(set) var isAnalysing = false
+    public private(set) var importedPlanProgress: [ImportedPlanProgressRow] = []
     public private(set) var isReviewingDeload = false
     private var deloads: [DetectedDeload] = []
     private var recentDeloadQuestions: [DetectedDeload] = []
@@ -105,7 +106,7 @@ public final class PlanModel {
     private let progression: any ProgressionSettingsRepository
     private let routines: (any RoutineRepository)?
     private let clock: @Sendable () -> Date
-    private let calendar: Calendar
+    let calendar: Calendar
     private let runSources: [any MetricsSource]
     private let recordedStrength: (any RecordedStrengthSource)?
 
@@ -144,6 +145,10 @@ public final class PlanModel {
     }
     public let focusOptions: [Option<TrainingFocus>] = Option.trainingFocuses
     public let runningSessionOptions = PlannedRun.Purpose.allCases.map { Option(value: $0, name: $0.displayName) }
+    public let runningIntensityOptions = PlannedRun.IntensityBasis.allCases.map {
+        Option(value: $0, name: $0.displayName)
+    }
+    public let racePriorityOptions = PlannedRun.RacePriority.allCases.map { Option(value: $0, name: $0.displayName) }
     public let priorityOptions = DisciplinePriority.allCases.map { Option(value: $0, name: $0.displayName) }
     public var disciplinePriority: DisciplinePriority { profile.goal?.effectivePriority ?? .balanced }
     /// Only a hybrid goal has two disciplines to rank.
@@ -270,7 +275,11 @@ public final class PlanModel {
             let day = CalendarDay(now, calendar: calendar)
             let start: Date = profile.countsBreaksAutomatically ? .distantPast
                 : day.adding(days: -TrainingRecordLoader.historyDays, calendar: calendar).startDate(in: calendar)
-            let sessions = try await workouts.sessions(from: start, to: now)
+            let firstPlanDay = profile.declaredBlocks.filter {
+                $0.isDeclared && !$0.routineIDs.isEmpty && $0.start <= day
+            }.map(\.start).min()
+            let planStart = firstPlanDay?.startDate(in: calendar) ?? start
+            let sessions = try await workouts.sessions(from: min(planStart, start), to: now)
             errorMessage = nil
             if showsHybridCalendar { await loadCalendarRoutines() }
             await analyse(sessions: sessions, from: start, now: now)
@@ -412,12 +421,20 @@ public final class PlanModel {
         let runs = runReading.activities
         let runReadFailed = runReading.failed
         let recordings = (try? await recordedStrength?.strengthActivities(from: start, to: now)) ?? []
-        let analysis = await Task.detached(priority: .userInitiated) {
-            PlanAnalysis.run(
-                profile: profile, sessions: sessions, exercises: exercises, settings: settings, now: now,
+        let (analysis, blockProgress) = await Task.detached(priority: .userInitiated) {
+            let analysis = PlanAnalysis.run(
+                profile: profile, sessions: sessions.filter { $0.startedAt >= start },
+                exercises: exercises, settings: settings, now: now,
                 runs: runs, routines: routines, runReadFailed: runReadFailed, recordings: recordings, calendar: calendar
             )
+            let progress = PlanReviewer.blockProgress(
+                blocks: profile.declaredBlocks, sessions: sessions, now: now, calendar: calendar
+            )
+            return (analysis, progress)
         }.value
+        importedPlanProgress = blockProgress.map {
+            ImportedPlanProgressRow(block: $0.block, weeks: $0.weeks, calendar: calendar)
+        }
         currentBlock = analysis.currentBlock
         suggestion = analysis.suggestion
         plan = analysis.plan
@@ -480,10 +497,7 @@ extension PlanModel {
             }
             result.painDuring = during
             result.painAfter = after
-            let entry = schedule[index]
-            schedule[index] = PlannedRun(id: entry.id, day: entry.day, purpose: entry.purpose,
-                                         durationMinutes: entry.durationMinutes, distanceMeters: entry.distanceMeters,
-                                         completion: result)
+            schedule[index] = schedule[index].updatingCompletion(result)
             goal.setRunningSchedule(schedule)
             updated.goal = goal
             try await profiles.save(updated)
@@ -513,9 +527,19 @@ extension PlanModel {
         return RunningCalendarDraft(entry: entry, today: clock(), calendar: calendar)
     }
 
+    public func reviewRunMove(_ original: PlannedRun, to day: CalendarDay) -> RunningCalendarDraft {
+        var draft = editRunningEntry(original)
+        draft.moveOriginal = original
+        draft.date = day.startDate(in: calendar)
+        return draft
+    }
+
     public func saveRunningEntry(_ draft: RunningCalendarDraft) async -> Bool {
         guard draft.canSave else { return false }
-        return await updateRunningCalendar(id: draft.id, entry: draft.entry(calendar: calendar), isNew: draft.isNew)
+        return await updateRunningCalendar(
+            id: draft.id, entry: draft.entry(calendar: calendar), isNew: draft.isNew,
+            moveOriginal: draft.moveOriginal
+        )
     }
 
     public func removeRunningEntry(_ id: UUID) async -> Bool {
@@ -552,8 +576,12 @@ extension PlanModel {
         let status: String?
         if entry.completion != nil {
             status = L10n.text("Completed")
+        } else if entry.isPostponed {
+            status = L10n.text("Postponed")
         } else if isPast, entry.purpose != .rest {
             status = L10n.text("No recorded run linked")
+        } else if entry.isAdjusted {
+            status = L10n.text("Rescheduled")
         } else {
             status = nil
         }
@@ -561,16 +589,22 @@ extension PlanModel {
                                   title: entry.calendarTitle(), status: status)
     }
 
-    private func updateRunningCalendar(id: UUID, entry: PlannedRun?, isNew: Bool) async -> Bool {
+    private func updateRunningCalendar(
+        id: UUID, entry: PlannedRun?, isNew: Bool, moveOriginal: PlannedRun? = nil
+    ) async -> Bool {
         guard showsRunningCalendar else { return false }
         return await updateCalendar { goal in
             guard goal.running != nil else { return false }
             var schedule = goal.scheduledRuns
             let index = schedule.firstIndex { $0.id == id }
             if let entry {
+                if let original = moveOriginal,
+                   !canApplyRunMove(original, updated: entry, goal: goal) {
+                    errorMessage = L10n.text("Your schedule has changed. Review the current plan and try again.")
+                    return false
+                }
                 // An edit prepared against an entry that was removed cannot recreate it.
-                guard isNew == (index == nil) else { return false }
-                guard canSchedule(entry, among: schedule) else { return false }
+                guard isNew == (index == nil), canSchedule(entry, among: schedule) else { return false }
                 if let index { schedule[index] = entry } else { schedule.append(entry) }
             } else {
                 guard let index else { return true }
@@ -579,6 +613,13 @@ extension PlanModel {
             goal.setRunningSchedule(schedule)
             return true
         }
+    }
+
+    private func canApplyRunMove(_ original: PlannedRun, updated: PlannedRun, goal: TrainingGoal) -> Bool {
+        let today = CalendarDay(clock(), calendar: calendar)
+        guard original.day == today, goal.scheduledRuns.contains(original),
+              updated.day > today, updated.completion == nil, !updated.isPostponed else { return false }
+        return EasyRunAdvisor.canReschedule(original, to: updated.day, goal: goal, calendar: calendar)
     }
 
     private func updateCalendar(_ change: (inout TrainingGoal) -> Bool) async -> Bool {
@@ -600,7 +641,8 @@ extension PlanModel {
     }
 
     private func canSchedule(_ entry: PlannedRun, among entries: [PlannedRun]) -> Bool {
-        let others = entries.filter { $0.id != entry.id }
+        if entry.isPostponed { return true }
+        let others = entries.filter { $0.id != entry.id && !$0.isPostponed }
         if others.contains(where: { $0.day == entry.day && ($0.purpose == .rest || entry.purpose == .rest) }) {
             errorMessage = L10n.text("A running rest day must be the only entry on that date.")
             return false

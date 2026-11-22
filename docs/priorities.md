@@ -10,31 +10,21 @@ and the logger come before review tools, and work that only a person with an iPh
 
 ## Ready to implement
 
-1. **Finish the stress-aware deload** —
-   [deloads and breaks tasks 8–10](design/deloads-and-breaks.md#8-stress-aware-running-advice): running advice under
-   reported stress, fewer repeat questions, then device and clinical review. Task 7 shipped in
-   [#145](https://github.com/droidsam1/overreach/pull/145).
-2. **One activity log** — [#40](https://github.com/droidsam1/overreach/issues/40), continue with
-   [#88](https://github.com/droidsam1/overreach/issues/88).
-   Correct wrong merges and count every activity once.
-3. **Running priority and the shared schedule** —
-   [hybrid backlog tasks 7–8](design/readiness-and-hybrid-planning.md#7-represent-planned-runs-races-and-dates):
-   structured runs in the shared schedule, then adjusting planned runs. The priority control shipped.
-4. **Planned versus completed work for imported plans** — follow-up of
-   [#34](https://github.com/droidsam1/overreach/issues/34).
-5. **Schedule-first Plan** — [#126](https://github.com/droidsam1/overreach/issues/126). After #125, bring the
-   calendar forward and move retrospective detail to Recovery & Progress as shared break and lift results land.
-6. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).
-7. **Hybrid planning research** —
-   [hybrid backlog task 9](design/readiness-and-hybrid-planning.md#9-research-and-validate-hybrid-planning-rules-before-automating-plans).
-   Runs in parallel. Integrate after the shared schedule work.
-8. **Longer trends** — [#127](https://github.com/droidsam1/overreach/issues/127). After #126, add 30- and
-   90-day views inside the relevant details. Use the activity matching from #40 for combined-source totals.
-9. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
+1. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).
+2. **Dog walks from a pet tracker** — [#154](https://github.com/droidsam1/overreach/issues/154), one task at a time:
+   [#163](https://github.com/droidsam1/overreach/issues/163) (one-tap "With Nanoq?"), then
+   [#159](https://github.com/droidsam1/overreach/issues/159), then the optional GPX backfill:
+   [#158](https://github.com/droidsam1/overreach/issues/158) (parser), then
+   [#165](https://github.com/droidsam1/overreach/issues/165) (guided import) once #164 is done. Design:
+   [companion walks](design/companion-walks.md).
+3. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
 
 ## Needs a person or an iPhone
 
 Agents can prepare these but not finish them.
+
+- Validate hybrid planning candidates with historical replay and coach and clinician review before integrating
+  automatic planning. [Task 9](design/readiness-and-hybrid-planning.md#9-research-and-validate-hybrid-planning-rules-before-automating-plans)
 
 - Data survives re-signing and reinstall — [#11](https://github.com/droidsam1/overreach/issues/11).
 - Real-device review — [#21](https://github.com/droidsam1/overreach/issues/21). Compare the Today decision,
@@ -44,3 +34,5 @@ Agents can prepare these but not finish them.
 - Clinical review of symptom wording —
   [hybrid backlog task 3](design/readiness-and-hybrid-planning.md#3-ask-a-question-that-changes-the-decision).
 - Release v0.1.0 and the beta guide — [#22](https://github.com/droidsam1/overreach/issues/22).
+- Download the Tractive GPX export on an iPhone — [#164](https://github.com/droidsam1/overreach/issues/164). Shapes
+  the guided import (#165).

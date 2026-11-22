@@ -100,6 +100,14 @@ Reviewed 2026-11-21. [Downhill walking trial](https://pubmed.ncbi.nlm.nih.gov/29
 
 ## Progression engine
 
+### `walk-companion-matching` — heuristic
+A tracker's movement window tags a walk the app already has when both overlap by at least 50 % of the shorter one
+(70 % for a low-confidence window from a sparse track) and their starts differ by at most 10 minutes. Each window tags
+one walk (largest overlap, ties to the earlier start); the athlete's own answer always wins. Implemented in
+`CompanionWalkMatching`. The overlap rule is the one used for runs and strength (`RunDeduplication`); the 70 % and
+10 minutes are product heuristics: the phone is often started after leaving home, and a collar reports a position
+every 2–60 minutes. Not a clinical rule. Reviewed 2026-11-22.
+
 ### `first-progression` — heuristic
 Repeat the first session as a starting point. Progressive overload for long-term adaptation can come from
 load or reps. Plotkin et al. compared both in trained lifters over eight weeks and found broadly similar
@@ -388,19 +396,21 @@ Refs: Schwellnus et al. 2022, IOC consensus, Br J Sports Med 56:1066; Snyders et
 
 ### `easy-run-example` — heuristic
 
-For a hybrid running goal, Today can offer conversational running on green or amber days with usable recovery
-data. Green needs recent comparable HRV or sleep. Amber needs an active HRV, resting heart rate or sleep signal.
-Reported severe soreness, red or unknown readiness, a run already completed today, unavailable history, and a
-follow-up date today or tomorrow for an event suppress the example. An explicit running rest day is respected.
-Review multiple due running sessions together in Plan. The advisor checks the whole calendar through tomorrow
-for an event or quality workout and treats an explicitly confirmed link today as completed even during a source outage.
-Green keeps planned quality and long sessions in place. On amber, a dated non-race run can be replaced by the
-suggestion without modifying the saved plan.
+Today can offer conversational running on green or amber days with usable recovery data. Green needs recent
+comparable HRV or sleep. Amber needs an active HRV, resting heart rate or sleep signal. Severe soreness, a symptom
+reason to skip training or a run already completed today suppresses the example. An explicit running rest day is
+respected, and an event today or tomorrow takes precedence. Review multiple due runs in Plan. A confirmed link
+counts as a completed run even during a source outage. Green keeps planned quality and long runs in place.
+The athlete can apply a suggested same-day easy session from Today. Plan rechecks available space before saving
+a suggested move. The search uses an empty running slot two to seven days away and leaves one day on either side
+of a hard run or event. That spacing is a schedule heuristic.
 
 Duration uses the lower median of the last five or fewer measured runs in 28 days, with at least one within 14 days.
 Use three quarters of that duration on amber and cap by the relevant planned duration when available. The example
 is capped at 30 minutes, 20 for a pain-free objective or 15 before a next-day quality or long run, with a 5-minute
-minimum. Goal time is displayed in Plan
+minimum. Balanced and strength-first plans also use the lower cap around dated strength, and put today's strength
+session ahead of an optional run. Without a fresh run or a nearby key session, the optional cue uses familiar
+duration chosen by the athlete. Goal time is displayed in Plan
 as an ambition and never used to set the easy pace. The time limits, cutoffs and goal-specific cap are conservative
 product defaults. Talk-test studies support the intensity cue. HRV-guided endurance research supports considering
 individual changes but does not validate these specific wearable or dosing cutoffs. Reviewed 2026-11-20.
@@ -588,3 +598,26 @@ Consumer wrist devices detect sleep well but agree only fairly to moderately wit
 Exercise-based watch VO2max estimates are acceptable at group level but have wide individual error; resting-based
 ones overestimate. → Shown as a watch estimate to follow as a trend. Refs: Molina-García et al. 2022, Sports Med
 52:1577 (meta-analysis, INTERLIVE). Reviewed 2026-11-20.
+
+## Hybrid plan candidates
+
+### `hybrid-priority-spacing` — heuristic
+
+Check whether hard lower-body work competes with a priority run or lift on the same or an adjacent
+day. Treat the calendar window as a review trigger and use actual timing when available. Try to move
+the lower-priority session to a compatible available slot before proposing reduced work. Concurrent
+training outcomes and acute fatigue studies inform the check. [Evidence and replay cases](evidence-readiness-and-hybrid.md#candidate-hybrid-planning-rules)
+
+### `hybrid-race-taper` — limited
+
+For an athlete with established running exposure, reducing running volume before a priority race
+while retaining familiar intensity is a candidate for review. The evidence spans endurance sports
+and protocols. Specific dates, volumes and adjustments to lifting require validation for this
+population. [Taper meta-analysis](https://doi.org/10.1371/journal.pone.0282838)
+
+### `hybrid-tolerated-exposure` — heuristic
+
+Start with completed comparable work that the athlete reports tolerating. Compare running duration,
+distance and intensity separately from hard lifting sets and impact work. Change one running demand
+at a time as a candidate default. Hold progression when the decision depends on missing exposure
+or symptom information. [Evidence and replay cases](evidence-readiness-and-hybrid.md#candidate-hybrid-planning-rules)

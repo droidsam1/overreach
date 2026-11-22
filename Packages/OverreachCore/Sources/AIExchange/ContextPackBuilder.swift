@@ -58,14 +58,15 @@ public enum ContextPackBuilder {
         """
 
     public static func build(
-        _ input: ContextInput, period: ClosedRange<CalendarDay>, now: Date, calendar: Calendar = .current
+        _ input: ContextInput, period: ClosedRange<CalendarDay>, now: Date, calendar: Calendar = .current,
+        matchedStrength: StrengthActivityMatches? = nil
     ) -> ContextPack {
         let byID = Dictionary(input.exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let name = { (id: UUID) in byID[id]?.name ?? "Unknown exercise" }
         let sessions = input.sessions.sorted { $0.startedAt < $1.startedAt }
-        let watchBySession = StrengthActivityMatching.match(
+        let watchBySession = (matchedStrength ?? StrengthActivityMatching.match(
             sessions: sessions, activities: StrengthActivityMatching.removingDuplicates(input.strengthRecordings)
-        ).bySession
+        )).bySession
 
         var usedIDs = Set(sessions.flatMap { $0.entries.map(\.exerciseID) })
         usedIDs.formUnion(input.routines.flatMap(\.exerciseIDs))
@@ -132,7 +133,9 @@ public enum ContextPackBuilder {
                     } : nil,
                     priority: goal.kind == .hybrid && goal.effectivePriority != .balanced
                         ? goal.effectivePriority.rawValue : nil,
-                    nextRun: schedule.first { $0.day >= today && $0.completion == nil }.map(runningEntry),
+                    nextRun: schedule.first {
+                        $0.day >= today && $0.completion == nil && !$0.isPostponed
+                    }.map(runningEntry),
                     runningSchedule: schedule.isEmpty ? nil : schedule.map(runningEntry)
                 )
             },
@@ -148,7 +151,9 @@ public enum ContextPackBuilder {
     private static func runningEntry(_ entry: PlannedRun) -> ContextPack.NextRun {
         ContextPack.NextRun(id: entry.id, day: entry.day.description, purpose: entry.purpose.rawValue,
                             durationMinutes: entry.durationMinutes, distanceMeters: entry.distanceMeters,
-                            completed: entry.completion != nil)
+                            completed: entry.completion != nil, prescription: entry.prescription,
+                            racePriority: entry.racePriority?.rawValue, originalDay: entry.originalDay?.description,
+                            postponed: entry.postponed)
     }
 
     private static func exerciseInfo(_ exercise: Exercise, settings: ProgressionSettings?) -> ContextPack.ExerciseInfo {

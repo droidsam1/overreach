@@ -46,6 +46,48 @@ struct AskAIModelTests {
         #expect(pack.exerciseTrends.first?.exercise == "Bench Press")
     }
 
+    @Test func exportAppliesCurrentChoicesBeforeFilteringByPeriod() async throws {
+        let calendar = Calendar(identifier: .gregorian)
+        let today = CalendarDay(now, calendar: calendar)
+        let start = today.adding(days: -83, calendar: calendar).startDate(in: calendar)
+        let garmin = RunActivity(id: "garmin", source: .garmin, startedAt: start.addingTimeInterval(-60),
+                                 durationSeconds: 1_800, distanceMeters: 4_000)
+        let health = RunActivity(id: "health", source: .appleHealth, startedAt: start.addingTimeInterval(60),
+                                 durationSeconds: 1_800, distanceMeters: 4_000)
+        let lift = session(daysAgo: 3)
+        let watch = RecordedStrengthActivity(id: "lift", source: .garmin, startedAt: lift.startedAt,
+                                             durationSeconds: 1_800, averageHeartRate: 125)
+        let runPair = RunMatchPair(garminID: garmin.id, appleHealthID: health.id)
+        let liftPair = StrengthMatchPair(sessionID: lift.id, recordingID: StrengthRecordingID(watch))
+        let store = TestStore(exercises: [bench], sessions: [lift])
+        let fixedNow = now
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        var choices = ActivityMatchChoices(runs: [runPair: .linked], strength: [liftPair: .linked])
+        let model = AskAIModel(
+            workouts: store, exercises: store, progression: store, profiles: store, routines: store,
+            sources: [ExportRunSource(garmin), ExportRunSource(health)], recordedStrength: ExportStrengthSource(watch),
+            activityMatchChoices: { choices }, clock: { fixedNow }, calendar: calendar, directory: directory
+        )
+
+        await model.prepare()
+        let linked = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
+        #expect(linked.runs.isEmpty)
+        #expect(linked.sessions.first?.watch?.averageHeartRate == 125)
+
+        choices = ActivityMatchChoices(runs: [runPair: .separate], strength: [liftPair: .separate])
+        await model.prepare()
+        let separated = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
+        #expect(separated.runs.map(\.source) == ["appleHealth"])
+        #expect(separated.sessions.first?.watch == nil)
+        #expect(separated.sessions.first?.exercises.first?.sets.count == 1)
+
+        await model.setPeriod(.sixMonths)
+        let extended = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
+        #expect(extended.runs.count == 2)
+    }
+
     @Test func aLongerPeriodIncludesOlderSessions() async {
         let model = makeModel()
         await model.prepare()
@@ -80,5 +122,28 @@ struct AskAIModelTests {
         #expect(model.periodOptions.map(\.value) == ContextPeriod.allCases)
         #expect(model.periodOptions.allSatisfy { !$0.name.isEmpty })
         #expect(model.requestOptions.count == StarterRequest.allCases.count)
+    }
+}
+
+private struct ExportRunSource: MetricsSource {
+    let run: RunActivity
+    var kind: DataSourceKind { run.source }
+
+    init(_ run: RunActivity) { self.run = run }
+
+    func isAvailable() async -> Bool { true }
+    func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics] { [] }
+    func runs(from start: Date, to end: Date) async throws -> [RunActivity] {
+        (start...end).contains(run.startedAt) ? [run] : []
+    }
+}
+
+private struct ExportStrengthSource: RecordedStrengthSource {
+    let recording: RecordedStrengthActivity
+
+    init(_ recording: RecordedStrengthActivity) { self.recording = recording }
+
+    func strengthActivities(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
+        (start...end).contains(recording.startedAt) ? [recording] : []
     }
 }

@@ -46,3 +46,79 @@ This initial review prioritizes decisions needed for the first implementation. B
 | What mechanical and symptom context can guide decisions? | Bone stress, tendon adaptation, eccentric load, hills, impact, pain monitoring, return to running, load progression and gait retraining. Separate biomechanical surrogate outcomes from soreness, pain, injury, return and performance. |
 
 For each supported finding, extract comparison, effect and uncertainty, population, bias, measurement method and implications for the proposed rule. Record when evidence is indirect or disagrees across populations. For each heuristic, define its parameters, uncertainty, fallback and failure cases. Replay realistic histories and include expert review of cases involving symptoms, races and interacting lower-body demands. Track rule evidence and decision confidence independently in test fixtures and user-facing explanations.
+
+## Candidate hybrid planning rules
+
+A targeted literature update on 2026-11-22 used the concepts `concurrent strength endurance training power`,
+`resistance training acute running economy`, `recreational runners intensity distribution trial`,
+`novice runners distance progression injury` and `running taper performance`. Prefer studies with a
+comparator and a training or performance outcome. Use cohort work to characterize exposure and
+observational elite practice to generate hypotheses. Treat mixed-sport taper evidence, small trained
+samples and evidence from running-only programs as indirect for recreational hybrid athletes.
+
+- **Strength and endurance adaptations.** Concurrent training can develop both capacities. The 2026
+  umbrella review supports combining them in recreational athletes. The earlier pooled explosive
+  strength result supports checking where hard sessions are placed. These findings vary by outcome
+  and establish no minimum separation for an individual. [Umbrella review](https://pubmed.ncbi.nlm.nih.gov/41762427/) · [Schumann et al.](https://pubmed.ncbi.nlm.nih.gov/34757594/)
+- **Acute session quality.** A small within-runner study reported worse next-day high-intensity
+  running after combined strength and endurance sessions, with effects depending on order. Protect
+  key efforts from preceding high lower-body demands. Treat same-day and adjacent-day checks as
+  scheduling heuristics. [Doma and Deakin](https://pubmed.ncbi.nlm.nih.gov/23724883/)
+- **Easy and hard running.** Both groups in a recreational 10 km randomized trial improved under
+  different intensity distributions. Favor familiar easy work for the bulk of the plan and reserve
+  harder work for a specific purpose supported by the athlete's history. Leave zone percentages
+  unset when the intensity basis or coverage is unknown. [Muñoz et al.](https://pubmed.ncbi.nlm.nih.gov/23752040/)
+- **Race preparation.** Pooled endurance studies favor reducing volume and retaining familiar intensity
+  before competition. A small crossover in trained 1500 m runners found variable effects from raising
+  the intensity of the final intervals. Use a volume reduction as the first taper candidate for an
+  athlete with an established schedule and a priority race. Treat timing and the size of the reduction
+  as configuration to validate for each event and training history. [Wang et al.](https://doi.org/10.1371/journal.pone.0282838) · [Spilsbury et al.](https://pubmed.ncbi.nlm.nih.gov/30608885/)
+
+### Template inputs and decisions
+
+Read available training days, the current plan and protected lifts, race date and priority, goal type,
+recent completed runs and strength work, and athlete-reported symptoms. Summarize running time and
+distance, known intensity exposure and the longest recent comparable run. Separately retain hard
+lower-body sets and recorded effort, hills, surface and impact work where known. Mark missing fields
+as unknown. Use the [exposure evidence above](#concurrent-training-and-running-plans) to explain an
+unfamiliar session without producing an injury score or estimating tissue capacity.
+
+1. Keep completed sessions and explicitly protected sessions fixed. Check symptom guidance first.
+   Use the athlete's stated priority to rank an editable run or lift. When priorities are equal or
+   missing and two key sessions collide, ask which to protect before moving either.
+2. Build from sessions the athlete has actually tolerated. Compare duration, distance and effort
+   separately. With sparse history, retain existing commitments and ask for a familiar session before
+   proposing a progression dose. A candidate default is to increase one running demand at a time.
+3. Where a key run or leg session competes with another hard lower-body session on the same or an
+   adjacent day, first look for an available slot for the lower-priority session. Check the new
+   neighbors before offering a move. If none fits, offer to reduce or defer the lower-priority work.
+   Preserve the original calendar until the athlete accepts a change.
+4. Use familiar easy work for a completion goal, preserve stable tolerated exposure for a
+   symptom-sensitive goal, and add event-specific work for a time goal only when recent performance
+   supports its intensity. Derive target pace for display from goal distance and time. Set training
+   pace from current performance. For a priority race with established exposure, offer reduced
+   pre-race volume while retaining familiar effort. With sparse exposure, defer numeric taper targets.
+
+Each candidate change should include the original and proposed slots, competing sessions, the protected
+priority, the intended adaptation, evidence keys and what remains uncertain. The spacing and progression
+defaults above are product heuristics. Keep them explicit in fixtures.
+
+### Cases for historical replay
+
+Use data available before each proposal date. Replay days in order with the saved calendar, source
+coverage and symptoms as then known. Check both the proposed action and its explanation.
+
+| Goal or conflict | Known inputs | Expected first proposal |
+| --- | --- | --- |
+| Finish a first 5 km | Two available running days, a familiar 15-minute walk/run and no recent hard running | Start with the familiar easy session. Progress duration only after comparable sessions are logged and tolerated. |
+| Return to 5 km without pain | Recent tolerated easy outing, next-day symptom report missing | Hold the dose and ask once for relevant symptom context. If pain returns or affects gait, use the symptom pathway and suppress automatic progression. |
+| Race 5 km in 15 minutes | Recent 5 km in 19 minutes and consistent easy running | Display 3:00/km as goal pace. Anchor any quality session to present performance and communicate uncertainty about timing and feasibility. |
+| Preserve priority squat day | Heavy squats Tuesday, low-priority intervals Tuesday, Thursday available with compatible neighbors | Keep squats Tuesday and offer Thursday for intervals. Recheck with Thursday unavailable and expect an easy replacement or deferral. |
+| Priority race and two hard leg sessions | Sunday race, Friday intervals, Saturday heavy legs, both editable, established running schedule | Protect the race. Offer earlier or reduced work after checking available slots and avoid rescheduling both hard sessions together. |
+
+For each case remove run effort, recent history or strength muscle mappings in turn. Replay with a
+duplicated activity, an explicit rest day and a skipped response. Record per case the expected and
+observed action, coverage, unnecessary prompts, skipped proposals and adverse suggestions such as a
+hard session despite reported warning symptoms or a move into another protected slot. Compare against
+the existing schedule behavior. The cases are review fixtures. Running them against actual histories
+and review by a running coach and a sports clinician remain release gates for automatic programming.

@@ -394,7 +394,9 @@ struct TodayWeekTests {
         #expect(model.scheduledStrengthToday?.id == assignment.id)
         #expect(model.scheduledStrengthToday?.title == "Strength · Lower")
         #expect(model.scheduledRunsToday.map(\.id) == [run.id])
-        #expect(model.runningOption?.advice == "Try 30 min at a conversational pace in place of the planned session.")
+        #expect(model.runningOption?.advice == "Try 15 min at a conversational pace in place of the planned session.")
+        #expect(model.runningOption?.adjustment?.original == run)
+        #expect(model.runningOption?.adjustment?.minutes == 15)
         #expect(!model.canRequestStrengthOption)
         let comparison = try #require(model.strengthOption)
         #expect(comparison.heading == nil)
@@ -464,6 +466,57 @@ struct TodayWeekTests {
         #expect(model.strengthOption == nil)
     }
 
+    @Test func appliesTheEasyRunToTodaysPlannedSession() async throws {
+        let today = CalendarDay(now, calendar: calendar)
+        let first = today.adding(days: -2, calendar: calendar)
+        let run = PlannedRun(day: today, purpose: .intervals, durationMinutes: 40, distanceMeters: 8_000,
+                             prescription: .init(repetitions: 6), originalDay: first)
+        let tomorrow = PlannedRun(day: today.adding(days: 1, calendar: calendar), purpose: .long, durationMinutes: 90)
+        var goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000))
+        goal.setRunningSchedule([run, tomorrow])
+        let store = TestStore()
+        try await store.save(AthleteProfile(goal: goal))
+        let source = WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)], activities: [RunActivity(
+            id: "past-run", source: .appleHealth, startedAt: now.addingTimeInterval(-12 * 86_400),
+            durationSeconds: 2_400, distanceMeters: 6_000
+        )])
+        let model = TodayModel(sources: [source], profiles: store, calendar: calendar)
+        await model.load(now: now)
+        let adjustment = try #require(model.runningOption?.adjustment)
+        #expect(adjustment.runID == run.id)
+        #expect(adjustment.applyTitle == "Change to 15 min easy")
+
+        await model.applyRunningAdjustment(now: now)
+
+        let saved = try #require(await store.profile().goal?.scheduledRuns)
+        #expect(saved.map(\.id) == [run.id, tomorrow.id])
+        #expect(saved[0] == PlannedRun(id: run.id, day: today, purpose: .easy, durationMinutes: 15, originalDay: first))
+        #expect(saved[1] == tomorrow)
+        #expect(model.runningOption?.adjustment == nil)
+    }
+
+    @Test func keepingThePlannedRunSavesNothingAndHidesTheProposalForToday() async throws {
+        let today = CalendarDay(now, calendar: calendar)
+        let goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000),
+                                nextRun: PlannedRun(day: today, purpose: .intervals, durationMinutes: 40))
+        let store = TestStore()
+        let profile = AthleteProfile(goal: goal)
+        try await store.save(profile)
+        let source = WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)], activities: [RunActivity(
+            id: "past-run", source: .appleHealth, startedAt: now.addingTimeInterval(-12 * 86_400),
+            durationSeconds: 2_400, distanceMeters: 6_000
+        )])
+        let model = TodayModel(sources: [source], profiles: store, calendar: calendar)
+        await model.load(now: now)
+        #expect(model.runningOption?.adjustment != nil)
+
+        model.keepPlannedRun(now: now)
+        await model.load(now: now)
+
+        #expect(model.runningOption == nil)
+        #expect(await store.profile() == profile)
+    }
+
     @Test func comparesTheConcreteEasyRunWithTodaysHybridPlan() async throws {
         let today = CalendarDay(now, calendar: calendar)
         let store = TestStore()
@@ -481,6 +534,9 @@ struct TodayWeekTests {
         #expect(model.readinessLevel == .amber)
         #expect(model.runningOption?.goal == "Run 5 km in 15:00")
         #expect(model.runningOption?.plan == "Today's running plan · Intervals · 40 min")
+        #expect(model.runningOption?.adjustment?.original == goal.nextRun)
+        #expect(model.runningOption?.adjustment?.minutes == 30)
+        #expect(model.runningOption?.isOptional == false)
         #expect(model.runningOption?.advice == "Try 30 min at a conversational pace in place of the planned session.")
         #expect(try await store.profile().goal == goal)
     }

@@ -47,12 +47,13 @@ struct RecentTrainingTests {
         )
         let inProgress = StrengthSession(name: "Still training", startedAt: now.addingTimeInterval(-300))
         let store = TestStore(exercises: [squat], sessions: [inProgress, lift])
+        var choices = ActivityMatchChoices()
         let model = TodayModel(
             sources: [TimelineSource(kind: .garmin, metrics: [metrics, priorMetrics], runs: [garminRun]),
                       TimelineSource(kind: .appleHealth, runs: [healthCopy])],
             checkIns: TimelineCheckIns(records: [CheckIn(day: yesterday, energy: 4)]),
             workouts: store, exercises: store, recordedStrength: TimelineStrength(recordings: [watchCopy]),
-            calendar: calendar, format: Format(locale: Locale(identifier: "en_US"))
+            activityMatchChoices: { choices }, calendar: calendar, format: Format(locale: Locale(identifier: "en_US"))
         )
 
         await model.load(now: now)
@@ -67,6 +68,17 @@ struct RecentTrainingTests {
         #expect(priorDay.recovery == "HRV (RMSSD) 43 ms · Energy 4/5")
         #expect(priorDay.workouts.count == 1)
         #expect(priorDay.workouts.first?.hasSuffix("Treadmill · 30 min") == true)
+
+        let runPair = RunMatchPair(garminID: garminRun.id, appleHealthID: healthCopy.id)
+        let strengthPair = StrengthMatchPair(sessionID: lift.id, recordingID: StrengthRecordingID(watchCopy))
+        choices = ActivityMatchChoices(runs: [runPair: .separate], strength: [strengthPair: .separate])
+        await model.load(now: now)
+        #expect(model.recentTrainingDays.first?.workouts.count == 3)
+        #expect(model.recentTrainingDays.first?.workouts.filter { $0.contains("Leg working sets 1") }.count == 1)
+
+        choices = ActivityMatchChoices(runs: [runPair: .linked], strength: [strengthPair: .linked])
+        await model.load(now: now)
+        #expect(model.recentTrainingDays.first?.workouts == latest.workouts)
     }
 
     @Test func sourceFailureKeepsAvailableTraining() async throws {

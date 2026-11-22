@@ -7,6 +7,7 @@ extension PlannedRun.Purpose {
         case .easy: L10n.text("Easy run")
         case .intervals: L10n.text("Intervals")
         case .tempo: L10n.text("Tempo run")
+        case .threshold: L10n.text("Threshold run")
         case .long: L10n.text("Long run")
         case .race: L10n.text("Race")
         case .rest: L10n.text("Rest day")
@@ -14,9 +15,28 @@ extension PlannedRun.Purpose {
     }
 }
 
+extension PlannedRun.IntensityBasis {
+    public var displayName: String {
+        switch self {
+        case .pace: L10n.text("Pace")
+        case .heartRateZone: L10n.text("Heart rate zone")
+        case .perceivedEffort: L10n.text("Perceived effort")
+        }
+    }
+}
+
+extension PlannedRun.RacePriority {
+    public var displayName: String {
+        switch self {
+        case .primary: L10n.text("Primary race")
+        case .secondary: L10n.text("Secondary race")
+        }
+    }
+}
+
 extension PlannedRun {
     public func displayName(format: Format = Format()) -> String {
-        var parts = [purpose.displayName]
+        var parts = [racePriority?.displayName ?? purpose.displayName]
         if let distanceMeters, distanceMeters > 0 {
             parts.append(format.number(Double(distanceMeters) / 1_000, maxFractionDigits: 3) + " km")
         }
