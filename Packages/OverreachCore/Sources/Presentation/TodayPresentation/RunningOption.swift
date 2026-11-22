@@ -70,28 +70,37 @@ public struct RunningOption: Hashable, Sendable {
                 ), isOptional: !hasRunToday
             )
         case .example(let minutes, let next, let isToday, let recentRuns):
-            let plan = next.map { Self.planText($0, isToday: isToday, calendar: calendar, format: format) }
-            let reduction = isToday && (next?.purpose != .easy || next?.durationMinutes != minutes)
-            let advice: String
-            if isToday, !reduction {
-                advice = L10n.text("Keep today's planned easy run at a conversational pace.")
-            } else if isToday, next?.purpose == .easy {
-                advice = L10n.format("Keep today's run easy. Try {1} min at a conversational pace.", String(minutes))
-            } else if isToday {
-                advice = L10n.format("Try {1} min at a conversational pace in place of the planned session.", String(minutes))
-            } else {
-                advice = L10n.format("If you want to run today, try {1} min at a conversational pace.", String(minutes))
-            }
-            let anchor = L10n.format("Duration based on {1} recent runs.", String(recentRuns))
-            self.init(
-                goal: title, advice: advice, plan: plan, context: Self.painFreeContext(anchor, goal: goal),
-                evidence: EasyRunAdvisor.evidence, source: "https://pubmed.ncbi.nlm.nih.gov/18277826/",
-                explanation: L10n.text(
-                    "A conversational pace keeps the effort easy. The duration is a coaching estimate."
-                ), adjustment: reduction && goal != nil ? next : nil, adjustmentMinutes: reduction ? minutes : nil,
-                isOptional: !isToday
+            self = Self.example(
+                goal: goal, title: title, example: (minutes, next, isToday, recentRuns), calendar: calendar, format: format
             )
         }
+    }
+
+    private static func example(
+        goal: RunningGoal?, title: String, example: (Int, PlannedRun?, Bool, Int), calendar: Calendar, format: Format
+    ) -> Self {
+        let (minutes, next, isToday, recentRuns) = example
+        let plan = next.map { Self.planText($0, isToday: isToday, calendar: calendar, format: format) }
+        let reduction = isToday && (next?.purpose != .easy || next?.durationMinutes != minutes)
+        let advice: String
+        if isToday, !reduction {
+            advice = L10n.text("Keep today's planned easy run at a conversational pace.")
+        } else if isToday, next?.purpose == .easy {
+            advice = L10n.format("Keep today's run easy. Try {1} min at a conversational pace.", String(minutes))
+        } else if isToday {
+            advice = L10n.format("Try {1} min at a conversational pace in place of the planned session.", String(minutes))
+        } else {
+            advice = L10n.format("If you want to run today, try {1} min at a conversational pace.", String(minutes))
+        }
+        let anchor = L10n.format("Duration based on {1} recent runs.", String(recentRuns))
+        return Self(
+            goal: title, advice: advice, plan: plan, context: Self.painFreeContext(anchor, goal: goal),
+            evidence: EasyRunAdvisor.evidence, source: "https://pubmed.ncbi.nlm.nih.gov/18277826/",
+            explanation: L10n.text(
+                "A conversational pace keeps the effort easy. The duration is a coaching estimate."
+            ), adjustment: reduction && goal != nil ? next : nil, adjustmentMinutes: reduction ? minutes : nil,
+            isOptional: !isToday
+        )
     }
 
     private static func planText(_ next: PlannedRun, isToday: Bool, calendar: Calendar, format: Format) -> String {
