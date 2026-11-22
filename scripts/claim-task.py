@@ -56,7 +56,10 @@ def gh_write(method, path, fields):
             args += ["-f", f"{name}={value}"]
     result = subprocess.run(args, cwd=ROOT, capture_output=True, text=True)
     if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip() or f"gh api {path} failed")
+        # gh prints the API's reason (for example the validation errors of a 422) on stdout.
+        detail = " ".join(part.strip() for part in (result.stderr, result.stdout) if part.strip())
+        raise RuntimeError(f"{detail or f'gh api {path} failed'}\nIf gh cannot open the PR here, open it as a draft "
+                           "with the GitHub tool; its body starts with `Task: <link>`.")
     return json.loads(result.stdout or "{}")
 
 

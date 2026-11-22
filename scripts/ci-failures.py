@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Prints only the errors of failed GitHub Actions runs, grouped by job, instead of the full logs.
+"""Prints only the errors of failed GitHub Actions jobs, grouped by job, instead of the full logs.
+A job that failed counts while its run is still going or was cancelled by a newer push.
 
 Usage: scripts/ci-failures.py [PR number | run id | PR or run URL]
   Without an argument it reads the runs of the current commit (HEAD).
@@ -10,7 +11,7 @@ import subprocess
 import sys
 import time
 
-ERROR = re.compile(r"##\[error\]|\berror:|✘|[Ee]xpectation failed|recorded an issue|Not in the catalog|^FAIL\b")
+ERROR = re.compile(r"##\[error\]|\.swift:\d+: |\berror:|✘|[Ee]xpectation failed|recorded an issue|Not in the catalog|^FAIL\b")
 CONTEXT_LINE = re.compile(r"^\s*\|")
 RUNNER_PATH = re.compile(r"(/__w|/Users/runner/work|/home/runner/work)/overreach/overreach/")
 TIMESTAMP = re.compile(r"^﻿?\d{4}-\d\d-\d\dT[\d:.]+Z ")
@@ -37,7 +38,12 @@ def runs_for_commit(sha):
     pending = [run["workflowName"] for run in runs if run["status"] != "completed"]
     if pending:
         print(f"Still running: {', '.join(pending)}")
-    return [run["databaseId"] for run in runs if run["conclusion"] == "failure"]
+    return [run["databaseId"] for run in runs if run["conclusion"] != "success" and failed_jobs(run["databaseId"])]
+
+
+def failed_jobs(run_id):
+    info = json.loads(gh("run", "view", str(run_id), "--json", "jobs"))
+    return [job for job in info["jobs"] if job["conclusion"] == "failure"]
 
 
 def target_runs(argument):
@@ -58,22 +64,16 @@ def target_runs(argument):
 
 
 def summarize(run_id):
-    info = json.loads(gh("run", "view", str(run_id), "--json", "workflowName,url,jobs"))
+    info = json.loads(gh("run", "view", str(run_id), "--json", "workflowName,url"))
     print(f"== {info['workflowName']} {info['url']}")
-    failed_steps = {
-        job["name"]: [step["name"] for step in job["steps"] if step["conclusion"] == "failure"]
-        for job in info["jobs"] if job["conclusion"] == "failure"
-    }
-    jobs = {}
-    for line in gh("run", "view", str(run_id), "--log-failed").splitlines():
-        parts = line.split("\t", 2)
-        if len(parts) == 3:
-            jobs.setdefault(parts[0], []).append(RUNNER_PATH.sub("", TIMESTAMP.sub("", parts[2])))
-    for job, steps in failed_steps.items():
-        lines = jobs.get(job, [])
+    for job in failed_jobs(run_id):
+        # The job log endpoint works while the rest of the run is still going; `run view --log-failed` does not.
+        log = gh("api", f"repos/{{owner}}/{{repo}}/actions/jobs/{job['databaseId']}/logs")
+        lines = [RUNNER_PATH.sub("", TIMESTAMP.sub("", line)) for line in log.splitlines()]
         errors = [line for line in lines if ERROR.search(line) and not CONTEXT_LINE.match(line)]
         shown = list(dict.fromkeys(errors))[:PER_JOB] or lines[-PER_JOB:]
-        print(f"-- {job} (failed step: {', '.join(steps) or 'unknown'})")
+        steps = [step["name"] for step in job["steps"] if step["conclusion"] == "failure"]
+        print(f"-- {job['name']} (failed step: {', '.join(steps) or 'unknown'})")
         for line in shown:
             print(f"   {line[:400]}")
 

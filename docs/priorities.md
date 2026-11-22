@@ -4,7 +4,8 @@ The order in which to take open work, highest user value first. Take the first i
 no open PR. Claim one task, not a range: an item that lists several tasks or issues in order is claimed one task at a
 time, the first without a PR. `scripts/claim-task.py --next` reads this list: it skips closed and umbrella issues,
 tasks also listed in a later section and tasks written as "once #N is done" while #N is open. When you merge a PR
-that finishes or changes an item, update this list in the same PR.
+that finishes or changes an item, update this list in the same PR. Every item links an issue or a design-doc task
+(`check-repo.py` fails otherwise). `--next --dry-run` reads the list on `origin/main`, not your working copy.
 
 Reviewed 2026-11-22. Value is judged for one hybrid athlete who uses Overreach every day: decisions in Today
 and the logger come before review tools, and work that only a person with an iPhone can do is listed apart.
@@ -12,12 +13,11 @@ and the logger come before review tools, and work that only a person with an iPh
 ## Ready to implement
 
 1. **Coherent daily recommendation after training** — [#202](https://github.com/droidsam1/overreach/issues/202),
-   one task at a time in this order (all touch Today: never in parallel with #181–#185):
-   [#203](https://github.com/droidsam1/overreach/issues/203) (no run after lower-body strength unless planned),
-   [#204](https://github.com/droidsam1/overreach/issues/204) (share the rule with the Assistant and Plan),
-   [#205](https://github.com/droidsam1/overreach/issues/205) (evidence entry and replay case). Shipped in
-   [#201](https://github.com/droidsam1/overreach/pull/201): after a lift or run today Today recommends no second
-   session unless the plan has one.
+   one task at a time: [#204](https://github.com/droidsam1/overreach/issues/204) (share "trained today" and
+   lower-body load with the Assistant and Plan). Shipped: no second session after training
+   ([#201](https://github.com/droidsam1/overreach/pull/201)), no unplanned run after lower-body strength
+   ([#203](https://github.com/droidsam1/overreach/issues/203)), evidence entry
+   ([#205](https://github.com/droidsam1/overreach/issues/205)). Touches Today: never in parallel with #181–#185.
 2. **Minimal UI with progressive disclosure** — [#179](https://github.com/droidsam1/overreach/issues/179)
    ([ADR-0041](adr/0041-minimal-ui-progressive-disclosure.md)), one task at a time in this order:
    [#181](https://github.com/droidsam1/overreach/issues/181) (one pending prompt),

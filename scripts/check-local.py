@@ -61,7 +61,7 @@ def behind(base):
               "(git fetch first).", flush=True)
 
 
-def docker_ready(name):
+def docker_ready(name, quiet=False):
     global _docker_ready
     if _docker_ready is None:
         try:
@@ -69,7 +69,7 @@ def docker_ready(name):
             _docker_ready = result.returncode == 0
         except (OSError, subprocess.TimeoutExpired):
             _docker_ready = False
-    if not _docker_ready:
+    if not _docker_ready and not quiet:
         print(f"FAIL {name} - Docker is not running. Start Docker Desktop (or ask the user to) and run again; "
               "the Docker installation itself needs no debugging.", flush=True)
     return _docker_ready
@@ -141,8 +141,12 @@ def lint(paths, logs, image, base):
         options = ["--quiet", "--no-cache", "--reporter", "github-actions-logging"]
         if shutil.which("swiftlint"):
             status = run_check("swiftlint", ["swiftlint", *options], logs, cwd=staging)
-        elif not docker_ready("swiftlint"):
-            return 1
+        elif not docker_ready("swiftlint", quiet=True):
+            # Without SwiftLint or Docker only line length can be checked; CI runs the full rules.
+            script = [sys.executable, "scripts/new-lint-warnings.py", "--line-length", "--base", base]
+            status = run_check("line-length", script, logs)
+            print("WARN swiftlint - not run: only line length on changed lines was checked; CI runs the full rules.")
+            return status
         else:
             command = ["docker", "run", "--rm", "-v", f"{staging}:/src:ro", "-w", "/src", image, "swiftlint"]
             status = run_check("swiftlint", [*command, *options], logs)
