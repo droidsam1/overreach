@@ -61,6 +61,16 @@ public struct SessionDetail: Sendable {
     public let sourceText: String
 }
 
+/// The latest completed set of an exercise the athlete searched for: "What did I lift last time?"
+public struct LastExerciseResult: Identifiable, Hashable, Sendable {
+    public let sessionID: UUID
+    public let exerciseName: String
+    public let date: Date
+    /// Working sets, as "80 kg × 5 @ 8".
+    public let sets: [String]
+    public var id: UUID { sessionID }
+}
+
 /// A timeline of strength and running, newest first, plus the month calendar.
 @MainActor
 @Observable
@@ -73,7 +83,11 @@ public final class HistoryModel {
     public private(set) var runWarning: String?
     public var activityFilter: HistoryActivityFilter = .all
     public var sourceFilter: DataSourceKind?
+    /// Free text matched against activity names, exercises and sources. Empty means no search.
+    public var searchText = ""
     public var hasFilters: Bool { activityFilter != .all || sourceFilter != nil }
+    public var isSearching: Bool { !SearchText.normalize(searchText).isEmpty }
+    var isFiltering: Bool { hasFilters || isSearching }
 
     public var sourceOptions: [Option<DataSourceKind>] {
         var available = Set(timeline.flatMap { $0.sources })
@@ -261,22 +275,62 @@ public final class HistoryModel {
 
     public func clearRoutineNotice() { routineNotice = nil }
 
-    /// Newest first, with filters applied after matching so a multi-source workout stays a single row.
+    /// Newest first, with filters and search applied after matching so a multi-source workout stays a single row.
     public var rows: [HistoryRow] {
-        guard hasFilters else { return timeline }
+        guard isFiltering else { return timeline }
+        let matched = matchedExerciseIDs
         return timeline.filter { row in
             (activityFilter == .all || row.activityFilter == activityFilter)
                 && (sourceFilter.map { row.sources.contains($0) } ?? true)
+                && matchesSearch(row, exerciseIDs: matched)
         }
     }
 
     public var showsEmptyState: Bool { !isLoading && errorMessage == nil && runWarning == nil && timeline.isEmpty }
 
-    public var showsFilteredEmptyState: Bool { !isLoading && hasFilters && !timeline.isEmpty && rows.isEmpty }
+    public var showsFilteredEmptyState: Bool { !isLoading && isFiltering && !timeline.isEmpty && rows.isEmpty }
 
     public func clearFilters() {
         activityFilter = .all
         sourceFilter = nil
+        searchText = ""
+    }
+
+    /// The most recent completed session with an exercise that matches the search, when one exists.
+    public var lastTime: LastExerciseResult? {
+        guard isSearching, activityFilter != .running else { return nil }
+        let matched = matchedExerciseIDs
+        guard !matched.isEmpty else { return nil }
+        let now = clock()
+        let newestFirst = strengthSessions.sorted { $0.startedAt > $1.startedAt }
+        for session in newestFirst where session.isCompleted(through: now) {
+            for entry in session.entries where matched.contains(entry.exerciseID) {
+                let sets = entry.sets.filter { $0.isWorking && ($0.weightKg != nil || $0.reps != nil) }
+                guard !sets.isEmpty else { continue }
+                return LastExerciseResult(
+                    sessionID: session.id, exerciseName: name(of: entry.exerciseID), date: session.startedAt,
+                    sets: sets.map { Self.describe($0, format: format) }
+                )
+            }
+        }
+        return nil
+    }
+
+    private var matchedExerciseIDs: Set<UUID> {
+        isSearching ? Set(SearchText.filter(catalog, by: searchText).map(\.id)) : []
+    }
+
+    private func matchesSearch(_ row: HistoryRow, exerciseIDs: Set<UUID>) -> Bool {
+        guard isSearching else { return true }
+        switch row {
+        case let .session(summary):
+            return SearchText.matches(searchText, [summary.title] + summary.exerciseNames)
+                || summary.session.entries.contains { exerciseIDs.contains($0.exerciseID) }
+        case let .recording(recording):
+            return SearchText.matches(searchText, [L10n.text("Strength"), recording.source])
+        case let .run(run):
+            return SearchText.matches(searchText, [run.title, run.sourceText, L10n.text("Run")])
+        }
     }
 
     /// Deletes the sessions at `offsets` of `summaries` (swipe to delete).

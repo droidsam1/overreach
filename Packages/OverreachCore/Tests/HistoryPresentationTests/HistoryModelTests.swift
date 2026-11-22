@@ -237,6 +237,43 @@ struct HistoryModelTests {
         #expect(model.rows.count == 2)
     }
 
+    @Test func searchFindsTheLatestGarminRunAndTheLastSetsOfAnExercise() async throws {
+        let older = session("Lower A", daysAgo: 9, sets: [WorkoutSet(weightKg: 90, reps: 5)])
+        let latest = session("Lower B", daysAgo: 2, sets: [
+            WorkoutSet(kind: .warmup, weightKg: 60, reps: 8), WorkoutSet(weightKg: 100, reps: 5, rpe: 8),
+        ])
+        let garmin = RunActivity(
+            id: "g1", source: .garmin, name: "Tempo", startedAt: now.addingTimeInterval(-86_400),
+            durationSeconds: 1_800, distanceMeters: 5_000
+        )
+        let health = RunActivity(
+            id: "h9", source: .appleHealth, startedAt: now.addingTimeInterval(-5 * 86_400),
+            durationSeconds: 1_800, distanceMeters: 5_000
+        )
+        let (model, _) = await model([older, latest], runSources: [
+            TimelineRuns(kind: .garmin, activities: [garmin]), TimelineRuns(kind: .appleHealth, activities: [health]),
+        ])
+
+        #expect(model.lastTime == nil)
+        model.searchText = "  sQuat "
+        let last = try #require(model.lastTime)
+        #expect(last.sessionID == latest.id)
+        #expect(last.exerciseName == "Back Squat")
+        #expect(last.sets == ["100 kg × 5 @ 8"])
+        #expect(model.rows.map(\.id) == [.session(latest.id), .session(older.id)])
+
+        model.searchText = "garmin"
+        #expect(model.lastTime == nil)
+        #expect(model.rows.map(\.id) == [.run("garmin:g1")])
+
+        model.searchText = "deadlift"
+        #expect(model.rows.isEmpty)
+        #expect(model.showsFilteredEmptyState)
+        model.clearFilters()
+        #expect(!model.isSearching)
+        #expect(model.rows.count == 4)
+    }
+
     @Test func aFailedRunSourceLeavesOtherActivitiesVisibleAndShowsAWarning() async {
         let strength = session("Strength", daysAgo: 3, sets: [])
         let run = RunActivity(

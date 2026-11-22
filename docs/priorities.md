@@ -10,7 +10,8 @@ and the logger come before review tools, and work that only a person with an iPh
 
 ## Ready to implement
 
-1. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).
+1. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92). Search and "Last time"
+   shipped; the before/after timing remains a device check in [#21](https://github.com/droidsam1/overreach/issues/21).
 2. **Dog walks from a pet tracker** — [#154](https://github.com/droidsam1/overreach/issues/154), one task at a time:
    [#163](https://github.com/droidsam1/overreach/issues/163) (one-tap "With Nanoq?"), then
    [#159](https://github.com/droidsam1/overreach/issues/159), then the optional GPX backfill:
