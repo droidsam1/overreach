@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today leads with the readiness verdict, its main reason and one action. Start a strength routine, open the
+  run instructions or view Recovery on a rest day. Further reasons are under “Why this recommendation?”.
+
 - The exercise picker in Train and in the routine editor can create an exercise search does not find. The typed
   name is kept, equipment comes from the name ("barra", "mancuernas"…) and muscles from the most similar exercise,
   so most of the time it is one tap on Add. A name that an exercise already answers to offers that one instead.
