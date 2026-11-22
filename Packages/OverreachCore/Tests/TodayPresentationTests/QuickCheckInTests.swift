@@ -74,7 +74,10 @@ struct QuickCheckInTests {
         await model.answerQuickCheckIn(1, now: now)
         #expect(model.quickCheckInNeedsDetails)
 
-        await model.answerQuickCheckIn(4, now: now)
+        await model.answerQuickCheckIn(2, now: now)
+        #expect(model.quickCheckInNeedsDetails)
+
+        await model.answerQuickCheckIn(3, now: now)
         #expect(!model.quickCheckInNeedsDetails)
     }
 

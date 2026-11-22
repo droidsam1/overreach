@@ -86,7 +86,6 @@ public final class PlanModel {
     /// Completed and in-progress strength sessions of the last eight days, for this week's progress.
     private(set) var weekSessions: [StrengthSession] = []
     /// The current week of the declared block with planned routines, when there is one.
-    private(set) var currentPlanWeek: PlanWeek?
 
     // Editable state of the screen.
     /// Whether the goal has a target date. Change it with `setHasTargetDate(_:)`.
@@ -440,7 +439,6 @@ public final class PlanModel {
         }.value
         let weekStart = CalendarDay(now, calendar: calendar).adding(days: -7, calendar: calendar)
         weekSessions = sessions.filter { $0.startedAt >= weekStart.startDate(in: calendar) }
-        currentPlanWeek = blockProgress.lazy.compactMap { $0.weeks.last(where: \.isCurrent) }.first
         importedPlanProgress = blockProgress.map {
             ImportedPlanProgressRow(block: $0.block, weeks: $0.weeks, calendar: calendar)
         }

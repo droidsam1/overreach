@@ -36,6 +36,8 @@ public final class TodayModel {
     /// Today's check-in, once filled in.
     public private(set) var checkIn: CheckIn?
     private var weekProgress: WeekProgress?
+    /// How long today's planned routine usually takes, from its last completed session.
+    private var usualStrengthMinutes: Int?
     /// Set by `answerQuickCheckIn(_:)` when the answer calls for the full check-in; the next answer resets it.
     public internal(set) var quickCheckInNeedsDetails = false
     private var recentRunPain = false
@@ -409,6 +411,19 @@ public final class TodayModel {
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
+    /// Days from `today` to the end of an accepted deload week.
+    private func deloadDays(from today: CalendarDay) -> Set<CalendarDay> {
+        guard case let .inProgress(lastDay, _)? = deloadAdvice?.state else { return [] }
+        let last = CalendarDay(lastDay, calendar: calendar)
+        var days: Set<CalendarDay> = []
+        var day = today
+        while day <= last, days.count < 14 {
+            days.insert(day)
+            day = day.adding(days: 1, calendar: calendar)
+        }
+        return days
+    }
+
     /// The "Your week" card: this week's days, progress and today's session. `nil` without a plan or any training.
     public var yourWeek: TodayWeek? {
         let detail = strengthOption.map { option in
@@ -420,6 +435,7 @@ public final class TodayModel {
             weekProgress,
             today: .init(
                 strength: scheduledStrengthToday, strengthDetail: detail?.isEmpty == false ? detail : nil,
+                strengthMinutes: usualStrengthMinutes,
                 runs: scheduledRunsToday, adjustedRun: runningOption?.adjustment
             ),
             calendar: calendar, format: format
@@ -432,7 +448,7 @@ public final class TodayModel {
     /// Saves the one-tap answer and reloads. When the answer changes the decision (`quickCheckInNeedsDetails`),
     /// the view opens the full check-in next.
     public func answerQuickCheckIn(_ answer: Int, now: Date = .now) async {
-        quickCheckInNeedsDetails = QuickCheckIn.needsDetails(answer)
+        quickCheckInNeedsDetails = QuickCheckIn.needsDetails(answer, settings: readinessSettings)
         await saveQuickCheckIn(answer, now: now)
     }
 
@@ -591,6 +607,7 @@ public final class TodayModel {
         scheduledStrengthToday = nil
         scheduledRunsToday = []
         weekProgress = nil
+        usualStrengthMinutes = nil
         strengthOption = nil
         strengthInputs = nil
         runningOption = nil
@@ -670,6 +687,7 @@ public final class TodayModel {
             .init(
                 strength: goal?.scheduledStrength ?? [], runs: goal?.scheduledRuns ?? [],
                 sessions: snapshot.allSessions, recordedRuns: record.runs, restDays: profile?.restDays ?? [],
+                deloadDays: deloadDays(from: today),
                 currentBlock: PlanSchedule.runningBlock(profile?.declaredBlocks ?? [], today: today, calendar: calendar)
             ),
             now: now, calendar: calendar
@@ -681,6 +699,10 @@ public final class TodayModel {
             ScheduledTrainingRow.strength($0, routine: assignedRoutine, sessions: record.sessions,
                                           now: now, calendar: calendar)
         }
+        usualStrengthMinutes = assignment?.routineID.flatMap { id in
+            record.sessions.filter { $0.routineID == id && $0.isCompleted(through: now) }
+                .max { $0.startedAt < $1.startedAt }?.durationSeconds
+        }.map { max(5, Int((($0 / 60) / 5).rounded()) * 5) }
         let activeRuns = goal?.scheduledRuns.filter { $0.day == today && !$0.isPostponed } ?? []
         tomorrowOutlook = outlook(goal: goal, after: today, routines: record.routines)
         let pendingRuns = activeRuns.filter { $0.completion == nil }
