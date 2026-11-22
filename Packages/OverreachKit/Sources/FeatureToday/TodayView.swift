@@ -114,6 +114,9 @@ public struct TodayView: View {
                     if !model.movementNotes.isEmpty {
                         TodayMovement(model: model)
                     }
+                    if let question = model.dogWalkQuestion {
+                        DogWalkQuestionCard(question: question) { model.answerDogWalk(withDog: $0) }
+                    }
                     if model.showsReadinessCard {
                         if primary != .connectHealth, model.showsConnectHealth {
                             connectHealth(prominent: false)

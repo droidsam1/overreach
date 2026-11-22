@@ -17766,6 +17766,23 @@
         }
       }
     },
+    "Walk on {1}, {2} min": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paseo el {1}, {2} min"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paseo o {1}, {2} min"
+          }
+        }
+      }
+    },
     "Walking": {
       "extractionState": "manual",
       "localizations": {
@@ -18357,6 +18374,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Se rexistras un ciclo natural en Apple Saúde, a VFC e a FC en repouso compáranse coa mesma fase dos teus ciclos anteriores."
+          }
+        }
+      }
+    },
+    "With your dog?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Con tu perro?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Co teu can?"
+          }
+        }
+      }
+    },
+    "With {1}?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Con {1}?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con {1}?"
           }
         }
       }

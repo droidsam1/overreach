@@ -64,6 +64,13 @@ public final class TodayModel {
     private var wearsGarmin = false
     /// Steps and walks against the usual day (ADR-0010): spikes, very low days and recovery walks.
     public private(set) var movementNotes: [MovementNote] = []
+    /// "With Nanoq?" for the latest recent walk nobody has answered yet.
+    public private(set) var dogWalkQuestion: DogWalkQuestion?
+    private var dogWalkAnswers: [WalkCompanionAnswer]
+    private let saveDogWalkAnswers: @MainActor ([WalkCompanionAnswer]) -> Void
+    private var movementActivity: [DailyActivity] = []
+    private var movementRoutine = WalkingRoutine()
+    private var movementNow: Date?
     private var usualSteps: Double?
 
     private let recordLoader: TrainingRecordLoader
@@ -381,10 +388,14 @@ public final class TodayModel {
         recordedStrength: (any RecordedStrengthSource)? = nil, routines: (any RoutineRepository)? = nil,
         progression: (any ProgressionSettingsRepository)? = nil, cycle: (any CycleSource)? = nil,
         activityMatchChoices: @escaping @MainActor () -> ActivityMatchChoices = { .init() },
+        dogWalkAnswers: [WalkCompanionAnswer] = [],
+        saveDogWalkAnswers: @escaping @MainActor ([WalkCompanionAnswer]) -> Void = { _ in },
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
         self.activityMatchChoices = activityMatchChoices
+        self.dogWalkAnswers = dogWalkAnswers
+        self.saveDogWalkAnswers = saveDogWalkAnswers
         recordLoader = TrainingRecordLoader(
             sources: sources, activity: activity, checkIns: checkIns, workouts: workouts, exercises: exercises,
             recordedStrength: recordedStrength, routines: routines, progression: progression, cycle: cycle
@@ -485,7 +496,7 @@ public final class TodayModel {
         }
         let activeRuns = goal?.scheduledRuns.filter { $0.day == today && !$0.isPostponed } ?? []
         updateMovement(
-            record.activity, today: today, profile: profile,
+            record.activity, today: today, now: now, profile: profile,
             schedule: .init(strength: assignment,
                             routine: scheduledStrengthToday?.status == nil ? assignedRoutine : nil,
                             exercises: record.exercises, runs: activeRuns)
@@ -851,8 +862,13 @@ public final class TodayModel {
 
     /// Use activity-source steps for older walking baselines and prefer merged metric steps where available.
     private func updateMovement(
-        _ activity: [DailyActivity], today: CalendarDay, profile: AthleteProfile?, schedule: MovementNote.Schedule
+        _ activity: [DailyActivity], today: CalendarDay, now: Date, profile: AthleteProfile?,
+        schedule: MovementNote.Schedule
     ) {
+        movementActivity = activity
+        movementRoutine = profile?.walkingRoutine ?? WalkingRoutine()
+        movementNow = now
+        updateDogWalkQuestion()
         let baseline = EverydayMovement.baseline(activity, before: today, calendar: calendar)
         usualSteps = baseline.steps
         let signals = EverydayMovement.signals(activity, today: today, calendar: calendar)
@@ -862,6 +878,23 @@ public final class TodayModel {
             routine: profile?.walkingRoutine ?? WalkingRoutine(), today: today, format: format,
             suggestActivity: canSuggestActivity, hasLegSession: schedule.hasLegSession && canSuggestActivity
         )
+    }
+
+    private func updateDogWalkQuestion() {
+        guard let now = movementNow else { return }
+        dogWalkQuestion = DogWalkQuestion.next(
+            activity: movementActivity, answers: dogWalkAnswers, routine: movementRoutine, now: now,
+            in: .init(calendar: calendar, format: format)
+        )
+    }
+
+    /// One tap on Yes or No. The answer is kept for this walk and teaches the usual dog walk times.
+    public func answerDogWalk(withDog: Bool) {
+        guard let question = dogWalkQuestion else { return }
+        dogWalkAnswers.removeAll { $0.key == WalkKey(question.walk) }
+        dogWalkAnswers.append(WalkCompanionAnswer(walk: question.walk, withCompanion: withDog))
+        saveDogWalkAnswers(dogWalkAnswers)
+        updateDogWalkQuestion()
     }
 
     private func has(_ value: (DailyMetrics) -> Double?) -> Bool {
