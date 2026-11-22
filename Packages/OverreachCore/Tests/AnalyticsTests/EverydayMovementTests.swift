@@ -132,4 +132,16 @@ struct EverydayMovementTests {
         let walks = EverydayMovement.removingDuplicateWalks([health, evening, garmin])
         #expect(walks == [garmin, evening])
     }
+
+    @Test func theKeptWalkInheritsTheDroppedCopysCompanionTag() {
+        let garmin = walk(0, minutes: 60, source: .garmin)
+        var health = WalkBout(start: garmin.start.addingTimeInterval(120), durationSeconds: 3_500, source: .appleHealth)
+        health.companion = .dog
+        health.companionSource = .manual
+        let kept = EverydayMovement.removingDuplicateWalks([health, garmin])
+        #expect(kept.count == 1)
+        #expect(kept[0].source == .garmin)
+        #expect(kept[0].companion == .dog)
+        #expect(kept[0].companionSource == .manual)
+    }
 }
