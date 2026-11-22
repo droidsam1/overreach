@@ -188,6 +188,23 @@
         }
       }
     },
+    "14 days ago": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hace 14 días"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hai 14 días"
+          }
+        }
+      }
+    },
     "180 days": {
       "extractionState": "manual",
       "localizations": {
@@ -19228,6 +19245,23 @@
         }
       }
     },
+    "What weighs": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qué pesa"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Que pesa"
+          }
+        }
+      }
+    },
     "What's new in {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -19428,6 +19462,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Por que esta opción de carreira?"
+          }
+        }
+      }
+    },
+    "Why “{1}”?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Por qué «{1}»?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por que «{1}»?"
           }
         }
       }
@@ -21740,6 +21791,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1}, hoxe: {2}"
+          }
+        }
+      }
+    },
+    "{1}, {2}, {3}. Trend over the last 14 days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}, {2}, {3}. Tendencia de los últimos 14 días."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}, {2}, {3}. Tendencia dos últimos 14 días."
           }
         }
       }

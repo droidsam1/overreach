@@ -28,6 +28,8 @@ public struct TodayWhy: Hashable, Sendable {
         public let source: URL?
         /// The usual zone of the load ratio, to draw it as a gauge instead of a night chart.
         public var isGauge: Bool { signal.kind == .load }
+        /// The load ratio to place on the gauge; `nil` for the signals drawn as a night chart.
+        public var gaugeValue: Double? = nil
 
         public var id: TodaySignal.Kind { signal.kind }
     }
@@ -100,7 +102,10 @@ public struct TodayWhy: Hashable, Sendable {
                 cards.append(Card(signal: signal, sentence: line.text, evidence: line.evidence, source: line.source))
             }
             if inputs.signals.load?.isReason == true, let load = TodaySignal.signal(.load, inputs.signals) {
-                cards.append(Card(signal: load, sentence: load.status, evidence: "", source: nil))
+                cards.append(Card(
+                    signal: load, sentence: load.status, evidence: "", source: nil,
+                    gaugeValue: inputs.signals.load?.value
+                ))
                 reasonKinds.insert(.load)
             }
         }
