@@ -13,7 +13,7 @@ struct DogWalkSuggestionTests {
     /// Sunday 2026-11-22 12:00 in Madrid.
     private var now: Date { moment(day: 0, hour: 12) }
 
-    private func at(day offset: Int, hour: Double) -> Date {
+    private func moment(day offset: Int, hour: Double) -> Date {
         let midnight = calendar.startOfDay(for: Date(timeIntervalSince1970: 1_795_305_600))  // 2026-11-22 Madrid
         let base = calendar.date(byAdding: .day, value: offset, to: midnight) ?? midnight
         return calendar.date(byAdding: .minute, value: Int(hour * 60), to: base) ?? base
