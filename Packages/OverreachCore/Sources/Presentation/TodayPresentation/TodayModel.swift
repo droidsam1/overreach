@@ -59,6 +59,10 @@ public final class TodayModel {
     private var trainingReadFailed = false
     private var activeLoad: UUID?
     private var loadedDay: CalendarDay?
+    /// Today was marked as a deliberate rest (ADR-0041, rule 7).
+    public private(set) var restLoggedToday = false
+    /// Tomorrow's planned session, for the calm confirmation after logging rest.
+    private var tomorrowOutlook: String?
     /// Whether a Garmin account is connected (ADR-0022).
     public private(set) var isGarminConnected = false
     /// The person said they use a Garmin (first-run setup).
@@ -114,7 +118,7 @@ public final class TodayModel {
         case startStrength(Routine)
         case runEasy(minutes: Int?)
         case reviewRun
-        case loading, rest, checkIn, deload, retry, connectHealth, connectGarmin, train
+        case loading, rest, restLogged, checkIn, deload, retry, connectHealth, connectGarmin, train
 
         public var title: String? {
             switch self {
@@ -127,6 +131,7 @@ public final class TodayModel {
             case .runEasy(nil): L10n.text("Run easy")
             case .reviewRun: L10n.text("Review today's run")
             case .rest: L10n.text("Rest today")
+            case .restLogged: L10n.text("Undo rest")
             case .checkIn: L10n.text("Check in")
             case .deload: DeloadProposalText.start(steadier: false)
             case .retry: L10n.text("Try again")
@@ -141,9 +146,13 @@ public final class TodayModel {
         workout.map(NextAction.continueWorkout) ?? nextAction
     }
 
-    public var heroTitle: String { readinessAdvice }
+    public var heroTitle: String {
+        nextAction == .restLogged ? L10n.text("Rest logged. Recovery is training too.") : readinessAdvice
+    }
+
     public var heroReason: String {
-        readinessSummary ?? readiness.reasons.first.map { text(for: $0) }
+        if nextAction == .restLogged, let tomorrowOutlook { return tomorrowOutlook }
+        return readinessSummary ?? readiness.reasons.first.map { text(for: $0) }
             ?? L10n.text("No recovery signals call for reducing training today.")
     }
 
@@ -156,6 +165,11 @@ public final class TodayModel {
 
     /// Orders existing actions for the first viewport.
     public var nextAction: NextAction {
+        let action = baseAction
+        return action == .rest && restLoggedToday ? .restLogged : action
+    }
+
+    private var baseAction: NextAction {
         guard loadedDay != nil else { return .loading }
         if readiness.reasons.contains(where: \.advisesSkippingTraining) { return .rest }
         if showsCheckIn, suggestedContextQuestion != nil { return .checkIn }
@@ -561,6 +575,7 @@ public final class TodayModel {
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         hasRunningGoal = goal?.running.map { $0.distanceMeters > 0 } ?? false
         loadedDay = today
+        restLoggedToday = profile?.restDays.contains(today) ?? false
         let weekStart = today.adding(days: -6, calendar: calendar)
         let history = snapshot.record.metrics
         week = history.filter { $0.day >= weekStart }
@@ -610,6 +625,7 @@ public final class TodayModel {
                                           now: now, calendar: calendar)
         }
         let activeRuns = goal?.scheduledRuns.filter { $0.day == today && !$0.isPostponed } ?? []
+        tomorrowOutlook = outlook(goal: goal, after: today, routines: record.routines)
         let pendingRuns = activeRuns.filter { $0.completion == nil }
         let nextSlot = recentWorkouts?.planned ?? recentWorkouts?.rotation?.next
         let strength = nextSlot.flatMap { slot in record.routines.first { $0.id.uuidString == slot.id } }
@@ -632,6 +648,37 @@ public final class TodayModel {
         loadStrengthOption(
             today: today, now: now, profile: profile, assignedRoutine: assignedRoutine, snapshot: snapshot
         )
+    }
+
+    /// "Tomorrow: Strength · Lower" from the plan, when it has something for the next day.
+    private func outlook(goal: TrainingGoal?, after today: CalendarDay, routines: [Routine]) -> String? {
+        let tomorrow = today.adding(days: 1, calendar: calendar)
+        var titles = (goal?.scheduledStrength ?? []).filter { $0.day == tomorrow }.map { assignment in
+            assignment.displayName(
+                routineName: assignment.routineID.flatMap { id in routines.first { $0.id == id }?.name }
+            )
+        }
+        titles += (goal?.scheduledRuns ?? []).filter { $0.day == tomorrow && !$0.isPostponed && $0.purpose != .rest }
+            .map { $0.calendarTitle(format: format) }
+        guard !titles.isEmpty else { return nil }
+        return L10n.format("Tomorrow: {1}", titles.joined(separator: " · "))
+    }
+
+    /// Records today as a deliberate rest. The hero then shows a calm confirmation (ADR-0041, rule 7).
+    public func logRest(now: Date = .now) async {
+        await setRest(true, now: now)
+    }
+
+    public func undoRest(now: Date = .now) async {
+        await setRest(false, now: now)
+    }
+
+    private func setRest(_ rest: Bool, now: Date) async {
+        guard let profiles, var profile = try? await profiles.profile() else { return }
+        let today = CalendarDay(now, calendar: calendar)
+        if rest { profile.logRest(on: today) } else { profile.undoRest(on: today) }
+        guard (try? await profiles.save(profile)) != nil else { return }
+        restLoggedToday = rest
     }
 
     private func trainingAction(

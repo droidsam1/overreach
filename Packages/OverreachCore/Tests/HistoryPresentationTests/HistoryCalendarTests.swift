@@ -103,6 +103,27 @@ struct HistoryCalendarTests {
         try #require(calendar.cells.first { $0.day == day })
     }
 
+    @Test func restDaysGetASubtleMarkAndNoActivity() async throws {
+        let store = TestStore(exercises: [squat])
+        var profile = AthleteProfile()
+        profile.logRest(on: day(17))
+        try await store.save(profile)
+        let model = HistoryModel(
+            workouts: store, exercises: store, routines: store, profiles: store, calendar: calendar, format: format,
+            clock: { now }
+        )
+        await model.load()
+        await model.calendar.load()
+
+        let rest = try cell(day(17), in: model.calendar)
+        #expect(rest.isRest)
+        #expect(!rest.hasStrength && !rest.hasRun)
+        #expect(rest.accessibilityLabel.hasSuffix("Rest day"))
+        #expect(!(try cell(day(18), in: model.calendar)).isRest)
+        model.calendar.select(day(17))
+        #expect(model.calendar.selectedDetail?.emptyText == "Rest day. Recovery is training too.")
+    }
+
     // MARK: Grid
 
     @Test func monthStartingOnSundayHasSixLeadingBlanks() async {

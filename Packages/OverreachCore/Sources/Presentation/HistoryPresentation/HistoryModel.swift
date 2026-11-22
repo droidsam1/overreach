@@ -215,6 +215,7 @@ public final class HistoryModel {
         if let profile = try? await profiles?.profile() {
             effortScale = profile.effortScale
             walkingRoutine = profile.walkingRoutine
+            calendar.restDays = Set(profile.restDays)
         }
         walks = await loadedWalks
         walkLines = EverydayMovement.removingDuplicateWalks(walks).map { walk in

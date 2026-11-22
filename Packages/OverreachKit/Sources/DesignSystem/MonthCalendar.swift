@@ -17,13 +17,14 @@ public struct CalendarDayView: View {
     private let isToday: Bool
     private let isFuture: Bool
     private let isSelected: Bool
+    private let isRest: Bool
 
     @ScaledMetric(relativeTo: .body) private var ringSize: CGFloat = 34
 
     /// - Parameter ringFraction: 0…1, or `nil` for no ring.
     public init(
         number: String, ringFraction: Double?, showsStrength: Bool, showsRun: Bool,
-        isToday: Bool, isFuture: Bool, isSelected: Bool
+        isToday: Bool, isFuture: Bool, isSelected: Bool, isRest: Bool = false
     ) {
         self.number = number
         self.ringFraction = ringFraction
@@ -32,6 +33,7 @@ public struct CalendarDayView: View {
         self.isToday = isToday
         self.isFuture = isFuture
         self.isSelected = isSelected
+        self.isRest = isRest
     }
 
     public var body: some View {
@@ -71,6 +73,9 @@ public struct CalendarDayView: View {
                 Circle().fill(ActivityColor.run)
                     .frame(width: 7, height: 7)
                     .opacity(showsRun ? 1 : 0)
+                if isRest {
+                    Image(systemName: "moon.fill").font(.system(size: 7)).foregroundStyle(.secondary)
+                }
             }
             .accessibilityHidden(true)
         }
