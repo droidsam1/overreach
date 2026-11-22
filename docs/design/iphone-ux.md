@@ -44,6 +44,36 @@ to the Today toolbar. Compare standalone recovery lookup and Settings discovery 
 
 See [Priorities](../priorities.md) for the implementation order.
 
+## Progressive disclosure (ADR-0041)
+
+[ADR-0041](../adr/0041-minimal-ui-progressive-disclosure.md) sets these rules. Tasks:
+[#179](https://github.com/droidsam1/overreach/issues/179).
+
+- **One hero, one verb.** Every Today state except loading has a verdict, one leading reason and one prominent button
+  that names the outcome.
+- **One pending prompt.** At most one secondary prompt on Today, chosen by a pure priority rule.
+- **Two levels.** Level 1: hero, today's plan, pending prompt, link row (**Why · Recovery · History**). Level 2: a
+  pushed screen with evidence, guidance, alternatives and metrics. Today shows at most four blocks.
+- **Ask in context.** Onboarding asks goal and devices. Other questions arrive when their answer changes a
+  recommendation.
+- **Show what the data supports.** A section appears when it has meaningful data; otherwise one line says what
+  unlocks it.
+- **Reward competence, not compulsion.** Immediate feedback where the action happens, celebration for real
+  achievements, real progress through the week and block, rest as a completed action. No streaks, points, badges,
+  leaderboards, variable rewards or guilt wording.
+
+Evidence behind these rules, reviewed **2026-11-22**:
+[choice overload meta-analysis (Chernev et al. 2015)](https://www.kellogg.northwestern.edu/academics-research/research/detail/2015/when-product-assortment-leads-to-choice-overload-a-conceptual/) ·
+[NN/g on progressive disclosure](https://www.nngroup.com/articles/progressive-disclosure/) ·
+[tutorials in games of varying complexity (Andersen et al. 2012)](https://grail.cs.washington.edu/projects/game-abtesting/chi2012/) ·
+[gamification of learning meta-analysis (Sailer & Homner 2020)](https://link.springer.com/article/10.1007/s10648-019-09498-w) ·
+[gamification and intrinsic motivation (2023)](https://link.springer.com/article/10.1007/s11423-023-10337-7) ·
+[STEP UP trial (Patel et al. 2019)](https://pubmed.ncbi.nlm.nih.gov/31498375/) ·
+[broken streaks (INSEAD summary of Silverman & Barasch 2023)](https://knowledge.insead.edu/marketing/consumer-streaks-are-motivating-key-keeping-them-alive) ·
+[endowed progress (Nunes & Drèze 2006)](https://ideas.repec.org/a/oup/jconrs/v32y2006i4p504-512.html) ·
+[dark patterns in social networks (Mildner et al. 2023)](https://arxiv.org/abs/2303.00476) ·
+[wearable composite scores review (2025)](https://www.degruyterbrill.com/document/doi/10.1515/teb-2025-0001/html)
+
 ## Research and evidence
 
 Reviewed **2026-11-20**. The first-party references describe guidelines or published product
@@ -101,6 +131,7 @@ and one-handed use where relevant. [Record results in #21](https://github.com/dr
 ## UI pull request checklist
 
 - [ ] State the frequent user goal, the primary action and the information visible by default.
+- [ ] For Today, list the visible blocks in the changed states; keep within ADR-0041's budget.
 - [ ] For content moved between screens, verify its new route from the original flow.
 - [ ] Name the route to supporting details and describe the relevant empty, error or recovery state.
 - [ ] List how the affected flow was checked. Include the before/after observations or link the

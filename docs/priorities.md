@@ -5,14 +5,25 @@ no open PR. Claim one task, not a range: an item that lists several tasks or iss
 time, the first without a PR (see "Working in parallel" in `AGENTS.md`). When you merge a PR that finishes or changes
 an item, update this list in the same PR.
 
-Reviewed 2026-11-21. Value is judged for one hybrid athlete who uses Overreach every day: decisions in Today
+Reviewed 2026-11-22. Value is judged for one hybrid athlete who uses Overreach every day: decisions in Today
 and the logger come before review tools, and work that only a person with an iPhone can do is listed apart.
 
 ## Ready to implement
 
-1. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92). Search and "Last time"
+1. **Minimal UI with progressive disclosure** — [#179](https://github.com/droidsam1/overreach/issues/179)
+   ([ADR-0041](adr/0041-minimal-ui-progressive-disclosure.md)), one task at a time in this order:
+   [#180](https://github.com/droidsam1/overreach/issues/180) (Today hero),
+   [#181](https://github.com/droidsam1/overreach/issues/181) (one pending prompt),
+   [#182](https://github.com/droidsam1/overreach/issues/182) (level 2 and link row),
+   [#183](https://github.com/droidsam1/overreach/issues/183) (rest day),
+   [#184](https://github.com/droidsam1/overreach/issues/184) (two-step onboarding),
+   [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data),
+   [#187](https://github.com/droidsam1/overreach/issues/187) (progress in Plan). #180–#185 touch Today: never in
+   parallel. [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements) can run in
+   parallel.
+2. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92). Search and "Last time"
    shipped; the before/after timing remains a device check in [#21](https://github.com/droidsam1/overreach/issues/21).
-2. **Dog walks from a pet tracker** — [#154](https://github.com/droidsam1/overreach/issues/154), one task at a time:
+3. **Dog walks from a pet tracker** — [#154](https://github.com/droidsam1/overreach/issues/154), one task at a time:
    [#163](https://github.com/droidsam1/overreach/issues/163) (one-tap "With Nanoq?": the suggestion rules,
    `dogName`, its field in onboarding and Settings, and the Today question with stored answers are done; still to
    do: the History question), then
@@ -20,7 +31,7 @@ and the logger come before review tools, and work that only a person with an iPh
    [#158](https://github.com/droidsam1/overreach/issues/158) (parser), then
    [#165](https://github.com/droidsam1/overreach/issues/165) (guided import) once #164 is done. Design:
    [companion walks](design/companion-walks.md).
-3. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
+4. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
 
 ## Needs a person or an iPhone
 
