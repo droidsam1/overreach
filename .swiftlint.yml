@@ -34,6 +34,13 @@ file_length:
 # Views only render (ADR-0014). SwiftPM does not stop a target importing a transitive dependency, so the
 # boundary is checked here.
 custom_rules:
+  haptics_through_helper:
+    name: "Haptics through the helper"
+    included: ".*/(Packages/OverreachKit/Sources|App/Sources)/.*\\.swift"
+    excluded: ".*/DesignSystem/Haptics\\.swift"
+    regex: "\\.sensoryFeedback\\s*\\("
+    message: "Play haptics with .haptic(_:trigger:when:) so one setting can turn them off (ADR-0041)."
+    severity: error
   no_analytics_in_ui:
     name: "No Analytics in UI"
     included: ".*/(Packages/OverreachKit/Sources/(Feature[^/]+|DesignSystem)/.*|App/Sources/RootView)\\.swift"
