@@ -133,5 +133,9 @@ uses discipline priority on strength/run days. A free-day option opens on reques
 
 ### 9. Research and validate hybrid planning rules before automating plans
 
-- [ ] Start the research in parallel with tasks 1 and 6. Extend the [evidence review](../evidence-readiness-and-hybrid.md#review-protocol-for-future-rules) and add stable keys to `docs/evidence.md` as rules become implementable. Compare aerobic/strength priorities, acute fatigue, long-term adaptations and tissue-specific exposure. Build templates for completion, symptom-sensitive progression and time goals. Integrate only after tasks 6–8. Start from current training, available days, running volume and intensity distribution, strength priorities and target event. Support phases and taper where relevant, with explicit defaults when evidence does not resolve programming choices.
+- [x] Extend the evidence review with [candidate hybrid planning rules and replay cases](../evidence-readiness-and-hybrid.md#candidate-hybrid-planning-rules)
+  for completion, symptom-sensitive and time goals. Record the evidence keys and distinguish candidate defaults
+  from research findings.
+- [ ] After tasks 6–8, validate the candidates with historical replay and coach and clinician review before
+  integrating automatic planning.
 - **Done when** fixtures cover a new runner aiming to finish 5 km, a returning runner aiming to run pain-free, a competitive 5 km target, a lifter prioritizing strength, and a week with a race and two hard lower-body demands. Every proposed change explains the conflicting sessions and intended adaptation. Validate on historical replay and review with a running coach and a sports clinician before using symptom-sensitive or high-stakes prescriptions. Track missing-data behavior, unnecessary prompts, skipped suggestions and adverse recommendations in review fixtures.

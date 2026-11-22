@@ -4098,6 +4098,23 @@
         }
       }
     },
+    "Day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Día"
+          }
+        }
+      }
+    },
     "Daytime HRV": {
       "extractionState": "manual",
       "localizations": {
@@ -5900,6 +5917,23 @@
         }
       }
     },
+    "Garmin's usual range": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rango habitual según Garmin"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rango habitual segundo Garmin"
+          }
+        }
+      }
+    },
     "Get started": {
       "extractionState": "manual",
       "localizations": {
@@ -6988,6 +7022,23 @@
         }
       }
     },
+    "Interval": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intervalo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intervalo"
+          }
+        }
+      }
+    },
     "Intervals": {
       "extractionState": "manual",
       "localizations": {
@@ -7749,6 +7800,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "A última vez: aínda non hai series rexistradas"
+          }
+        }
+      }
+    },
+    "Last {1} days": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimos {1} días"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimos {1} días"
+          }
+        }
+      }
+    },
+    "Last {1} weeks": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimas {1} semanas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimas {1} semanas"
           }
         }
       }
@@ -12853,6 +12938,23 @@
         }
       }
     },
+    "Running distance per week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distancia corrida por semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Distancia corrida por semana"
+          }
+        }
+      }
+    },
     "Running first": {
       "extractionState": "manual",
       "localizations": {
@@ -15029,6 +15131,23 @@
         }
       }
     },
+    "Strength sets per week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series de fuerza por semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series de forza por semana"
+          }
+        }
+      }
+    },
     "Strength training load was well below usual or planned": {
       "extractionState": "manual",
       "localizations": {
@@ -16831,6 +16950,23 @@
         }
       }
     },
+    "Trends": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendencias"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tendencias"
+          }
+        }
+      }
+    },
     "Triceps": {
       "extractionState": "manual",
       "localizations": {
@@ -17358,6 +17494,40 @@
         }
       }
     },
+    "Usual high": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máximo habitual"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máximo habitual"
+          }
+        }
+      }
+    },
+    "Usual low": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mínimo habitual"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mínimo habitual"
+          }
+        }
+      }
+    },
     "Usual target · {1} × {2}": {
       "extractionState": "manual",
       "localizations": {
@@ -17796,6 +17966,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Os adestramentos do reloxo nunca contan dúas veces"
+          }
+        }
+      }
+    },
+    "Week starting": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana que empieza el"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana que comeza o"
           }
         }
       }
@@ -19262,6 +19449,23 @@
         }
       }
     },
+    "sets": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "series"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "series"
+          }
+        }
+      }
+    },
     "sets and reps from the routine": {
       "extractionState": "manual",
       "localizations": {
@@ -19411,6 +19615,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} non puido pedir permiso: {2}"
+          }
+        }
+      }
+    },
+    "{1} days": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} días"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} días"
           }
         }
       }
@@ -20010,6 +20231,40 @@
         }
       }
     },
+    "{1}, last {2} days: average {3}, from {4} to {5}, latest {6} on {7}. {8} of {9} days have a reading.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}, últimos {2} días: media {3}, de {4} a {5}, último {6} el {7}. {8} de {9} días tienen lectura."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}, últimos {2} días: media {3}, de {4} a {5}, último {6} o {7}. {8} de {9} días teñen lectura."
+          }
+        }
+      }
+    },
+    "{1}, last {2} weeks: {3} in the latest week, {4} on average, most {5}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}, últimas {2} semanas: {3} la última semana, {4} de media, máximo {5}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}, últimas {2} semanas: {3} a última semana, {4} de media, máximo {5}."
+          }
+        }
+      }
+    },
     "{1}: no heavy sets (≤ 6 reps near your max) in {2} days. 1RM strength needs heavy loads.": {
       "extractionState": "manual",
       "localizations": {
@@ -20023,6 +20278,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1}: sen series pesadas (≤ 6 repeticións preto do teu máximo) en {2} días. A forza máxima precisa cargas altas."
+          }
+        }
+      }
+    },
+    "{1}: no readings in the last {2} days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}: sin lecturas en los últimos {2} días."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}: sen lecturas nos últimos {2} días."
+          }
+        }
+      }
+    },
+    "{1}: nothing recorded in the last {2} weeks.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}: nada registrado en las últimas {2} semanas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}: nada rexistrado nas últimas {2} semanas."
           }
         }
       }

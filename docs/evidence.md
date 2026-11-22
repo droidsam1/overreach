@@ -590,3 +590,26 @@ Consumer wrist devices detect sleep well but agree only fairly to moderately wit
 Exercise-based watch VO2max estimates are acceptable at group level but have wide individual error; resting-based
 ones overestimate. → Shown as a watch estimate to follow as a trend. Refs: Molina-García et al. 2022, Sports Med
 52:1577 (meta-analysis, INTERLIVE). Reviewed 2026-11-20.
+
+## Hybrid plan candidates
+
+### `hybrid-priority-spacing` — heuristic
+
+Check whether hard lower-body work competes with a priority run or lift on the same or an adjacent
+day. Treat the calendar window as a review trigger and use actual timing when available. Try to move
+the lower-priority session to a compatible available slot before proposing reduced work. Concurrent
+training outcomes and acute fatigue studies inform the check. [Evidence and replay cases](evidence-readiness-and-hybrid.md#candidate-hybrid-planning-rules)
+
+### `hybrid-race-taper` — limited
+
+For an athlete with established running exposure, reducing running volume before a priority race
+while retaining familiar intensity is a candidate for review. The evidence spans endurance sports
+and protocols. Specific dates, volumes and adjustments to lifting require validation for this
+population. [Taper meta-analysis](https://doi.org/10.1371/journal.pone.0282838)
+
+### `hybrid-tolerated-exposure` — heuristic
+
+Start with completed comparable work that the athlete reports tolerating. Compare running duration,
+distance and intensity separately from hard lifting sets and impact work. Change one running demand
+at a time as a candidate default. Hold progression when the decision depends on missing exposure
+or symptom information. [Evidence and replay cases](evidence-readiness-and-hybrid.md#candidate-hybrid-planning-rules)
