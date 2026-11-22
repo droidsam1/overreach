@@ -6529,6 +6529,23 @@
         }
       }
     },
+    "High": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alto"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alto"
+          }
+        }
+      }
+    },
     "History": {
       "extractionState": "manual",
       "localizations": {
@@ -8548,6 +8565,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tirada longa"
+          }
+        }
+      }
+    },
+    "Low": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bajo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baixo"
           }
         }
       }
@@ -18272,6 +18306,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "VO2máx"
+          }
+        }
+      }
+    },
+    "Value": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valor"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valor"
           }
         }
       }
