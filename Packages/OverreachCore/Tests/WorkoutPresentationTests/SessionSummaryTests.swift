@@ -35,7 +35,8 @@ struct SessionSummaryTests {
         #expect(summary.adherence == "On target or better in 1 of 1 exercises.")
         #expect(summary.comparison?.hasPrefix("Volume +22 % compared with the last “Workout”") == true)
         #expect(summary.achievements.first?.hasPrefix("Bench Press: New best estimated 1RM:") == true)
-        #expect(summary.achievements.last == "Bench Press: Most volume ever in one session: 1,980 kg (before 1,620 kg).")
+        #expect(summary.achievements.last
+            == "Bench Press: Most volume ever in one session: 1,980 kg (before 1,620 kg).")
         let row = try #require(summary.rows.first)
         #expect(row.outcome == .above)
         #expect(row.outcomeText == "Above target: 60 kg × 11/11/11 vs 60 kg × 9/9/9")
@@ -51,7 +52,9 @@ struct SessionSummaryTests {
     @Test func aSessionWithoutRecordsHasNoAchievements() async throws {
         let earlier = StrengthSession(
             name: "Workout", startedAt: now.addingTimeInterval(-3 * 86_400),
-            entries: [ExerciseEntry(exerciseID: bench.id, sets: [9, 9, 9].map { WorkoutSet(weightKg: 60, reps: $0, rpe: 8) })]
+            entries: [ExerciseEntry(
+                exerciseID: bench.id, sets: [9, 9, 9].map { WorkoutSet(weightKg: 60, reps: $0, rpe: 8) }
+            )]
         )
         let store = TestStore(exercises: [bench], sessions: [earlier])
         let fixedNow = now
@@ -69,7 +72,8 @@ struct SessionSummaryTests {
 
         let summary = try #require(model.summary)
         #expect(summary.achievements.isEmpty)
-        #expect(summary.rows.first?.details.contains { $0.hasPrefix("New best") || $0.hasPrefix("Most") } == false)
+        let details = try #require(summary.rows.first?.details)
+        #expect(!details.contains { $0.hasPrefix("New best") || $0.hasPrefix("Most") })
         model.summary = nil
         #expect(model.summary == nil)
     }
