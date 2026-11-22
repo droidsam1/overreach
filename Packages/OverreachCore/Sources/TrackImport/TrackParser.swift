@@ -124,30 +124,44 @@ private final class TrackParserDelegate: NSObject, XMLParserDelegate {
         }
         let name = Self.local(elementName)
         let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        switch (format, name) {
-        case (.gpx, "time") where inTrackPoint:
+        switch format {
+        case .gpx: endGPX(name, value)
+        case .kml: endKML(name, value)
+        case nil: break
+        }
+    }
+
+    private func endGPX(_ name: String, _ value: String) {
+        switch name {
+        case "time" where inTrackPoint:
             gpxTime = timeParser.date(value)
-        case (.gpx, "trkpt"):
+        case "trkpt":
             inTrackPoint = false
             emit(time: gpxTime, position: gpxPoint)
-        case (.kml, "when") where inTrack:
+        default: break
+        }
+    }
+
+    private func endKML(_ name: String, _ value: String) {
+        switch name {
+        case "when" where inTrack:
             whens.append(timeParser.date(value))
-        case (.kml, "coord") where inTrack:
+        case "coord" where inTrack:
             coords.append(Self.spaceSeparated(value))
-        case (.kml, "Track"):
+        case "Track":
             inTrack = false
             for index in 0..<max(whens.count, coords.count) {
                 emit(
                     time: index < whens.count ? whens[index] : nil, position: index < coords.count ? coords[index] : nil
                 )
             }
-        case (.kml, "when") where inPlacemark:
+        case "when" where inPlacemark:
             placemarkTime = timeParser.date(value)
-        case (.kml, "coordinates") where inPlacemark && inPoint:
+        case "coordinates" where inPlacemark && inPoint:
             placemarkPosition = Self.commaSeparated(value)
             if placemarkPosition == nil { placemarkTime = nil }
-        case (.kml, "Point"): inPoint = false
-        case (.kml, "Placemark"):
+        case "Point": inPoint = false
+        case "Placemark":
             inPlacemark = false
             // A placemark with neither a time nor a point (a folder name, a route) is not a point.
             if placemarkTime != nil || placemarkPosition != nil {

@@ -100,9 +100,8 @@ enum MovementDetection {
     private static func joined(_ runs: [Run], in track: [TrackPoint]) -> [Run] {
         var result: [Run] = []
         for run in runs {
-            if var last = result.last,
-                track[run.firstIndex].time.timeIntervalSince(track[last.lastIndex].time) <= joinGap
-            {
+            let runStart = track[run.firstIndex].time
+            if var last = result.last, runStart.timeIntervalSince(track[last.lastIndex].time) <= joinGap {
                 last.lastIndex = run.lastIndex
                 last.distance += run.distance
                 result[result.count - 1] = last

@@ -103,7 +103,9 @@ struct TrackImportTests {
         #expect(madrid.windows == utc.windows)
         #expect(newYork.windows == utc.windows)
 
-        let fractional = String(decoding: TrackFixtures.gpx(points), as: UTF8.self)
+        let text = try #require(String(bytes: TrackFixtures.gpx(points), encoding: .utf8))
+        let fractional =
+            text
             .replacingOccurrences(of: "Z</time>", with: ".250Z</time>")
         let result = try TrackImport.read(Data(fractional.utf8))
         #expect(result.windows.count == 1)
@@ -113,13 +115,10 @@ struct TrackImportTests {
     // MARK: - Bad input
 
     @Test("Malformed XML is a typed error")
-    func malformed() {
-        let truncated = Data(
-            String(
-                decoding: TrackFixtures.gpx(TrackFixtures.walk(from: origin, duration: 600, interval: 30)),
-                as: UTF8.self
-            ).dropLast(40).utf8)
-        #expect(throws: TrackImportError.malformed) { try TrackImport.read(truncated) }
+    func malformed() throws {
+        let full = TrackFixtures.gpx(TrackFixtures.walk(from: origin, duration: 600, interval: 30))
+        let truncated = full.dropLast(40)
+        #expect(throws: TrackImportError.malformed) { try TrackImport.read(Data(truncated)) }
         #expect(throws: TrackImportError.malformed) { try TrackImport.read(Data("not xml at all".utf8)) }
         #expect(throws: TrackImportError.malformed) { try TrackImport.read(Data()) }
     }
