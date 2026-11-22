@@ -8,7 +8,7 @@ import TodayPresentation
 struct TodaySignalTests {
     private let calendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "UTC")!
+        calendar.timeZone = .gmt
         return calendar
     }()
     private let today = CalendarDay(year: 2026, month: 11, day: 20)
@@ -51,8 +51,8 @@ struct TodaySignalTests {
         #expect(signals.allSatisfy { !$0.isLeading && $0.tone == .green })
         #expect(signals[0].value == "50")
         #expect(signals[0].trend.count == 14)
-        #expect(signals[0].trend.last! == 50)
-        #expect(signals[0].trend.first! == nil)
+        #expect(signals[0].trend.last == .some(50))
+        #expect(signals[0].trend.first == .some(nil))
     }
 
     @Test func amberLedByHRVPutsHRVFirstAndLeading() {

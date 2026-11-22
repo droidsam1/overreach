@@ -172,7 +172,9 @@ public struct TodaySignal: Hashable, Sendable, Identifiable {
             kind: .restingHeartRate, title: L10n.text("Resting HR"),
             value: inputs.format.number(value, maxFractionDigits: 0), unit: L10n.text("bpm"), status: status,
             // For resting heart rate, higher than the baseline is the unfavourable side.
-            tone: tone(outcome.map { $0 == .above ? .below : .within }, leading: leading, level: inputs.readiness.level),
+            tone: tone(
+                outcome.map { $0 == .above ? .below : .within }, leading: leading, level: inputs.readiness.level
+            ),
             isLeading: leading, trend: trend(inputs, today: today) { $0.restingHeartRate }, band: nil
         )
     }
