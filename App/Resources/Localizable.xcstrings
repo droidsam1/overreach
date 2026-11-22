@@ -375,6 +375,23 @@
         }
       }
     },
+    "A bit high": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algo alta"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algo alta"
+          }
+        }
+      }
+    },
     "A block uses the routine “{1}”, which is not in the plan or in your routines.": {
       "extractionState": "manual",
       "localizations": {
@@ -630,6 +647,23 @@
         }
       }
     },
+    "Above your baseline": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↑ Sobre tu base"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↑ Sobre a túa base"
+          }
+        }
+      }
+    },
     "Above your usual range": {
       "extractionState": "manual",
       "localizations": {
@@ -660,6 +694,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Por riba do teu intervalo habitual."
+          }
+        }
+      }
+    },
+    "Above your usual week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por encima de tu semana habitual"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por riba da túa semana habitual"
           }
         }
       }
@@ -4217,6 +4268,23 @@
         }
       }
     },
+    "Days trained this week: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Días entrenados esta semana: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Días adestrados esta semana: {1}"
+          }
+        }
+      }
+    },
     "Daytime HRV": {
       "extractionState": "manual",
       "localizations": {
@@ -5101,6 +5169,23 @@
         }
       }
     },
+    "Easy run · {1} min": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera suave · {1} min"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira suave · {1} min"
+          }
+        }
+      }
+    },
     "Edit": {
       "extractionState": "manual",
       "localizations": {
@@ -5543,6 +5628,23 @@
         }
       }
     },
+    "Exercises: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejercicios: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercicios: {1}"
+          }
+        }
+      }
+    },
     "Exhausted": {
       "extractionState": "manual",
       "localizations": {
@@ -5879,6 +5981,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "De {1}"
+          }
+        }
+      }
+    },
+    "Further reading": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más lectura"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis lectura"
           }
         }
       }
@@ -6529,6 +6648,23 @@
         }
       }
     },
+    "High": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alto"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alto"
+          }
+        }
+      }
+    },
     "History": {
       "extractionState": "manual",
       "localizations": {
@@ -7175,6 +7311,23 @@
         }
       }
     },
+    "In your range": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En tu rango"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No teu rango"
+          }
+        }
+      }
+    },
     "Intensity basis": {
       "extractionState": "manual",
       "localizations": {
@@ -7770,6 +7923,23 @@
         }
       }
     },
+    "Last night": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anoche"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Onte pola noite"
+          }
+        }
+      }
+    },
     "Last session · {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -8331,6 +8501,23 @@
         }
       }
     },
+    "Load": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga"
+          }
+        }
+      }
+    },
     "Load increment": {
       "extractionState": "manual",
       "localizations": {
@@ -8552,6 +8739,23 @@
         }
       }
     },
+    "Low": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bajo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baixo"
+          }
+        }
+      }
+    },
     "Low energy in today's check-in ({1}/5).": {
       "extractionState": "manual",
       "localizations": {
@@ -8582,6 +8786,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pouca enerxía ou agulletas en {1} rexistros diarios esta semana."
+          }
+        }
+      }
+    },
+    "Lower than usual": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más baja de lo habitual"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis baixa do habitual"
           }
         }
       }
@@ -8939,6 +9160,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Máis estrés do habitual"
+          }
+        }
+      }
+    },
+    "More: sleep, stress, pain…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más: sueño, estrés, dolor…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis: sono, estrés, dor…"
           }
         }
       }
@@ -10473,6 +10711,40 @@
         }
       }
     },
+    "Nothing planned": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada previsto"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada previsto"
+          }
+        }
+      }
+    },
+    "Nothing planned this week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada previsto esta semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada previsto esta semana"
+          }
+        }
+      }
+    },
     "Nothing recorded on this day.": {
       "extractionState": "manual",
       "localizations": {
@@ -11234,6 +11506,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Planea {1} sesións por semana en vez de {2}."
+          }
+        }
+      }
+    },
+    "Planned": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsto"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsto"
           }
         }
       }
@@ -12649,6 +12938,23 @@
         }
       }
     },
+    "Rest logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descanso registrado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descanso rexistrado"
+          }
+        }
+      }
+    },
     "Rest logged. Recovery is training too.": {
       "extractionState": "manual",
       "localizations": {
@@ -13342,6 +13648,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Detalles da carreira"
+          }
+        }
+      }
+    },
+    "Run done": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera hecha"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira feita"
           }
         }
       }
@@ -15114,6 +15437,23 @@
         }
       }
     },
+    "Sources and coverage": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuentes y cobertura"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fontes e cobertura"
+          }
+        }
+      }
+    },
     "Stalled": {
       "extractionState": "manual",
       "localizations": {
@@ -15573,6 +15913,23 @@
         }
       }
     },
+    "Strength and run done": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuerza y carrera hechas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forza e carreira feitas"
+          }
+        }
+      }
+    },
     "Strength athletes report taking lighter weeks roughly every five to six weeks.": {
       "extractionState": "manual",
       "localizations": {
@@ -15603,6 +15960,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Día de forza"
+          }
+        }
+      }
+    },
+    "Strength done": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuerza hecha"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forza feita"
           }
         }
       }
@@ -17562,6 +17936,23 @@
         }
       }
     },
+    "Training that counts": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamiento que cuenta"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramento que conta"
+          }
+        }
+      }
+    },
     "Trends": {
       "extractionState": "manual",
       "localizations": {
@@ -18272,6 +18663,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "VO2máx"
+          }
+        }
+      }
+    },
+    "Value": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valor"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valor"
           }
         }
       }
@@ -19959,6 +20367,23 @@
         }
       }
     },
+    "bpm": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "lpm"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ppm"
+          }
+        }
+      }
+    },
     "coaching heuristic": {
       "extractionState": "manual",
       "localizations": {
@@ -19972,6 +20397,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "heurística de adestramento"
+          }
+        }
+      }
+    },
+    "h": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "h"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "h"
           }
         }
       }
@@ -20142,6 +20584,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "evidencia moderada"
+          }
+        }
+      }
+    },
+    "ms": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ms"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ms"
           }
         }
       }
@@ -20384,6 +20843,40 @@
         }
       }
     },
+    "{1} block · week {2} of {3}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloque de {1} · semana {2} de {3}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloque de {1} · semana {2} de {3}"
+          }
+        }
+      }
+    },
+    "{1} completed": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · sesión completada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · sesión completada"
+          }
+        }
+      }
+    },
     "{1} completed / {2} planned": {
       "extractionState": "manual",
       "localizations": {
@@ -20448,6 +20941,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} días desde a túa última sesión. Mantén o plan e volve pouco a pouco."
+          }
+        }
+      }
+    },
+    "{1} h vs week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} h vs semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} h vs semana"
           }
         }
       }
@@ -20639,6 +21149,23 @@
         }
       }
     },
+    "{1} of {2} sessions": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} de {2} sesiones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} de {2} sesións"
+          }
+        }
+      }
+    },
     "{1} of {2} sessions done this week": {
       "extractionState": "manual",
       "localizations": {
@@ -20652,6 +21179,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} de {2} sesións feitas esta semana"
+          }
+        }
+      }
+    },
+    "{1} readings": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} lecturas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} lecturas"
           }
         }
       }
@@ -21030,6 +21574,57 @@
         }
       }
     },
+    "{1} · today completes this week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · hoy completas la semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · hoxe completas a semana"
+          }
+        }
+      }
+    },
+    "{1} · today completes this week's running": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · hoy completas el running de la semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · hoxe completas o running da semana"
+          }
+        }
+      }
+    },
+    "{1} · today completes this week's strength": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · hoy completas la fuerza de la semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · hoxe completas a forza da semana"
+          }
+        }
+      }
+    },
     "{1} · week {2}": {
       "extractionState": "manual",
       "localizations": {
@@ -21132,6 +21727,23 @@
         }
       }
     },
+    "{1}, today: {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}, hoy: {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}, hoxe: {2}"
+          }
+        }
+      }
+    },
     "{1}: no heavy sets (≤ 6 reps near your max) in {2} days. 1RM strength needs heavy loads.": {
       "extractionState": "manual",
       "localizations": {
@@ -21217,6 +21829,23 @@
         }
       }
     },
+    "~{1} min": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "~{1} min"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "~{1} min"
+          }
+        }
+      }
+    },
     "“{1}” is already in your routines.": {
       "extractionState": "manual",
       "localizations": {
@@ -21247,6 +21876,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "“{1}” xa o usa {2}."
+          }
+        }
+      }
+    },
+    "↓ Below your baseline": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↓ Bajo tu base"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↓ Baixo a túa base"
           }
         }
       }

@@ -48,6 +48,8 @@ See [Priorities](../priorities.md) for the implementation order.
 
 [ADR-0041](../adr/0041-minimal-ui-progressive-disclosure.md) sets these rules. Tasks:
 [#179](https://github.com/droidsam1/overreach/issues/179).
+[ADR-0042](../adr/0042-visual-today.md) renders Today as cards under the same rules: see
+[Visual Today](today-visual.md).
 
 - **One hero, one verb.** Every Today state except loading has a verdict, one leading reason and one prominent button
   that names the outcome.

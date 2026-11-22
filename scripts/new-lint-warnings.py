@@ -2,7 +2,10 @@
 """Fails when SwiftLint reports a warning on a line this branch changed. Older warnings are only counted.
 
 Reads SwiftLint output in the github-actions-logging format (from a file or stdin).
+With --line-length it needs no SwiftLint: it checks only the line length of changed Swift lines, the one rule a
+machine without Docker can still enforce.
 Usage: swiftlint --reporter github-actions-logging | scripts/new-lint-warnings.py [--base origin/main] [LOG]
+       scripts/new-lint-warnings.py --line-length [--base origin/main]
 """
 import argparse
 import re
@@ -14,6 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DIAGNOSTIC = re.compile(r"^::(warning|error) file=([^,]+),line=(\d+)(?:,col=\d+)?::(.*)$")
 HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
 SOURCE_ROOTS = ("Packages/", "App/Sources/")
+LINE_LENGTH = 120  # `line_length: warning` in .swiftlint.yml
 
 
 def git(*args):
@@ -46,13 +50,31 @@ def relative(path):
     return path[min(starts):] if starts else path
 
 
+def long_lines(changed):
+    """SwiftLint-style diagnostics for changed Swift lines over LINE_LENGTH characters."""
+    for path, lines in sorted(changed.items()):
+        if not path.endswith(".swift") or not path.startswith(SOURCE_ROOTS):
+            continue
+        file = ROOT / path
+        if not file.is_file():
+            continue
+        for number, text in enumerate(file.read_text(encoding="utf-8-sig").splitlines(), 1):
+            if len(text) > LINE_LENGTH and (lines is None or number in lines):
+                yield (f"::warning file={path},line={number}::Line should be {LINE_LENGTH} characters or less; "
+                       f"currently it has {len(text)} characters (line_length)")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base", default="origin/main")
+    parser.add_argument("--line-length", action="store_true", help="check line length only, without SwiftLint")
     parser.add_argument("log", nargs="?")
     args = parser.parse_args()
-    output = Path(args.log).read_text(encoding="utf-8", errors="replace") if args.log else sys.stdin.read()
     changed = changed_lines(args.base)
+    if args.line_length:
+        output = "\n".join(long_lines(changed))
+    else:
+        output = Path(args.log).read_text(encoding="utf-8", errors="replace") if args.log else sys.stdin.read()
     new, existing = [], 0
     for line in output.splitlines():
         if not (match := DIAGNOSTIC.match(line.strip())):

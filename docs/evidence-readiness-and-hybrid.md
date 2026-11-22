@@ -115,6 +115,7 @@ coverage and symptoms as then known. Check both the proposed action and its expl
 | Race 5 km in 15 minutes | Recent 5 km in 19 minutes and consistent easy running | Display 3:00/km as goal pace. Anchor any quality session to present performance and communicate uncertainty about timing and feasibility. |
 | Preserve priority squat day | Heavy squats Tuesday, low-priority intervals Tuesday, Thursday available with compatible neighbors | Keep squats Tuesday and offer Thursday for intervals. Recheck with Thursday unavailable and expect an easy replacement or deferral. |
 | Priority race and two hard leg sessions | Sunday race, Friday intervals, Saturday heavy legs, both editable, established running schedule | Protect the race. Offer earlier or reduced work after checking available slots and avoid rescheduling both hard sessions together. |
+| Legs lifted, no run planned | Heavy squats yesterday or any leg work today, no run in the plan, easy running recently tolerated | Offer no extra run and say why. Recheck with a dated easy run today and expect it kept, shortened, with a spacing note. With running as the priority, expect no change. |
 
 For each case remove run effort, recent history or strength muscle mappings in turn. Replay with a
 duplicated activity, an explicit rest day and a skipped response. Record per case the expected and

@@ -72,14 +72,10 @@ A new capability (nutrition, another watch) is a new data module plus a new feat
 
 ## Before you write code
 
-Read the sections of [CODING_STANDARDS.md](CODING_STANDARDS.md) for what you touch. The ones that cost the most
-rework when missed:
-
-- iPhone flows and navigation follow the [iPhone UX guide](docs/design/iphone-ux.md).
-- Views only render; logic and texts live in the presentation model ([Presentation](CODING_STANDARDS.md#presentation-adr-0014)).
-- Recommendation rules start from current evidence in `docs/evidence.md` ([Recommendations](CODING_STANDARDS.md#recommendations-adr-0012)).
-- Persisted types stay readable by older backups ([Stored data](CODING_STANDARDS.md#stored-data-adr-0018)).
-- User-facing strings go through the String Catalog in en, es and gl ([Localization](CODING_STANDARDS.md#localization-adr-0015)).
+Read the sections of [CODING_STANDARDS.md](CODING_STANDARDS.md) for what you touch; Presentation, Recommendations,
+Stored data and Localization cost the most rework when missed. iPhone flows and navigation follow the
+[iPhone UX guide](docs/design/iphone-ux.md). Changing the Today recommendation: start from
+[how Today decides](docs/design/today-flow.md).
 
 ## Working in parallel
 
@@ -90,36 +86,39 @@ Several agents work at once, each in its own branch or worktree.
   <branch>`. Pass a link instead of `--next` for a task the user names, `--none "<reason>"` for other user requests.
   The oldest claim keeps a task: when `scripts/check-task-claim.py` (in `check-local.py` and CI) says another PR
   claimed it first, close yours and run `--next`. When resuming a feature after a merge, check the previous PR.
+  Where `claim-task.py` cannot open the PR (a cloud session without a working `gh`), open a draft PR with the
+  GitHub tool whose body starts with `Task: <link>`.
+- Planning or researching work for later: an umbrella issue plus one issue per task, an ADR when it decides
+  architecture, and each task linked from [Priorities](docs/priorities.md). A plan that lives only in a document
+  cannot be claimed.
 - A PR's branch belongs to the session that opened it. To update or merge someone else's PR, ask that session or the
   user; work on your own branch instead.
-- ADR numbers: take the highest number on `origin/main` plus one, and re-check after rebasing. `check-repo.py`
-  fails on duplicates.
-- `CHANGELOG.md` merges with git's union driver; `*.xcstrings` merges per key with `scripts/merge-xcstrings.py`,
-  which `scripts/check-local.py` registers in the repository's git config.
-- After resolving a String Catalog conflict by hand, run `python3 scripts/check-localization.py --fix`.
+- ADR numbers: take the highest number on `origin/main` plus one, and re-check after rebasing.
+- `CHANGELOG.md` and `*.xcstrings` have merge drivers that `scripts/check-local.py` registers. After resolving a
+  String Catalog conflict by hand, run `python3 scripts/check-localization.py --fix`.
 - Commits and PR titles use Conventional Commits with a scope, as in `feat(plan): …` or `fix(history): …`.
-- For implementation requests, open a PR and merge it after its checks pass, unless the user asks otherwise.
+- For implementation requests, open a PR and merge it after its checks pass when the user asked for the merge or the
+  session allows it; otherwise report the green PR and wait.
 - One task per session: once its PR merges, end with the summary and leave the next task to a new session. Every
   call re-reads the whole conversation, so a long one makes each step dearer; for the same reason, send long output
   (full test runs, builds, logs) to a file and read only the failures.
 
 ## Commands
 
-Before opening or updating a PR, run the compact local check: `python3 scripts/check-local.py`
-(Windows: `py -3 scripts/check-local.py`). It runs the repository rules, then picks translations, SwiftLint
-(no new warnings on changed lines) and the core tests from the diff against `origin/main` (`--base origin/<branch>`
-for another base), and prints a log path. CI runs the same rules plus the Apple packages and the simulator build;
-read its failures with `scripts/ci-failures.py`, not the raw logs.
+Before opening or updating a PR, run `python3 scripts/check-local.py` (Windows: `py -3 scripts/check-local.py`). It
+checks what the diff against `origin/main` touches and prints a log path; without Docker it checks line length only.
+CI also runs the Apple packages and the simulator build; read its failures with `scripts/ci-failures.py`, not the
+raw logs.
 
 ```bash
-python3 scripts/check-local.py [--fix-eol]             # local check; --fix-eol rewrites CRLF working copies as LF
-python3 scripts/ci-failures.py [PR | run id | URL]     # errors of failed CI runs, by job (default: HEAD's runs)
-python3 scripts/check-repo.py                         # ADRs, frozen backup fixture, release notes, skills, links
-python3 scripts/claim-task.py --next [--dry-run]      # claim the first free task: branch + draft PR, race-safe
-python3 scripts/check-task-claim.py                   # no older PR claims this branch's task; what landed on main
+python3 scripts/check-local.py [--base origin/<branch>] [--fix-eol]   # local check
+python3 scripts/ci-failures.py [PR | run id | URL]     # errors of failed CI jobs, by job (default: HEAD's runs)
+python3 scripts/check-repo.py                          # repository rules (ADRs, evidence keys, priorities, skills)
+python3 scripts/claim-task.py --next [--dry-run]       # claim the first free task: branch + draft PR, race-safe
+python3 scripts/check-task-claim.py                    # no older PR claims this branch's task
 python3 scripts/check-localization.py [--fix]          # translations; --fix rewrites catalogs in canonical form
 python3 scripts/add-strings.py --template | <file> | --prune   # missing keys as JSON; add es+gl; drop unused
-python3 scripts/session-usage.py [--days N]            # tokens and estimated cost of each agent session, from local logs
+python3 scripts/session-usage.py [--days N]            # tokens and estimated cost of each agent session
 swift test --package-path Packages/OverreachCore       # pure-Swift core (macOS and Linux)
 ./scripts/test-core.sh                                 # same in Docker (or scripts/test-core.ps1 on Windows)
 swift build --package-path Packages/OverreachKit       # Apple-framework modules (macOS)
@@ -132,12 +131,8 @@ cd App && xcodegen generate && open Overreach.xcodeproj
 
 ## Skills
 
-Shared skills live in `.agents/skills/` (Codex) with identical copies in `.claude/skills/` (Claude Code);
-`check-repo.py` keeps them in sync.
-
-- **review** — review a diff or PR against the coding standards.
-- **retro** — retrospective of agent sessions that proposes guide, check and tooling changes. Run when asked.
-- **writing-for-agents** — style for anything agents read: this file, `CODING_STANDARDS.md`, skills and docs.
+Shared skills live in `.agents/skills/` (Codex) with identical copies in `.claude/skills/` (Claude Code):
+review, retro and writing-for-agents. Use writing-for-agents when editing this file.
 
 ## Known constraints
 
@@ -147,4 +142,3 @@ Shared skills live in `.agents/skills/` (Codex) with identical copies in `.claud
   never goes into backups, reports or logs. Rate limits are unpublished: throttle and back off.
 - iOS background refresh is not guaranteed: sync on app launch/foreground.
 - Minimum iOS 18 (ADR-0007).
-- UI work without a Mac has no simulator or previews: keep views thin so logic is testable in `OverreachCore`.

@@ -35,6 +35,11 @@ public final class TodayModel {
     public private(set) var accessError: String?
     /// Today's check-in, once filled in.
     public private(set) var checkIn: CheckIn?
+    private var weekProgress: WeekProgress?
+    /// How long today's planned routine usually takes, from its last completed session.
+    private var usualStrengthMinutes: Int?
+    /// Set by `answerQuickCheckIn(_:)` when the answer calls for the full check-in; the next answer resets it.
+    public internal(set) var quickCheckInNeedsDetails = false
     private var recentRunPain = false
     public private(set) var recentTrainingDays: [RecentTrainingDay] = []
     public private(set) var scheduledStrengthToday: ScheduledTrainingRow?
@@ -62,7 +67,8 @@ public final class TodayModel {
     /// Today was marked as a deliberate rest (ADR-0041, rule 7).
     public private(set) var restLoggedToday = false
     /// Tomorrow's planned session, for the calm confirmation after logging rest.
-    private var tomorrowOutlook: String?
+    private var tomorrowSessions: [TodayDone.NextSession] = []
+    private var completedSessions: [TodayDone.Session] = []
     /// Whether a Garmin account is connected (ADR-0022).
     public private(set) var isGarminConnected = false
     /// The person said they use a Garmin (first-run setup).
@@ -156,9 +162,24 @@ public final class TodayModel {
     }
 
     public var heroReason: String {
-        if nextAction == .restLogged || nextAction == .trainedToday, let tomorrowOutlook { return tomorrowOutlook }
+        if nextAction == .restLogged || nextAction == .trainedToday, !tomorrowSessions.isEmpty {
+            let titles = tomorrowSessions.map { [$0.title, $0.detail].compactMap { $0 }.joined(separator: " · ") }
+            return L10n.format("Tomorrow: {1}", titles.joined(separator: " · "))
+        }
         return readinessSummary ?? readiness.reasons.first.map { text(for: $0) }
             ?? L10n.text("No recovery signals call for reducing training today.")
+    }
+
+    public var doneToday: TodayDone? {
+        switch nextAction {
+        case .restLogged:
+            TodayDone(title: L10n.text("Rest logged"), sessions: [], tomorrow: tomorrowSessions)
+        case .trainedToday:
+            TodayDone(title: completedSessions.first?.title ?? heroTitle, sessions: completedSessions,
+                      tomorrow: tomorrowSessions)
+        default:
+            nil
+        }
     }
 
     public func primaryActionTitle(continuing workout: WorkoutContinuation? = nil) -> String? {
@@ -406,6 +427,47 @@ public final class TodayModel {
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
+    /// Days from `today` to the end of an accepted deload week.
+    private func deloadDays(from today: CalendarDay) -> Set<CalendarDay> {
+        guard case let .inProgress(lastDay, _)? = deloadAdvice?.state else { return [] }
+        let last = CalendarDay(lastDay, calendar: calendar)
+        var days: Set<CalendarDay> = []
+        var day = today
+        while day <= last, days.count < 14 {
+            days.insert(day)
+            day = day.adding(days: 1, calendar: calendar)
+        }
+        return days
+    }
+
+    /// The "Your week" card: this week's days, progress and today's session. `nil` without a plan or any training.
+    public var yourWeek: TodayWeek? {
+        let detail = strengthOption.map { option in
+            [L10n.format("Exercises: {1}", option.exerciseRows.count), option.exerciseRows.first.map {
+                "\($0.title) \($0.suggestion)"
+            }].compactMap { $0 }.joined(separator: " · ")
+        }
+        return TodayWeek.make(
+            weekProgress,
+            today: .init(
+                strength: scheduledStrengthToday, strengthDetail: detail?.isEmpty == false ? detail : nil,
+                strengthMinutes: usualStrengthMinutes,
+                runs: scheduledRunsToday, adjustedRun: runningOption?.adjustment
+            ),
+            calendar: calendar, format: format
+        )
+    }
+
+    /// The one-tap feeling scale of the check-in prompt, in the order and with the values the check-in stores.
+    public var quickCheckIn: [Option<Int>] { quickCheckInOptions() }
+
+    /// Saves the one-tap answer and reloads. When the answer changes the decision (`quickCheckInNeedsDetails`),
+    /// the view opens the full check-in next.
+    public func answerQuickCheckIn(_ answer: Int, now: Date = .now) async {
+        quickCheckInNeedsDetails = QuickCheckIn.needsDetails(answer, settings: readinessSettings)
+        await saveQuickCheckIn(answer, now: now)
+    }
+
     /// The check-in sheet for today. After it saves, call `load()` to update the light.
     public func makeCheckInModel(now: Date = .now) -> CheckInModel? {
         guard let checkIns else { return nil }
@@ -413,6 +475,30 @@ public final class TodayModel {
         return CheckInModel(
             day: today, existing: checkIn?.day == today ? checkIn : nil, checkIns: checkIns, backup: backup,
             contextQuestion: loadedDay == today ? suggestedContextQuestion : nil
+        )
+    }
+
+    /// The signal tiles of the hero: at most three, chosen by `TodaySignal.signals`. Empty until a load finishes.
+    public var signals: [TodaySignal] {
+        TodaySignal.signals(
+            .init(
+                today: loadedDay, metrics: metrics, nights: recentNights, readiness: readiness,
+                load: deloadAdvice?.loadSignal, calendar: calendar, format: format
+            )
+        )
+    }
+
+    /// The level-2 Why screen. `readinessLines` stays available for VoiceOver and the Assistant context.
+    public var why: TodayWhy {
+        TodayWhy.make(
+            .init(
+                signals: .init(
+                    today: loadedDay, metrics: metrics, nights: recentNights, readiness: readiness,
+                    load: deloadAdvice?.loadSignal, calendar: calendar, format: format
+                ),
+                lines: readinessLines, trainingContext: readinessTrainingContext, sources: readinessSources,
+                coverageNote: hrvCoverageNote
+            )
         )
     }
 
@@ -550,6 +636,8 @@ public final class TodayModel {
         isLoading = true
         scheduledStrengthToday = nil
         scheduledRunsToday = []
+        weekProgress = nil
+        usualStrengthMinutes = nil
         strengthOption = nil
         strengthInputs = nil
         runningOption = nil
@@ -616,13 +704,23 @@ public final class TodayModel {
         )
         let today = range.upperBound
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
+        let training = snapshot.dayTraining(profile: profile, now: now, calendar: calendar)
         loadRunningPlan(
             goal: goal, today: today, now: now, runs: record.runs,
             runningBreak: runningBreak, runReadFailed: record.runReadFailed,
-            lowerBody: snapshot.dayTraining(profile: profile, now: now, calendar: calendar).lowerBody
+            lowerBody: training.lowerBody
         )
         loadWorkoutContext(today: today, profile: profile, record: record)
         updateDeloadSession()
+        weekProgress = WeekProgress.make(
+            .init(
+                strength: goal?.scheduledStrength ?? [], runs: goal?.scheduledRuns ?? [],
+                sessions: snapshot.allSessions, recordedRuns: record.runs, restDays: profile?.restDays ?? [],
+                deloadDays: deloadDays(from: today),
+                currentBlock: PlanSchedule.runningBlock(profile?.declaredBlocks ?? [], today: today, calendar: calendar)
+            ),
+            now: now, calendar: calendar
+        )
 
         let assignment = goal?.scheduledStrength.first { $0.day == today }
         let assignedRoutine = assignment?.routineID.flatMap { id in record.routines.first { $0.id == id } }
@@ -630,20 +728,28 @@ public final class TodayModel {
             ScheduledTrainingRow.strength($0, routine: assignedRoutine, sessions: record.sessions,
                                           now: now, calendar: calendar)
         }
+        usualStrengthMinutes = assignment?.routineID.flatMap { id in
+            record.sessions.filter { $0.routineID == id && $0.isCompleted(through: now) }
+                .max { $0.startedAt < $1.startedAt }?.durationSeconds
+        }.map { max(5, Int((($0 / 60) / 5).rounded()) * 5) }
         let activeRuns = goal?.scheduledRuns.filter { $0.day == today && !$0.isPostponed } ?? []
-        tomorrowOutlook = outlook(goal: goal, after: today, routines: record.routines)
+        tomorrowSessions = TodayDone.outlook(
+            goal: goal, tomorrow: today.adding(days: 1, calendar: calendar), routines: record.routines, format: format
+        )
         let pendingRuns = activeRuns.filter { $0.completion == nil }
         let nextSlot = recentWorkouts?.planned ?? recentWorkouts?.rotation?.next
         let strength = nextSlot.flatMap { slot in record.routines.first { $0.id.uuidString == slot.id } }
-        let training = snapshot.dayTraining(profile: profile, now: now, calendar: calendar)
         let strengthDone = training.hasStrength
-        let runDone = training.hasRun
         heroTrainingAction = trainingAction(
             strength: strengthDone ? nil : strength, strengthRest: assignment != nil && assignment?.routineID == nil,
             runs: pendingRuns, priority: goal?.effectivePriority ?? .balanced,
-            trainedToday: strengthDone || runDone,
+            trainedToday: training.hasTrained,
             strengthPlanned: !strengthDone && assignment?.routineID != nil
         )
+        completedSessions = heroTrainingAction == .trainedToday ? TodayDone.completedSessions(
+            record, plannedRuns: activeRuns, effortScale: profile?.effortScale ?? .rpe,
+            today: calendar.startOfDay(for: now)...now, format: format
+        ) : []
         updateMovement(
             snapshot, today: today, now: now, profile: profile,
             schedule: .init(strength: assignment,
@@ -658,20 +764,6 @@ public final class TodayModel {
         loadStrengthOption(
             today: today, now: now, profile: profile, assignedRoutine: assignedRoutine, snapshot: snapshot
         )
-    }
-
-    /// "Tomorrow: Strength · Lower" from the plan, when it has something for the next day.
-    private func outlook(goal: TrainingGoal?, after today: CalendarDay, routines: [Routine]) -> String? {
-        let tomorrow = today.adding(days: 1, calendar: calendar)
-        var titles = (goal?.scheduledStrength ?? []).filter { $0.day == tomorrow }.map { assignment in
-            assignment.displayName(
-                routineName: assignment.routineID.flatMap { id in routines.first { $0.id == id }?.name }
-            )
-        }
-        titles += (goal?.scheduledRuns ?? []).filter { $0.day == tomorrow && !$0.isPostponed && $0.purpose != .rest }
-            .map { $0.calendarTitle(format: format) }
-        guard !titles.isEmpty else { return nil }
-        return L10n.format("Tomorrow: {1}", titles.joined(separator: " · "))
     }
 
     /// Records today as a deliberate rest. The hero then shows a calm confirmation (ADR-0041, rule 7).
@@ -806,7 +898,6 @@ public final class TodayModel {
         await load(now: now)
     }
 
-    /// A run finished today, from the sources or from a planned run linked to a recording.
     private func loadStrengthOption(
         today: CalendarDay, now: Date, profile: AthleteProfile?, assignedRoutine: Routine?,
         snapshot: TrainingRecordLoader.Snapshot

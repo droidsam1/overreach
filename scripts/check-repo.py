@@ -9,6 +9,8 @@ Checks:
 - Relative links in agent guidance resolve.
 - No Python bytecode is tracked.
 - Presentation accesses shared training rules and sources through TrainingServices.
+- Every evidence key used in code has an entry in docs/evidence.md (ADR-0012).
+- Every item under "Ready to implement" in docs/priorities.md links an issue or a design-doc task.
 
 Usage: scripts/check-repo.py
 """
@@ -26,6 +28,8 @@ RELEASE_NOTES = ROOT / "Packages/OverreachCore/Sources/Presentation/OnboardingPr
 SKILL_MIRRORS = (ROOT / ".agents/skills", ROOT / ".claude/skills")
 AGENT_GUIDES = ["AGENTS.md", "CLAUDE.md", "CODING_STANDARDS.md"]
 LINK = re.compile(r"\]\(([^)#\s]+)(?:#[^)]*)?\)")
+EVIDENCE_KEY = re.compile(r"EvidenceReference\(\s*key:\s*\"([^\"]+)\"")
+TASK_LINK = re.compile(r"\]\((?:https://github\.com/[^)]+/issues/\d+|[\w./-]+\.md#[\w-]+)\)")
 
 
 def text(path):
@@ -118,9 +122,31 @@ def training_services_boundary():
     return problems
 
 
+def evidence_keys():
+    registered = set(re.findall(r"^###\s+`([^`]+)`", text(ROOT / "docs/evidence.md"), re.M))
+    problems = []
+    for path in sorted((ROOT / "Packages").rglob("*.swift")):
+        relative = path.relative_to(ROOT)
+        if ".build" in relative.parts or "Tests" in relative.parts:
+            continue
+        for key in sorted(set(EVIDENCE_KEY.findall(text(path))) - registered):
+            problems.append(f"{relative}: evidence key `{key}` has no entry in docs/evidence.md. "
+                            "Research it and add one before the rule ships (ADR-0012).")
+    return problems
+
+
+def priorities():
+    ready = re.search(r"^## Ready to implement\n(.*?)(?=^## )", text(ROOT / "docs/priorities.md"), re.M | re.S)
+    if not ready:
+        return ["docs/priorities.md has no 'Ready to implement' section"]
+    items = re.split(r"^(?=\d+\.\s)", ready.group(1), flags=re.M)
+    return [f"docs/priorities.md: item without an issue or design-doc task link: {item.split(chr(10))[0][:70]}"
+            for item in items if re.match(r"\d+\.\s", item) and not TASK_LINK.search(item)]
+
+
 def main():
     problems = adrs() + backup_fixture() + release_notes() + skills() + links() + bytecode()
-    problems += training_services_boundary()
+    problems += training_services_boundary() + evidence_keys() + priorities()
     print("\n".join(problems) or "Repository rules hold.")
     return 1 if problems else 0
 

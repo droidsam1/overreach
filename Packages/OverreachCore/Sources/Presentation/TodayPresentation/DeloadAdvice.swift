@@ -32,6 +32,7 @@ public struct DeloadAdvice: Hashable, Sendable {
     public let state: State
     /// "Same exercises, half the working sets, about 10 % less load, RPE 7 at most."
     public let planText: String
+    let loadSignal: TodaySignal.Load?
 
     static func make(
         _ assessment: DeloadAssessment, exercises: [Exercise], calendar: Calendar, format: Format
@@ -52,7 +53,7 @@ public struct DeloadAdvice: Hashable, Sendable {
         case let .inProgress(lastDay, forLifeStress):
             return DeloadAdvice(
                 state: .inProgress(lastDay: lastDay.startDate(in: calendar), forLifeStress: forLifeStress),
-                planText: planText
+                planText: planText, loadSignal: nil
             )
         case let .confirmBreak(pending):
             return DeloadAdvice(
@@ -60,7 +61,7 @@ public struct DeloadAdvice: Hashable, Sendable {
                     start: pending.start, end: pending.end, reason: pending.reason, discipline: pending.discipline,
                     details: DeloadQuestionDetails(period: pending, calendar: calendar, format: format)
                 )),
-                planText: planText
+                planText: planText, loadSignal: nil
             )
         case let .proposed(proposal, walkingIncluded, lastRecovery):
             let explanation = DeloadExplanation.make(
@@ -71,7 +72,10 @@ public struct DeloadAdvice: Hashable, Sendable {
                 ),
                 format: format
             )
-            return DeloadAdvice(state: .proposed(explanation), planText: planText)
+            let loadSignal = assessment.weeklyLoadRatio.map {
+                TodaySignal.Load(value: $0, status: L10n.text("Above your usual week"), tone: .amber, isReason: true)
+            }
+            return DeloadAdvice(state: .proposed(explanation), planText: planText, loadSignal: loadSignal)
         }
     }
 

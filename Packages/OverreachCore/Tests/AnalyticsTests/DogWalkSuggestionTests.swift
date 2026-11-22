@@ -49,10 +49,10 @@ struct DogWalkSuggestionTests {
         #expect(ask(walks, answers).map(\.start) == [walks[1].start])
     }
 
-    @Test func aWalkAlreadyTaggedByAnImportIsNotAsked() {
+    @Test func aWalkAlreadyTaggedIsNotAsked() {
         var tagged = walk(day: -1, hour: 8)
         tagged.companion = .dog
-        tagged.companionSource = .trackerExport
+        tagged.companionSource = .manual
         #expect(ask([tagged]).isEmpty)
     }
 
