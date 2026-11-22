@@ -104,6 +104,7 @@ public final class PlanModel {
     private var availableRoutines: [Routine] = []
 
     private let profiles: any ProfileRepository
+    private var dayTraining = DayTraining()
     private let workouts: any WorkoutRepository
     private let exercises: any ExerciseRepository
     private let progression: any ProgressionSettingsRepository
@@ -439,6 +440,12 @@ public final class PlanModel {
         }.value
         let weekStart = CalendarDay(now, calendar: calendar).adding(days: -7, calendar: calendar)
         weekSessions = sessions.filter { $0.startedAt >= weekStart.startDate(in: calendar) }
+        let today = CalendarDay(now, calendar: calendar)
+        dayTraining = DayTraining.assess(
+            sessions: sessions, recordings: recordings, runs: runs,
+            planned: profile.goal?.scheduledRuns.filter { $0.day == today && !$0.isPostponed } ?? [],
+            exercises: catalog, now: now, calendar: calendar
+        )
         importedPlanProgress = blockProgress.map {
             ImportedPlanProgressRow(block: $0.block, weeks: $0.weeks, calendar: calendar)
         }
@@ -531,7 +538,11 @@ extension PlanModel {
 
     public func editRunningEntry(_ entry: PlannedRun? = nil) -> RunningCalendarDraft {
         errorMessage = nil
-        return RunningCalendarDraft(entry: entry, today: clock(), calendar: calendar)
+        // A new run is not proposed for today once training or tired legs hold back an unplanned one (ADR-0035).
+        let now = clock()
+        let day = dayTraining.holdsBackUnplannedRun
+            ? CalendarDay(now, calendar: calendar).adding(days: 1, calendar: calendar).startDate(in: calendar) : now
+        return RunningCalendarDraft(entry: entry, today: day, calendar: calendar)
     }
 
     public func reviewRunMove(_ original: PlannedRun, to day: CalendarDay) -> RunningCalendarDraft {

@@ -12,20 +12,14 @@ and the logger come before review tools, and work that only a person with an iPh
 
 ## Ready to implement
 
-1. **Coherent daily recommendation after training** — [#202](https://github.com/droidsam1/overreach/issues/202),
-   one task at a time: [#204](https://github.com/droidsam1/overreach/issues/204) (share "trained today" and
-   lower-body load with the Assistant and Plan). Shipped: no second session after training
-   ([#201](https://github.com/droidsam1/overreach/pull/201)), no unplanned run after lower-body strength
-   ([#203](https://github.com/droidsam1/overreach/issues/203)), evidence entry
-   ([#205](https://github.com/droidsam1/overreach/issues/205)). Touches Today: never in parallel with #181–#185.
-2. **Minimal UI with progressive disclosure** — [#179](https://github.com/droidsam1/overreach/issues/179)
+1. **Minimal UI with progressive disclosure** — [#179](https://github.com/droidsam1/overreach/issues/179)
    ([ADR-0041](adr/0041-minimal-ui-progressive-disclosure.md)), one task at a time in this order:
    [#181](https://github.com/droidsam1/overreach/issues/181) (one pending prompt),
    [#184](https://github.com/droidsam1/overreach/issues/184) (two-step onboarding),
    [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data, once #220 is done, so it builds on the
    new hero). #181–#185 touch Today: never in parallel. [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements) shipped
    lift records and set feedback; a running-goal milestone waits for a goal-progress event to attach it to.
-3. **Visual Today** — [#211](https://github.com/droidsam1/overreach/issues/211)
+2. **Visual Today** — [#211](https://github.com/droidsam1/overreach/issues/211)
    ([ADR-0042](adr/0042-visual-today.md), [spec](design/today-visual.md)). Tasks run in parallel; each names the files
    it owns. Wave 1, no dependencies:
    [#212](https://github.com/droidsam1/overreach/issues/212) (ring, tone surfaces, progress bar),
@@ -45,7 +39,7 @@ and the logger come before review tools, and work that only a person with an iPh
    [#224](https://github.com/droidsam1/overreach/issues/224) (done-today hero, once #218 and #220 are done),
    [#225](https://github.com/droidsam1/overreach/issues/225) (accessibility pass and docs, once #221, #223 and #224
    are done).
-4. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
+3. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
 
 ## Needs a person or an iPhone
 

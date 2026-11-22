@@ -8,8 +8,11 @@ extension ContextPack {
         public var readiness: String
         public var reasons: [String]
         public var deload: TodayDeload
+        /// Training already done on `period.to`'s day, so a reply does not propose a second session on top of it.
+        public var training: TodayTraining?
 
-        public init(_ assessment: DailyAssessment) {
+        public init(_ assessment: DailyAssessment, training: DayTraining? = nil) {
+            self.training = training.map(TodayTraining.init)
             readiness = assessment.readiness.level.rawValue
             reasons = assessment.readiness.reasons.compactMap(Self.reasonName)
             switch assessment.deload {
@@ -62,6 +65,23 @@ extension ContextPack {
             case .shortSleep: "shortSleep"
             case .poorWellbeing: "poorWellbeing"
             default: nil
+            }
+        }
+    }
+
+    /// `strength` and `run` say whether one was completed today. `lowerBody` is `none`, `today` or `yesterdayHeavy`.
+    public struct TodayTraining: Codable, Hashable, Sendable {
+        public var strength: Bool
+        public var run: Bool
+        public var lowerBody: String
+
+        init(_ training: DayTraining) {
+            strength = training.hasStrength
+            run = training.hasRun
+            lowerBody = switch training.lowerBody {
+            case .none: "none"
+            case .today: "today"
+            case .yesterdayHeavy: "yesterdayHeavy"
             }
         }
     }

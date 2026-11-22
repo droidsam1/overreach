@@ -146,7 +146,9 @@ public final class AskAIModel {
                 checkIns: snapshot.allCheckIns.filter { $0.day >= first },
                 dailyMetrics: snapshot.metricsBySource.filter { $0.day >= first },
                 runs: runs.map(\.activity).filter { (start...now).contains($0.startedAt) },
-                today: .init(assessment),
+                today: .init(
+                    assessment, training: snapshot.dayTraining(profile: profile, now: now, calendar: calendar)
+                ),
                 appVersion: appVersion
             )
             let pack = ContextPackBuilder.build(

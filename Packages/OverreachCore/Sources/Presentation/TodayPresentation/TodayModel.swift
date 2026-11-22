@@ -713,12 +713,11 @@ public final class TodayModel {
         )
         let today = range.upperBound
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
+        let training = snapshot.dayTraining(profile: profile, now: now, calendar: calendar)
         loadRunningPlan(
             goal: goal, today: today, now: now, runs: record.runs,
             runningBreak: runningBreak, runReadFailed: record.runReadFailed,
-            lowerBody: snapshot.sessionsFailed ? .none : LowerBodyLoad.assess(
-                sessions: snapshot.allSessions, exercises: record.exercises, now: now, calendar: calendar
-            )
+            lowerBody: training.lowerBody
         )
         loadWorkoutContext(today: today, profile: profile, record: record)
         updateDeloadSession()
@@ -749,12 +748,11 @@ public final class TodayModel {
         let pendingRuns = activeRuns.filter { $0.completion == nil }
         let nextSlot = recentWorkouts?.planned ?? recentWorkouts?.rotation?.next
         let strength = nextSlot.flatMap { slot in record.routines.first { $0.id.uuidString == slot.id } }
-        let strengthDone = hasStrengthToday(sessions: snapshot.allSessions, recordings: record.recordings, now: now)
-        let runDone = hasRunToday(record.runs, planned: activeRuns, now: now)
+        let strengthDone = training.hasStrength
         heroTrainingAction = trainingAction(
             strength: strengthDone ? nil : strength, strengthRest: assignment != nil && assignment?.routineID == nil,
             runs: pendingRuns, priority: goal?.effectivePriority ?? .balanced,
-            trainedToday: strengthDone || runDone,
+            trainedToday: training.hasTrained,
             strengthPlanned: !strengthDone && assignment?.routineID != nil
         )
         completedSessions = heroTrainingAction == .trainedToday ? TodayDone.completedSessions(
@@ -907,22 +905,6 @@ public final class TodayModel {
         ))
         try? await profiles.save(profile)
         await load(now: now)
-    }
-
-    /// A run finished today, from the sources or from a planned run linked to a recording.
-    private func hasRunToday(_ runs: [RunActivity], planned: [PlannedRun], now: Date) -> Bool {
-        let start = calendar.startOfDay(for: now)
-        let finishedToday: (Date, Double) -> Bool = { began, seconds in
-            seconds.isFinite && (start...now).contains(began.addingTimeInterval(seconds))
-        }
-        return runs.contains { finishedToday($0.startedAt, $0.durationSeconds) }
-            || planned.contains { $0.completion.map { finishedToday($0.startedAt, $0.durationSeconds) } ?? false }
-    }
-
-    private func hasStrengthToday(sessions: [StrengthSession], recordings: [RecordedStrengthActivity], now: Date) -> Bool {
-        let start = calendar.startOfDay(for: now)
-        return sessions.contains { $0.startedAt <= now && ($0.endedAt ?? $0.startedAt) >= start }
-            || recordings.contains { $0.durationSeconds.isFinite && (start...now).contains($0.endedAt) }
     }
 
     private func loadStrengthOption(

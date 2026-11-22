@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- The Assistant context now says what you already trained today (`today.training`: strength, run and leg load), and
+  Plan no longer suggests today for a new run once training or tired legs hold an unplanned one back. Today, the
+  Assistant and Plan read one shared answer.
 - Today no longer offers an unplanned run after lower-body strength: with leg work today, or a heavy leg session
   yesterday (8 or more working sets, or a set at RPE 9), it says to leave the run for another day and why. A run that
   is in your plan stays, kept short, and a running priority is not changed. The rule is a heuristic from concurrent
