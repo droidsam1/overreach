@@ -29,9 +29,9 @@ public struct SessionReport: Identifiable, Hashable, Sendable {
     public let comparison: String?
     /// "Effective sets: Chest 6 · Triceps 3".
     public let muscles: String?
-    /// The first record of the session, "Bench Press: New best estimated 1RM: 82.5 kg (before 80 kg)."; `nil`
-    /// without one. Only real records, never streaks or badges.
-    public let achievement: String?
+    /// Every record of the session, in exercise order: "Bench Press: New best estimated 1RM: 82.5 kg (before 80 kg).".
+    /// Empty without one. Only real records against the athlete's own history, never streaks, points or badges.
+    public let achievements: [String]
     public let rows: [Row]
     /// The same summary as plain text, to discuss it with an AI assistant.
     public let shareText: String
@@ -70,12 +70,12 @@ extension SessionReport {
             share.append("• \(row.name): \(row.outcomeText)")
             share += row.details.map { "  – \($0)" }
         }
-        let achievement = review.exercises.lazy.compactMap { exercise in
-            Self.recordText(exercise.record, format: format).map { "\(exercise.exercise.displayName): \($0)" }
-        }.first
+        let achievements = review.exercises.flatMap { exercise in
+            exercise.records.map { "\(exercise.exercise.displayName): \(Self.recordText($0, format: format))" }
+        }
         self.init(
             id: session.id, title: session.name, headline: headline, adherence: adherence, comparison: comparison,
-            muscles: muscles, achievement: achievement, rows: rows, shareText: share.joined(separator: "\n")
+            muscles: muscles, achievements: achievements, rows: rows, shareText: share.joined(separator: "\n")
         )
     }
 
@@ -126,9 +126,7 @@ extension SessionReport {
                 ))
             }
         }
-        if let record = recordText(review.record, format: format) {
-            lines.append(record)
-        }
+        lines += review.records.map { recordText($0, format: format) }
         if review.statusAfter.isStalled && !review.statusBefore.isStalled {
             lines.append(L10n.text("Now stalled: next time, open its target to see why and what to try."))
         } else if review.statusBefore.isStalled && review.statusAfter == .progressing {
@@ -146,7 +144,7 @@ extension SessionReport {
         return lines
     }
 
-    private static func recordText(_ record: SessionRecord?, format: Format) -> String? {
+    private static func recordText(_ record: SessionRecord, format: Format) -> String {
         switch record {
         case let .estimatedOneRepMax(kg, previous):
             L10n.format(
@@ -155,8 +153,11 @@ extension SessionReport {
             )
         case let .repsAtWeight(weight, reps, previous):
             L10n.format("Most reps ever with {1}: {2} (before {3}).", format.kilograms(weight), reps, previous)
-        case nil:
-            nil
+        case let .volume(kg, previous):
+            L10n.format(
+                "Most volume ever in one session: {1} (before {2}).",
+                format.number(kg, maxFractionDigits: 0) + " kg", format.number(previous, maxFractionDigits: 0) + " kg"
+            )
         }
     }
 

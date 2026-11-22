@@ -27,8 +27,8 @@ public struct SessionReportContent: Hashable {
     public let adherence: String?
     public let comparison: String?
     public let muscles: String?
-    /// A real record of the session, shown first; never a streak or a badge.
-    public let achievement: String?
+    /// Real records of the session, shown first; never a streak, points or a badge.
+    public let achievements: [String]
     /// Shown right after finishing: the sheet leads with the confirmation that the session was saved.
     public let isJustSaved: Bool
     public let rows: [Row]
@@ -36,14 +36,14 @@ public struct SessionReportContent: Hashable {
 
     public init(
         title: String, headline: String, adherence: String?, comparison: String?, muscles: String?,
-        achievement: String? = nil, isJustSaved: Bool = false, rows: [Row], shareText: String
+        achievements: [String] = [], isJustSaved: Bool = false, rows: [Row], shareText: String
     ) {
         self.title = title
         self.headline = headline
         self.adherence = adherence
         self.comparison = comparison
         self.muscles = muscles
-        self.achievement = achievement
+        self.achievements = achievements
         self.isJustSaved = isJustSaved
         self.rows = rows
         self.shareText = shareText
@@ -68,7 +68,7 @@ public struct SessionReportSheet: View {
                             .font(.headline)
                             .foregroundStyle(.green)
                     }
-                    if let achievement = content.achievement {
+                    ForEach(content.achievements, id: \.self) { achievement in
                         Label(achievement, systemImage: "trophy.fill")
                     }
                     Text(content.headline).font(.headline.monospacedDigit())

@@ -25,7 +25,7 @@ struct RestTimerView: View {
                 .padding(.vertical, Spacing.xSmall)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(.bar)
-                .sensoryFeedback(.success, trigger: state.isFinished) { _, finished in finished }
+                .haptic(.completed, trigger: state.isFinished) { _, finished in finished }
             }
         }
         .sheet(isPresented: $isShowingDetails) {

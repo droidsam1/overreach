@@ -14,10 +14,13 @@ public enum TargetOutcome: Hashable, Sendable {
     case noTarget
 }
 
-/// A personal best set in this session.
+/// A personal best of one lift in this session. Only strictly better than every earlier session counts: equal is not
+/// a record, and the first session of a lift has nothing to beat.
 public enum SessionRecord: Hashable, Sendable {
     case estimatedOneRepMax(kg: Double, previousKg: Double)
     case repsAtWeight(weightKg: Double, reps: Int, previousReps: Int)
+    /// Most load × reps of working sets for this lift in one session.
+    case volume(kg: Double, previousKg: Double)
 }
 
 /// One exercise of a finished session, compared with its target and its history.
@@ -29,7 +32,8 @@ public struct ExerciseReview: Hashable, Sendable {
     public let target: ExerciseTarget?
     /// Mean RPE of the working sets that have one.
     public let averageRPE: Double?
-    public let record: SessionRecord?
+    /// A best set (estimated 1RM, or else reps at a load) first, then a volume record; empty without one.
+    public let records: [SessionRecord]
     /// Target for the next session, now that this one counts.
     public let nextTarget: ExerciseTarget
     public let statusBefore: ExerciseStatus
@@ -142,7 +146,7 @@ public enum SessionReviewer {
             done: done,
             target: target,
             averageRPE: rpes.isEmpty ? nil : rpes.reduce(0, +) / Double(rpes.count),
-            record: record(in: done, before: before),
+            records: records(in: done, before: before),
             nextTarget: ProgressionTargets.next(
                 history: after, settings: settings, startFromBaseline: startFromBaseline
             ),
@@ -161,8 +165,21 @@ public enum SessionReviewer {
         return beat ? .exceeded : .met
     }
 
+    /// A best set, then a volume record, when this session beats every earlier one.
+    static func records(in done: ExerciseExposure, before: [ExerciseExposure]) -> [SessionRecord] {
+        [bestSet(in: done, before: before), volume(in: done, before: before)].compactMap { $0 }
+    }
+
+    /// More working load × reps than any earlier session of the lift. Lifts without load have no volume record.
+    static func volume(in done: ExerciseExposure, before: [ExerciseExposure]) -> SessionRecord? {
+        let today = StrengthMetrics.tonnage(of: done.sets)
+        guard today > 0, let previous = before.map({ StrengthMetrics.tonnage(of: $0.sets) }).max(), previous > 0,
+              today > previous + 0.001 else { return nil }
+        return .volume(kg: today, previousKg: previous)
+    }
+
     /// A new best estimated 1RM, or else more reps than ever at one of today's loads.
-    static func record(in done: ExerciseExposure, before: [ExerciseExposure]) -> SessionRecord? {
+    static func bestSet(in done: ExerciseExposure, before: [ExerciseExposure]) -> SessionRecord? {
         guard !before.isEmpty else { return nil }
         if let best = done.bestEstimatedOneRepMax,
            let previous = before.compactMap(\.bestEstimatedOneRepMax).max(), best > previous + 0.05 {

@@ -7,6 +7,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- The report after finishing a workout leads with every real record of the session, not only the first: a new best
+  estimated 1RM, more reps than ever at a load and, new, the most volume ever for a lift in one session. Equal is
+  not a record and a lift's first session has nothing to beat. Completing a set now animates its checkmark (not
+  with Reduce Motion), and all haptics go through one helper so a setting can turn them off.
+
 - The exercise picker in Train and in the routine editor can create an exercise search does not find. The typed
   name is kept, equipment comes from the name ("barra", "mancuernas"…) and muscles from the most similar exercise,
   so most of the time it is one tap on Add. A name that an exercise already answers to offers that one instead.

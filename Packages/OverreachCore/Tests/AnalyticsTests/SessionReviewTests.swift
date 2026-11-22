@@ -59,12 +59,49 @@ struct SessionReviewTests {
     @Test func recordsAreBestEstimatesOrRepsAtALoad() {
         let history = [session(daysAgo: 3, weight: 60, reps: [10, 10, 10])]
         let heavier = review(session(daysAgo: 0, weight: 65, reps: [10, 9, 9]), target: nil, history: history)
-        guard case .estimatedOneRepMax = heavier.exercises.first?.record else {
+        guard case .estimatedOneRepMax = heavier.exercises.first?.records.first else {
             Issue.record("expected an estimated 1RM record")
             return
         }
         let firstTime = review(session(daysAgo: 0, weight: 65, reps: [10]), target: nil, history: [])
-        #expect(firstTime.exercises.first?.record == nil)
+        #expect(firstTime.exercises.first?.records == [])
+    }
+
+    @Test func repsAtALoadCountOnlyWhenHigher() {
+        // The heavier session keeps the best estimated 1RM; the lighter one sets the reps to beat at 60 kg.
+        let history = [session(daysAgo: 6, weight: 70, reps: [5]), session(daysAgo: 3, weight: 60, reps: [8, 8])]
+        let more = review(session(daysAgo: 0, weight: 60, reps: [9]), target: nil, history: history)
+        #expect(more.exercises.first?.records == [.repsAtWeight(weightKg: 60, reps: 9, previousReps: 8)])
+        let equal = review(session(daysAgo: 0, weight: 60, reps: [8]), target: nil, history: history)
+        #expect(equal.exercises.first?.records == [])
+        let lower = review(session(daysAgo: 0, weight: 60, reps: [7]), target: nil, history: history)
+        #expect(lower.exercises.first?.records == [])
+    }
+
+    @Test func volumeRecordNeedsMoreThanEverySessionBefore() {
+        let history = [
+            session(daysAgo: 10, weight: 60, reps: [10, 10, 10, 10]),  // 2 400 kg, the best so far
+            session(daysAgo: 3, weight: 60, reps: [10, 10, 10]),
+        ]
+        let more = review(session(daysAgo: 0, weight: 60, reps: [10, 10, 10, 10, 5]), target: nil, history: history)
+        #expect(more.exercises.first?.records == [.volume(kg: 2_700, previousKg: 2_400)])
+        let equal = review(session(daysAgo: 0, weight: 60, reps: [10, 10, 10, 10]), target: nil, history: history)
+        #expect(equal.exercises.first?.records == [])
+        let lower = review(session(daysAgo: 0, weight: 60, reps: [10, 10, 10]), target: nil, history: history)
+        #expect(lower.exercises.first?.records == [])
+        let first = review(session(daysAgo: 0, weight: 60, reps: [10, 10, 10, 10, 10]), target: nil, history: [])
+        #expect(first.exercises.first?.records == [])
+    }
+
+    @Test func aBestSetComesBeforeAVolumeRecord() {
+        let history = [session(daysAgo: 3, weight: 60, reps: [10, 10, 10])]
+        let result = review(session(daysAgo: 0, weight: 65, reps: [10, 10, 10]), target: nil, history: history)
+        let records = result.exercises.first?.records ?? []
+        #expect(records.count == 2)
+        guard case .estimatedOneRepMax = records.first, case .volume(1_950, 1_800) = records.last else {
+            Issue.record("expected a 1RM record, then a volume record; got \(records)")
+            return
+        }
     }
 
     @Test func nextTargetCountsThisSession() {
