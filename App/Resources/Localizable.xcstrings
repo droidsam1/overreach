@@ -7566,6 +7566,23 @@
         }
       }
     },
+    "Kept short because you trained your legs close to this run.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se mantiene corta porque entrenaste piernas cerca de esta carrera."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantense curta porque adestraches pernas preto desta carreira."
+          }
+        }
+      }
+    },
     "Kettlebell": {
       "extractionState": "manual",
       "localizations": {
@@ -8089,6 +8106,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Deixa as series ao fallo e os intentos de récord persoal para cando te sintas máis estable."
+          }
+        }
+      }
+    },
+    "Leave the run for another day, or keep to a walk.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deja la carrera para otro día o quédate en un paseo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deixa a carreira para outro día ou queda nun paseo."
           }
         }
       }
@@ -15488,6 +15522,23 @@
         }
       }
     },
+    "Strength and endurance work together well over a week. Sessions close together can blunt explosive strength and make the second one harder. A heuristic, not a rule.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La fuerza y la resistencia se complementan bien a lo largo de la semana. Dos sesiones muy juntas pueden restar fuerza explosiva y hacer más dura la segunda. Es una heurística, no una regla."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A forza e a resistencia complémentanse ben ao longo da semana. Dúas sesións moi xuntas poden restar forza explosiva e facer máis dura a segunda. É unha heurística, non unha regra."
+          }
+        }
+      }
+    },
     "Strength and extra walking load reached {1}× your usual week.": {
       "extractionState": "manual",
       "localizations": {
@@ -19411,6 +19462,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dixeches que ultimamente sentiches máis estrés do habitual."
+          }
+        }
+      }
+    },
+    "You trained your legs hard yesterday. An extra run now adds load without a plan behind it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayer entrenaste piernas con intensidad. Una carrera extra ahora suma carga sin un plan detrás."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Onte adestraches pernas con intensidade. Unha carreira extra agora suma carga sen un plan detrás."
+          }
+        }
+      }
+    },
+    "You trained your legs today. An extra run now adds load without a plan behind it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy has entrenado piernas. Una carrera extra ahora suma carga sin un plan detrás."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe adestraches pernas. Unha carreira extra agora suma carga sen un plan detrás."
           }
         }
       }

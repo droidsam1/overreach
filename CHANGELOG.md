@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today no longer offers an unplanned run after lower-body strength: with leg work today, or a heavy leg session
+  yesterday (8 or more working sets, or a set at RPE 9), it says to leave the run for another day and why. A run that
+  is in your plan stays, kept short, and a running priority is not changed. The rule is a heuristic from concurrent
+  training research, not a recovery clock.
 - After you train, Today says so ("You've trained today. Recovery is part of the plan.") instead of recommending
   another session. A lift or a run finished today, from the logger, Apple Health or Garmin, ends the
   recommendation unless the plan has another dated session for the day; **Log another workout** stays one tap away.
