@@ -85,14 +85,16 @@ public enum EasyRunAdvisor {
         let normalCeiling = goal?.aimsForPainFree == true ? settings.painFreeMaximumMinutes : settings.maximumMinutes
         let ceiling = protectNearby ? min(normalCeiling, settings.nearbySessionMaximumMinutes) : normalCeiling
         let typical = durations[(durations.count - 1) / 2]
-        guard let minutes = minutes(
+        guard let minutes = suggestedMinutes(
             typical: typical, plan: next, isToday: scheduledToday, ceiling: ceiling,
             fraction: readiness.level == .amber ? settings.amberFraction : 1
         ) else { return nil }
         return .example(minutes: minutes, plan: next, isToday: scheduledToday, recentRuns: durations.count)
     }
 
-    private static func minutes(typical: Double, plan: PlannedRun?, isToday: Bool, ceiling: Int, fraction: Double) -> Int? {
+    private static func suggestedMinutes(
+        typical: Double, plan: PlannedRun?, isToday: Bool, ceiling: Int, fraction: Double
+    ) -> Int? {
         let planned = plan?.durationMinutes.flatMap { $0 > 0 ? Double($0) : nil }
         let planCeiling = planned.map { $0 * (isToday ? fraction : 1) } ?? Double(ceiling)
         let duration = min(Double(ceiling), typical * fraction, planCeiling)

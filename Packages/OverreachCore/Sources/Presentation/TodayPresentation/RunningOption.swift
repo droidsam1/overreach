@@ -71,8 +71,7 @@ public struct RunningOption: Hashable, Sendable {
             )
         case .example(let minutes, let next, let isToday, let recentRuns):
             let plan = next.map { Self.planText($0, isToday: isToday, calendar: calendar, format: format) }
-            let reduction = isToday && (next?.purpose != .easy || next?.durationMinutes != minutes
-                                       || next?.prescription != nil || next?.distanceMeters != nil)
+            let reduction = isToday && (next?.purpose != .easy || next?.durationMinutes != minutes)
             let advice: String
             if isToday, !reduction {
                 advice = L10n.text("Keep today's planned easy run at a conversational pace.")
