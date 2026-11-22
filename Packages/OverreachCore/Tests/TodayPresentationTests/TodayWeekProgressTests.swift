@@ -64,7 +64,9 @@ struct TodayWeekProgressTests {
         let upper = Routine(name: "Upper")
         let lower = Routine(name: "Lower")
         let loaded = try await model(
-            strength: [PlannedStrength(day: day(16), routineID: lower.id), PlannedStrength(day: day(18), routineID: upper.id)],
+            strength: [
+                PlannedStrength(day: day(16), routineID: lower.id), PlannedStrength(day: day(18), routineID: upper.id),
+            ],
             routines: [upper, lower], sessions: [finished(lower, on: 16)],
             block: TrainingBlock(focus: .strength, start: day(9), plannedWeeks: 4, isDeclared: true)
         )

@@ -107,7 +107,8 @@ public struct WeekProgress: Hashable, Sendable {
             done = blockWeek.done
         }
 
-        let runDays = Set(inputs.recordedRuns.filter { $0.startedAt <= now }.map { CalendarDay($0.startedAt, calendar: calendar) })
+        let recorded = inputs.recordedRuns.filter { $0.startedAt <= now }
+        let runDays = Set(recorded.map { CalendarDay($0.startedAt, calendar: calendar) })
             .union(plannedRuns.filter { $0.completion != nil }.map(\.day))
         let rests = Set(inputs.restDays)
         let days = weekDays.map { day -> Day in

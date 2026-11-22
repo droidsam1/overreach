@@ -27,15 +27,15 @@ public struct TodayWeek: Hashable, Sendable {
         public let accessibilityLabel: String
     }
 
-    public struct Session: Hashable, Sendable {
-        public enum Kind: Hashable, Sendable { case strength, run }
-        public enum Tag: Hashable, Sendable { case today, adjusted }
+    public enum SessionKind: Hashable, Sendable { case strength, run }
+    public enum SessionTag: Hashable, Sendable { case today, adjusted }
 
-        public let kind: Kind
+    public struct Session: Hashable, Sendable {
+        public let kind: SessionKind
         public let title: String
         /// "6 exercises · Bench press 80 kg × 5".
         public let detail: String?
-        public let tag: Tag
+        public let tag: SessionTag
         /// The planned run, struck through, when the advice changed it.
         public let originalTitle: String?
     }
@@ -78,7 +78,8 @@ extension TodayWeek {
         let fraction = planned > 0 ? min(1, Double(progress.sessionsDone) / Double(planned)) : 0
         let split = progress.strengthPlanned + progress.runsPlanned
         let (strengthSegment, runSegment): (Double, Double) = if split > 0, planned > 0 {
-            (min(1, Double(progress.strengthDone) / Double(planned)), min(1, Double(progress.runsDone) / Double(planned)))
+            (min(1, Double(progress.strengthDone) / Double(planned)),
+             min(1, Double(progress.runsDone) / Double(planned)))
         } else {
             (fraction, 0)
         }
@@ -110,7 +111,8 @@ extension TodayWeek {
         case .run: L10n.text("Run done")
         case .both: L10n.text("Strength and run done")
         case .restLogged: L10n.text("Rest logged")
-        case .nothing: day.isPlanned ? L10n.text("Planned") : L10n.text("Nothing planned")
+        case .nothing where day.isPlanned: L10n.text("Planned")
+        case .nothing: L10n.text("Nothing planned")
         }
         return day.isToday ? L10n.format("{1}, today: {2}", weekday, state) : L10n.format("{1}: {2}", weekday, state)
     }
