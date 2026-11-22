@@ -80,7 +80,8 @@ struct TrainedTodayTests {
         let option = try #require(model.runningOption)
         #expect(!option.isOptional)
         #expect(option.advice == "Leave the run for another day, or keep to a walk.")
-        #expect(option.context == "You trained your legs hard yesterday. An extra run now adds load without a plan behind it.")
+        #expect(option.context
+            == "You trained your legs hard yesterday. An extra run now adds load without a plan behind it.")
     }
 
     @Test func noLegsMeansNoHoldBack() async {

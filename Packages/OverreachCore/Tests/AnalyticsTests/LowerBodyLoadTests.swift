@@ -17,7 +17,8 @@ struct LowerBodyLoadTests {
         return StrengthSession(
             name: "S", startedAt: start, endedAt: start.addingTimeInterval(3_600),
             entries: [ExerciseEntry(
-                exerciseID: exercise.id, sets: Array(repeating: WorkoutSet(weightKg: 100, reps: 5, rpe: rpe), count: sets)
+                exerciseID: exercise.id,
+                sets: Array(repeating: WorkoutSet(weightKg: 100, reps: 5, rpe: rpe), count: sets)
             )]
         )
     }

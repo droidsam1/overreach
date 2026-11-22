@@ -74,7 +74,9 @@ public struct RunningOption: Hashable, Sendable {
         case .lowerBodyRecovery(let level):
             let reason = level == .today
                 ? L10n.text("You trained your legs today. An extra run now adds load without a plan behind it.")
-                : L10n.text("You trained your legs hard yesterday. An extra run now adds load without a plan behind it.")
+                : L10n.text(
+                    "You trained your legs hard yesterday. An extra run now adds load without a plan behind it."
+                )
             self.init(
                 goal: title, advice: L10n.text("Leave the run for another day, or keep to a walk."),
                 context: reason, evidence: LowerBodyLoad.evidence,
