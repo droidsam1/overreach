@@ -4693,6 +4693,40 @@
         }
       }
     },
+    "Dog walks today: {1} of your usual {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paseos con tu perro hoy: {1} de tus {2} habituales."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paseos co teu can hoxe: {1} dos {2} habituais."
+          }
+        }
+      }
+    },
+    "Dog walks today: {1}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paseos con tu perro hoy: {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paseos co teu can hoxe: {1}."
+          }
+        }
+      }
+    },
     "Dog's name": {
       "extractionState": "manual",
       "localizations": {
@@ -7460,6 +7494,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hoxe fai os teus paseos habituais a ritmo suave. Moverse suave alivia as agulletas e o cansazo algo máis ca o descanso total."
+          }
+        }
+      }
+    },
+    "Keep your walks with your dog easy today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy, pasea con tu perro a un ritmo suave."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe, pasea co teu can a un ritmo suave."
+          }
+        }
+      }
+    },
+    "Keep your walks with {1} easy today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy, pasea con {1} a un ritmo suave."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe, pasea con {1} a un ritmo suave."
           }
         }
       }
@@ -18106,6 +18174,40 @@
         }
       }
     },
+    "Walks with {1} today: {2} of your usual {3}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paseos con {1} hoy: {2} de tus {3} habituales."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paseos con {1} hoxe: {2} dos {3} habituais."
+          }
+        }
+      }
+    },
+    "Walks with {1} today: {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paseos con {1} hoy: {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paseos con {1} hoxe: {2}."
+          }
+        }
+      }
+    },
     "Warm-up": {
       "extractionState": "manual",
       "localizations": {
@@ -20095,6 +20197,23 @@
         }
       }
     },
+    "{1} min": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} min"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} min"
+          }
+        }
+      }
+    },
     "{1} min · {2} working sets · {3}": {
       "extractionState": "manual",
       "localizations": {
@@ -20108,6 +20227,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} min · {2} series de traballo · {3}"
+          }
+        }
+      }
+    },
+    "{1} min, {2} km": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} min, {2} km"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} min, {2} km"
           }
         }
       }

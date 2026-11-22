@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today shows confirmed dog walks separately, with their time, recorded distance and progress against your usual
+  daily walks. Easy-walk advice refers to your dog by name when you have entered one.
+
 - The exercise picker in Train and in the routine editor can create an exercise search does not find. The typed
   name is kept, equipment comes from the name ("barra", "mancuernas"…) and muscles from the most similar exercise,
   so most of the time it is one tap on Add. A name that an exercise already answers to offers that one instead.

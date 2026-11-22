@@ -68,15 +68,73 @@ public struct MovementNote: Hashable, Sendable {
             ))
         }
         if suggestsRecoveryWalk {
-            let text = routine.hasDog || routine.walksAreFixed
-                ? L10n.text(
-                    "Keep your usual walks easy today. "
-                        + "Easy movement eases soreness and fatigue a little more than full rest."
-                )
-                : L10n.text("An easy 20–40 min walk can ease soreness and fatigue a little more than full rest.")
+            let text = recoveryWalkText(for: routine)
             notes.append(MovementNote(text: text, evidence: MovementEvidence.activeRecovery.level.displayName))
         }
         return notes
+    }
+
+    private static func recoveryWalkText(for routine: WalkingRoutine) -> String {
+        if routine.hasDog {
+            return if let name = dogName(in: routine) {
+                L10n.format("Keep your walks with {1} easy today.", name)
+            } else {
+                L10n.text("Keep your walks with your dog easy today.")
+            }
+        }
+        return routine.walksAreFixed
+            ? L10n.text(
+                "Keep your usual walks easy today. "
+                    + "Easy movement eases soreness and fatigue a little more than full rest."
+            )
+            : L10n.text("An easy 20–40 min walk can ease soreness and fatigue a little more than full rest.")
+    }
+
+    static func dogWalkSummary(
+        walks: [WalkBout], answers: [WalkCompanionAnswer], routine: WalkingRoutine,
+        during day: DateInterval, format: Format
+    ) -> MovementNote? {
+        guard !answers.isEmpty || walks.contains(where: { $0.companion == .dog }) else { return nil }
+        let tagged = CompanionWalkMatching.tagging(walks, answers: answers)
+        let dogWalks = EverydayMovement.removingDuplicateWalks(tagged).filter {
+            $0.companion == .dog && $0.start >= day.start && $0.start < day.end
+        }
+        guard !dogWalks.isEmpty else { return nil }
+
+        let name = dogName(in: routine)
+        let count = format.number(Double(dogWalks.count), maxFractionDigits: 0)
+        let heading: String
+        if let usual = routine.usualWalksPerDay, usual > 0 {
+            let usualCount = format.number(Double(usual), maxFractionDigits: 0)
+            heading = if let name {
+                L10n.format("Walks with {1} today: {2} of your usual {3}.", name, count, usualCount)
+            } else {
+                L10n.format("Dog walks today: {1} of your usual {2}.", count, usualCount)
+            }
+        } else {
+            heading = if let name {
+                L10n.format("Walks with {1} today: {2}.", name, count)
+            } else {
+                L10n.format("Dog walks today: {1}.", count)
+            }
+        }
+
+        let minutes = format.number(dogWalks.reduce(0) { $0 + $1.durationSeconds } / 60, maxFractionDigits: 0)
+        let distances = dogWalks.compactMap(\.distanceMeters).filter { $0.isFinite && $0 > 0 }
+        let detail: String
+        if distances.count == dogWalks.count {
+            let kilometers = format.number(distances.reduce(0, +) / 1_000, maxFractionDigits: 2)
+            detail = L10n.format("{1} min, {2} km", minutes, kilometers)
+        } else {
+            detail = L10n.format("{1} min", minutes)
+        }
+        return MovementNote(text: "\(heading) \(detail)", evidence: nil)
+    }
+
+    private static func dogName(in routine: WalkingRoutine) -> String? {
+        guard routine.hasDog, let name = routine.dogName?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !name.isEmpty else { return nil }
+        return name
     }
 }
 
