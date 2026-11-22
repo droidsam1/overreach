@@ -15,6 +15,7 @@ public struct WorkoutView: View {
     @State private var isPickingExercise = false
     @State private var isConfirmingDiscard = false
     @State private var isShowingGuide = false
+    @State private var isReorderingExercises = false
 
     public init(model: WorkoutModel, routines: RoutinesModel) {
         _model = State(initialValue: model)
@@ -29,7 +30,9 @@ public struct WorkoutView: View {
                 } else if model.isSavingSession && !model.isSessionActive {
                     ProgressView("Saving workout…")
                 } else if model.isSessionActive {
-                    SessionList(model: model, isPickingExercise: $isPickingExercise)
+                    SessionList(
+                        model: model, isPickingExercise: $isPickingExercise, isReordering: $isReorderingExercises
+                    )
                         .disabled(model.isSavingSession)
                 } else if model.needsDraftRecovery {
                     WorkoutRecoveryView(model: model) { isConfirmingDiscard = true }
@@ -85,7 +88,10 @@ public struct WorkoutView: View {
             }
             // A finished session moves the plan on to its next session.
             .onChange(of: model.isSessionActive) { _, isActive in
-                if !isActive { Task { await routines.load() } }
+                if !isActive {
+                    isReorderingExercises = false
+                    Task { await routines.load() }
+                }
             }
             // Progression settings and routines may have changed in another tab (e.g. imported from an AI).
             .onAppear {
@@ -104,6 +110,8 @@ public struct WorkoutView: View {
             ToolbarItem(placement: .cancellationAction) {
                 Menu {
                     Button("How to log sets", systemImage: "questionmark.circle") { isShowingGuide = true }
+                    Button("Reorder exercises", systemImage: "arrow.up.arrow.down") { isReorderingExercises = true }
+                        .disabled(model.exercises.count < 2)
                     Picker(selection: Binding(
                         get: { model.sessionFocus },
                         set: { focus in Task { await model.setSessionFocus(focus) } }
@@ -125,7 +133,9 @@ public struct WorkoutView: View {
                 .disabled(model.isSavingSession)
             }
             ToolbarItem(placement: .confirmationAction) {
-                if model.isSavingSession {
+                if isReorderingExercises {
+                    Button("Done") { isReorderingExercises = false }
+                } else if model.isSavingSession {
                     ProgressView()
                         .accessibilityLabel("Saving workout…")
                 } else {
@@ -189,9 +199,37 @@ private struct WorkoutRecoveryView: View {
 private struct SessionList: View {
     @Bindable var model: WorkoutModel
     @Binding var isPickingExercise: Bool
+    @Binding var isReordering: Bool
     @State private var progressionExercise: DraftExercise.ID?
 
     var body: some View {
+        Group {
+            if isReordering {
+                ExerciseOrderList(model: model)
+            } else {
+                exerciseList
+            }
+        }
+        .animation(.default, value: isReordering)
+        // Confirms the long press switched to reordering.
+        .sensoryFeedback(.impact, trigger: isReordering) { _, isOn in isOn }
+        .sheet(isPresented: Binding(
+            get: { progressionExercise != nil },
+            set: { if !$0 { progressionExercise = nil } }
+        )) {
+            if let id = progressionExercise {
+                ProgressionPicker(model: model, exerciseID: id)
+            }
+        }
+        .keyboardDoneButton()
+        .safeAreaInset(edge: .bottom) {
+            if model.rest.isActive {
+                RestTimerView(model: model.rest)
+            }
+        }
+    }
+
+    private var exerciseList: some View {
         List {
             Text(model.sessionName)
                 .font(.title2.weight(.semibold))
@@ -238,13 +276,25 @@ private struct SessionList: View {
                                 }
                             }
                     }
-                    Button("Add set", systemImage: "plus") { model.addSet(to: exercise.id) }
+                    // Both adds sit under the sets they extend, so neither hides in a menu.
+                    HStack {
+                        Button("Add set", systemImage: "plus") { model.addSet(to: exercise.id) }
+                        Spacer()
+                        Button(exercise.addWarmUpTitle, systemImage: "flame") { model.addWarmUp(to: exercise.id) }
+                    }
+                    .buttonStyle(.borderless)
                     TextField("Notes", text: $exercise.notes, axis: .vertical)
                         .lineLimit(1...4)
                 } header: {
                     HStack {
+                        // Long-pressing the name collapses the session to names to drag (as the session menu does).
                         Text(exercise.name)
-                        Spacer()
+                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                            .contentShape(Rectangle())
+                            .onLongPressGesture { if model.exercises.count > 1 { isReordering = true } }
+                            .accessibilityAction(named: "Reorder exercises") {
+                                if model.exercises.count > 1 { isReordering = true }
+                            }
                         Menu {
                             Picker("Exercise focus", selection: Binding(
                                 get: { exercise.declaredFocus },
@@ -256,8 +306,10 @@ private struct SessionList: View {
                                 }
                             }
                             .pickerStyle(.menu)
-                            Button("Add warm-up sets", systemImage: "flame") { model.addWarmUp(to: exercise.id) }
-                                .disabled(!exercise.canAddWarmUp)
+                            Button("Move up", systemImage: "arrow.up") { model.moveExercise(exercise.id, by: -1) }
+                                .disabled(!model.canMoveExercise(exercise.id, by: -1))
+                            Button("Move down", systemImage: "arrow.down") { model.moveExercise(exercise.id, by: 1) }
+                                .disabled(!model.canMoveExercise(exercise.id, by: 1))
                             Button("Use last time's values", systemImage: "clock.arrow.circlepath") {
                                 model.useLastTime(for: exercise.id)
                             }
@@ -290,20 +342,28 @@ private struct SessionList: View {
             }
         }
         .scrollDismissesKeyboard(.interactively)
-        .sheet(isPresented: Binding(
-            get: { progressionExercise != nil },
-            set: { if !$0 { progressionExercise = nil } }
-        )) {
-            if let id = progressionExercise {
-                ProgressionPicker(model: model, exerciseID: id)
+    }
+}
+
+/// The session collapsed to exercise names, so any exercise can be dragged anywhere without scrolling past sets.
+/// "Done" in the toolbar returns to the sets.
+private struct ExerciseOrderList: View {
+    let model: WorkoutModel
+
+    var body: some View {
+        List {
+            Section {
+                ForEach(model.exercises) { exercise in
+                    Text(exercise.name)
+                }
+                .onMove { model.moveExercises(from: $0, to: $1) }
+            } header: {
+                Text("Reorder exercises")
+            } footer: {
+                Text("Drag the exercises into the order you want. Sets and values move with them.")
             }
         }
-        .keyboardDoneButton()
-        .safeAreaInset(edge: .bottom) {
-            if model.rest.isActive {
-                RestTimerView(model: model.rest)
-            }
-        }
+        .alwaysEditing()
     }
 }
 
@@ -442,6 +502,16 @@ extension View {
     fileprivate func inlineTitle(_ isInline: Bool) -> some View {
         #if os(iOS)
         navigationBarTitleDisplayMode(isInline ? .inline : .automatic)
+        #else
+        self
+        #endif
+    }
+
+    /// Shows a list's drag handles without an Edit button.
+    @ViewBuilder
+    fileprivate func alwaysEditing() -> some View {
+        #if os(iOS)
+        environment(\.editMode, .constant(.active))
         #else
         self
         #endif
