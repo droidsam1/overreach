@@ -68,6 +68,36 @@ struct WarmUpLoggingTests {
         #expect(try #require(warmed.summary(format: format).reasons.last).hasPrefix("Warm-up: one set"))
     }
 
+    @Test func theWarmUpButtonAddsTheSuggestionThenOneSetAtATime() async throws {
+        let (model, _) = await makeModel()
+        await model.add(exerciseID: bench.id)
+        await model.add(exerciseID: incline.id)
+        let second = model.exercises[1]
+        #expect(second.addWarmUpTitle == "Add suggested warm-up")
+
+        model.addWarmUp(to: second.id)
+        #expect(model.exercises[1].addWarmUpTitle == "Add warm-up set")
+        model.exercises[1].sets[0].weightKg = 40
+        model.addWarmUp(to: second.id)
+
+        let sets = model.exercises[1].sets
+        #expect(sets.map(\.isWarmUp) == [true, true, false, false, false])
+        #expect(sets[1].weightKg == 40)  // copies the last warm-up
+        #expect(sets[1].reps == sets[0].reps)
+        #expect(!sets[1].isDone)
+    }
+
+    @Test func deletedWarmUpsAreOfferedAgain() async throws {
+        let (model, _) = await makeModel()
+        await model.add(exerciseID: bench.id)
+        let id = model.exercises[0].id
+        model.exercises[0].sets.removeAll(where: \.isWarmUp)
+        #expect(model.exercises[0].addWarmUpTitle == "Add suggested warm-up")
+
+        model.addWarmUp(to: id)
+        #expect(model.exercises[0].sets.filter(\.isWarmUp).map(\.weightKg) == [30, 47.5])
+    }
+
     @Test func mainLiftsGetThemEvenWhenTheMusclesAreWarm() async {
         let (model, _) = await makeModel(mainLift: true)
         await model.add(exerciseID: bench.id)

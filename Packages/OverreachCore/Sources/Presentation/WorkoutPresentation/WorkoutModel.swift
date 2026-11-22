@@ -70,8 +70,28 @@ public struct DraftExercise: Identifiable, Hashable, Codable, Sendable {
     /// The sets that count: everything except warm-ups.
     public var workingSets: [DraftSet] { sets.filter { !$0.isWarmUp } }
 
-    /// Whether "Add warm-up sets" has something to add.
+    /// Whether the suggested warm-up can be added whole: there is one and no warm-up set was logged yet.
     public var canAddWarmUp: Bool { !warmUpPlan.isEmpty && !sets.contains(where: \.isWarmUp) }
+
+    /// Label of the warm-up button under the sets: the suggested warm-up first, then one set at a time.
+    public var addWarmUpTitle: String {
+        canAddWarmUp
+            ? L10n.text("Add suggested warm-up")
+            : L10n.text("Add warm-up set")
+    }
+
+    /// One more warm-up set, placed after the last warm-up so working sets stay together. It copies the last
+    /// warm-up, or the first suggested one, or the first working set when nothing is suggested (bodyweight).
+    mutating func addWarmUpSet() {
+        let lastWarmUp = sets.lastIndex(where: \.isWarmUp)
+        let template = lastWarmUp.map { (weightKg: sets[$0].weightKg, reps: sets[$0].reps) }
+            ?? warmUpPlan.first.map { (weightKg: Optional($0.weightKg), reps: Optional($0.reps)) }
+            ?? workingSets.first.map { (weightKg: $0.weightKg, reps: $0.reps) }
+        sets.insert(
+            DraftSet(weightKg: template?.weightKg, reps: template?.reps, isWarmUp: true),
+            at: lastWarmUp.map { $0 + 1 } ?? 0
+        )
+    }
 
     /// Whether "Use last time's values" would change an open working set.
     public var canUseLastTime: Bool { !setsToFillFromLastTime().isEmpty }
@@ -688,12 +708,40 @@ public final class WorkoutModel {
         return !exercise.primaryMuscles.isDisjoint(with: worked)
     }
 
-    /// Adds the suggested warm-up sets before the working sets of an exercise ("Add warm-up sets").
+    /// Adds warm-up sets before the working sets of an exercise: the suggested warm-up when none was logged yet,
+    /// otherwise one more warm-up set (see `DraftExercise.addWarmUpTitle`).
     public func addWarmUp(to exerciseID: DraftExercise.ID) {
-        guard let index = exercises.firstIndex(where: { $0.id == exerciseID }), exercises[index].canAddWarmUp else {
-            return
+        guard let index = exercises.firstIndex(where: { $0.id == exerciseID }) else { return }
+        if exercises[index].canAddWarmUp {
+            exercises[index].sets.insert(contentsOf: Self.draftSets(exercises[index].warmUpPlan), at: 0)
+        } else {
+            exercises[index].addWarmUpSet()
         }
-        exercises[index].sets.insert(contentsOf: Self.draftSets(exercises[index].warmUpPlan), at: 0)
+    }
+
+    /// Moves exercises as a list's reorder does: `destination` is an offset in the list before the move. Sets,
+    /// targets and suggested warm-ups stay as they are, so nothing typed is lost.
+    public func moveExercises(from source: IndexSet, to destination: Int) {
+        guard !source.isEmpty, source.allSatisfy(exercises.indices.contains),
+              (0...exercises.count).contains(destination) else { return }
+        let moved = source.map { exercises[$0] }
+        var remaining = exercises.enumerated().filter { !source.contains($0.offset) }.map(\.element)
+        remaining.insert(contentsOf: moved, at: destination - source.count(in: 0..<destination))
+        exercises = remaining
+    }
+
+    /// Whether `moveExercise(_:by:)` can move the exercise that far (e.g. -1 = one place up).
+    public func canMoveExercise(_ exerciseID: DraftExercise.ID, by offset: Int) -> Bool {
+        guard let index = exercises.firstIndex(where: { $0.id == exerciseID }) else { return false }
+        return offset != 0 && exercises.indices.contains(index + offset)
+    }
+
+    /// Moves one exercise up (negative) or down (positive) in the session.
+    public func moveExercise(_ exerciseID: DraftExercise.ID, by offset: Int) {
+        guard canMoveExercise(exerciseID, by: offset),
+              let index = exercises.firstIndex(where: { $0.id == exerciseID }) else { return }
+        let target = index + offset
+        moveExercises(from: [index], to: offset > 0 ? target + 1 : target)
     }
 
     /// Fills the open working sets with last time's weight and reps, when the athlete asks for it.

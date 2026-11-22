@@ -936,6 +936,23 @@
         }
       }
     },
+    "Add suggested warm-up": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir calentamiento sugerido"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Engadir quecemento suxerido"
+          }
+        }
+      }
+    },
     "Add training day": {
       "extractionState": "manual",
       "localizations": {
@@ -953,19 +970,19 @@
         }
       }
     },
-    "Add warm-up sets": {
+    "Add warm-up set": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Añadir series de calentamiento"
+            "value": "Añadir serie de calentamiento"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Engadir series de quecemento"
+            "value": "Engadir serie de quecemento"
           }
         }
       }
@@ -4757,6 +4774,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dobre progresión"
+          }
+        }
+      }
+    },
+    "Drag the exercises into the order you want. Sets and values move with them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrastra los ejercicios al orden que quieras. Las series y los valores se mueven con ellos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrastra os exercicios á orde que queiras. As series e os valores móvense con eles."
           }
         }
       }
@@ -12152,6 +12186,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Renovar chave"
+          }
+        }
+      }
+    },
+    "Reorder exercises": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reordenar ejercicios"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reordenar exercicios"
           }
         }
       }
