@@ -41,6 +41,7 @@ public final class TodayModel {
     public private(set) var scheduledRunsToday: [ScheduledTrainingRow] = []
     public private(set) var strengthOption: StrengthOption?
     public private(set) var runningOption: RunningOption?
+    private var keptPlannedRunDay: CalendarDay?
     private var hasRunningGoal = false
     /// A deload proposal (training reinforced by recovery, `deload-recovery-signals`) or the deload week in progress.
     public private(set) var deloadAdvice: DeloadAdvice?
@@ -512,12 +513,35 @@ public final class TodayModel {
         }.max { $0.startedAt < $1.startedAt }
         recentRunPain = latestRun?.painDuring == true || latestRun?.painAfter == true
         scheduledRunsToday = schedule.filter { $0.day == today }.map { ScheduledTrainingRow.run($0, format: format) }
+        if keptPlannedRunDay == today { return }
         if let decision = EasyRunAdvisor.advise(
             goal: running, targetDay: goal?.targetDate, schedule: schedule, readiness: readiness, metrics: metrics,
             runs: runs, now: now, calendar: calendar, runningBreak: runningBreak
         ), decision != .plannedRest {
             runningOption = RunningOption(goal: running, decision: decision, calendar: calendar, format: format)
         }
+    }
+
+    /// Replaces today's planned run with the easy run Today proposed. The entry keeps its identity and dates.
+    public func applyRunningAdjustment(now: Date = .now) async {
+        guard let adjustment = runningOption?.adjustment, let profiles,
+              var profile = try? await profiles.profile(), var goal = profile.goal else { return }
+        var schedule = goal.scheduledRuns
+        guard let index = schedule.firstIndex(where: { $0.id == adjustment.runID }),
+              schedule[index].day == CalendarDay(now, calendar: calendar) else { return }
+        let updated = schedule[index].easingTo(minutes: adjustment.minutes)
+        guard updated != schedule[index] else { return }
+        schedule[index] = updated
+        goal.setRunningSchedule(schedule)
+        profile.goal = goal
+        guard (try? await profiles.save(profile)) != nil else { return }
+        await load(now: now)
+    }
+
+    /// Keeps the planned run as scheduled and stops proposing a change for the rest of today. Nothing is saved.
+    public func keepPlannedRun(now: Date = .now) {
+        keptPlannedRunDay = CalendarDay(now, calendar: calendar)
+        runningOption = nil
     }
 
     // MARK: Deload

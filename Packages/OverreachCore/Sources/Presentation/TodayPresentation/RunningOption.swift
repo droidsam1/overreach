@@ -11,10 +11,19 @@ public struct RunningOption: Hashable, Sendable {
     public let evidence: String?
     public let source: URL?
     public let explanation: String?
+    /// The change the athlete can apply to today's planned run. `nil` when nothing in the schedule would change.
+    public let adjustment: Adjustment?
+
+    public struct Adjustment: Hashable, Sendable {
+        public let runID: UUID
+        public let minutes: Int
+        public let applyTitle: String
+        public let keepTitle: String
+    }
 
     private init(
         goal: String, advice: String, plan: String? = nil, context: String? = nil, evidence: EvidenceReference? = nil,
-        source: String? = nil, explanation: String? = nil
+        source: String? = nil, explanation: String? = nil, adjustment: Adjustment? = nil
     ) {
         self.goal = goal
         self.plan = plan
@@ -23,6 +32,7 @@ public struct RunningOption: Hashable, Sendable {
         self.evidence = evidence?.level.displayName
         self.source = source.flatMap { URL(string: $0) }
         self.explanation = explanation
+        self.adjustment = adjustment
     }
 
     init(goal: RunningGoal?, decision: EasyRunAdvisor.Decision, calendar: Calendar, format: Format) {
@@ -66,9 +76,20 @@ public struct RunningOption: Hashable, Sendable {
                 evidence: EasyRunAdvisor.evidence, source: "https://pubmed.ncbi.nlm.nih.gov/18277826/",
                 explanation: L10n.text(
                     "A conversational pace keeps the effort easy. The duration is a coaching estimate."
-                )
+                ),
+                adjustment: Self.adjustment(plan: next, isToday: isToday, minutes: minutes)
             )
         }
+    }
+
+    private static func adjustment(plan: PlannedRun?, isToday: Bool, minutes: Int) -> Adjustment? {
+        // An easy entry is already the easy option; shrinking it again on every load would never settle.
+        guard isToday, let plan, plan.purpose != .easy, plan.easingTo(minutes: minutes) != plan else { return nil }
+        return Adjustment(
+            runID: plan.id, minutes: minutes,
+            applyTitle: L10n.format("Change to {1} min easy", String(minutes)),
+            keepTitle: L10n.text("Keep the planned run")
+        )
     }
 
     private static func planText(_ next: PlannedRun, isToday: Bool, calendar: Calendar, format: Format) -> String {

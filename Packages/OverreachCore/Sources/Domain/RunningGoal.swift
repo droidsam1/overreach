@@ -93,6 +93,13 @@ public struct PlannedRun: Identifiable, Hashable, Codable, Sendable {
         return updated
     }
 
+    /// The same entry as a shorter easy run: identity, day and first date stay; distance, structure and race
+    /// priority go. An entry that is rest, a race, postponed or already completed is returned unchanged.
+    public func easingTo(minutes: Int) -> Self {
+        guard minutes > 0, purpose != .rest, purpose != .race, !isPostponed, completion == nil else { return self }
+        return Self(id: id, day: day, purpose: .easy, durationMinutes: minutes, originalDay: originalDay)
+    }
+
     private enum CodingKeys: String, CodingKey {
         case id, day, purpose, durationMinutes, distanceMeters, completion
         case prescription, racePriority, originalDay, postponed
