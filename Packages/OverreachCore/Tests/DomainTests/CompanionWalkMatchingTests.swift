@@ -4,19 +4,19 @@ import Testing
 
 @Suite("Companion walk matching")
 struct CompanionWalkMatchingTests {
-    private let t0 = Date(timeIntervalSince1970: 1_800_000_000)
+    private let origin = Date(timeIntervalSince1970: 1_800_000_000)
 
     private func walk(
         _ minute: Double, _ minutes: Double, source: DataSourceKind = .garmin
     ) -> WalkBout {
-        WalkBout(start: t0.addingTimeInterval(minute * 60), durationSeconds: minutes * 60, source: source)
+        WalkBout(start: origin.addingTimeInterval(minute * 60), durationSeconds: minutes * 60, source: source)
     }
 
     private func window(
         _ minute: Double, _ minutes: Double, _ confidence: CompanionWindow.Confidence = .normal
     ) -> CompanionWindow {
         CompanionWindow(
-            start: t0.addingTimeInterval(minute * 60), end: t0.addingTimeInterval((minute + minutes) * 60),
+            start: origin.addingTimeInterval(minute * 60), end: origin.addingTimeInterval((minute + minutes) * 60),
             confidence: confidence)
     }
 
@@ -110,7 +110,7 @@ struct CompanionWalkMatchingTests {
 
     @Test func aNoClearsAnEarlierTag() {
         let before = WalkBout(
-            start: t0, durationSeconds: 1_800, source: .garmin, companion: .dog, companionSource: .trackerExport)
+            start: origin, durationSeconds: 1_800, source: .garmin, companion: .dog, companionSource: .trackerExport)
         let result = CompanionWalkMatching.tagging(
             [before], answers: [WalkCompanionAnswer(walk: before, withCompanion: false)])
         #expect(result[0].companion == nil)
