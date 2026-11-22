@@ -54,6 +54,14 @@ public struct TrendChart: Identifiable, Hashable, Sendable {
 /// Builds the trend charts from the shared training record and the merged daily metrics, so the weekly totals use
 /// the same runs and sessions as Recent load (ADR-0035).
 struct TrendCharts {
+    /// What names a chart and formats its values.
+    private struct Spec {
+        let kind: TrendChart.Kind
+        let title: String
+        let unit: String
+        let digits: Int
+    }
+
     let calendar: Calendar
     let format: Format
     let settings: ReadinessRules.Settings
@@ -73,20 +81,21 @@ struct TrendCharts {
                 return usable(entry.hrv(hrvSeries.metric))
             }
             charts.append(line(
-                .hrv, title: label, unit: "ms", digits: 0, range: range, days: days, values: values,
+                Spec(kind: .hrv, title: label, unit: "ms", digits: 0), range: range, days: days, values: values,
                 band: hrvBand(hrvSeries, byDay: byDay, days: days)
             ))
         }
         let heartRate = settings.plausibleRestingHeartRate
         charts.append(line(
-            .restingHeartRate, title: L10n.text("Resting HR"), unit: "bpm", digits: 0, range: range, days: days,
+            Spec(kind: .restingHeartRate, title: L10n.text("Resting HR"), unit: "bpm", digits: 0),
+            range: range, days: days,
             values: comparable(days, byDay, source: \.restingHeartRateSource) {
                 $0.restingHeartRate.flatMap { heartRate.contains($0) ? $0 : nil }
             }
         ))
         let maxSleep = settings.maximumSleepHours
         charts.append(line(
-            .sleep, title: L10n.text("Sleep"), unit: "h", digits: 1, range: range, days: days,
+            Spec(kind: .sleep, title: L10n.text("Sleep"), unit: "h", digits: 1), range: range, days: days,
             values: comparable(days, byDay, source: \.sleepSource) {
                 $0.sleepSeconds.flatMap { $0 > 0 && $0 / 3_600 <= maxSleep ? $0 / 3_600 : nil }
             }
@@ -109,19 +118,17 @@ struct TrendCharts {
             guard let index = week(of: session.startedAt) else { continue }
             sets[index] += Double(session.entries.reduce(0) { $0 + $1.sets.filter(\.isWorking).count })
         }
-        var charts = [bars(
-            .strengthVolume, title: L10n.text("Strength sets per week"), unit: L10n.text("sets"), digits: 0,
-            range: range, today: today, values: sets, hasHistory: !record.sessions.isEmpty
-        )]
+        let setsSpec = Spec(kind: .strengthVolume, title: L10n.text("Strength sets per week"),
+                            unit: L10n.text("sets"), digits: 0)
+        var charts = [bars(setsSpec, today: today, values: sets, hasHistory: !record.sessions.isEmpty)]
         if !record.runReadFailed {
-            var km = [Double](repeating: 0, count: weeks)
+            var distances = [Double](repeating: 0, count: weeks)
             for run in record.runs where run.distanceMeters.isFinite {
-                if let index = week(of: run.startedAt) { km[index] += run.distanceMeters / 1_000 }
+                if let index = week(of: run.startedAt) { distances[index] += run.distanceMeters / 1_000 }
             }
-            charts.append(bars(
-                .runningDistance, title: L10n.text("Running distance per week"), unit: "km", digits: 1,
-                range: range, today: today, values: km, hasHistory: !record.runs.isEmpty
-            ))
+            let runSpec = Spec(kind: .runningDistance, title: L10n.text("Running distance per week"),
+                               unit: "km", digits: 1)
+            charts.append(bars(runSpec, today: today, values: distances, hasHistory: !record.runs.isEmpty))
         }
         return charts
     }
@@ -158,9 +165,9 @@ struct TrendCharts {
     }
 
     private func line(
-        _ kind: TrendChart.Kind, title: String, unit: String, digits: Int, range: TrendRange, days: [CalendarDay],
-        values: [Double?], band: ClosedRange<Double>? = nil
+        _ spec: Spec, range: TrendRange, days: [CalendarDay], values: [Double?], band: ClosedRange<Double>? = nil
     ) -> TrendChart {
+        let (kind, title, unit, digits) = (spec.kind, spec.title, spec.unit, spec.digits)
         var segments: [[TrendPoint]] = []
         var current: [TrendPoint] = []
         var present: [(day: CalendarDay, value: Double)] = []
@@ -196,10 +203,8 @@ struct TrendCharts {
 
     // MARK: Bars
 
-    private func bars(
-        _ kind: TrendChart.Kind, title: String, unit: String, digits: Int, range: TrendRange, today: CalendarDay,
-        values: [Double], hasHistory: Bool
-    ) -> TrendChart {
+    private func bars(_ spec: Spec, today: CalendarDay, values: [Double], hasHistory: Bool) -> TrendChart {
+        let (kind, title, unit, digits) = (spec.kind, spec.title, spec.unit, spec.digits)
         let weeks = values.count
         let points = values.enumerated().map { index, value in
             let start = today.adding(days: -(weeks - index) * 7 + 1, calendar: calendar)
