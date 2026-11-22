@@ -467,7 +467,7 @@ public final class TodayModel {
         TodaySignal.signals(
             .init(
                 today: loadedDay, metrics: metrics, nights: recentNights, readiness: readiness,
-                calendar: calendar, format: format
+                load: deloadAdvice?.loadSignal, calendar: calendar, format: format
             )
         )
     }

@@ -268,6 +268,34 @@ struct DeloadAdviceTests {
         ])
     }
 
+    @Test func weeklyLoadSpikeInTheDeloadProposalLeadsTheHeroSignals() async throws {
+        let sessions = stalledSessions.enumerated().map { index, original in
+            var session = original
+            session.sessionRPE = 6
+            session.endedAt = session.startedAt.addingTimeInterval(index == 5 ? 45 * 60 : 15 * 60)
+            return session
+        }
+        let store = TestStore(exercises: [squat, bench], sessions: sessions)
+        try await store.save(mainLift, for: squat.id)
+        try await store.save(mainLift, for: bench.id)
+        let model = TodayModel(
+            sources: [DayMetrics(days: metrics(poorWeek: false))], profiles: store, workouts: store, exercises: store,
+            progression: store, calendar: calendar, format: format
+        )
+        await model.load(now: now)
+
+        #expect(model.nextAction == .deload)
+        let load = try #require(model.signals.first)
+        #expect(load.kind == .load)
+        #expect(load.value == "1.80")
+        #expect(load.status == "Above your usual week")
+        #expect(load.tone == .amber)
+        #expect(load.isLeading)
+
+        await model.postponeDeload(now: now)
+        #expect(!model.signals.contains { $0.kind == .load })
+    }
+
     @Test func aPostponedProposalStaysHiddenForTheWeek() {
         var profile = AthleteProfile()
         profile.deloadPostponedUntil = today.adding(days: 3, calendar: calendar)

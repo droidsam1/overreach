@@ -121,6 +121,15 @@ public enum DeloadAssessment: Hashable, Sendable {
     /// A deload would be proposed, but this unconfirmed break may already have been the rest it calls for.
     case confirmBreak(DetectedDeload)
 
+    /// The weekly load ratio when a spike contributed to the proposed deload.
+    public var weeklyLoadRatio: Double? {
+        guard case let .proposed(proposal, _, _) = self else { return nil }
+        for signal in proposal.signals {
+            if case let .weeklyLoadSpike(ratio) = signal { return ratio }
+        }
+        return nil
+    }
+
     /// `nil` when there is nothing to say: no signals, or a proposal postponed until after `today`.
     public static func assess(
         today: CalendarDay, now: Date, profile: AthleteProfile, record: TrainingRecord,
