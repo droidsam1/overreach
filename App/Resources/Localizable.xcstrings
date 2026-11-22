@@ -715,6 +715,23 @@
         }
       }
     },
+    "Add": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Engadir"
+          }
+        }
+      }
+    },
     "Add 15 seconds": {
       "extractionState": "manual",
       "localizations": {
@@ -2381,6 +2398,23 @@
         }
       }
     },
+    "Choose at least one primary muscle so this exercise counts towards your weekly volume.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige al menos un músculo principal para que este ejercicio cuente en tu volumen semanal."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolle polo menos un músculo principal para que este exercicio conte no teu volume semanal."
+          }
+        }
+      }
+    },
     "Choose how to progress when you repeat an exercise": {
       "extractionState": "manual",
       "localizations": {
@@ -3873,6 +3907,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Crea unha nova en Axustes → Garmin para seguir importando. Son os mesmos tres pasos."
+          }
+        }
+      }
+    },
+    "Create exercise": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear ejercicio"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear exercicio"
           }
         }
       }
@@ -8807,6 +8858,40 @@
         }
       }
     },
+    "Muscles": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Músculos"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Músculos"
+          }
+        }
+      }
+    },
+    "Muscles taken from {1}. Change them if yours differs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Músculos tomados de {1}. Cámbialos si el tuyo es distinto."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Músculos tomados de {1}. Cámbiaos se o teu é distinto."
+          }
+        }
+      }
+    },
     "Name": {
       "extractionState": "manual",
       "localizations": {
@@ -9470,6 +9555,23 @@
         }
       }
     },
+    "No matches": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin resultados"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen resultados"
+          }
+        }
+      }
+    },
     "No matching activities": {
       "extractionState": "manual",
       "localizations": {
@@ -9997,6 +10099,23 @@
         }
       }
     },
+    "Not in the list? Create it and choose its muscles so its volume counts.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿No está en la lista? Créalo y elige sus músculos para que cuente su volumen."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non está na lista? Créao e escolle os seus músculos para que conte o seu volume."
+          }
+        }
+      }
+    },
     "Not now": {
       "extractionState": "manual",
       "localizations": {
@@ -10078,6 +10197,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aínda sen sincronizar"
+          }
+        }
+      }
+    },
+    "Not worked": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No trabaja"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non traballa"
           }
         }
       }
@@ -11051,6 +11187,23 @@
         }
       }
     },
+    "Primary": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Principal"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Principal"
+          }
+        }
+      }
+    },
     "Primary muscles": {
       "extractionState": "manual",
       "localizations": {
@@ -11064,6 +11217,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Músculos principais"
+          }
+        }
+      }
+    },
+    "Primary muscles count one set per working set; secondary ones, half a set.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los músculos principales cuentan una serie por cada serie efectiva; los secundarios, media."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os músculos principais contan unha serie por cada serie efectiva; os secundarios, media."
           }
         }
       }
@@ -13342,6 +13512,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Buscar exercicios, carreiras, fontes"
+          }
+        }
+      }
+    },
+    "Secondary": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secundario"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secundario"
           }
         }
       }
@@ -17460,6 +17647,23 @@
         }
       }
     },
+    "Use {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar {1}"
+          }
+        }
+      }
+    },
     "Use {1} jumps": {
       "extractionState": "manual",
       "localizations": {
@@ -19717,6 +19921,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} días desde a túa última sesión. Mantén o plan e volve pouco a pouco."
+          }
+        }
+      }
+    },
+    "{1} is already in your exercises.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} ya está en tus ejercicios."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} xa está nos teus exercicios."
           }
         }
       }

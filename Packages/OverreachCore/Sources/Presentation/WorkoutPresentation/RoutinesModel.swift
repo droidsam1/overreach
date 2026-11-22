@@ -102,6 +102,14 @@ public final class RoutinesModel {
         routines.first { $0.id == routineID }.map { RoutineEditorModel(list: self, routine: $0) }
     }
 
+    func newExercise(named name: String) -> NewExerciseModel {
+        NewExerciseModel(name: name, catalog: catalog, repository: exerciseRepository)
+    }
+
+    func didCreate(_ exercise: Exercise) {
+        if !catalog.contains(where: { $0.id == exercise.id }) { catalog.append(exercise) }
+    }
+
     // MARK: Intents
 
     public func load() async {
@@ -257,6 +265,17 @@ public final class RoutineEditorModel: Identifiable {
 
     /// Refreshes the exercises on offer (some may have been created meanwhile).
     public func reloadCatalog() async { await list.load() }
+
+    /// The form to create an exercise the picker did not find, named as typed in its search.
+    public func newExercise(named name: String) -> NewExerciseModel {
+        list.newExercise(named: name)
+    }
+
+    /// Adds an exercise just created with `newExercise(named:)` to the catalog and the routine.
+    public func addCreated(_ exercise: Exercise) {
+        list.didCreate(exercise)
+        addExercise(id: exercise.id)
+    }
 
     public func addExercise(id exerciseID: UUID) {
         guard !exerciseIDs.contains(exerciseID), list.catalog.contains(where: { $0.id == exerciseID }) else { return }

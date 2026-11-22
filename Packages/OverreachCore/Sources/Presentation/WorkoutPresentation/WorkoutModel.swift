@@ -466,6 +466,17 @@ public final class WorkoutModel {
         await add(exercise)
     }
 
+    /// The form to create an exercise the picker did not find, named as typed in its search.
+    public func newExercise(named name: String) -> NewExerciseModel {
+        NewExerciseModel(name: name, catalog: catalog, repository: exerciseRepository)
+    }
+
+    /// Adds an exercise just created with `newExercise(named:)` to the catalog and the session.
+    public func addCreated(_ exercise: Exercise) async {
+        if !catalog.contains(where: { $0.id == exercise.id }) { catalog.append(exercise) }
+        await add(exercise)
+    }
+
     /// Declares the session focus (`nil` = automatic) and recomputes targets that have no completed set.
     public func setSessionFocus(_ focus: TrainingFocus?) async {
         guard focus != sessionFocus else { return }

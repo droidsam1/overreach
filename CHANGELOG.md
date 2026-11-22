@@ -7,6 +7,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- The exercise picker in Train and in the routine editor can create an exercise search does not find. The typed
+  name is kept, equipment comes from the name ("barra", "mancuernas"…) and muscles from the most similar exercise,
+  so most of the time it is one tap on Add. A name that an exercise already answers to offers that one instead.
+
+- 52 common exercises join the catalog, with Spanish names: barbell lunges, walking and reverse lunges, split
+  squats, trap bar and single-leg Romanian deadlifts, push press, landmine press, Nordic curls, hip adduction,
+  cable crunches, Pallof press, box jumps, farmer's walks, sled pushes and more.
+
 - Today asks "With <dog>?" about your latest recent walk, with Yes and No. One tap saves the answer, and the
   app learns the times you usually walk the dog. You can set the dog's name in onboarding and Settings; History comes next.
 

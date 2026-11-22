@@ -128,17 +128,29 @@ public struct PickerItem: Identifiable, Hashable {
 }
 
 /// Searchable list of items (exercises), presented as a sheet.
-public struct ExercisePicker: View {
+///
+/// With `createForm`, an exercise search does not find can be created on the spot: a "Create “…”" row follows the
+/// results and a + button opens an empty form. The form is pushed with the typed text as its name and calls the
+/// `finish` it receives once the exercise was created and added, which closes the picker.
+public struct ExercisePicker<CreateForm: View>: View {
     private let title: LocalizedStringKey
     private let items: [PickerItem]
     private let onPick: (UUID) -> Void
+    private let createForm: ((_ name: String, _ finish: @escaping () -> Void) -> CreateForm)?
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
+    @State private var newExercise: NewExerciseRequest?
 
-    public init(title: LocalizedStringKey = "Add exercise", items: [PickerItem], onPick: @escaping (UUID) -> Void) {
+    public init(
+        title: LocalizedStringKey = "Add exercise",
+        items: [PickerItem],
+        onPick: @escaping (UUID) -> Void,
+        @ViewBuilder createForm: @escaping (_ name: String, _ finish: @escaping () -> Void) -> CreateForm
+    ) {
         self.title = title
         self.items = items
         self.onPick = onPick
+        self.createForm = createForm
     }
 
     private var filtered: [PickerItem] {
@@ -146,28 +158,82 @@ public struct ExercisePicker: View {
         return items.filter { item in item.searchTerms.contains { $0.localizedStandardContains(query) } }
     }
 
+    private var trimmedQuery: String { query.trimmingCharacters(in: .whitespacesAndNewlines) }
+
     public var body: some View {
         NavigationStack {
-            List(filtered) { item in
-                Button(item.title) {
-                    onPick(item.id)
-                    dismiss()
+            List {
+                Section {
+                    ForEach(filtered) { item in
+                        Button(item.title) {
+                            onPick(item.id)
+                            dismiss()
+                        }
+                    }
+                }
+                if createForm != nil, !trimmedQuery.isEmpty {
+                    Section {
+                        Button {
+                            newExercise = NewExerciseRequest(name: trimmedQuery)
+                        } label: {
+                            Label {
+                                VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                                    Text("Create exercise")
+                                    Text(verbatim: "“\(trimmedQuery)”")
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: "plus.circle.fill")
+                            }
+                        }
+                    } header: {
+                        if filtered.isEmpty { Text("No matches") }
+                    } footer: {
+                        Text("Not in the list? Create it and choose its muscles so its volume counts.")
+                    }
                 }
             }
             .overlay {
-                if filtered.isEmpty {
+                if filtered.isEmpty && (createForm == nil || trimmedQuery.isEmpty) {
                     ListEmptyState(query: query, title: "No exercises", systemImage: "dumbbell")
                 }
             }
             .searchable(text: $query)
             .navigationTitle(title)
+            .navigationDestination(item: $newExercise) { request in
+                createForm?(request.name) { dismiss() }
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
+                if createForm != nil {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("New exercise", systemImage: "plus") {
+                            newExercise = NewExerciseRequest(name: trimmedQuery)
+                        }
+                    }
+                }
             }
         }
     }
+}
+
+extension ExercisePicker where CreateForm == EmptyView {
+    /// A picker that only offers `items`.
+    public init(title: LocalizedStringKey = "Add exercise", items: [PickerItem], onPick: @escaping (UUID) -> Void) {
+        self.title = title
+        self.items = items
+        self.onPick = onPick
+        createForm = nil
+    }
+}
+
+/// One push of the create form; a new id each time, so the form starts from the current search text.
+private struct NewExerciseRequest: Identifiable, Hashable {
+    let id = UUID()
+    let name: String
 }
 
 /// "RPE 8 · 2 reps left" (or "RIR 2 · 2 reps left"): an RPE value with the reps in reserve it stands for.

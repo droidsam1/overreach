@@ -172,8 +172,19 @@ struct RoutineEditorView: View {
                 }
             }
             .sheet(isPresented: $isPickingExercise) {
-                ExercisePicker(items: model.exerciseChoices.map(PickerItem.init)) { model.addExercise(id: $0) }
-                    .task { await model.reloadCatalog() }
+                ExercisePicker(
+                    items: model.exerciseChoices.map(PickerItem.init),
+                    onPick: { model.addExercise(id: $0) },
+                    createForm: { name, finish in
+                        NewExerciseForm(
+                            model: model.newExercise(named: name),
+                            onCreated: { model.addCreated($0) },
+                            onUseExisting: { model.addExercise(id: $0) },
+                            finish: finish
+                        )
+                    }
+                )
+                .task { await model.reloadCatalog() }
             }
         }
     }

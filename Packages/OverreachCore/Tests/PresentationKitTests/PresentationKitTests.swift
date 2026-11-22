@@ -57,8 +57,9 @@ struct PresentationKitTests {
         let names = { (query: String) in SearchText.filter(catalog, by: query).map(\.name) }
         #expect(names("press de banca").contains("Bench Press (Barbell)"))
         #expect(names("bench press").contains("Bench Press (Barbell)"))
-        #expect(names("jalón al pecho") == ["Lat Pulldown (Cable)"])
-        #expect(names("lat pulldown") == ["Lat Pulldown (Cable)"])
+        #expect(names("jalón al pecho") == ["Lat Pulldown (Cable)", "Lat Pulldown (Machine)"])
+        #expect(names("lat pulldown") == ["Lat Pulldown (Cable)", "Lat Pulldown (Machine)"])
+        #expect(names("zancada con barra") == ["Lunge (Barbell)"])
         #expect(names("elevacion de talones").contains("Seated Calf Raise (Plate Loaded)"))
         let choice = ExerciseChoice(builtIn("Leg Press"))
         #expect(SearchText.matches("prensa de piernas", choice.searchTerms))
