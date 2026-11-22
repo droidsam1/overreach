@@ -327,6 +327,8 @@ public struct TodayView: View {
             actionButton(Text(title), symbol: "arrow.uturn.backward", prominent: false) {
                 Task { await model.undoRest() }
             }
+        case .trainedToday:
+            actionButton(Text(title), symbol: "plus", prominent: false, action: onOpenTrain)
         case .deload:
             primaryDeload(title: title)
         case .checkIn:

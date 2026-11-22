@@ -11,6 +11,17 @@ and the logger come before review tools, and work that only a person with an iPh
 
 ## Ready to implement
 
+0. **Coherent daily recommendation after training** — one task at a time, in this order (all touch Today: never in
+   parallel with #181–#185):
+   1. Done: after a lift or run today the hero says so and recommends no second session unless the plan has one.
+   2. Lower-body strength before a run: from the exercises' `BodyRegion`, count a lower-body session today, or
+      yesterday with heavy or hard-eccentric work, as a conflict. Without a run goal or a dated run, Today offers no
+      optional run and the other-options run says why; with a dated run it keeps the run, easy, and shows the
+      spacing note. Evidence: `docs/evidence-readiness-and-hybrid.md` (concurrent training, same-day sequence).
+   3. Share the rule with the Assistant context and Plan: `TrainingServices` answers "trained today" and
+      "lower-body load in the last 24 h" once, and `AIExchange` and Plan's easy-run proposals use it.
+   4. Evidence register entry for the rule (`concurrent-lower-body-run`, heuristic) and a replay case.
+
 1. **Minimal UI with progressive disclosure** — [#179](https://github.com/droidsam1/overreach/issues/179)
    ([ADR-0041](adr/0041-minimal-ui-progressive-disclosure.md)), one task at a time in this order:
    [#181](https://github.com/droidsam1/overreach/issues/181) (one pending prompt),

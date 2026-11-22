@@ -8365,6 +8365,23 @@
         }
       }
     },
+    "Log another workout": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrar otro entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rexistrar outro adestramento"
+          }
+        }
+      }
+    },
     "Log effort as": {
       "extractionState": "manual",
       "localizations": {
@@ -19411,6 +19428,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Volves correr despois dunha pausa."
+          }
+        }
+      }
+    },
+    "You've trained today. Recovery is part of the plan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy ya has entrenado. La recuperación también es parte del plan."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe xa adestraches. A recuperación tamén forma parte do plan."
           }
         }
       }
