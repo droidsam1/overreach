@@ -16,6 +16,7 @@ public struct RunningCalendarDraft: Identifiable, Hashable, Sendable {
     public var racePriority: PlannedRun.RacePriority?
     public var postponed: Bool
     public var completion: PlannedRunCompletion?
+    var adjustmentOriginal: PlannedRun?
     private let previousDay: CalendarDay?
     private let originalDay: CalendarDay?
 
@@ -37,6 +38,7 @@ public struct RunningCalendarDraft: Identifiable, Hashable, Sendable {
         originalDay = entry?.originalDay
     }
 
+    public var isRunAdjustment: Bool { adjustmentOriginal != nil }
     public var showsWorkoutDetails: Bool { purpose != .rest }
     public var showsRacePriority: Bool { purpose == .race }
     public var showsPostpone: Bool { showsWorkoutDetails && completion == nil }

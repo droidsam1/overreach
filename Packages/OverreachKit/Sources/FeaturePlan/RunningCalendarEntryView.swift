@@ -22,7 +22,7 @@ struct RunningCalendarEntryView: View {
                 }
                 Section {
                     DatePicker("Date", selection: $draft.date, displayedComponents: .date)
-                        .disabled(draft.completion != nil)
+                        .disabled(draft.completion != nil || draft.isRunAdjustment)
                     Picker("Session type", selection: $draft.purpose) {
                         ForEach(model.runningSessionOptions) { option in Text(option.name).tag(option.value) }
                     }
@@ -44,7 +44,7 @@ struct RunningCalendarEntryView: View {
                         Text("To move a completed entry, unlink the recorded run first.")
                     }
                 }
-                if !draft.isNew {
+                if !draft.isNew && !draft.isRunAdjustment {
                     Button("Remove running day", role: .destructive) { confirmRemoval = true }
                         .disabled(model.isSavingProfile)
                 }

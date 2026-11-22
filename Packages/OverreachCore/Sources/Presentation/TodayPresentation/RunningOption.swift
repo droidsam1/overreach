@@ -11,10 +11,14 @@ public struct RunningOption: Hashable, Sendable {
     public let evidence: String?
     public let source: URL?
     public let explanation: String?
+    public let adjustment: PlannedRun?
+    public let adjustmentMinutes: Int?
+    public let isOptional: Bool
 
     private init(
         goal: String, advice: String, plan: String? = nil, context: String? = nil, evidence: EvidenceReference? = nil,
-        source: String? = nil, explanation: String? = nil
+        source: String? = nil, explanation: String? = nil, adjustment: PlannedRun? = nil,
+        adjustmentMinutes: Int? = nil, isOptional: Bool = false
     ) {
         self.goal = goal
         self.plan = plan
@@ -23,13 +27,28 @@ public struct RunningOption: Hashable, Sendable {
         self.evidence = evidence?.level.displayName
         self.source = source.flatMap { URL(string: $0) }
         self.explanation = explanation
+        self.adjustment = adjustment
+        self.adjustmentMinutes = adjustmentMinutes
+        self.isOptional = isOptional
     }
 
-    init(goal: RunningGoal?, decision: EasyRunAdvisor.Decision, calendar: Calendar, format: Format) {
+    init(
+        goal: RunningGoal?, decision: EasyRunAdvisor.Decision, hasRunToday: Bool, calendar: Calendar, format: Format
+    ) {
         let title = goal?.displayName(format: format) ?? L10n.text("Running")
         switch decision {
         case .plannedRest:
             self.init(goal: title, advice: L10n.text("Keep your planned running rest day."))
+        case .raceToday:
+            self.init(goal: title, advice: L10n.text("Your race is today. Follow the recovery advice above."))
+        case .scheduledStrength:
+            self.init(goal: title, advice: L10n.text("Keep your scheduled strength session as the priority."))
+        case .familiarEffort:
+            self.init(
+                goal: title, advice: L10n.text("If you run today, keep it easy and at a conversational pace."),
+                context: Self.painFreeContext(L10n.text("Choose a duration you are used to."), goal: goal),
+                isOptional: true
+            )
         case .nearEvent:
             self.init(goal: title, advice: L10n.text(
                 "Your race or target date is today or tomorrow. Leave the extra run for another day."
@@ -48,12 +67,16 @@ public struct RunningOption: Hashable, Sendable {
                 evidence: EasyRunAdvisor.returnEvidence, source: "https://pubmed.ncbi.nlm.nih.gov/33517866/",
                 explanation: L10n.text(
                     "Endurance can change during a break. Keeping the first runs easy is a coaching estimate."
-                )
+                ), isOptional: !hasRunToday
             )
         case .example(let minutes, let next, let isToday, let recentRuns):
             let plan = next.map { Self.planText($0, isToday: isToday, calendar: calendar, format: format) }
+            let reduction = isToday && (next?.purpose != .easy || next?.durationMinutes != minutes
+                                       || next?.prescription != nil || next?.distanceMeters != nil)
             let advice: String
-            if isToday, next?.purpose == .easy {
+            if isToday, !reduction {
+                advice = L10n.text("Keep today's planned easy run at a conversational pace.")
+            } else if isToday, next?.purpose == .easy {
                 advice = L10n.format("Keep today's run easy. Try {1} min at a conversational pace.", String(minutes))
             } else if isToday {
                 advice = L10n.format("Try {1} min at a conversational pace in place of the planned session.", String(minutes))
@@ -66,7 +89,8 @@ public struct RunningOption: Hashable, Sendable {
                 evidence: EasyRunAdvisor.evidence, source: "https://pubmed.ncbi.nlm.nih.gov/18277826/",
                 explanation: L10n.text(
                     "A conversational pace keeps the effort easy. The duration is a coaching estimate."
-                )
+                ), adjustment: reduction && goal != nil ? next : nil, adjustmentMinutes: reduction ? minutes : nil,
+                isOptional: !isToday
             )
         }
     }

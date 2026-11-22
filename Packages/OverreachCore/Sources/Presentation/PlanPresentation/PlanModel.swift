@@ -514,9 +514,25 @@ extension PlanModel {
         return RunningCalendarDraft(entry: entry, today: clock(), calendar: calendar)
     }
 
+    public func reviewEasyRun(_ original: PlannedRun, minutes: Int) -> RunningCalendarDraft {
+        var draft = editRunningEntry(original)
+        draft.adjustmentOriginal = original
+        draft.purpose = .easy
+        draft.minutes = minutes
+        draft.distanceKm = 0
+        draft.repetitions = 0
+        draft.recoverySeconds = 0
+        draft.intensityBasis = nil
+        draft.intensityTarget = 0
+        return draft
+    }
+
     public func saveRunningEntry(_ draft: RunningCalendarDraft) async -> Bool {
         guard draft.canSave else { return false }
-        return await updateRunningCalendar(id: draft.id, entry: draft.entry(calendar: calendar), isNew: draft.isNew)
+        return await updateRunningCalendar(
+            id: draft.id, entry: draft.entry(calendar: calendar), isNew: draft.isNew,
+            adjustmentOriginal: draft.adjustmentOriginal
+        )
     }
 
     public func removeRunningEntry(_ id: UUID) async -> Bool {
@@ -566,16 +582,22 @@ extension PlanModel {
                                   title: entry.calendarTitle(), status: status)
     }
 
-    private func updateRunningCalendar(id: UUID, entry: PlannedRun?, isNew: Bool) async -> Bool {
+    private func updateRunningCalendar(
+        id: UUID, entry: PlannedRun?, isNew: Bool, adjustmentOriginal: PlannedRun? = nil
+    ) async -> Bool {
         guard showsRunningCalendar else { return false }
         return await updateCalendar { goal in
             guard goal.running != nil else { return false }
             var schedule = goal.scheduledRuns
             let index = schedule.firstIndex { $0.id == id }
             if let entry {
+                if let original = adjustmentOriginal,
+                   !canApplyRunAdjustment(original, updated: entry, goal: goal) {
+                    errorMessage = L10n.text("Your schedule has changed. Review the current plan and try again.")
+                    return false
+                }
                 // An edit prepared against an entry that was removed cannot recreate it.
-                guard isNew == (index == nil) else { return false }
-                guard canSchedule(entry, among: schedule) else { return false }
+                guard isNew == (index == nil), canSchedule(entry, among: schedule) else { return false }
                 if let index { schedule[index] = entry } else { schedule.append(entry) }
             } else {
                 guard let index else { return true }
@@ -583,6 +605,17 @@ extension PlanModel {
             }
             goal.setRunningSchedule(schedule)
             return true
+        }
+    }
+
+    private func canApplyRunAdjustment(_ original: PlannedRun, updated: PlannedRun, goal: TrainingGoal) -> Bool {
+        let today = CalendarDay(clock(), calendar: calendar)
+        let tomorrow = today.adding(days: 1, calendar: calendar)
+        guard original.day == today, updated.day == today, goal.scheduledRuns.contains(original),
+              goal.targetDate.map({ !(today...tomorrow).contains($0) }) ?? true else { return false }
+        return !goal.scheduledRuns.contains {
+            guard $0.id != original.id, !$0.isPostponed else { return false }
+            return $0.day == today || ($0.day == tomorrow && $0.purpose == .race && $0.completion == nil)
         }
     }
 

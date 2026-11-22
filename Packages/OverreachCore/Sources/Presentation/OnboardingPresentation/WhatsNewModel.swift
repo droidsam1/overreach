@@ -20,6 +20,10 @@ public struct ReleaseNotes: Hashable, Sendable {
         [
             ReleaseNotes(version: "0.1.0", highlights: [
                 ReleaseHighlight(
+                    symbol: "figure.run", title: L10n.text("Easier planned runs"),
+                    detail: L10n.text("When Today suggests an easier run, review and save the change in Plan.")
+                ),
+                ReleaseHighlight(
                     symbol: "figure.walk", title: L10n.text("Everyday movement"),
                     detail: L10n.text(
                         "Today compares steps and walks with your usual day. Extra walking can affect your weekly "

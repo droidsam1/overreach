@@ -470,8 +470,8 @@ public final class TodayModel {
         let today = range.upperBound
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         loadRunningPlan(
-            goal: goal, today: today, now: now, runs: record.runReadFailed ? [] : record.runs,
-            runningBreak: runningBreak
+            goal: goal, today: today, now: now, runs: record.runs,
+            runningBreak: runningBreak, runReadFailed: record.runReadFailed
         )
         loadWorkoutContext(today: today, profile: profile, record: record)
         updateDeloadSession()
@@ -500,10 +500,10 @@ public final class TodayModel {
     }
 
     private func loadRunningPlan(
-        goal: TrainingGoal?, today: CalendarDay, now: Date, runs: [RunActivity], runningBreak: DetectedDeload?
+        goal: TrainingGoal?, today: CalendarDay, now: Date, runs: [RunActivity],
+        runningBreak: DetectedDeload?, runReadFailed: Bool
     ) {
         let running = goal?.running
-        guard running != nil || runningBreak != nil else { return }
         let schedule = goal?.scheduledRuns.filter { !$0.isPostponed } ?? []
         let yesterday = today.adding(days: -1, calendar: calendar).startDate(in: calendar)
         let latestRun = schedule.compactMap(\.completion).filter {
@@ -514,9 +514,14 @@ public final class TodayModel {
         scheduledRunsToday = schedule.filter { $0.day == today }.map { ScheduledTrainingRow.run($0, format: format) }
         if let decision = EasyRunAdvisor.advise(
             goal: running, targetDay: goal?.targetDate, schedule: schedule, readiness: readiness, metrics: metrics,
-            runs: runs, now: now, calendar: calendar, runningBreak: runningBreak
+            runs: runReadFailed ? [] : runs, now: now, calendar: calendar,
+            runningBreak: runReadFailed ? nil : runningBreak, strength: goal?.scheduledStrength ?? [],
+            priority: goal?.effectivePriority ?? .balanced, allowEffortOnly: !runReadFailed
         ), decision != .plannedRest {
-            runningOption = RunningOption(goal: running, decision: decision, calendar: calendar, format: format)
+            runningOption = RunningOption(
+                goal: running, decision: decision, hasRunToday: !scheduledRunsToday.isEmpty,
+                calendar: calendar, format: format
+            )
         }
     }
 

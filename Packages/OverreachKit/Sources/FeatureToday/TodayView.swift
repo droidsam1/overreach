@@ -14,6 +14,7 @@ public struct TodayView: View {
     private var settingsDestination: (() -> AnyView)?
     private var showsSettings = Binding.constant(false)
     private var settingsBadgeCount = 0
+    private var onReviewEasyRun: ((PlannedRun, Int) -> Void)?
 
     private let workoutContinuation: TodayModel.WorkoutContinuation?
     private let onOpenTrain: () -> Void
@@ -66,6 +67,12 @@ public struct TodayView: View {
         return copy
     }
 
+    public func reviewEasyRun(_ action: @escaping (PlannedRun, Int) -> Void) -> TodayView {
+        var copy = self
+        copy.onReviewEasyRun = action
+        return copy
+    }
+
     public var body: some View {
         NavigationStack {
             ScrollView {
@@ -75,7 +82,11 @@ public struct TodayView: View {
                         scheduledTraining
                     }
                     if let option = model.runningOption {
-                        easyRun(option)
+                        if option.isOptional {
+                            DisclosureGroup("I want to run today") { easyRun(option) }
+                        } else {
+                            easyRun(option)
+                        }
                     }
                     if model.showsReadinessDetails && model.showsReadinessCard {
                         TodayReadinessDetails(model: model)
@@ -382,6 +393,9 @@ public struct TodayView: View {
                 Text(plan).font(.subheadline).foregroundStyle(.secondary)
             }
             Text(option.advice).font(.subheadline)
+            if let entry = option.adjustment, let minutes = option.adjustmentMinutes, let onReviewEasyRun {
+                Button("Review easy run in Plan") { onReviewEasyRun(entry, minutes) }
+            }
             if let context = option.context { Text(context).font(.caption).foregroundStyle(.secondary) }
             if let evidence = option.evidence, let source = option.source {
                 DisclosureGroup("Why this running option?") {

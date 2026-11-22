@@ -388,19 +388,19 @@ Refs: Schwellnus et al. 2022, IOC consensus, Br J Sports Med 56:1066; Snyders et
 
 ### `easy-run-example` — heuristic
 
-For a hybrid running goal, Today can offer conversational running on green or amber days with usable recovery
-data. Green needs recent comparable HRV or sleep. Amber needs an active HRV, resting heart rate or sleep signal.
-Reported severe soreness, red or unknown readiness, a run already completed today, unavailable history, and a
-follow-up date today or tomorrow for an event suppress the example. An explicit running rest day is respected.
-Review multiple due running sessions together in Plan. The advisor checks the whole calendar through tomorrow
-for an event or quality workout and treats an explicitly confirmed link today as completed even during a source outage.
-Green keeps planned quality and long sessions in place. On amber, a dated non-race run can be replaced by the
-suggestion without modifying the saved plan.
+Today can offer conversational running on green or amber days with usable recovery data. Green needs recent
+comparable HRV or sleep. Amber needs an active HRV, resting heart rate or sleep signal. Severe soreness, a symptom
+reason to skip training or a run already completed today suppresses the example. An explicit running rest day is
+respected, and an event today or tomorrow takes precedence. Review multiple due runs in Plan. A confirmed link
+counts as a completed run even during a source outage. Green keeps planned quality and long runs in place.
+The athlete can review and save a suggested same-day easy session in Plan.
 
 Duration uses the lower median of the last five or fewer measured runs in 28 days, with at least one within 14 days.
 Use three quarters of that duration on amber and cap by the relevant planned duration when available. The example
 is capped at 30 minutes, 20 for a pain-free objective or 15 before a next-day quality or long run, with a 5-minute
-minimum. Goal time is displayed in Plan
+minimum. Balanced and strength-first plans also use the lower cap around dated strength, and put today's strength
+session ahead of an optional run. Without a fresh run or a nearby key session, the optional cue uses familiar
+duration chosen by the athlete. Goal time is displayed in Plan
 as an ambition and never used to set the easy pace. The time limits, cutoffs and goal-specific cap are conservative
 product defaults. Talk-test studies support the intensity cue. HRV-guided endurance research supports considering
 individual changes but does not validate these specific wearable or dosing cutoffs. Reviewed 2026-11-20.

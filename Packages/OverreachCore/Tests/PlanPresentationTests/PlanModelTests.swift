@@ -165,6 +165,39 @@ struct PlanModelTests {
         #expect(model.errorMessage == "A running rest day must be the only entry on that date.")
     }
 
+    @Test func savesAnEasyAdjustmentOnlyAfterReviewAndRejectsAStalePlan() async throws {
+        let (model, store) = await model()
+        let today = CalendarDay(now, calendar: calendar)
+        let original = PlannedRun(
+            day: today, purpose: .intervals, durationMinutes: 40, distanceMeters: 8_000,
+            prescription: .init(repetitions: 6, recoverySeconds: 90, intensityBasis: .pace, intensityTarget: 300)
+        )
+        var goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000), nextRun: original)
+        try await store.save(AthleteProfile(goal: goal))
+        await model.load()
+
+        let draft = model.reviewEasyRun(original, minutes: 20)
+        #expect(try await store.profile().goal?.scheduledRuns == [original])
+        let race = PlannedRun(day: today.adding(days: 1, calendar: calendar), purpose: .race)
+        goal.setRunningSchedule([original, race])
+        try await store.save(AthleteProfile(goal: goal))
+        #expect(!(await model.saveRunningEntry(draft)))
+        #expect(try await store.profile().goal?.scheduledRuns == [original, race])
+
+        goal.setRunningSchedule([original])
+        try await store.save(AthleteProfile(goal: goal))
+        #expect(await model.saveRunningEntry(draft))
+        let updated = try #require(try await store.profile().goal?.scheduledRuns.first)
+        #expect(updated.id == original.id)
+        #expect(updated.day == today)
+        #expect(updated.purpose == .easy)
+        #expect(updated.durationMinutes == 20)
+        #expect(updated.distanceMeters == nil)
+        #expect(updated.prescription == nil)
+        #expect(updated.completion == nil)
+        #expect(!(await model.saveRunningEntry(draft)))
+    }
+
     @Test func preservesARacePrescriptionWhenMovingAndRestoringTheCalendar() async throws {
         let (model, store) = await model()
         let goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000))
