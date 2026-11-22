@@ -37,7 +37,7 @@ extension PlanModel {
 
     /// Something to show in Progress: a recovery period or question, a stalled lift or a linked running result.
     public var hasProgress: Bool {
-        hasRecoveryHistory || !liftsToUnblockRows.isEmpty || runningGoalProgress != nil
+        hasRecoveryHistory || !liftsToUnblockRows.isEmpty || runningGoalProgress != nil || !importedPlanProgress.isEmpty
     }
 
     /// One line for the Progress row: the last recovery, stalled lifts and the running goal.
@@ -49,6 +49,7 @@ extension PlanModel {
         case 1: parts.append(L10n.text("1 lift to unblock"))
         case let count: parts.append(L10n.format("{1} lifts to unblock", count))
         }
+        if let imported = importedPlanProgress.first { parts.append(imported.summary) }
         if let running = runningGoalProgress { parts.append(running.status) }
         return parts.isEmpty ? L10n.text("No progress to show yet") : parts.joined(separator: " · ")
     }

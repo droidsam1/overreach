@@ -14944,6 +14944,23 @@
         }
       }
     },
+    "Strength plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan de fuerza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan de forza"
+          }
+        }
+      }
+    },
     "Strength recorded on your watch but not in the app? Log it from History with the watch's times.": {
       "extractionState": "manual",
       "localizations": {
@@ -16164,6 +16181,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Este plan usa unha versión que a app non coñece."
+          }
+        }
+      }
+    },
+    "This week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta semana"
           }
         }
       }
@@ -17766,6 +17800,23 @@
         }
       }
     },
+    "Week {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana {1}"
+          }
+        }
+      }
+    },
     "Weight in kilograms": {
       "extractionState": "manual",
       "localizations": {
@@ -19326,6 +19377,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bloque de {1} {2}, durante {3}–{4} semanas."
+          }
+        }
+      }
+    },
+    "{1} completed / {2} planned": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} completadas / {2} planificadas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} completadas / {2} planificadas"
           }
         }
       }
