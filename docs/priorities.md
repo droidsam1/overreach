@@ -14,7 +14,6 @@ and the logger come before review tools, and work that only a person with an iPh
 1. **Coherent daily recommendation after training** — [#202](https://github.com/droidsam1/overreach/issues/202),
    one task at a time in this order (all touch Today: never in parallel with #181–#185):
    [#203](https://github.com/droidsam1/overreach/issues/203) (no run after lower-body strength unless planned),
-   [#204](https://github.com/droidsam1/overreach/issues/204) (share the rule with the Assistant and Plan),
    [#205](https://github.com/droidsam1/overreach/issues/205) (evidence entry and replay case). Shipped in
    [#201](https://github.com/droidsam1/overreach/pull/201): after a lift or run today Today recommends no second
    session unless the plan has one.

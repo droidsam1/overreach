@@ -99,7 +99,7 @@ let package = Package(
 
         .testTarget(name: "DomainTests", dependencies: ["Domain", "Fixtures"]),
         .testTarget(name: "AnalyticsTests", dependencies: ["Analytics", "Domain"]),
-        .testTarget(name: "TrainingServicesTests", dependencies: ["TrainingServices", "Domain"]),
+        .testTarget(name: "TrainingServicesTests", dependencies: ["TrainingServices", "Analytics", "Domain"]),
         .testTarget(name: "ReportsTests", dependencies: ["Reports", "Domain"]),
         .testTarget(name: "AIExchangeTests", dependencies: ["AIExchange", "Analytics", "Domain", "Fixtures"]),
         .testTarget(name: "StrongImportTests", dependencies: ["StrongImport", "Domain"]),
