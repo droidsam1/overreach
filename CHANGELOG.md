@@ -8,6 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 
+- Recovery & Progress compares completed and planned strength sessions by imported block and week.
+
 - Today compares planned runs with conversational alternatives and accounts for nearby races, quality runs and
   scheduled strength. Keep the session, switch to the easy run or review a clear date for the original run in Plan.
 

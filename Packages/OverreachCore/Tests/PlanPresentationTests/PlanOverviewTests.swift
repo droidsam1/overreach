@@ -60,6 +60,24 @@ struct PlanOverviewTests {
         #expect(model.goalSummary.contains(" · "))
     }
 
+    @Test func importedBlockShowsProgressBeforeTheFirstWorkout() async throws {
+        let (model, store) = try await model()
+        let day = CalendarDay(now, calendar: calendar)
+        let block = TrainingBlock(
+            focus: .strength, start: day, plannedWeeks: 4, isDeclared: true, name: "Strength phase",
+            routineIDs: [UUID(), UUID()]
+        )
+        try await store.save(AthleteProfile(declaredBlocks: [block]))
+        await model.load()
+
+        let row = try #require(model.importedPlanProgress.first)
+        #expect(model.hasProgress)
+        #expect(row.title.hasPrefix("Strength phase"))
+        #expect(row.summary == "0 completed / 2 planned")
+        #expect(row.weeks.map(\.title) == ["This week"])
+        #expect(model.progressSummary == row.summary)
+    }
+
     @Test func withoutHistoryProgressSaysSoInsteadOfShowingNothing() async throws {
         let (model, _) = try await model()
         #expect(!model.hasProgress)

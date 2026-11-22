@@ -73,6 +73,7 @@ public final class PlanModel {
     public private(set) var errorMessage: String?
     /// True while the history is being analysed (off the main actor).
     public private(set) var isAnalysing = false
+    public private(set) var importedPlanProgress: [ImportedPlanProgressRow] = []
     public private(set) var isReviewingDeload = false
     private var deloads: [DetectedDeload] = []
     private var recentDeloadQuestions: [DetectedDeload] = []
@@ -274,7 +275,11 @@ public final class PlanModel {
             let day = CalendarDay(now, calendar: calendar)
             let start: Date = profile.countsBreaksAutomatically ? .distantPast
                 : day.adding(days: -TrainingRecordLoader.historyDays, calendar: calendar).startDate(in: calendar)
-            let sessions = try await workouts.sessions(from: start, to: now)
+            let firstPlanDay = profile.declaredBlocks.filter {
+                $0.isDeclared && !$0.routineIDs.isEmpty && $0.start <= day
+            }.map(\.start).min()
+            let planStart = firstPlanDay?.startDate(in: calendar) ?? start
+            let sessions = try await workouts.sessions(from: min(planStart, start), to: now)
             errorMessage = nil
             if showsHybridCalendar { await loadCalendarRoutines() }
             await analyse(sessions: sessions, from: start, now: now)
@@ -416,12 +421,20 @@ public final class PlanModel {
         let runs = runReading.activities
         let runReadFailed = runReading.failed
         let recordings = (try? await recordedStrength?.strengthActivities(from: start, to: now)) ?? []
-        let analysis = await Task.detached(priority: .userInitiated) {
-            PlanAnalysis.run(
-                profile: profile, sessions: sessions, exercises: exercises, settings: settings, now: now,
+        let (analysis, blockProgress) = await Task.detached(priority: .userInitiated) {
+            let analysis = PlanAnalysis.run(
+                profile: profile, sessions: sessions.filter { $0.startedAt >= start },
+                exercises: exercises, settings: settings, now: now,
                 runs: runs, routines: routines, runReadFailed: runReadFailed, recordings: recordings, calendar: calendar
             )
+            let progress = PlanReviewer.blockProgress(
+                blocks: profile.declaredBlocks, sessions: sessions, now: now, calendar: calendar
+            )
+            return (analysis, progress)
         }.value
+        importedPlanProgress = blockProgress.map {
+            ImportedPlanProgressRow(block: $0.block, weeks: $0.weeks, calendar: calendar)
+        }
         currentBlock = analysis.currentBlock
         suggestion = analysis.suggestion
         plan = analysis.plan

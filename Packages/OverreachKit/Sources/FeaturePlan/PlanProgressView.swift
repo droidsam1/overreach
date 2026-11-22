@@ -26,6 +26,23 @@ public struct PlanProgressView: View {
                     .foregroundStyle(.secondary)
                 }
             }
+            if !model.importedPlanProgress.isEmpty {
+                Section("Strength plan") {
+                    ForEach(model.importedPlanProgress) { block in
+                        DisclosureGroup {
+                            ForEach(block.weeks) { week in
+                                LabeledContent(week.title, value: week.summary)
+                            }
+                        } label: {
+                            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                                Text(block.title).font(.headline)
+                                Text(block.summary).foregroundStyle(.secondary)
+                            }
+                            .accessibilityElement(children: .combine)
+                        }
+                    }
+                }
+            }
             if model.hasRecoveryHistory {
                 Section("Recovery periods") {
                     RecoveryHistoryRows(model: model, showsDeloadHistory: true)

@@ -77,6 +77,36 @@ struct PlanReviewTests {
         #expect(reviewed([], today: 42) == nil)
     }
 
+    @Test func blockProgressCountsOnlyCompletedRoutineSessionsWithinEachBlock() {
+        var next = block
+        next.start = day(14)
+        next.sessionsPerWeek = 2
+        var future = block
+        future.start = day(56)
+
+        var first = session(on: 2)
+        first.endedAt = first.startedAt.addingTimeInterval(3600)
+        var second = session(on: 14)
+        second.endedAt = second.startedAt.addingTimeInterval(3600)
+        var laterToday = session(on: 15)
+        laterToday.endedAt = laterToday.startedAt.addingTimeInterval(3600)
+        var unrelated = session(on: 1, Routine(name: "Other"))
+        unrelated.endedAt = unrelated.startedAt.addingTimeInterval(3600)
+
+        let progress = PlanReviewer.blockProgress(
+            blocks: [block, next, future], sessions: [first, second, session(on: 8), laterToday, unrelated],
+            now: day(15).startDate(in: calendar), calendar: calendar
+        )
+
+        #expect(progress.map { $0.block.start } == [day(14), start])
+        #expect(progress.first?.weeks.map(\.done) == [1])
+        #expect(progress.first?.weeks.map(\.planned) == [2])
+        #expect(progress.first?.weeks.last?.isCurrent == true)
+        #expect(progress.last?.weeks.map(\.done) == [1, 0])
+        #expect(progress.last?.weeks.map(\.planned) == [3, 3])
+        #expect(progress.last?.weeks.last?.isCurrent == false)
+    }
+
     // MARK: Adjustments
 
     @Test func missedSessionsProposeFewerSessionsAndALongerBlock() throws {

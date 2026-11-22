@@ -10,22 +10,20 @@ and the logger come before review tools, and work that only a person with an iPh
 
 ## Ready to implement
 
-1. **Planned versus completed work for imported plans** — follow-up of
-   [#34](https://github.com/droidsam1/overreach/issues/34).
-2. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).
-3. **Hybrid planning research** —
+1. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).
+2. **Hybrid planning research** —
    [hybrid backlog task 9](design/readiness-and-hybrid-planning.md#9-research-and-validate-hybrid-planning-rules-before-automating-plans).
    Runs in parallel. Integrate after the shared schedule work.
-4. **Longer trends** — [#127](https://github.com/droidsam1/overreach/issues/127). Add 30- and
+3. **Longer trends** — [#127](https://github.com/droidsam1/overreach/issues/127). Add 30- and
    90-day views inside the relevant details. Use the activity matching from #40 for combined-source totals.
-5. **Dog walks from a pet tracker** — [#154](https://github.com/droidsam1/overreach/issues/154), one task at a time:
+4. **Dog walks from a pet tracker** — [#154](https://github.com/droidsam1/overreach/issues/154), one task at a time:
    [#155](https://github.com/droidsam1/overreach/issues/155) (tag and matcher), then
    [#163](https://github.com/droidsam1/overreach/issues/163) (one-tap "With Nanoq?"), then
    [#159](https://github.com/droidsam1/overreach/issues/159), then the optional GPX backfill:
    [#158](https://github.com/droidsam1/overreach/issues/158) (parser), then
    [#165](https://github.com/droidsam1/overreach/issues/165) (guided import) once #164 is done. Design:
    [companion walks](design/companion-walks.md).
-6. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
+5. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
 
 ## Needs a person or an iPhone
 
