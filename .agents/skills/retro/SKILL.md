@@ -32,5 +32,6 @@ The goal is a better environment for the next agent run, not a judgement of the 
      past a few hundred thousand tokens. Fix: a script, a flag or a workflow note.
    - **No-ops** — instructions that did not change behaviour. Fix: delete them.
    - **Information access** — logs, data or third-party access the agent lacked. Fix: a script, fixture or doc.
+   Done when each candidate's cause is reproduced (run the script, read the log), not inferred from memory.
 4. Present the candidates to the user, most severe first. For each: the evidence, the change, the file it goes in.
    Done when every candidate has all three and nothing is applied without the user's go-ahead.

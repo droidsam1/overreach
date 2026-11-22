@@ -32,7 +32,8 @@ the diff. Rules a tool can decide are listed at the end and are not repeated her
 - A rule that recommends, proposes or evaluates (progression, stalls, deloads, readiness, load, cycle, walking,
   nutrition) rests on the most robust recent evidence: current meta-analyses, position stands and RCTs, searched
   before writing the rule. Where evidence runs out, use a labelled heuristic.
-- Record the evidence in [docs/evidence.md](docs/evidence.md) and cite its key in code with `EvidenceReference`.
+- Record the evidence in [docs/evidence.md](docs/evidence.md) and cite its key in code with `EvidenceReference`;
+  `check-repo.py` fails on a key with no entry.
 
 ## Stored data (ADR-0018)
 
@@ -65,6 +66,8 @@ the diff. Rules a tool can decide are listed at the end and are not repeated her
 | Lines a branch changes add no lint warnings | `new-lint-warnings.py` via `check-local.py` and CI |
 | Strings are in the catalog, translated, with matching placeholders; catalogs sorted | `check-localization.py` |
 | Unique ADR numbers, `# NNNN — Title` headings | `check-repo.py` |
+| Evidence keys used in code have an entry in `docs/evidence.md` | `check-repo.py` |
+| Each "Ready to implement" item in `docs/priorities.md` links an issue or design-doc task | `check-repo.py` |
 | Frozen v1 backup fixture unchanged | `check-repo.py` |
 | Every released version has "What's new" highlights | `check-repo.py` |
 | Skill copies in sync, agent guide links resolve, no tracked bytecode | `check-repo.py` |

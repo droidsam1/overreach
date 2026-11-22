@@ -616,6 +616,24 @@ day. Treat the calendar window as a review trigger and use actual timing when av
 the lower-priority session to a compatible available slot before proposing reduced work. Concurrent
 training outcomes and acute fatigue studies inform the check. [Evidence and replay cases](evidence-readiness-and-hybrid.md#candidate-hybrid-planning-rules)
 
+### `concurrent-lower-body-run` — heuristic
+
+Leg strength work today, or a heavy leg session yesterday, holds back an *unplanned* easy run in Today; a run
+the athlete scheduled stays, shortened to the nearby-session maximum. A running priority turns the rule off.
+Chronic evidence does not call for avoiding runs: concurrent training does not blunt hypertrophy or maximal
+strength on average, and between-session spacing matters less than within-session order (Schumann et al. 2022;
+Eddens et al. 2018, strength before endurance favours lower-body strength). What it does support is smaller:
+explosive strength is the outcome most affected, the lower-body strength effect in trained people appeared
+mainly with both in one session, and a hard second session is limited by acute fatigue (Doma and Deakin 2013).
+Direct trials of an easy run after leg work are missing, so the rule is a conservative default for an extra,
+unplanned run and never overrides the athlete's own plan. → Implemented defaults (`LowerBodyLoad.Settings`):
+"heavy" is 8 or more lower-body working sets, or any set at RPE 9 or higher; the window is today and yesterday,
+by calendar day; a lower-body exercise is one with a lower-body primary muscle. These are product heuristics.
+Refs: [Schumann et al. 2022](https://pubmed.ncbi.nlm.nih.gov/34757594/) ·
+[Eddens et al. 2018](https://pubmed.ncbi.nlm.nih.gov/28917030/) ·
+[Doma and Deakin 2013](https://pubmed.ncbi.nlm.nih.gov/23724883/) ·
+[Sex and training-status analysis](https://pmc.ncbi.nlm.nih.gov/articles/PMC10933151/). Reviewed 2026-11-22.
+
 ### `hybrid-race-taper` — limited
 
 For an athlete with established running exposure, reducing running volume before a priority race
