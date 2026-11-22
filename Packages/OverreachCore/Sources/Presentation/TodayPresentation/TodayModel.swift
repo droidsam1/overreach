@@ -164,6 +164,12 @@ public final class TodayModel {
     /// Title of the Why screen: the verdict as a question.
     public var whyTitle: String { L10n.format("Why “{1}”?", heroTitle) }
 
+    /// The readings behind the reasons, each once, in the order the reasons are listed.
+    public var furtherReadings: [Reading] {
+        var seen = Set<Reading>()
+        return readinessLines.flatMap(\.readings).filter { seen.insert($0).inserted }
+    }
+
     public var heroReason: String {
         if nextAction == .restLogged || nextAction == .trainedToday, !tomorrowSessions.isEmpty {
             let titles = tomorrowSessions.map { [$0.title, $0.detail].compactMap { $0 }.joined(separator: " · ") }

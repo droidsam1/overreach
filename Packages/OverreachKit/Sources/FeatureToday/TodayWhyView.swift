@@ -219,15 +219,8 @@ struct TodayWhyView<Extra: View>: View {
         }
     }
 
-    /// The readings behind the reasons, each once, in the order the reasons are listed.
-    private var readings: [ReadingLinkItem] {
-        var seen = Set<Reading>()
-        return model.readinessLines.flatMap(\.readings).filter { seen.insert($0).inserted }
-            .map(ReadingLinkItem.init)
-    }
-
     @ViewBuilder private var furtherReading: some View {
-        ForEach(readings) { item in
+        ForEach(model.furtherReadings.map(ReadingLinkItem.init)) { item in
             Link(destination: item.url) {
                 VStack(alignment: .leading, spacing: Spacing.xSmall) {
                     Text(verbatim: item.title).font(.subheadline.weight(.semibold))
@@ -239,6 +232,11 @@ struct TodayWhyView<Extra: View>: View {
             .whyCard()
         }
     }
+}
+
+extension View {
+    /// Draws a block of the Why screen as a card, like the ones `TodayWhyView` builds.
+    func whyExtraCard() -> some View { whyCard() }
 }
 
 private extension View {

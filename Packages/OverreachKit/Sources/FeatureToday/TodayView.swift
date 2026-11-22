@@ -682,12 +682,3 @@ extension ReadingLinkItem {
         self.init(url: reading.url, title: reading.title, detail: reading.detail(), note: reading.note)
     }
 }
-
-private extension View {
-    /// Draws a block of the Why screen as a card, like the ones `TodayWhyView` builds.
-    func whyExtraCard() -> some View {
-        padding(Spacing.medium)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.card))
-    }
-}
