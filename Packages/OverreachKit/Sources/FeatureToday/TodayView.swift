@@ -8,12 +8,15 @@ import TodayPresentation
 public struct TodayView: View {
     @State private var model: TodayModel
     @State private var checkInSheet: CheckInModel?
+    @State private var showsRun = false
+    @State private var showsRestRecovery = false
     private let onConnectGarmin: () -> Void
     private let recoveryHistory: (() -> AnyView)?
     private var recoveryDestination: (() -> AnyView)?
     private var settingsDestination: (() -> AnyView)?
     private var showsSettings = Binding.constant(false)
     private var settingsBadgeCount = 0
+    private var onStartStrength: ((Routine) -> Void)?
     private var onReviewRunMove: ((PlannedRun, CalendarDay) -> Void)?
 
     private let workoutContinuation: TodayModel.WorkoutContinuation?
@@ -64,6 +67,12 @@ public struct TodayView: View {
         copy.showsSettings = isPresented
         copy.settingsDestination = { AnyView(destination()) }
         copy.settingsBadgeCount = badgeCount
+        return copy
+    }
+
+    public func startStrength(_ action: @escaping (Routine) -> Void) -> TodayView {
+        var copy = self
+        copy.onStartStrength = action
         return copy
     }
 
@@ -158,6 +167,26 @@ public struct TodayView: View {
             .navigationDestination(isPresented: showsSettings) {
                 settingsDestination?()
             }
+            .navigationDestination(isPresented: $showsRestRecovery) {
+                if let recoveryDestination {
+                    recoveryDestination()
+                } else {
+                    ScrollView { TodayReadinessDetails(model: model).padding(Spacing.medium) }
+                }
+            }
+            .navigationDestination(isPresented: $showsRun) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: Spacing.medium) {
+                        ForEach(model.scheduledRunsToday) { run in
+                            scheduledRow(run, symbol: "figure.run")
+                        }
+                        if let option = model.runningOption { easyRun(option) }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(Spacing.medium)
+                }
+                .navigationTitle("Run details")
+            }
             .sheet(item: $checkInSheet) { sheet in
                 CheckInView(model: sheet) { Task { await model.load() } }
             }
@@ -170,51 +199,66 @@ public struct TodayView: View {
         model.nextAction(continuing: workoutContinuation)
     }
 
-    private func continueWorkout(_ continuation: TodayModel.WorkoutContinuation) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.xSmall) {
-            switch continuation {
-            case let .resume(name):
-                Button("Resume workout", systemImage: "dumbbell", action: onOpenTrain)
-                Text(name).font(.subheadline)
-            case .reviewDraft:
-                Button("Review saved workout", systemImage: "dumbbell", action: onOpenTrain)
+    @ViewBuilder private var primaryDecision: some View {
+        if let title = model.primaryActionTitle(continuing: workoutContinuation) {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                if model.showsReadinessCard { readinessSummary }
+                primaryAction(title)
+                if case let .resume(name) = workoutContinuation {
+                    Text(name).font(.subheadline)
+                }
             }
-        }
-        .buttonStyle(BrandButtonStyle())
-    }
-
-    private var primaryDecision: some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
-            primaryAction
-            if model.showsReadinessCard {
-                readinessSummary
-            }
+            .padding(Spacing.medium)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
+        } else {
+            ProgressView("Loading Today…")
         }
     }
 
-    @ViewBuilder private var primaryAction: some View {
+    @ViewBuilder private func primaryAction(_ title: String) -> some View {
         switch primary {
-        case let .continueWorkout(workout):
-            continueWorkout(workout)
+        case .continueWorkout, .train:
+            actionButton(Text(title), symbol: "dumbbell", prominent: true, action: onOpenTrain)
         case .loading:
             ProgressView("Loading Today…")
-        case .readiness:
-            EmptyView()
-        case .deload:
-            if let advice = model.deloadAdvice {
-                deload(advice, prominent: true)
+        case let .startStrength(routine):
+            actionButton(Text(title), symbol: "dumbbell", prominent: true) {
+                startRecommendedStrength(routine)
             }
+        case .runEasy, .reviewRun:
+            actionButton(Text(title), symbol: "figure.run", prominent: true) { showsRun = true }
+        case .rest:
+            actionButton(Text(title), symbol: "heart.text.square", prominent: true) { showsRestRecovery = true }
+        case .deload:
+            primaryDeload(title: title)
         case .checkIn:
-            checkIn(prominent: true)
+            checkIn(prominent: true, title: title)
         case .retry:
-            retryLoad(prominent: true)
+            actionButton(Text(title), symbol: "arrow.clockwise", prominent: true) {
+                Task { await model.load() }
+            }
+            .disabled(model.isLoading)
         case .connectHealth:
-            connectHealth(prominent: true)
+            connectHealth(prominent: true, title: Text(title))
         case .connectGarmin:
-            connectGarmin(prominent: true)
-        case .train:
-            Button("Open Train", systemImage: "dumbbell", action: onOpenTrain)
-                .buttonStyle(BrandButtonStyle())
+            actionButton(
+                Text(title), symbol: "applewatch.radiowaves.left.and.right", prominent: true, action: onConnectGarmin
+            )
+        }
+    }
+
+    private func startRecommendedStrength(_ routine: Routine) {
+        if let onStartStrength {
+            onStartStrength(routine)
+        } else {
+            onOpenTrain()
+        }
+    }
+
+    @ViewBuilder private func primaryDeload(title: String) -> some View {
+        if let advice = model.deloadAdvice {
+            deload(advice, primaryTitle: title)
         }
     }
 
@@ -265,13 +309,13 @@ public struct TodayView: View {
     }
 
     /// A deload proposal with its reasons and the plan, or the deload week in progress.
-    private func deload(_ advice: DeloadAdvice, prominent: Bool = false) -> some View {
+    private func deload(_ advice: DeloadAdvice, primaryTitle: String? = nil) -> some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
             switch advice.state {
             case let .proposed(explanation):
                 DeloadProposalCard(
                     model: model, advice: advice, explanation: explanation,
-                    recoveryHistory: recoveryHistory, prominent: prominent
+                    recoveryHistory: recoveryHistory, primaryTitle: primaryTitle
                 ) {
                     deloadApplication
                 }
@@ -305,9 +349,11 @@ public struct TodayView: View {
                 }
             }
         }
-        .padding(Spacing.medium)
+        .padding(primaryTitle == nil ? Spacing.medium : 0)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
+        .background {
+            if primaryTitle == nil { RoundedRectangle(cornerRadius: Radius.card).fill(.background.secondary) }
+        }
     }
 
     /// How to apply the deload: the next session with fewer sets and less load, or a general example.
@@ -359,9 +405,11 @@ public struct TodayView: View {
         }
     }
 
-    private func connectHealth(prominent: Bool) -> some View {
+    private func connectHealth(
+        prominent: Bool, title: Text = Text("Connect Apple Health")
+    ) -> some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
-            actionButton(Text("Connect Apple Health"), symbol: "heart.text.square", prominent: prominent) {
+            actionButton(title, symbol: "heart.text.square", prominent: prominent) {
                 Task { await model.connectHealth() }
             }
 
@@ -384,11 +432,9 @@ public struct TodayView: View {
 
     private var readinessSummary: some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
-            Text(model.readinessAdvice).font(.headline).accessibilityAddTraits(.isHeader)
+            Text(model.heroTitle).font(.headline).accessibilityAddTraits(.isHeader)
             StatusBadge(title: model.readinessTitle, tone: model.readinessLevel.tone)
-            if let summary = model.readinessSummary {
-                Text(summary).font(.subheadline)
-            }
+            Text(model.heroReason).font(.subheadline)
         }
     }
 
@@ -403,7 +449,7 @@ public struct TodayView: View {
             if let adjustment = option.adjustment {
                 HStack {
                     Button(adjustment.applyTitle) { Task { await model.applyRunningAdjustment() } }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.bordered)
                     Button(adjustment.keepTitle) { model.keepPlannedRun() }
                         .buttonStyle(.bordered)
                 }
@@ -473,10 +519,10 @@ public struct TodayView: View {
         .padding(.top, Spacing.small)
     }
 
-    private func checkIn(prominent: Bool) -> some View {
+    private func checkIn(prominent: Bool, title: String? = nil) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xSmall) {
             actionButton(
-                Text(model.checkInButtonTitle), symbol: "face.smiling", prominent: prominent
+                Text(title ?? model.checkInButtonTitle), symbol: "face.smiling", prominent: prominent
             ) {
                 checkInSheet = model.makeCheckInModel()
             }
@@ -532,7 +578,7 @@ struct PreviewMetricsSource: MetricsSource {
     TodayView(model: TodayModel(sources: [PreviewMetricsSource()]))
 }
 
-#Preview("Large text in dark mode") {
+#Preview("Today hero · Large text in dark mode") {
     TodayView(model: TodayModel(sources: [PreviewMetricsSource()]))
         .environment(\.dynamicTypeSize, .accessibility3)
         .preferredColorScheme(.dark)

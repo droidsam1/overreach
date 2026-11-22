@@ -115,6 +115,10 @@ struct RootView: View {
                     onConnectGarmin: { garminModel.start() },
                     recoveryHistory: { PlanProgressView(model: planModel) }
                 )
+                .startStrength { routine in
+                    selectedTab = .train
+                    Task { await workoutModel.start(routine) }
+                }
                 .reviewRunMove { entry, day in
                     suggestedRun = planModel.reviewRunMove(entry, to: day)
                     selectedTab = .plan

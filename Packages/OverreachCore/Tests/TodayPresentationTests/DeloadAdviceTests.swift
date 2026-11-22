@@ -363,6 +363,25 @@ struct DeloadAdviceTests {
         }
     }
 
+    @Test func anAmberDayWithADeloadProposalOffersToStartIt() async throws {
+        let store = TestStore(exercises: [squat, bench], sessions: stalledSessions)
+        try await store.save(mainLift, for: squat.id)
+        try await store.save(mainLift, for: bench.id)
+        let sleepOnly = metrics(poorWeek: true).map { reading in
+            var reading = reading
+            reading.hrvSDNNMs = nil
+            return reading
+        }
+        let model = TodayModel(
+            sources: [DayMetrics(days: sleepOnly)], profiles: store, workouts: store, exercises: store,
+            progression: store, calendar: calendar, format: format
+        )
+        await model.load(now: now)
+
+        #expect(model.nextAction == .deload)
+        #expect(model.primaryActionTitle() == "Start deload week")
+    }
+
     @Test func acceptingRecordsTheDeloadWeekAndPostponingHidesIt() async throws {
         let store = TestStore(exercises: [squat, bench], sessions: stalledSessions)
         try await store.save(mainLift, for: squat.id)
@@ -376,6 +395,9 @@ struct DeloadAdviceTests {
             Issue.record("expected a proposal")
             return
         }
+
+        #expect(model.nextAction == .rest)
+        #expect(model.primaryActionTitle() == "Rest today")
 
         await model.postponeDeload(now: now)
         #expect(model.deloadAdvice == nil)

@@ -13,6 +13,8 @@ public struct RunningOption: Hashable, Sendable {
     public let explanation: String?
     public let adjustment: Adjustment?
     public let isOptional: Bool
+    let offersEasyRun: Bool
+    let suggestedMinutes: Int?
 
     public struct Adjustment: Hashable, Sendable {
         public let original: PlannedRun
@@ -26,7 +28,8 @@ public struct RunningOption: Hashable, Sendable {
 
     private init(
         goal: String, advice: String, plan: String? = nil, context: String? = nil, evidence: EvidenceReference? = nil,
-        source: String? = nil, explanation: String? = nil, adjustment: Adjustment? = nil, isOptional: Bool = false
+        source: String? = nil, explanation: String? = nil, adjustment: Adjustment? = nil,
+        isOptional: Bool = false, offersEasyRun: Bool = false, suggestedMinutes: Int? = nil
     ) {
         self.goal = goal
         self.plan = plan
@@ -37,6 +40,8 @@ public struct RunningOption: Hashable, Sendable {
         self.explanation = explanation
         self.adjustment = adjustment
         self.isOptional = isOptional
+        self.offersEasyRun = offersEasyRun
+        self.suggestedMinutes = suggestedMinutes
     }
 
     init(
@@ -56,7 +61,7 @@ public struct RunningOption: Hashable, Sendable {
             self.init(
                 goal: title, advice: L10n.text("If you run today, keep it easy and at a conversational pace."),
                 context: Self.painFreeContext(L10n.text("Choose a duration you are used to."), goal: goal),
-                isOptional: true
+                isOptional: true, offersEasyRun: true
             )
         case .nearEvent:
             self.init(goal: title, advice: L10n.text(
@@ -82,7 +87,7 @@ public struct RunningOption: Hashable, Sendable {
                     "A conversational pace keeps the effort easy. The duration is a coaching estimate."
                 ), adjustment: Self.adjustment(plan: isToday ? next : nil, goal: trainingGoal, minutes: minutes,
                                                calendar: calendar, format: format),
-                isOptional: !isToday
+                isOptional: !isToday, offersEasyRun: true, suggestedMinutes: minutes
             )
         }
     }
@@ -110,7 +115,7 @@ public struct RunningOption: Hashable, Sendable {
             evidence: EasyRunAdvisor.returnEvidence, source: "https://pubmed.ncbi.nlm.nih.gov/33517866/",
             explanation: L10n.text(
                 "Endurance can change during a break. Keeping the first runs easy is a coaching estimate."
-            ), isOptional: !hasRunToday
+            ), isOptional: !hasRunToday, offersEasyRun: true
         )
     }
 

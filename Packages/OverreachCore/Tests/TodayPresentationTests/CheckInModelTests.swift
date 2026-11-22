@@ -188,7 +188,8 @@ struct CheckInModelTests {
         let initialReadiness = model.readiness
         #expect(model.checkInButtonTitle == "Do new symptoms make you feel too unwell to train today?")
         #expect(model.readinessSummary?.contains("comparable readings low") == true)
-        #expect(model.readinessSummary?.contains("bpm above your usual") == true)
+        #expect(model.readinessSummary?.contains("bpm above your usual") == false)
+        #expect(model.readinessLines.contains { $0.text.contains("bpm above your usual") })
 
         let sheet = try #require(model.makeCheckInModel(now: now))
         sheet.contextAnswer = .yes

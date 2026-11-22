@@ -45,6 +45,7 @@ struct TodayModelTests {
         #expect(model.metrics?.sleepSeconds == 25_200.0)  // 7 h
         #expect(model.failedSources.isEmpty)
         #expect(model.nextAction == .train)
+        #expect(model.primaryActionTitle() == "Open Train")
     }
 
     @Test func aFailingSourceDoesNotHideTheOthers() async {
@@ -91,6 +92,8 @@ struct TodayModelTests {
         await model.load()
 
         #expect(model.nextAction == .connectHealth)
+        #expect(model.primaryActionTitle() == "Connect Apple Health")
+        #expect(!model.heroReason.isEmpty)
         #expect(model.showsReadinessCard)
         #expect(model.metrics == nil)
         #expect(model.readiness.level == .unknown)
@@ -106,6 +109,29 @@ struct TodayModelTests {
 
         #expect(model.nextAction == .connectHealth)
         #expect(model.nextAction(continuing: .reviewDraft) == .continueWorkout(.reviewDraft))
+    }
+
+    @Test func everyPrimaryActionHasAnOutcomeTitleExceptLoading() {
+        let routine = Routine(name: "Legs A")
+        let cases: [(TodayModel.NextAction, String?)] = [
+            (.loading, nil),
+            (.continueWorkout(.resume("Legs A")), "Resume workout"),
+            (.continueWorkout(.reviewDraft), "Review saved workout"),
+            (.startStrength(routine), "Start Legs A"),
+            (.runEasy(minutes: 30), "Run 30 min easy"),
+            (.runEasy(minutes: nil), "Run easy"),
+            (.reviewRun, "Review today's run"),
+            (.rest, "Rest today"),
+            (.checkIn, "Check in"),
+            (.deload, DeloadProposalText.start(steadier: false)),
+            (.retry, "Try again"),
+            (.connectHealth, "Connect Apple Health"),
+            (.connectGarmin, "Connect your Garmin"),
+            (.train, "Open Train"),
+        ]
+        for (action, title) in cases {
+            #expect(action.title == title)
+        }
     }
 
     @Test func readinessIsReadyToDisplay() {
