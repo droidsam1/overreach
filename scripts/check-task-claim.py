@@ -3,8 +3,9 @@
 
 Every PR body starts with `Task: <link to the priorities item, design-doc task anchor or issue>` (or
 `Task: none — <reason>` for work outside the backlog). This script reads the claim of the branch's PR and fails when
-another open PR, or a PR merged since this branch started, claims the same task. Locally it also lists what landed on
-origin/main meanwhile and which design docs it shares with this branch.
+an older open PR, or a PR merged since this branch started, claims the same task: the oldest open claim keeps it, so
+two agents that raced resolve it without asking. Locally it fails when the branch has changes and no claiming PR, and
+lists what landed on origin/main meanwhile and which design docs it shares with this branch.
 
 Usage:
   scripts/check-task-claim.py          # local: the open PR of the current branch (gh needed; skips without it)
@@ -61,28 +62,38 @@ def timestamp(value):
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
-def conflicts(owner, repo, number, key, since):
-    """Other PRs, open or merged after `since`, that claim the same task."""
-    found = []
-    for pull in gh(f"repos/{owner}/{repo}/pulls?state=open&per_page=100"):
-        if pull["number"] != number and task_key(pull.get("body")) == key:
-            found.append(f"#{pull['number']} (open) {pull['title']}")
-    for pull in gh(f"repos/{owner}/{repo}/pulls?state=closed&sort=updated&direction=desc&per_page=50"):
-        merged = pull.get("merged_at")
-        if pull["number"] != number and merged and timestamp(merged) > since and task_key(pull.get("body")) == key:
-            found.append(f"#{pull['number']} (merged {merged[:16]}) {pull['title']}")
-    return found
+def claim_order(pull):
+    """Who claimed first: the earlier PR, then the lower number."""
+    return pull["created_at"], pull["number"]
 
 
-def report(number, key, found):
+def conflicts(owner, repo, pull, key, since):
+    """Claims of the same task: (older open PRs and PRs merged after `since`, newer open PRs)."""
+    number = pull["number"]
+    blocking, later = [], []
+    for other in gh(f"repos/{owner}/{repo}/pulls?state=open&per_page=100"):
+        if other["number"] != number and task_key(other.get("body")) == key:
+            older = claim_order(other) < claim_order(pull)
+            (blocking if older else later).append(f"#{other['number']} (open) {other['title']}")
+    for other in gh(f"repos/{owner}/{repo}/pulls?state=closed&sort=updated&direction=desc&per_page=50"):
+        merged = other.get("merged_at")
+        if other["number"] != number and merged and timestamp(merged) > since and task_key(other.get("body")) == key:
+            blocking.append(f"#{other['number']} (merged {merged[:16]}) {other['title']}")
+    return blocking, later
+
+
+def report(number, key, found, later=()):
     if key is None:
         print(f"FAIL task-claim - PR #{number} has no `Task:` line. Start the description with "
               "`Task: <link to the task anchor or issue>`, or `Task: none — <reason>`.")
         return 1
     if found:
-        print(f"FAIL task-claim - another PR claims {key}: " + "; ".join(found)
-              + ". Stop and take the next item in docs/priorities.md, or ask the user.")
+        print(f"FAIL task-claim - {key} was claimed first by " + "; ".join(found)
+              + ". Close this PR and run `scripts/claim-task.py --next`, or ask the user.")
         return 1
+    if later:
+        print(f"WARN task-claim - newer PRs also claim {key}: " + "; ".join(later)
+              + ". This PR keeps the task; their check fails until they close.")
     if key == "none":
         print(f"PASS task-claim - #{number} is outside the backlog (Task: none).")
     else:
@@ -111,6 +122,21 @@ def landed_meanwhile():
         print("WARN both sides changed " + ", ".join(sorted(shared)) + ": check the task is still open.")
 
 
+def unclaimed(branch):
+    """A branch without a claiming PR: fine while empty, a failure once it holds work."""
+    committed = subprocess.run(["git", "diff", "--quiet", "origin/main...HEAD"], cwd=ROOT).returncode != 0
+    uncommitted = subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).strip()
+    if branch not in ("", "main") and (committed or uncommitted):
+        print("FAIL task-claim - this branch has changes but no PR claims its task. Run "
+              "`scripts/claim-task.py --here <task link>` (or `--here --none \"<reason>\"`) before going on.")
+        landed_meanwhile()
+        return 1
+    print("WARN task-claim - no open PR for this branch. Claim the task before writing code: "
+          "`scripts/claim-task.py --next`.")
+    landed_meanwhile()
+    return 0
+
+
 def local():
     if not shutil.which("gh"):
         print("SKIP task-claim - gh is not installed.")
@@ -120,17 +146,14 @@ def local():
         branch = subprocess.check_output(["git", "branch", "--show-current"], cwd=ROOT, text=True).strip()
         pulls = gh(f"repos/{owner}/{repo}/pulls?state=open&head={owner}:{branch}")
         if not pulls:
-            print("WARN task-claim - no open PR for this branch. Claim the task before writing code: push and open a "
-                  "draft PR that starts with `Task: <link>`.")
-            landed_meanwhile()
-            return 0
+            return unclaimed(branch)
         pull = pulls[0]
         base = subprocess.check_output(["git", "merge-base", "HEAD", "origin/main"], cwd=ROOT, text=True).strip()
         since = timestamp(subprocess.check_output(["git", "show", "-s", "--format=%cI", base], cwd=ROOT, text=True)
                           .strip())
         key = task_key(pull.get("body"))
-        status = report(pull["number"], key, [] if key in (None, "none") else
-                        conflicts(owner, repo, pull["number"], key, since))
+        found = ([], []) if key in (None, "none") else conflicts(owner, repo, pull, key, since)
+        status = report(pull["number"], key, *found)
     except (RuntimeError, subprocess.CalledProcessError, OSError) as error:
         print(f"SKIP task-claim - {error}")
         return 0
@@ -146,9 +169,11 @@ def ci():
         return 0
     owner, repo = os.environ["GITHUB_REPOSITORY"].split("/")
     number = pull["number"]
-    key = task_key(gh(f"repos/{owner}/{repo}/pulls/{number}").get("body"))
+    current = gh(f"repos/{owner}/{repo}/pulls/{number}")
+    key = task_key(current.get("body"))
     since = timestamp(gh(f"repos/{owner}/{repo}/commits/{pull['base']['sha']}")["commit"]["committer"]["date"])
-    return report(number, key, [] if key in (None, "none") else conflicts(owner, repo, number, key, since))
+    found = ([], []) if key in (None, "none") else conflicts(owner, repo, current, key, since)
+    return report(number, key, *found)
 
 
 if __name__ == "__main__":
