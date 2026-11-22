@@ -8,7 +8,7 @@ import Testing
 struct PlanProgressTests {
     private let calendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "UTC")!
+        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .current
         calendar.firstWeekday = 2
         return calendar
     }()
@@ -19,7 +19,8 @@ struct PlanProgressTests {
     private var now: Date { day(18).startDate(in: calendar).addingTimeInterval(12 * 3_600) }
 
     private func day(_ number: Int) -> CalendarDay {
-        CalendarDay(calendar.date(from: DateComponents(year: 2026, month: 11, day: number))!, calendar: calendar)
+        let date = calendar.date(from: DateComponents(year: 2026, month: 11, day: number)) ?? .distantPast
+        return CalendarDay(date, calendar: calendar)
     }
 
     private func session(_ routine: UUID, on number: Int) -> StrengthSession {
@@ -42,8 +43,8 @@ struct PlanProgressTests {
         blockWeek: (planned: Int, done: Int)? = nil, block: TrainingBlock? = nil
     ) -> PlanProgress? {
         PlanProgress.make(
-            strength: strength, runs: runs, sessions: sessions, blockWeek: blockWeek, currentBlock: block, now: now,
-            calendar: calendar
+            .init(strength: strength, runs: runs, sessions: sessions, blockWeek: blockWeek),
+            currentBlock: block, now: now, calendar: calendar
         )
     }
 
