@@ -21727,6 +21727,23 @@
         }
       }
     },
+    "~{1} min": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "~{1} min"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "~{1} min"
+          }
+        }
+      }
+    },
     "“{1}” is already in your routines.": {
       "extractionState": "manual",
       "localizations": {

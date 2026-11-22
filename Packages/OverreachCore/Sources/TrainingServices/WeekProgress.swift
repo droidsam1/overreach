@@ -102,9 +102,9 @@ public struct WeekProgress: Hashable, Sendable {
         let runsDone = plannedRuns.filter { $0.completion != nil }.count
         var planned = plannedStrength.count + plannedRuns.count
         var done = strengthDone + runsDone
-        if planned == 0, let blockWeek = inputs.blockWeek {
-            planned = blockWeek.planned
-            done = blockWeek.done
+        if planned == 0, let target = blockTarget(inputs, completed: completed, inWeek: inWeek, calendar: calendar) {
+            planned = target.planned
+            done = target.done
         }
 
         let recorded = inputs.recordedRuns.filter { $0.startedAt <= now }
@@ -134,6 +134,21 @@ public struct WeekProgress: Hashable, Sendable {
             block: inputs.currentBlock.flatMap { blockWeek($0, today: today, calendar: calendar) }
         )
         return progress.hasActivity ? progress : nil
+    }
+
+    /// The weekly target of the running block and the sessions of its routines done this week (any strength
+    /// session when the block names no routines).
+    private static func blockTarget(
+        _ inputs: Inputs, completed: [StrengthSession], inWeek: Set<CalendarDay>, calendar: Calendar
+    ) -> (planned: Int, done: Int)? {
+        if let blockWeek = inputs.blockWeek { return blockWeek }
+        guard let block = inputs.currentBlock, block.isDeclared, !block.routineIDs.isEmpty else { return nil }
+        let rotation = Set(block.routineIDs)
+        let done = completed.filter { session in
+            inWeek.contains(CalendarDay(session.startedAt, calendar: calendar))
+                && (session.routineID.map(rotation.contains) ?? false)
+        }.count
+        return (block.plannedSessionsPerWeek, done)
     }
 
     private static func blockWeek(_ block: TrainingBlock, today: CalendarDay, calendar: Calendar) -> BlockWeek? {

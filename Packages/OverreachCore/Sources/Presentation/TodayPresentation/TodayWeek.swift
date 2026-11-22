@@ -59,6 +59,7 @@ extension TodayWeek {
     struct Today {
         var strength: ScheduledTrainingRow?
         var strengthDetail: String?
+        var strengthMinutes: Int?
         var runs: [ScheduledTrainingRow] = []
         var adjustedRun: RunningOption.Adjustment?
     }
@@ -137,8 +138,11 @@ extension TodayWeek {
 
     private static func session(_ today: Today, progress: WeekProgress, format: Format) -> Session? {
         if let strength = today.strength, strength.status == nil {
+            let minutes = today.strengthMinutes.map { L10n.format("~{1} min", $0) }
+            let detail = [today.strengthDetail.flatMap { $0.isEmpty ? nil : $0 }, minutes].compactMap { $0 }
             return Session(
-                kind: .strength, title: strength.title, detail: today.strengthDetail, tag: .today, originalTitle: nil
+                kind: .strength, title: strength.title, detail: detail.isEmpty ? nil : detail.joined(separator: " · "),
+                tag: .today, originalTitle: nil
             )
         }
         guard let run = today.runs.first(where: { $0.status == nil }) else { return nil }

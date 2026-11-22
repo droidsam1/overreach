@@ -71,8 +71,7 @@ extension PlanModel {
     public var progress: PlanProgress? {
         let goal = profile.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         let schedule = PlanProgress.Schedule(
-            strength: goal?.scheduledStrength ?? [], runs: goal?.scheduledRuns ?? [], sessions: weekSessions,
-            blockWeek: currentPlanWeek.map { ($0.planned, $0.done) }
+            strength: goal?.scheduledStrength ?? [], runs: goal?.scheduledRuns ?? [], sessions: weekSessions
         )
         return PlanProgress.make(schedule, currentBlock: currentBlock, now: now, calendar: calendar)
     }

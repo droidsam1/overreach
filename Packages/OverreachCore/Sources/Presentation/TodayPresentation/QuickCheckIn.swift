@@ -1,3 +1,4 @@
+import Analytics
 import Domain
 import Foundation
 import PresentationKit
@@ -6,12 +7,14 @@ import PresentationKit
 /// (`CheckInModel.energyOptions`), so a tap stores exactly what the full sheet would.
 @MainActor
 enum QuickCheckIn {
-    /// The answer that implies a follow-up: exhausted changes the decision, so the full check-in opens next.
-    static let worst = 1
 
     static var options: [Option<Int>] { CheckInModel.energyScale }
 
-    static func needsDetails(_ answer: Int) -> Bool { answer == worst }
+    /// Answers at or below the readiness rules' low-energy line change the decision, so the full check-in opens
+    /// next (sleep, stress, pain can say why).
+    static func needsDetails(_ answer: Int, settings: ReadinessRules.Settings) -> Bool {
+        answer <= settings.lowEnergy
+    }
 }
 
 extension TodayModel {

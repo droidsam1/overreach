@@ -84,6 +84,16 @@ struct TodayWeekProgressTests {
         #expect(week.session?.tag == .today)
     }
 
+    @Test func todaysSessionShowsItsUsualLength() async throws {
+        let upper = Routine(name: "Upper")
+        let loaded = try await model(
+            strength: [PlannedStrength(day: day(18), routineID: upper.id)], routines: [upper],
+            sessions: [finished(upper, on: 16)]
+        )
+
+        #expect(loaded.yourWeek?.session?.detail == "~60 min")
+    }
+
     @Test func restLoggedCountsAsACompletedDayWithoutAStreak() async throws {
         let upper = Routine(name: "Upper")
         let loaded = try await model(

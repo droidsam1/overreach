@@ -80,6 +80,19 @@ struct WeekProgressTests {
         #expect(week.sessionsPlanned == 3 && week.sessionsDone == 1)
     }
 
+    @Test func withoutDatedEntriesTheBlockCountsItsOwnRoutinesThisWeek() throws {
+        let block = TrainingBlock(
+            focus: .strength, start: day(9), plannedWeeks: 4, isDeclared: true, routineIDs: [legs, push],
+            sessionsPerWeek: 3
+        )
+        let other = UUID()
+        let week = try #require(progress(.init(
+            sessions: [session(legs, on: 16), session(other, on: 17), session(push, on: 12)], currentBlock: block
+        )))
+
+        #expect(week.sessionsPlanned == 3 && week.sessionsDone == 1)
+    }
+
     @Test func aWeekCrossingADeloadMarksItsDaysWithoutMissingSessions() throws {
         let week = try #require(progress(.init(
             strength: [PlannedStrength(day: day(16), routineID: legs)], sessions: [session(legs, on: 16)],
