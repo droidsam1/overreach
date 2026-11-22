@@ -20,7 +20,6 @@ and the logger come before review tools, and work that only a person with an iPh
    parallel. [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements) shipped
    lift records and set feedback; a running-goal milestone waits for a goal-progress event to attach it to.
 2. **GPX backfill for dog walks** — [#154](https://github.com/droidsam1/overreach/issues/154):
-   [#158](https://github.com/droidsam1/overreach/issues/158) (parser), then
    [#165](https://github.com/droidsam1/overreach/issues/165) (guided import) once #164 is done. Design:
    [companion walks](design/companion-walks.md).
 3. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.

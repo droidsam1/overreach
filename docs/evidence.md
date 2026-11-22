@@ -112,7 +112,10 @@ keep the question rare once learned; none is a clinical rule. Reviewed 2026-11-2
 A tracker's movement window tags a walk the app already has when both overlap by at least 50 % of the shorter one
 (70 % for a low-confidence window from a sparse track) and their starts differ by at most 10 minutes. Each window tags
 one walk (largest overlap, ties to the earlier start); the athlete's own answer always wins. Implemented in
-`CompanionWalkMatching`. The overlap rule is the one used for runs and strength (`RunDeduplication`); the 70 % and
+`CompanionWalkMatching`. Movement windows come from `TrackImport`: consecutive points at 0.5 m/s or faster, joined
+across gaps of up to 5 minutes, kept when they last 8 minutes or more, with points closer than 30 s thinned out so GPS
+drift of a few meters is not movement; a window whose track averages more than 5 minutes between points is low
+confidence. The overlap rule is the one used for runs and strength (`RunDeduplication`); the 70 % and
 10 minutes are product heuristics: the phone is often started after leaving home, and a collar reports a position
 every 2–60 minutes. Not a clinical rule. Reviewed 2026-11-22.
 

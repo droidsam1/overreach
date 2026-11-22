@@ -131,7 +131,9 @@ without a question for each:
 
 - A pure `TrackImport` module turns track points into movement windows: speed ≥ 0.5 m/s for ≥ 8 min, joining gaps of
   ≤ 5 min, with confidence from point density.
-- Coordinates are discarded once the windows are computed.
+- Coordinates are discarded once the windows are computed. `TrackImport` keeps points internal, so its public result
+  holds only start, end, distance and confidence. `TrackImportPreview` compares the walks before and after matching.
+- Shipped in `Packages/OverreachCore/Sources/TrackImport`; thresholds in `walk-companion-matching` (evidence).
 
 ### Guided import
 

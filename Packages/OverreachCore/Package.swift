@@ -10,6 +10,7 @@ let package = Package(
         .library(name: "Analytics", targets: ["Analytics"]),
         .library(name: "StrongImport", targets: ["StrongImport"]),
         .library(name: "GarminImport", targets: ["GarminImport"]),
+        .library(name: "TrackImport", targets: ["TrackImport"]),
         .library(name: "Reports", targets: ["Reports"]),
         .library(name: "AIExchange", targets: ["AIExchange"]),
         // Application layer (ADR-0035): reads sources once and answers questions several screens share.
@@ -37,6 +38,8 @@ let package = Package(
         .target(name: "StrongImport", dependencies: ["Domain"]),
         // Garmin Connect Personal API responses → domain values (ADR-0022). Networking lives in OverreachKit.
         .target(name: "GarminImport", dependencies: ["Domain"]),
+        // Tracker location export (GPX/KML) → movement windows, without coordinates (ADR-0039).
+        .target(name: "TrackImport", dependencies: ["Domain"]),
         // Markdown report shared with ChatGPT/Claude, and context for the in-app assistant.
         .target(name: "Reports", dependencies: ["Domain", "Analytics"]),
         // Versioned messages exchanged with AI chat apps (ADR-0017, docs/ai-exchange.md).
@@ -108,6 +111,7 @@ let package = Package(
             dependencies: ["GarminImport", "Domain", "HistoryPresentation", "Fixtures"],
             resources: [.copy("Fixtures")]
         ),
+        .testTarget(name: "TrackImportTests", dependencies: ["TrackImport", "Domain"]),
         .testTarget(name: "PresentationKitTests", dependencies: ["PresentationKit", "Domain"]),
         .testTarget(
             name: "ExercisesPresentationTests",
