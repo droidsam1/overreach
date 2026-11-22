@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Walks can carry a dog tag. A matcher tags the walks a tracker's movement windows overlap, the athlete's own
+  answer always wins, and the tag survives merging the Garmin and Apple Health copies of a walk. No screen yet.
+
 - Recovery & Progress shows 30- and 90-day trends: HRV, resting heart rate and sleep in the Recovery detail,
   weekly strength sets and running distance in Recent load. Each chart names its metric, unit and interval,
   keeps days without a reading as gaps, and has a text summary for VoiceOver. Only readings from the series and

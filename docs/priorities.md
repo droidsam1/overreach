@@ -12,7 +12,6 @@ and the logger come before review tools, and work that only a person with an iPh
 
 1. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).
 2. **Dog walks from a pet tracker** — [#154](https://github.com/droidsam1/overreach/issues/154), one task at a time:
-   [#155](https://github.com/droidsam1/overreach/issues/155) (tag and matcher), then
    [#163](https://github.com/droidsam1/overreach/issues/163) (one-tap "With Nanoq?"), then
    [#159](https://github.com/droidsam1/overreach/issues/159), then the optional GPX backfill:
    [#158](https://github.com/droidsam1/overreach/issues/158) (parser), then

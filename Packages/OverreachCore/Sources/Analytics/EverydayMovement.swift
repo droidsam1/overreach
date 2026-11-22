@@ -137,9 +137,17 @@ public enum EverydayMovement {
     ) -> [WalkBout] {
         let rank = { (walk: WalkBout) in priority.firstIndex(of: walk.source) ?? priority.count }
         var kept: [WalkBout] = []
-        for walk in walks.sorted(by: { (rank($0), $0.start) < (rank($1), $1.start) })
-            where !kept.contains(where: { $0.source != walk.source && $0.start < walk.end && walk.start < $0.end }) {
-            kept.append(walk)
+        for walk in walks.sorted(by: { (rank($0), $0.start) < (rank($1), $1.start) }) {
+            let twin = kept.firstIndex { $0.source != walk.source && $0.start < walk.end && walk.start < $0.end }
+            guard let twin else {
+                kept.append(walk)
+                continue
+            }
+            // The kept walk inherits the companion tag of the copy that is dropped.
+            if kept[twin].companion == nil, let companion = walk.companion {
+                kept[twin].companion = companion
+                kept[twin].companionSource = walk.companionSource
+            }
         }
         return kept.sorted { $0.start < $1.start }
     }
