@@ -179,7 +179,6 @@ public struct OnboardingView: View {
             Toggle("I walk a dog", isOn: $model.hasDog)
             if model.hasDog {
                 TextField("Dog's name", text: $model.dogName)
-                    .textInputAutocapitalization(.words)
             }
             Picker("Usual walks per day", selection: $model.usualWalksPerDay) {
                 Text("Not sure").tag(Int?.none)
