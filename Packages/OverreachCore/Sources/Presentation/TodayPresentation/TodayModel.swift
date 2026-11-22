@@ -36,6 +36,8 @@ public final class TodayModel {
     /// Today's check-in, once filled in.
     public private(set) var checkIn: CheckIn?
     private var weekProgress: WeekProgress?
+    /// Set by `answerQuickCheckIn(_:)` when the answer calls for the full check-in; the next answer resets it.
+    public internal(set) var quickCheckInNeedsDetails = false
     private var recentRunPain = false
     public private(set) var recentTrainingDays: [RecentTrainingDay] = []
     public private(set) var scheduledStrengthToday: ScheduledTrainingRow?
@@ -424,6 +426,16 @@ public final class TodayModel {
         )
     }
 
+    /// The one-tap feeling scale of the check-in prompt, in the order and with the values the check-in stores.
+    public var quickCheckIn: [Option<Int>] { quickCheckInOptions() }
+
+    /// Saves the one-tap answer and reloads. When the answer changes the decision (`quickCheckInNeedsDetails`),
+    /// the view opens the full check-in next.
+    public func answerQuickCheckIn(_ answer: Int, now: Date = .now) async {
+        quickCheckInNeedsDetails = QuickCheckIn.needsDetails(answer)
+        await saveQuickCheckIn(answer, now: now)
+    }
+
     /// The check-in sheet for today. After it saves, call `load()` to update the light.
     public func makeCheckInModel(now: Date = .now) -> CheckInModel? {
         guard let checkIns else { return nil }
@@ -431,6 +443,16 @@ public final class TodayModel {
         return CheckInModel(
             day: today, existing: checkIn?.day == today ? checkIn : nil, checkIns: checkIns, backup: backup,
             contextQuestion: loadedDay == today ? suggestedContextQuestion : nil
+        )
+    }
+
+    /// The signal tiles of the hero: at most three, chosen by `TodaySignal.signals`. Empty until a load finishes.
+    public var signals: [TodaySignal] {
+        TodaySignal.signals(
+            .init(
+                today: loadedDay, metrics: metrics, nights: recentNights, readiness: readiness,
+                calendar: calendar, format: format
+            )
         )
     }
 

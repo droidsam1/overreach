@@ -66,7 +66,10 @@ public final class CheckInModel: Identifiable {
         ]
     }
 
-    public var energyOptions: [Option<Int>] {
+    public var energyOptions: [Option<Int>] { Self.energyScale }
+
+    /// The feeling scale, 1 (exhausted) … 5 (great); shared with the one-tap prompt on Today.
+    static var energyScale: [Option<Int>] {
         [
             Option(value: 1, name: L10n.text("Exhausted")),
             Option(value: 2, name: L10n.text("Tired")),

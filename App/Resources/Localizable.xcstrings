@@ -375,6 +375,23 @@
         }
       }
     },
+    "A bit high": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algo alta"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algo alta"
+          }
+        }
+      }
+    },
     "A block uses the routine “{1}”, which is not in the plan or in your routines.": {
       "extractionState": "manual",
       "localizations": {
@@ -626,6 +643,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Por riba do obxectivo: {1} fronte a {2}"
+          }
+        }
+      }
+    },
+    "Above your baseline": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↑ Sobre tu base"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↑ Sobre a túa base"
           }
         }
       }
@@ -6580,6 +6614,23 @@
         }
       }
     },
+    "High": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alto"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alto"
+          }
+        }
+      }
+    },
     "History": {
       "extractionState": "manual",
       "localizations": {
@@ -7226,6 +7277,23 @@
         }
       }
     },
+    "In your range": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En tu rango"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No teu rango"
+          }
+        }
+      }
+    },
     "Intensity basis": {
       "extractionState": "manual",
       "localizations": {
@@ -7821,6 +7889,23 @@
         }
       }
     },
+    "Last night": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anoche"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Onte pola noite"
+          }
+        }
+      }
+    },
     "Last session · {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -8382,6 +8467,23 @@
         }
       }
     },
+    "Load": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga"
+          }
+        }
+      }
+    },
     "Load increment": {
       "extractionState": "manual",
       "localizations": {
@@ -8603,6 +8705,23 @@
         }
       }
     },
+    "Low": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bajo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baixo"
+          }
+        }
+      }
+    },
     "Low energy in today's check-in ({1}/5).": {
       "extractionState": "manual",
       "localizations": {
@@ -8633,6 +8752,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pouca enerxía ou agulletas en {1} rexistros diarios esta semana."
+          }
+        }
+      }
+    },
+    "Lower than usual": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más baja de lo habitual"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis baixa do habitual"
           }
         }
       }
@@ -8990,6 +9126,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Máis estrés do habitual"
+          }
+        }
+      }
+    },
+    "More: sleep, stress, pain…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más: sueño, estrés, dolor…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis: sono, estrés, dor…"
           }
         }
       }
@@ -18446,6 +18599,23 @@
         }
       }
     },
+    "Value": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valor"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valor"
+          }
+        }
+      }
+    },
     "Varying volume and intensity over time improves 1RM strength more than training the same way.": {
       "extractionState": "manual",
       "localizations": {
@@ -20129,6 +20299,23 @@
         }
       }
     },
+    "bpm": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "lpm"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ppm"
+          }
+        }
+      }
+    },
     "coaching heuristic": {
       "extractionState": "manual",
       "localizations": {
@@ -20142,6 +20329,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "heurística de adestramento"
+          }
+        }
+      }
+    },
+    "h": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "h"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "h"
           }
         }
       }
@@ -20312,6 +20516,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "evidencia moderada"
+          }
+        }
+      }
+    },
+    "ms": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ms"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ms"
           }
         }
       }
@@ -20635,6 +20856,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} días desde a túa última sesión. Mantén o plan e volve pouco a pouco."
+          }
+        }
+      }
+    },
+    "{1} h vs week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} h vs semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} h vs semana"
           }
         }
       }
@@ -21519,6 +21757,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "“{1}” xa o usa {2}."
+          }
+        }
+      }
+    },
+    "↓ Below your baseline": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↓ Bajo tu base"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↓ Baixo a túa base"
           }
         }
       }
