@@ -49,6 +49,8 @@ public enum CycleTrackingMode: String, Codable, Sendable, CaseIterable {
 /// The user's everyday walking habits (ADR-0010). Recommendations adapt to it; they never remove fixed walks.
 public struct WalkingRoutine: Hashable, Codable, Sendable {
     public var hasDog: Bool
+    /// The dog's name, for the "With …?" question. Optional so older backups decode (ADR-0018).
+    public var dogName: String?
     public var usualWalksPerDay: Int?
     /// Walks that cannot be skipped, only adjusted (length, pace, route).
     public var walksAreFixed: Bool
@@ -59,12 +61,14 @@ public struct WalkingRoutine: Hashable, Codable, Sendable {
 
     public init(
         hasDog: Bool = false,
+        dogName: String? = nil,
         usualWalksPerDay: Int? = nil,
         walksAreFixed: Bool = false,
         canRunDuringWalks: Bool = false,
         flexibleSplit: Bool = true
     ) {
         self.hasDog = hasDog
+        self.dogName = dogName
         self.usualWalksPerDay = usualWalksPerDay
         self.walksAreFixed = walksAreFixed
         self.canRunDuringWalks = canRunDuringWalks

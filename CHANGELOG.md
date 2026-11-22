@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- The profile can store the dog's name, and the app can now work out which walks to ask "With <dog>?" about:
+  every walk at first, then only near the times you usually walk the dog. No screen yet.
+
 - Walks can carry a dog tag. A matcher tags the walks a tracker's movement windows overlap, the athlete's own
   answer always wins, and the tag survives merging the Garmin and Apple Health copies of a walk. No screen yet.
 

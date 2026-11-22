@@ -119,6 +119,18 @@ public enum CompanionWalkMatching {
         return result
     }
 
+    /// The athlete's answer for each walk, shared with the copies of the same walk from other sources.
+    /// Walks nobody answered are left out.
+    public static func answers(for walks: [WalkBout], answers: [WalkCompanionAnswer]) -> [WalkKey: Bool] {
+        let answered = answerLookup(answers)
+        var result: [WalkKey: Bool] = [:]
+        for walk in walks {
+            let twins = walks.filter { $0.source == walk.source ? $0 == walk : isSameWalk($0, walk) }
+            if let value = twins.lazy.compactMap({ answered[WalkKey($0)] }).first { result[WalkKey(walk)] = value }
+        }
+        return result
+    }
+
     // MARK: - Details
 
     private static func answerLookup(_ answers: [WalkCompanionAnswer]) -> [WalkKey: Bool] {
