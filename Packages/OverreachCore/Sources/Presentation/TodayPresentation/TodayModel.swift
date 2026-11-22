@@ -35,6 +35,8 @@ public final class TodayModel {
     public private(set) var accessError: String?
     /// Today's check-in, once filled in.
     public private(set) var checkIn: CheckIn?
+    /// Set by `answerQuickCheckIn(_:)` when the answer calls for the full check-in; the next answer resets it.
+    public internal(set) var quickCheckInNeedsDetails = false
     private var recentRunPain = false
     public private(set) var recentTrainingDays: [RecentTrainingDay] = []
     public private(set) var scheduledStrengthToday: ScheduledTrainingRow?
@@ -404,6 +406,16 @@ public final class TodayModel {
         case nil: break
         }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
+    /// The one-tap feeling scale of the check-in prompt, in the order and with the values the check-in stores.
+    public var quickCheckIn: [Option<Int>] { quickCheckInOptions() }
+
+    /// Saves the one-tap answer and reloads. When the answer changes the decision (`quickCheckInNeedsDetails`),
+    /// the view opens the full check-in next.
+    public func answerQuickCheckIn(_ answer: Int, now: Date = .now) async {
+        quickCheckInNeedsDetails = QuickCheckIn.needsDetails(answer)
+        await saveQuickCheckIn(answer, now: now)
     }
 
     /// The check-in sheet for today. After it saves, call `load()` to update the light.

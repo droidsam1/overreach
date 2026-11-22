@@ -8943,6 +8943,23 @@
         }
       }
     },
+    "More: sleep, stress, pain…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más: sueño, estrés, dolor…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis: sono, estrés, dor…"
+          }
+        }
+      }
+    },
     "Most people guess about 1 rep too few, more so in long sets and with light loads. If you hesitate between two values, pick the one with more reps left. (moderate evidence)": {
       "extractionState": "manual",
       "localizations": {
