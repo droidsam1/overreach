@@ -196,6 +196,36 @@ public final class TodayModel {
         return facts
     }
 
+    /// The blocks Today may stack (ADR-0041, rule 3). Everything else lives on a pushed screen.
+    public enum Block: Equatable, Sendable { case hero, scheduledPlan, pendingPrompt, linkRow }
+
+    /// The most blocks Today shows at once.
+    public static let blockBudget = 4
+
+    public var visibleBlocks: [Block] {
+        var blocks: [Block] = [.hero]
+        if scheduledStrengthToday != nil || !scheduledRunsToday.isEmpty { blocks.append(.scheduledPlan) }
+        if pendingPrompt != nil { blocks.append(.pendingPrompt) }
+        if !links.isEmpty { blocks.append(.linkRow) }
+        return blocks
+    }
+
+    /// The routes from Today to level 2, in order: Why · Other options · Recovery · History.
+    public enum Link: Equatable, Sendable { case why, otherOptions, recovery, history }
+
+    public var links: [Link] {
+        guard showsReadinessCard else { return [] }
+        var links: [Link] = [.why]
+        if showsOtherOptions { links.append(.otherOptions) }
+        return links + [.recovery, .history]
+    }
+
+    /// Alternatives to the hero: an optional run or an easy strength session.
+    public var showsOtherOptions: Bool {
+        runningOption?.isOptional == true || canRequestStrengthOption || scheduledStrengthToday != nil
+            && strengthOption != nil
+    }
+
     /// Hides the prompt until the next load.
     public func dismissPendingPrompt() { promptHandledLoad = activeLoadCount }
     private var activeLoadCount = 0

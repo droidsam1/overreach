@@ -14,7 +14,6 @@ and the logger come before review tools, and work that only a person with an iPh
 1. **Minimal UI with progressive disclosure** — [#179](https://github.com/droidsam1/overreach/issues/179)
    ([ADR-0041](adr/0041-minimal-ui-progressive-disclosure.md)), one task at a time in this order:
    [#181](https://github.com/droidsam1/overreach/issues/181) (one pending prompt),
-   [#182](https://github.com/droidsam1/overreach/issues/182) (level 2 and link row),
    [#183](https://github.com/droidsam1/overreach/issues/183) (rest day),
    [#184](https://github.com/droidsam1/overreach/issues/184) (two-step onboarding),
    [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data). #181–#185 touch Today: never in

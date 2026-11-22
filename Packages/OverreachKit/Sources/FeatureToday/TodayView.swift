@@ -10,6 +10,8 @@ public struct TodayView: View {
     @State private var checkInSheet: CheckInModel?
     @State private var showsRun = false
     @State private var showsRestRecovery = false
+    @State private var showsWhy = false
+    @State private var showsOptions = false
     private let onConnectGarmin: () -> Void
     private let recoveryHistory: (() -> AnyView)?
     private var recoveryDestination: (() -> AnyView)?
@@ -90,46 +92,10 @@ public struct TodayView: View {
                     if model.scheduledStrengthToday != nil || !model.scheduledRunsToday.isEmpty {
                         scheduledTraining
                     }
-                    if let option = model.runningOption {
-                        if option.isOptional {
-                            DisclosureGroup("I want to run today") { easyRun(option) }
-                        } else {
-                            easyRun(option)
-                        }
-                    }
-                    if model.showsReadinessDetails && model.showsReadinessCard {
-                        TodayReadinessDetails(model: model)
-                    }
-                    if primary != .deload, let advice = model.deloadAdvice, !advice.isBreakConfirmation {
-                        deload(advice)
-                    }
-                    if model.canRequestStrengthOption {
-                        DisclosureGroup(
-                            "I want to lift today",
-                            isExpanded: Binding(
-                                get: { model.showsOptionalStrength },
-                                set: { model.setShowsOptionalStrength($0) }
-                            )
-                        ) {
-                            if let option = model.strengthOption {
-                                strengthDetails(option)
-                            }
-                        }
-                    }
-                    if !model.movementNotes.isEmpty {
-                        TodayMovement(model: model)
-                    }
                     if let prompt = model.pendingPrompt {
                         pendingPrompt(prompt)
                     }
-                    if model.showsReadinessCard {
-                        if let recoveryDestination {
-                            NavigationLink(destination: recoveryDestination()) {
-                                Label("View recovery", systemImage: "heart.text.square")
-                            }
-                        }
-                        Button("View recent training", systemImage: "calendar", action: onOpenHistory)
-                    }
+                    linkRow
                 }
                 .padding(Spacing.medium)
             }
@@ -157,6 +123,8 @@ public struct TodayView: View {
             .navigationDestination(isPresented: showsSettings) {
                 settingsDestination?()
             }
+            .navigationDestination(isPresented: $showsWhy) { whyScreen }
+            .navigationDestination(isPresented: $showsOptions) { optionsScreen }
             .navigationDestination(isPresented: $showsRestRecovery) {
                 if let recoveryDestination {
                     recoveryDestination()
@@ -183,6 +151,86 @@ public struct TodayView: View {
             .task { await model.load() }
             .refreshable { await model.load() }
         }
+    }
+
+    /// Level 1 ends here: one row of routes to the pushed screens (ADR-0041).
+    @ViewBuilder private var linkRow: some View {
+        if !model.links.isEmpty {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: Spacing.medium) { linkButtons }
+                VStack(alignment: .leading, spacing: Spacing.small) { linkButtons }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    @ViewBuilder private var linkButtons: some View {
+        ForEach(model.links, id: \.self) { link in
+            switch link {
+            case .why:
+                Button("Why", systemImage: "questionmark.circle") { showsWhy = true }
+            case .otherOptions:
+                Button("Other options", systemImage: "arrow.triangle.branch") { showsOptions = true }
+            case .recovery:
+                if let recoveryDestination {
+                    NavigationLink(destination: recoveryDestination()) {
+                        Label("Recovery", systemImage: "heart.text.square")
+                    }
+                } else {
+                    Button("Recovery", systemImage: "heart.text.square") { showsRestRecovery = true }
+                }
+            case .history:
+                Button("History", systemImage: "calendar", action: onOpenHistory)
+            }
+        }
+    }
+
+    /// Level 2: everything that explains the decision.
+    private var whyScreen: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.large) {
+                if model.showsReadinessDetails { TodayReadinessDetails(model: model, startsExpanded: true) }
+                if let option = model.runningOption, !option.isOptional { easyRun(option) }
+                if primary != .deload, let advice = model.deloadAdvice, !advice.isBreakConfirmation {
+                    deload(advice)
+                }
+                if !model.movementNotes.isEmpty { TodayMovement(model: model) }
+                if let note = model.trainingReadNote {
+                    Label(note, systemImage: "exclamationmark.triangle").font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Spacing.medium)
+        }
+        .navigationTitle("Why this recommendation?")
+    }
+
+    /// Level 2: alternatives to the hero.
+    private var optionsScreen: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.large) {
+                if let option = model.runningOption, option.isOptional {
+                    DisclosureGroup("I want to run today") { easyRun(option) }
+                }
+                if model.canRequestStrengthOption {
+                    DisclosureGroup(
+                        "I want to lift today",
+                        isExpanded: Binding(
+                            get: { model.showsOptionalStrength },
+                            set: { model.setShowsOptionalStrength($0) }
+                        )
+                    ) {
+                        if let option = model.strengthOption { strengthDetails(option) }
+                    }
+                }
+                if model.scheduledStrengthToday != nil, let option = model.strengthOption {
+                    DisclosureGroup("Compare with an easy strength option") { strengthDetails(option) }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Spacing.medium)
+        }
+        .navigationTitle("Other options")
     }
 
     /// The one secondary prompt under the hero (ADR-0041).
@@ -519,9 +567,6 @@ public struct TodayView: View {
             Text("Today's plan").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
             if let strength = model.scheduledStrengthToday {
                 scheduledRow(strength, symbol: "dumbbell")
-                if let option = model.strengthOption {
-                    DisclosureGroup("Compare with an easy strength option") { strengthDetails(option) }
-                }
             }
             ForEach(model.scheduledRunsToday) { run in
                 scheduledRow(run, symbol: "figure.run")

@@ -35,7 +35,7 @@ recommendations explainable and its advanced controls easy to find.
 | History | What did I actually log? | Completed activities and their original details. Link to specific records from supporting analysis where available. |
 
 Use the existing Trends destination for Recovery & Progress. Start with one row per available section
-(Recovery, Recent load, Progress) and a short summary. **View recovery** from Today and **View progress**
+(Recovery, Recent load, Progress) and a short summary. **Recovery** in Today's link row and **View progress**
 from Plan open the relevant section directly. When moving content, ship its new route in the same
 change. Use shared training results so today's explanation and the supporting readings agree.
 The [tab trial](https://github.com/droidsam1/overreach/issues/150) gives Recovery a tab and moves Settings
