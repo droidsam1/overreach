@@ -416,6 +416,16 @@ public final class TodayModel {
         )
     }
 
+    /// The signal tiles of the hero: at most three, chosen by `TodaySignal.signals`. Empty until a load finishes.
+    public var signals: [TodaySignal] {
+        TodaySignal.signals(
+            .init(
+                today: loadedDay, metrics: metrics, nights: recentNights, readiness: readiness,
+                calendar: calendar, format: format
+            )
+        )
+    }
+
     public var hrvMs: Double? { metrics?.hrvNightlyAverageMs }
     public var restingHeartRate: Double? { metrics?.restingHeartRate }
     /// Sleep in hours (stored in seconds).
