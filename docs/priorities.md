@@ -12,7 +12,8 @@ and the logger come before review tools, and work that only a person with an iPh
 
 1. **Planned versus completed work for imported plans** — follow-up of
    [#34](https://github.com/droidsam1/overreach/issues/34).
-2. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).
+2. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92). Search and "Last time"
+   shipped; the before/after timing remains a device check in [#21](https://github.com/droidsam1/overreach/issues/21).
 3. **Hybrid planning research** —
    [hybrid backlog task 9](design/readiness-and-hybrid-planning.md#9-research-and-validate-hybrid-planning-rules-before-automating-plans).
    Runs in parallel. Integrate after the shared schedule work.

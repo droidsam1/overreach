@@ -59,6 +59,9 @@ public struct HistoryView: View {
     private var activityList: some View {
         List {
             filters
+            if let last = model.lastTime {
+                lastTimeCard(last)
+            }
             if let message = model.errorMessage {
                 Label(message, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red)
@@ -113,10 +116,30 @@ public struct HistoryView: View {
                 )
             } else if model.showsFilteredEmptyState {
                 ContentUnavailableView("No matching activities", systemImage: "line.3.horizontal.decrease.circle")
-                Button("Clear filters") { model.clearFilters() }
+                Button("Clear search and filters") { model.clearFilters() }
             }
         }
         .refreshable { await model.load() }
+        .searchable(text: $model.searchText, prompt: "Search exercises, runs, sources")
+    }
+
+    private func lastTimeCard(_ last: LastExerciseResult) -> some View {
+        Section("Last time") {
+            NavigationLink {
+                SessionDetailView(model: model, sessionID: last.sessionID)
+            } label: {
+                VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                    Text(last.exerciseName).font(.headline)
+                    Text(last.date, format: .dateTime.weekday().day().month().year())
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    ForEach(Array(last.sets.enumerated()), id: \.offset) { _, set in
+                        Text(set).font(.subheadline.monospacedDigit())
+                    }
+                }
+                .accessibilityElement(children: .combine)
+            }
+        }
     }
 
     private var filters: some View {

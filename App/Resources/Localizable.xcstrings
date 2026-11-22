@@ -2517,6 +2517,23 @@
         }
       }
     },
+    "Clear search and filters": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar búsqueda y filtros"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar busca e filtros"
+          }
+        }
+      }
+    },
     "Clearer advice": {
       "extractionState": "manual",
       "localizations": {
@@ -7596,6 +7613,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Última sincronización: {1}"
+          }
+        }
+      }
+    },
+    "Last time": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La última vez"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A última vez"
           }
         }
       }
@@ -13189,6 +13223,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Esquema"
+          }
+        }
+      }
+    },
+    "Search exercises, runs, sources": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar ejercicios, carreras, fuentes"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar exercicios, carreiras, fontes"
           }
         }
       }
