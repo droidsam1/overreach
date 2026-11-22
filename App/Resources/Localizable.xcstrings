@@ -8824,6 +8824,23 @@
         }
       }
     },
+    "Most volume ever in one session: {1} (before {2}).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más volumen que nunca en una sesión: {1} (antes {2})."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis volume ca nunca nunha sesión: {1} (antes {2})."
+          }
+        }
+      }
+    },
     "Move down": {
       "extractionState": "manual",
       "localizations": {
