@@ -88,6 +88,7 @@ public struct TodayView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.large) {
+                    header
                     primaryDecision
                     if model.scheduledStrengthToday != nil || !model.scheduledRunsToday.isEmpty {
                         scheduledTraining
@@ -151,6 +152,14 @@ public struct TodayView: View {
             .task { await model.load() }
             .refreshable { await model.load() }
         }
+    }
+
+    /// The large date above the hero; "Today" is the navigation title.
+    private var header: some View {
+        Text(Date.now, format: .dateTime.weekday(.wide).day().month(.wide))
+            .font(.title3.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .accessibilityAddTraits(.isHeader)
     }
 
     /// Level 1 ends here: one row of routes to the pushed screens (ADR-0041).
@@ -292,18 +301,17 @@ public struct TodayView: View {
 
     @ViewBuilder private var primaryDecision: some View {
         if let title = model.primaryActionTitle(continuing: workoutContinuation) {
-            VStack(alignment: .leading, spacing: Spacing.small) {
-                if model.showsReadinessCard { readinessSummary }
-                primaryAction(title)
-                if case let .resume(name) = workoutContinuation {
-                    Text(name).font(.subheadline)
+            TodayHero(
+                model: model, openWhy: { showsWhy = true },
+                action: {
+                    primaryAction(title)
+                    if case let .resume(name) = workoutContinuation {
+                        Text(name).font(.subheadline)
+                    }
                 }
-            }
-            .padding(Spacing.medium)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
+            )
         } else {
-            ProgressView("Loading Today…")
+            TodayHeroPlaceholder()
         }
     }
 
@@ -366,7 +374,7 @@ public struct TodayView: View {
     ) -> some View {
         let button = Button(action: action) { Label { title } icon: { Image(systemName: symbol) } }
         if prominent {
-            button.buttonStyle(BrandButtonStyle())
+            button.buttonStyle(ToneButtonStyle(tone: model.readinessLevel.tone))
         } else {
             button.buttonStyle(.bordered)
         }
@@ -529,14 +537,6 @@ public struct TodayView: View {
         }
     }
 
-    private var readinessSummary: some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
-            Text(model.heroTitle).font(.headline).accessibilityAddTraits(.isHeader)
-            StatusBadge(title: model.readinessTitle, tone: model.readinessLevel.tone)
-            Text(model.heroReason).font(.subheadline)
-        }
-    }
-
     private func easyRun(_ option: RunningOption) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xSmall) {
             Text(option.goal).font(.subheadline.weight(.semibold))
@@ -630,31 +630,24 @@ public struct TodayView: View {
     }
 }
 
-private extension ReadinessLevel {
-    /// How each level looks on this screen.
-    var tone: StatusTone {
-        switch self {
-        case .green: .positive
-        case .amber: .caution
-        case .red: .critical
-        case .unknown: .neutral
-        }
-    }
-}
-
 #if DEBUG
 /// Sample data for previews.
 struct PreviewMetricsSource: MetricsSource {
     let kind: DataSourceKind = .garmin
+    /// HRV of the last nights; the earlier ones are 43 ms. Below the baseline gives an amber day.
+    var recentHRV = 34.0
+    /// Never answers, to preview the loading state.
+    var neverAnswers = false
 
     func isAvailable() async -> Bool { true }
 
     func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics] {
+        if neverAnswers { try await Task.sleep(for: .seconds(3_600)) }
         let calendar = Calendar.current
         return (0...25).map { offset in
             let day = range.upperBound.adding(days: -offset, calendar: calendar)
             var metrics = DailyMetrics(day: day, sources: [.garmin])
-            metrics.hrvRMSSDMs = offset < 4 ? 34 : 43
+            metrics.hrvRMSSDMs = offset < 4 ? recentHRV : 43
             metrics.restingHeartRate = offset == 0 ? 60 : 59
             if offset == 0 {
                 metrics.sleepSeconds = 7.6 * 3_600
@@ -670,12 +663,29 @@ struct PreviewMetricsSource: MetricsSource {
     }
 }
 
-#Preview("Recovery metrics") {
+#Preview("Amber") {
     TodayView(model: TodayModel(sources: [PreviewMetricsSource()]))
 }
 
-#Preview("Today hero · Large text in dark mode") {
+#Preview("Green") {
+    TodayView(model: TodayModel(sources: [PreviewMetricsSource(recentHRV: 43)]))
+}
+
+#Preview("Unknown") {
+    TodayView(model: TodayModel(sources: []))
+}
+
+#Preview("Loading") {
+    TodayView(model: TodayModel(sources: [PreviewMetricsSource(neverAnswers: true)]))
+}
+
+#Preview("Amber · Dark") {
     TodayView(model: TodayModel(sources: [PreviewMetricsSource()]))
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Green · Large text in dark mode") {
+    TodayView(model: TodayModel(sources: [PreviewMetricsSource(recentHRV: 43)]))
         .environment(\.dynamicTypeSize, .accessibility3)
         .preferredColorScheme(.dark)
 }
