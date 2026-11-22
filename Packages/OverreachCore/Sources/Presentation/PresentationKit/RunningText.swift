@@ -36,12 +36,17 @@ extension PlannedRun.RacePriority {
 
 extension PlannedRun {
     public func displayName(format: Format = Format()) -> String {
-        var parts = [racePriority?.displayName ?? purpose.displayName]
+        [racePriority?.displayName ?? purpose.displayName, plannedTotals(format: format)]
+            .compactMap { $0 }.joined(separator: " · ")
+    }
+
+    public func plannedTotals(format: Format) -> String? {
+        var parts: [String] = []
         if let distanceMeters, distanceMeters > 0 {
             parts.append(format.number(Double(distanceMeters) / 1_000, maxFractionDigits: 3) + " km")
         }
         if let durationMinutes, durationMinutes > 0 { parts.append("\(durationMinutes) min") }
-        return parts.joined(separator: " · ")
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 }
 
