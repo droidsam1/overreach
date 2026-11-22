@@ -20792,6 +20792,23 @@
         }
       }
     },
+    "{1} completed": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · sesión completada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · sesión completada"
+          }
+        }
+      }
+    },
     "{1} completed / {2} planned": {
       "extractionState": "manual",
       "localizations": {

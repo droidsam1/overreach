@@ -23,6 +23,9 @@ public struct SessionReport: Identifiable, Hashable, Sendable {
     public let title: String
     /// "58 min · 18 working sets · 6240 kg".
     public let headline: String
+    public let duration: String?
+    public let workingSets: Int?
+    public let volume: String?
     /// "On target or better in 4 of 5 exercises."
     public let adherence: String?
     /// "Volume +6 % compared with the last “Push A” (12 Nov)."
@@ -40,10 +43,10 @@ public struct SessionReport: Identifiable, Hashable, Sendable {
 extension SessionReport {
     public init(review: SessionReview, effortScale: EffortScale, format: Format) {
         let session = review.session
-        let minutes = Int(((session.durationSeconds ?? 0) / 60).rounded())
+        let minutes = Self.durationMinutes(session.durationSeconds)
+        let volume = format.number(review.tonnageKg, maxFractionDigits: 0) + " kg"
         let headline = L10n.format(
-            "{1} min · {2} working sets · {3}", minutes, review.workingSets,
-            format.number(review.tonnageKg, maxFractionDigits: 0) + " kg"
+            "{1} min · {2} working sets · {3}", minutes ?? 0, review.workingSets, volume
         )
         let adherence = review.exercisesWithTarget == 0 ? nil : L10n.format(
             "On target or better in {1} of {2} exercises.", review.exercisesOnTarget, review.exercisesWithTarget
@@ -74,9 +77,21 @@ extension SessionReport {
             exercise.records.map { "\(exercise.exercise.displayName): \(Self.recordText($0, format: format))" }
         }
         self.init(
-            id: session.id, title: session.name, headline: headline, adherence: adherence, comparison: comparison,
+            id: session.id, title: session.name, headline: headline,
+            duration: minutes.map { L10n.format("{1} min", $0) },
+            workingSets: review.workingSets > 0 ? review.workingSets : nil,
+            volume: review.tonnageKg > 0 ? volume : nil, adherence: adherence, comparison: comparison,
             muscles: muscles, achievements: achievements, rows: rows, shareText: share.joined(separator: "\n")
         )
+    }
+
+    public static func durationText(_ seconds: Double?) -> String? {
+        durationMinutes(seconds).map { L10n.format("{1} min", $0) }
+    }
+
+    private static func durationMinutes(_ seconds: Double?) -> Int? {
+        guard let seconds, seconds > 0 else { return nil }
+        return Int(exactly: (seconds / 60).rounded())
     }
 
     private static func row(_ review: ExerciseReview, effortScale: EffortScale, format: Format) -> Row {

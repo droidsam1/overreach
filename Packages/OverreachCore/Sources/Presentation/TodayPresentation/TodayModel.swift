@@ -67,7 +67,8 @@ public final class TodayModel {
     /// Today was marked as a deliberate rest (ADR-0041, rule 7).
     public private(set) var restLoggedToday = false
     /// Tomorrow's planned session, for the calm confirmation after logging rest.
-    private var tomorrowOutlook: String?
+    private var tomorrowSessions: [TodayDone.NextSession] = []
+    private var completedSessions: [TodayDone.Session] = []
     /// Whether a Garmin account is connected (ADR-0022).
     public private(set) var isGarminConnected = false
     /// The person said they use a Garmin (first-run setup).
@@ -161,9 +162,24 @@ public final class TodayModel {
     }
 
     public var heroReason: String {
-        if nextAction == .restLogged || nextAction == .trainedToday, let tomorrowOutlook { return tomorrowOutlook }
+        if nextAction == .restLogged || nextAction == .trainedToday, !tomorrowSessions.isEmpty {
+            let titles = tomorrowSessions.map { [$0.title, $0.detail].compactMap { $0 }.joined(separator: " · ") }
+            return L10n.format("Tomorrow: {1}", titles.joined(separator: " · "))
+        }
         return readinessSummary ?? readiness.reasons.first.map { text(for: $0) }
             ?? L10n.text("No recovery signals call for reducing training today.")
+    }
+
+    public var doneToday: TodayDone? {
+        switch nextAction {
+        case .restLogged:
+            TodayDone(title: L10n.text("Rest logged"), sessions: [], tomorrow: tomorrowSessions)
+        case .trainedToday:
+            TodayDone(title: completedSessions.first?.title ?? heroTitle, sessions: completedSessions,
+                      tomorrow: tomorrowSessions)
+        default:
+            nil
+        }
     }
 
     public func primaryActionTitle(continuing workout: WorkoutContinuation? = nil) -> String? {
@@ -704,7 +720,9 @@ public final class TodayModel {
                 .max { $0.startedAt < $1.startedAt }?.durationSeconds
         }.map { max(5, Int((($0 / 60) / 5).rounded()) * 5) }
         let activeRuns = goal?.scheduledRuns.filter { $0.day == today && !$0.isPostponed } ?? []
-        tomorrowOutlook = outlook(goal: goal, after: today, routines: record.routines)
+        tomorrowSessions = TodayDone.outlook(
+            goal: goal, tomorrow: today.adding(days: 1, calendar: calendar), routines: record.routines, format: format
+        )
         let pendingRuns = activeRuns.filter { $0.completion == nil }
         let nextSlot = recentWorkouts?.planned ?? recentWorkouts?.rotation?.next
         let strength = nextSlot.flatMap { slot in record.routines.first { $0.id.uuidString == slot.id } }
@@ -716,6 +734,10 @@ public final class TodayModel {
             trainedToday: strengthDone || runDone,
             strengthPlanned: !strengthDone && assignment?.routineID != nil
         )
+        completedSessions = heroTrainingAction == .trainedToday ? TodayDone.completedSessions(
+            record, plannedRuns: activeRuns, effortScale: profile?.effortScale ?? .rpe,
+            today: calendar.startOfDay(for: now)...now, format: format
+        ) : []
         updateMovement(
             snapshot, today: today, now: now, profile: profile,
             schedule: .init(strength: assignment,
@@ -730,20 +752,6 @@ public final class TodayModel {
         loadStrengthOption(
             today: today, now: now, profile: profile, assignedRoutine: assignedRoutine, snapshot: snapshot
         )
-    }
-
-    /// "Tomorrow: Strength · Lower" from the plan, when it has something for the next day.
-    private func outlook(goal: TrainingGoal?, after today: CalendarDay, routines: [Routine]) -> String? {
-        let tomorrow = today.adding(days: 1, calendar: calendar)
-        var titles = (goal?.scheduledStrength ?? []).filter { $0.day == tomorrow }.map { assignment in
-            assignment.displayName(
-                routineName: assignment.routineID.flatMap { id in routines.first { $0.id == id }?.name }
-            )
-        }
-        titles += (goal?.scheduledRuns ?? []).filter { $0.day == tomorrow && !$0.isPostponed && $0.purpose != .rest }
-            .map { $0.calendarTitle(format: format) }
-        guard !titles.isEmpty else { return nil }
-        return L10n.format("Tomorrow: {1}", titles.joined(separator: " · "))
     }
 
     /// Records today as a deliberate rest. The hero then shows a calm confirmation (ADR-0041, rule 7).
