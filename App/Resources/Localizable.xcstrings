@@ -1106,6 +1106,23 @@
         }
       }
     },
+    "Adjusted": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Axustada"
+          }
+        }
+      }
+    },
     "Advice adapts to your walks and never removes the ones you can't skip.": {
       "extractionState": "manual",
       "localizations": {
@@ -17528,23 +17545,6 @@
         }
       }
     },
-    "Today's plan": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plan de hoy"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plan de hoxe"
-          }
-        }
-      }
-    },
     "Today's running plan · {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -17694,6 +17694,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hoxe: {1}, o {2} do teu máximo estimado ({3}), para {4} repeticións a {5}."
+          }
+        }
+      }
+    },
+    "Tomorrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mañana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mañá"
           }
         }
       }
@@ -18765,6 +18782,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ver resumo"
+          }
+        }
+      }
+    },
+    "Volume": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volumen"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume"
           }
         }
       }
@@ -20414,6 +20448,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "O teu estrés"
+          }
+        }
+      }
+    },
+    "Your week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa semana"
           }
         }
       }

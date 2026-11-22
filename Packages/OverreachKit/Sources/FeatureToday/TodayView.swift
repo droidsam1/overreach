@@ -90,8 +90,11 @@ public struct TodayView: View {
                 VStack(alignment: .leading, spacing: Spacing.large) {
                     header
                     primaryDecision
-                    if model.scheduledStrengthToday != nil || !model.scheduledRunsToday.isEmpty {
-                        scheduledTraining
+                    if model.visibleBlocks.contains(.scheduledPlan) {
+                        TodayWeekCard(
+                            week: model.yourWeek, strength: model.scheduledStrengthToday,
+                            runs: model.scheduledRunsToday, openStrength: onOpenTrain, openRun: { showsRun = true }
+                        )
                     }
                     if let prompt = model.pendingPrompt {
                         pendingPrompt(prompt)
@@ -295,7 +298,12 @@ public struct TodayView: View {
     }
 
     @ViewBuilder private var primaryDecision: some View {
-        if let title = model.primaryActionTitle(continuing: workoutContinuation) {
+        if let title = model.primaryActionTitle(continuing: workoutContinuation), model.doneToday != nil {
+            VStack(alignment: .leading, spacing: Spacing.medium) {
+                TodayHero(model: model, openWhy: { showsWhy = true }, action: { EmptyView() })
+                primaryAction(title).frame(maxWidth: .infinity)
+            }
+        } else if let title = model.primaryActionTitle(continuing: workoutContinuation) {
             TodayHero(
                 model: model, openWhy: { showsWhy = true },
                 action: {
@@ -561,18 +569,6 @@ public struct TodayView: View {
                     }
                     .font(.caption)
                 }
-            }
-        }
-    }
-
-    private var scheduledTraining: some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
-            Text("Today's plan").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
-            if let strength = model.scheduledStrengthToday {
-                scheduledRow(strength, symbol: "dumbbell")
-            }
-            ForEach(model.scheduledRunsToday) { run in
-                scheduledRow(run, symbol: "figure.run")
             }
         }
     }

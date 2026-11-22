@@ -13,9 +13,9 @@ public enum WeekDayKind: Sendable, CaseIterable {
     case empty
 
     /// Violet, the colour of strength.
-    static let strengthColor = Color(light: 0x6D28D9, dark: 0xA78BFA)
+    public static let strengthColor = Color(light: 0x6D28D9, dark: 0xA78BFA)
     /// Blue, the colour of runs.
-    static let runColor = Color(light: 0x1D5FC4, dark: 0x5AA9FF)
+    public static let runColor = Color(light: 0x1D5FC4, dark: 0x5AA9FF)
 
     var color: Color {
         switch self {

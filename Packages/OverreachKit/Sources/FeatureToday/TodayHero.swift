@@ -41,32 +41,66 @@ struct TodayHero<Action: View>: View {
     let openWhy: () -> Void
     @ViewBuilder let action: Action
 
-    private var tone: StatusTone { model.readinessLevel.tone }
+    @AppStorage(HeroMetrics.celebratedDayKey) private var celebratedDay = ""
+    @State private var celebrates = false
+
+    private var done: TodayDone? { model.doneToday }
+
+    /// Violet once training is done, green for a rest day, otherwise the readiness tone.
+    private var tone: StatusTone {
+        guard done != nil else { return model.readinessLevel.tone }
+        return model.nextAction == .restLogged ? .positive : .done
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.medium) {
             summary
-            signals
-            action
+            if let done {
+                TodayDoneSummary(done: done, tone: tone)
+            } else {
+                signals
+                action
+            }
         }
         .padding(Spacing.medium)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(tone.surface, in: .rect(cornerRadius: HeroMetrics.radius))
         .overlay { RoundedRectangle(cornerRadius: HeroMetrics.radius).stroke(tone.border, lineWidth: 1) }
+        .haptic(.completed, trigger: celebrates) { _, new in new }
+        .onAppear(perform: celebrateFirstTime)
+    }
+
+    /// The first time the done state appears on a day: the ring fills (it always does, unless Reduce Motion is on)
+    /// and a success haptic plays. Stored per device in `UserDefaults`, so it is not part of backups.
+    private func celebrateFirstTime() {
+        guard done != nil else { return }
+        let today = Date.now.formatted(.iso8601.year().month().day())
+        guard celebratedDay != today else { return }
+        celebratedDay = today
+        celebrates = true
     }
 
     private var summary: some View {
         HStack(alignment: .top, spacing: Spacing.medium) {
-            ReadinessRing(tone: tone, accessibilityLabel: model.readinessTitle)
+            ReadinessRing(tone: tone, accessibilityLabel: done?.title ?? model.readinessTitle)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: Spacing.small) {
-                StatusBadge(title: model.readinessTitle, tone: tone).accessibilitySortPriority(1)
-                Text(model.heroTitle)
-                    .font(.title2.weight(.heavy))
-                    .accessibilityAddTraits(.isHeader)
-                    .accessibilitySortPriority(3)
-                Text(model.heroReason).font(.subheadline).foregroundStyle(.secondary)
-                    .accessibilitySortPriority(2)
+                if let done {
+                    Text(verbatim: done.title)
+                        .font(.title2.weight(.heavy))
+                        .accessibilityAddTraits(.isHeader)
+                    if model.nextAction == .trainedToday {
+                        Text(model.heroTitle).font(.subheadline).foregroundStyle(.secondary)
+                    }
+                } else {
+                    StatusBadge(title: model.readinessTitle, tone: tone).accessibilitySortPriority(1)
+                    Text(model.heroTitle)
+                        .font(.title2.weight(.heavy))
+                        .accessibilityAddTraits(.isHeader)
+                        .accessibilitySortPriority(3)
+                    Text(model.heroReason).font(.subheadline).foregroundStyle(.secondary)
+                        .accessibilitySortPriority(2)
+                }
             }
             .accessibilityElement(children: .contain)
         }
@@ -120,4 +154,6 @@ struct TodayHeroPlaceholder: View {
 enum HeroMetrics {
     /// Corner radius of the hero card (spec: 24).
     static let radius: CGFloat = 24
+    /// `UserDefaults` key of the last day the done state was celebrated (per device, not in backups).
+    static let celebratedDayKey = "today.donecelebrated.day"
 }

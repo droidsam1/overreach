@@ -253,7 +253,9 @@ public final class TodayModel {
 
     public var visibleBlocks: [Block] {
         var blocks: [Block] = [.hero]
-        if scheduledStrengthToday != nil || !scheduledRunsToday.isEmpty { blocks.append(.scheduledPlan) }
+        if yourWeek != nil || scheduledStrengthToday != nil || !scheduledRunsToday.isEmpty {
+            blocks.append(.scheduledPlan)
+        }
         if pendingPrompt != nil { blocks.append(.pendingPrompt) }
         if !links.isEmpty { blocks.append(.linkRow) }
         return blocks
