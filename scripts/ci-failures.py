@@ -52,7 +52,8 @@ def target_runs(argument):
         sys.exit(__doc__)
     if len(argument) >= 8:
         return [int(argument)]
-    sha = json.loads(gh("pr", "view", argument, "--json", "headRefOid"))["headRefOid"]
+    # REST, not `gh pr view`: GraphQL is refused in some agent sandboxes.
+    sha = gh("api", f"repos/{{owner}}/{{repo}}/pulls/{argument}", "--jq", ".head.sha").strip()
     return runs_for_commit(sha)
 
 

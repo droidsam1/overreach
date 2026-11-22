@@ -85,11 +85,11 @@ rework when missed:
 
 Several agents work at once, each in its own branch or worktree.
 
-- Start from a fresh `origin/main`. To choose what to build, take the first task in [Priorities](docs/priorities.md)
-  that no open PR claims. Claim it before writing code: push a commit and open a draft PR whose description starts
-  with `Task: <link to the task anchor or issue>`. `scripts/check-task-claim.py` (run by `check-local.py` and CI)
-  fails when another PR claims the same task; then take the next one. When resuming a feature after a merge, check
-  the previous PR.
+- Claim before reading code: `python3 scripts/claim-task.py --next` picks the first free task in
+  [Priorities](docs/priorities.md), opens its draft PR from a fresh `origin/main` and prints `CLAIMED <task> #<PR>
+  <branch>`. Pass a link instead of `--next` for a task the user names, `--none "<reason>"` for other user requests.
+  The oldest claim keeps a task: when `scripts/check-task-claim.py` (in `check-local.py` and CI) says another PR
+  claimed it first, close yours and run `--next`. When resuming a feature after a merge, check the previous PR.
 - A PR's branch belongs to the session that opened it. To update or merge someone else's PR, ask that session or the
   user; work on your own branch instead.
 - ADR numbers: take the highest number on `origin/main` plus one, and re-check after rebasing. `check-repo.py`
@@ -115,7 +115,8 @@ read its failures with `scripts/ci-failures.py`, not the raw logs.
 python3 scripts/check-local.py [--fix-eol]             # local check; --fix-eol rewrites CRLF working copies as LF
 python3 scripts/ci-failures.py [PR | run id | URL]     # errors of failed CI runs, by job (default: HEAD's runs)
 python3 scripts/check-repo.py                         # ADRs, frozen backup fixture, release notes, skills, links
-python3 scripts/check-task-claim.py                   # no other PR claims this branch's task; what landed on main
+python3 scripts/claim-task.py --next [--dry-run]      # claim the first free task: branch + draft PR, race-safe
+python3 scripts/check-task-claim.py                   # no older PR claims this branch's task; what landed on main
 python3 scripts/check-localization.py [--fix]          # translations; --fix rewrites catalogs in canonical form
 python3 scripts/add-strings.py --template | <file> | --prune   # missing keys as JSON; add es+gl; drop unused
 python3 scripts/session-usage.py [--days N]            # tokens and estimated cost of each agent session, from local logs

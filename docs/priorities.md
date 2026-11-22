@@ -2,8 +2,9 @@
 
 The order in which to take open work, highest user value first. Take the first item that is not blocked and has
 no open PR. Claim one task, not a range: an item that lists several tasks or issues in order is claimed one task at a
-time, the first without a PR (see "Working in parallel" in `AGENTS.md`). When you merge a PR that finishes or changes
-an item, update this list in the same PR.
+time, the first without a PR. `scripts/claim-task.py --next` reads this list: it skips closed and umbrella issues,
+tasks also listed in a later section and tasks written as "once #N is done" while #N is open. When you merge a PR
+that finishes or changes an item, update this list in the same PR.
 
 Reviewed 2026-11-22. Value is judged for one hybrid athlete who uses Overreach every day: decisions in Today
 and the logger come before review tools, and work that only a person with an iPhone can do is listed apart.
