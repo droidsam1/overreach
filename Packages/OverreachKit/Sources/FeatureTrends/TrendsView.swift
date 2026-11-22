@@ -164,6 +164,7 @@ private struct RecoveryDetail: View {
                 ForEach(model.readings) { reading in
                     ReadingCard(reading: reading)
                 }
+                if model.hasLoaded { TrendSection(model: model, charts: model.recoveryCharts) }
             }
             .padding(Spacing.medium)
         }
@@ -228,6 +229,7 @@ private struct RecentLoadDetail: View {
                     .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
                     .accessibilityElement(children: .combine)
                 }
+                if model.hasLoaded { TrendSection(model: model, charts: model.weeklyCharts) }
             }
             .padding(Spacing.medium)
         }

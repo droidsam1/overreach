@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Recovery & Progress shows 30- and 90-day trends: HRV, resting heart rate and sleep in the Recovery detail,
+  weekly strength sets and running distance in Recent load. Each chart names its metric, unit and interval,
+  keeps days without a reading as gaps, and has a text summary for VoiceOver. Only readings from the series and
+  source of the latest reading are plotted, and a usual-range band appears only when Garmin reports one.
 
 - Recovery & Progress compares completed and planned strength sessions by imported block and week.
 

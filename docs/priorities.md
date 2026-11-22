@@ -11,16 +11,14 @@ and the logger come before review tools, and work that only a person with an iPh
 ## Ready to implement
 
 1. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).
-2. **Longer trends** — [#127](https://github.com/droidsam1/overreach/issues/127). Add 30- and
-   90-day views inside the relevant details. Use the activity matching from #40 for combined-source totals.
-3. **Dog walks from a pet tracker** — [#154](https://github.com/droidsam1/overreach/issues/154), one task at a time:
+2. **Dog walks from a pet tracker** — [#154](https://github.com/droidsam1/overreach/issues/154), one task at a time:
    [#155](https://github.com/droidsam1/overreach/issues/155) (tag and matcher), then
    [#163](https://github.com/droidsam1/overreach/issues/163) (one-tap "With Nanoq?"), then
    [#159](https://github.com/droidsam1/overreach/issues/159), then the optional GPX backfill:
    [#158](https://github.com/droidsam1/overreach/issues/158) (parser), then
    [#165](https://github.com/droidsam1/overreach/issues/165) (guided import) once #164 is done. Design:
    [companion walks](design/companion-walks.md).
-4. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
+3. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
 
 ## Needs a person or an iPhone
 
