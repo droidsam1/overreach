@@ -19,6 +19,14 @@ public struct HistoryView: View {
 
     private let onOpenTrain: () -> Void
 
+    private var searchPlacement: SearchFieldPlacement {
+        #if os(iOS)
+        .navigationBarDrawer(displayMode: .always)
+        #else
+        .automatic
+        #endif
+    }
+
     public init(model: HistoryModel, onOpenTrain: @escaping () -> Void) {
         _model = State(initialValue: model)
         self.onOpenTrain = onOpenTrain
@@ -134,7 +142,7 @@ public struct HistoryView: View {
         .refreshable { await model.load() }
         .searchable(
             text: $model.searchText,
-            placement: .navigationBarDrawer(displayMode: .always),
+            placement: searchPlacement,
             prompt: "Search exercises, runs, sources"
         )
     }
