@@ -4,7 +4,7 @@ import PresentationKit
 
 /// The activity filter used by the unified list.
 public enum HistoryActivityFilter: String, CaseIterable, Identifiable, Sendable {
-    case all, strength, running
+    case all, strength, running, walking
 
     public var id: Self { self }
     public var title: String {
@@ -12,6 +12,7 @@ public enum HistoryActivityFilter: String, CaseIterable, Identifiable, Sendable 
         case .all: L10n.text("All activities")
         case .strength: L10n.text("Strength")
         case .running: L10n.text("Runs")
+        case .walking: L10n.text("Walking")
         }
     }
 }
@@ -22,17 +23,20 @@ public enum HistoryRow: Identifiable, Sendable {
         case session(UUID)
         case recording(StrengthRecordingID)
         case run(String)
+        case walk(WalkKey)
     }
 
     case session(SessionSummary)
     case recording(HistoryStrengthActivity)
     case run(HistoryRunActivity)
+    case walk(HistoryWalk)
 
     public var id: Identifier {
         switch self {
         case let .session(summary): .session(summary.id)
         case let .recording(activity): .recording(activity.recordingID)
         case let .run(activity): .run(activity.id)
+        case let .walk(activity): .walk(activity.id)
         }
     }
 
@@ -41,6 +45,7 @@ public enum HistoryRow: Identifiable, Sendable {
         case let .session(summary): summary.date
         case let .recording(activity): activity.startedAt
         case let .run(activity): activity.startedAt
+        case let .walk(activity): activity.walk.start
         }
     }
 
@@ -48,6 +53,7 @@ public enum HistoryRow: Identifiable, Sendable {
         switch self {
         case .session, .recording: .strength
         case .run: .running
+        case .walk: .walking
         }
     }
 
@@ -56,6 +62,7 @@ public enum HistoryRow: Identifiable, Sendable {
         case let .session(summary): summary.sources
         case let .recording(activity): activity.sources
         case let .run(activity): activity.sources
+        case let .walk(activity): activity.sources
         }
     }
 
@@ -64,6 +71,7 @@ public enum HistoryRow: Identifiable, Sendable {
         case let .session(id): "session:" + id.uuidString
         case let .recording(id): "recording:\(id.source.rawValue):\(id.id)"
         case let .run(id): "run:" + id
+        case let .walk(id): "walk:\(id.source.rawValue):\(id.startSeconds)"
         }
     }
 }

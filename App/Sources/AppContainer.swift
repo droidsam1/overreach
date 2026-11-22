@@ -15,6 +15,7 @@ import Observation
 import OnboardingPresentation
 import Persistence
 import PlanPresentation
+import PresentationKit
 import SettingsPresentation
 import TodayPresentation
 import TrendsPresentation
@@ -164,22 +165,22 @@ final class AppContainer {
             checkIns: checkIns, backup: backup, garmin: garmin, profiles: profiles, workouts: workouts,
             exercises: exercises, recordedStrength: historyRecordedStrength, routines: routines,
             progression: progression, cycle: cycleSource, activityMatchChoices: readActivityMatchChoices,
-            dogWalkAnswers: readDogWalkAnswers(),
-            saveDogWalkAnswers: { answers in
-                if let data = try? JSONEncoder().encode(answers) {
-                    UserDefaults.standard.set(data, forKey: Self.dogWalkAnswersKey)
-                }
-            }
+            companionAnswers: dogWalkAnswers
         )
     }
 
     private static let dogWalkAnswersKey = "today.dogWalkAnswers"
 
-    private func readDogWalkAnswers() -> [WalkCompanionAnswer] {
-        UserDefaults.standard.data(forKey: Self.dogWalkAnswersKey).flatMap {
+    private let dogWalkAnswers: DogWalkAnswers = {
+        let answers = UserDefaults.standard.data(forKey: AppContainer.dogWalkAnswersKey).flatMap {
             try? JSONDecoder().decode([WalkCompanionAnswer].self, from: $0)
         } ?? []
-    }
+        return DogWalkAnswers(answers) { answers in
+            if let data = try? JSONEncoder().encode(answers) {
+                UserDefaults.standard.set(data, forKey: AppContainer.dogWalkAnswersKey)
+            }
+        }
+    }()
 
     func makeRecoveryProgressModel() -> RecoveryProgressModel {
         RecoveryProgressModel(
@@ -223,7 +224,8 @@ final class AppContainer {
         return HistoryModel(
             workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
             profiles: profiles, progression: progression, activity: healthSource, runSources: metricsSources,
-            recordedStrength: historyRecordedStrength, runChoices: choices.runs,
+            recordedStrength: historyRecordedStrength, walkSources: activitySources, companionAnswers: dogWalkAnswers,
+            runChoices: choices.runs,
             saveRunChoices: { choices in
                 if let data = try? JSONEncoder().encode(choices) {
                     defaults.set(data, forKey: Self.runChoicesKey)

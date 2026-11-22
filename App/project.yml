@@ -65,6 +65,8 @@ targets:
       - sdk: HealthKit.framework
       - package: OverreachCore
         product: Domain
+      - package: OverreachCore
+        product: PresentationKit
       - package: OverreachKit
         product: Persistence
       - package: OverreachKit

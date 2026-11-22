@@ -57,7 +57,8 @@ public struct HistoryView: View {
     }
 
     private var activityList: some View {
-        List {
+        let companions = model.walkCompanionDetails
+        return List {
             filters
             if let last = model.lastTime {
                 lastTimeCard(last)
@@ -102,6 +103,10 @@ public struct HistoryView: View {
                         HistoryRunDetail(run: run, history: model)
                     } label: {
                         HistoryRunRow(run: run)
+                    }
+                case let .walk(walk):
+                    HistoryWalkRow(walk: walk, companion: companions[walk.id]) {
+                        model.answerWalk(walk.id, withDog: $0)
                     }
                 }
             }

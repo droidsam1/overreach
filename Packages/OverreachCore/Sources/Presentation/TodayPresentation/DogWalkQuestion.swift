@@ -35,8 +35,7 @@ public struct DogWalkQuestion: Hashable, Sendable {
             walks: walks, answers: answers, now: now, calendar: calendar
         ).last(where: { $0.start >= since }) else { return nil }
 
-        let name = routine.dogName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        let text = name.isEmpty ? L10n.text("With your dog?") : L10n.format("With {1}?", name)
+        let text = DogWalkAnswers.question(for: routine)
         let style = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
         let when = walk.start.formatted(style.weekday(.wide).hour().minute())
         let minutes = format.number((walk.durationSeconds / 60).rounded(), maxFractionDigits: 0)
