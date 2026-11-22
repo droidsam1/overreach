@@ -486,7 +486,7 @@ struct TodayWeekTests {
 
         await model.applyRunningAdjustment(now: now)
 
-        let saved = try #require(await store.profile()?.goal?.scheduledRuns)
+        let saved = try #require(await store.profile().goal?.scheduledRuns)
         #expect(saved.map(\.id) == [run.id, tomorrow.id])
         #expect(saved[0] == PlannedRun(id: run.id, day: today, purpose: .easy, durationMinutes: 15, originalDay: first))
         #expect(saved[1] == tomorrow)
