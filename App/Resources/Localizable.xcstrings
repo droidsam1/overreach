@@ -1956,6 +1956,23 @@
         }
       }
     },
+    "Block: week {1} of {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloque: semana {1} de {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloque: semana {1} de {2}"
+          }
+        }
+      }
+    },
     "Body Battery": {
       "extractionState": "manual",
       "localizations": {
@@ -18531,6 +18548,23 @@
         }
       }
     },
+    "Week {1} of {2} of the block": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana {1} de {2} del bloque"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semana {1} de {2} do bloque"
+          }
+        }
+      }
+    },
     "Weight in kilograms": {
       "extractionState": "manual",
       "localizations": {
@@ -20414,6 +20448,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} ms o {2}"
+          }
+        }
+      }
+    },
+    "{1} of {2} sessions done this week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} de {2} sesiones hechas esta semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} de {2} sesións feitas esta semana"
           }
         }
       }

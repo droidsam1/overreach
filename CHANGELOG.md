@@ -15,6 +15,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   estimated 1RM, more reps than ever at a load and, new, the most volume ever for a lift in one session. Equal is
   not a record and a lift's first session has nothing to beat. Completing a set now animates its checkmark (not
   with Reduce Motion), and all haptics go through one helper so a setting can turn them off.
+- Plan opens with your real progress: "This week: 3 of 4 sessions" (planned strength sessions and runs against
+  the ones done) and "Block: week 2 of 5" while a declared block runs, each with a bar. Only linked runs count as
+  done, rest days and postponed runs are not counted as missed, and without a plan nothing is shown.
 
 - The exercise picker in Train and in the routine editor can create an exercise search does not find. The typed
   name is kept, equipment comes from the name ("barra", "mancuernas"…) and muscles from the most similar exercise,
