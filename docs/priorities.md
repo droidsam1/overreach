@@ -16,8 +16,7 @@ and the logger come before review tools, and work that only a person with an iPh
    [#182](https://github.com/droidsam1/overreach/issues/182) (level 2 and link row),
    [#183](https://github.com/droidsam1/overreach/issues/183) (rest day),
    [#184](https://github.com/droidsam1/overreach/issues/184) (two-step onboarding),
-   [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data),
-   [#187](https://github.com/droidsam1/overreach/issues/187) (progress in Plan). #181–#185 touch Today: never in
+   [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data). #181–#185 touch Today: never in
    parallel. [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements) shipped
    lift records and set feedback; a running-goal milestone waits for a goal-progress event to attach it to.
 2. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92). Search and "Last time"

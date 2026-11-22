@@ -42,6 +42,7 @@ public struct PlanView<Assistant: View, Progress: View>: View {
                         Text("Analysing your history…").foregroundStyle(.secondary)
                     }
                 }
+                progressHeader
                 if model.showsHybridCalendar { scheduleSection }
                 if !model.pendingDeloadRows.isEmpty {
                     Section("Recent break") {
@@ -81,6 +82,23 @@ public struct PlanView<Assistant: View, Progress: View>: View {
             }
             .refreshable { await reload() }
             .calendarEditors(model: model, run: $runEditor, strength: $strengthEditor)
+        }
+    }
+
+    /// Real progress through the plan: sessions done this week and the block's week (ADR-0041 rule 7). Each bar
+    /// carries its value as text, and VoiceOver reads one sentence per line.
+    @ViewBuilder private var progressHeader: some View {
+        if let progress = model.progress {
+            Section {
+                ForEach(progress.lines, id: \.title) { line in
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        Text(line.title).font(.subheadline.weight(.semibold))
+                        ProgressView(value: line.fraction)
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(line.accessibilityLabel))
+                }
+            }
         }
     }
 

@@ -83,6 +83,10 @@ public final class PlanModel {
     /// Lifts whose next step was applied on this screen; their stall stays until new sessions show progress.
     private var changedLifts: Set<UUID> = []
     public private(set) var isApplyingLiftChange = false
+    /// Completed and in-progress strength sessions of the last eight days, for this week's progress.
+    private(set) var weekSessions: [StrengthSession] = []
+    /// The current week of the declared block with planned routines, when there is one.
+    private(set) var currentPlanWeek: PlanWeek?
 
     // Editable state of the screen.
     /// Whether the goal has a target date. Change it with `setHasTargetDate(_:)`.
@@ -132,6 +136,8 @@ public final class PlanModel {
         targetDate = clock().addingTimeInterval(Self.defaultTargetWeeks * 7 * 86_400)
         runningDraft = RunningPlanDraft(goal: nil)
     }
+
+    var now: Date { clock() }
 
     /// Default distance of a new target date.
     static let defaultTargetWeeks: Double = 16
@@ -432,6 +438,9 @@ public final class PlanModel {
             )
             return (analysis, progress)
         }.value
+        let weekStart = CalendarDay(now, calendar: calendar).adding(days: -7, calendar: calendar)
+        weekSessions = sessions.filter { $0.startedAt >= weekStart.startDate(in: calendar) }
+        currentPlanWeek = blockProgress.lazy.compactMap { $0.weeks.last(where: \.isCurrent) }.first
         importedPlanProgress = blockProgress.map {
             ImportedPlanProgressRow(block: $0.block, weeks: $0.weeks, calendar: calendar)
         }
