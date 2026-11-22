@@ -25,11 +25,7 @@ and the logger come before review tools, and work that only a person with an iPh
    [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data). #181–#185 touch Today: never in
    parallel. [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements) shipped
    lift records and set feedback; a running-goal milestone waits for a goal-progress event to attach it to.
-3. **GPX backfill for dog walks** — [#154](https://github.com/droidsam1/overreach/issues/154):
-   [#158](https://github.com/droidsam1/overreach/issues/158) (parser), then
-   [#165](https://github.com/droidsam1/overreach/issues/165) (guided import) once #164 is done. Design:
-   [companion walks](design/companion-walks.md).
-4. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
+3. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
 
 ## Needs a person or an iPhone
 
@@ -47,5 +43,3 @@ Agents can prepare these but not finish them.
 - Clinical review of symptom wording —
   [hybrid backlog task 3](design/readiness-and-hybrid-planning.md#3-ask-a-question-that-changes-the-decision).
 - Release v0.1.0 and the beta guide — [#22](https://github.com/droidsam1/overreach/issues/22).
-- Download the Tractive GPX export on an iPhone — [#164](https://github.com/droidsam1/overreach/issues/164). Shapes
-  the guided import (#165).

@@ -1,13 +1,12 @@
 # Walks with the dog from a pet tracker
 
-Status: research done 2026-11-21, plan in [#154](https://github.com/droidsam1/overreach/issues/154), decision in
-[ADR-0039](../adr/0039-companion-walks-official-channels.md) (Proposed). First tracker: Tractive.
+Status: research done 2026-11-21, decision in [ADR-0039](../adr/0039-companion-walks-official-channels.md) (Proposed),
+revised 2026-11-22: the GPX/KML backfill was dropped. First tracker studied: Tractive.
 
 ## Question
 
 The athlete walks a dog several times a day. ADR-0010 lets the profile declare those walks as fixed, but the data
-cannot tell a dog walk from any other walk. Can Overreach read the dog's walks from the Tractive collar and match them
-with the walks, steps and movement times that Garmin and Apple Health already give?
+cannot tell a dog walk from any other walk. Can Overreach tell which of the walks that Garmin and Apple Health already give were with the dog?
 
 Value for the athlete: Today can say "2 of your usual 3 dog walks" and never suggest dropping a fixed walk. The walking
 picture explains spikes ("a long dog walk on Saturday"). Load does not change: habitual dog walks are already in the
@@ -51,15 +50,16 @@ minute steps in Health (`StepWalkDetection`). Cross-source dedupe keeps Garmin f
 - **There is no public Tractive API.** The only official ways out of Tractive are the Strava sync (F8) and the Premium
   location export (F10).
 - **The athlete does not use Strava** and will not install it for this (decided 2026-11-21). That rules out every
-  Strava route, so the best public API in the chain cannot be used. The athlete has Tractive Premium, so the export is
-  available.
+  Strava route, so the best public API in the chain cannot be used.
+- **The location export is not worth it** (decided 2026-11-22). It needs a manual download from my.tractive.com every
+  few weeks and gives a backfill the one-tap question already covers.
 
 ## Options
 
 | Option | Official | Credentials | Fragility | Effort for the athlete | Verdict |
 | --- | --- | --- | --- | --- | --- |
 | 1. Suggest "With Nanoq?" on walks at the usual times, confirmed in one tap | — (no Tractive data) | None | None | One tap per walk, less once learned | **Main path** |
-| 2. Tractive GPX/KML export, imported by file | Yes | None | Very low | Download and import a file every few weeks | **Optional backfill**, needs Premium (the athlete has it) |
+| 2. Tractive GPX/KML export, imported by file | Yes | None | Very low | Download and import a file every few weeks | Not planned: little value for the effort (2026-11-22) |
 | 3. Apple Health fed by Tractive → Strava → Health | Yes | None | Low | Needs a Strava account | Not planned: no Strava |
 | 4. Strava API | Yes | User's own paid Strava app | Medium | Needs a paid Strava subscription | Not planned: no Strava |
 | 5. Tractive community API | No | Tractive password | High; unknown terms | None | **Rejected**, same reasons as ADR-0022 |
@@ -73,6 +73,11 @@ Option 5 is rejected because it would mean:
 
 ADR-0022 rejected Garmin's unofficial API for the same reasons after it broke every one to two months.
 
+Another idea, inferring the dog from the collar being near the phone (Bluetooth or Wi-Fi), is not viable on iOS. An app
+cannot list nearby Wi-Fi devices, and a collar that reports over GPS and cellular does not join the home network. It
+could scan Bluetooth only for a peripheral that advertises a known service, and iOS limits scanning in the background.
+Being near the phone also does not mean the dog was on the walk. Not verified against the collar itself.
+
 Option 1 needs no Tractive data, because the walk is already known (Garmin, Health or step detection). Only "with the
 dog or not" is missing, and the athlete knows it at a glance. Dog walks happen at regular times, so the app can learn
 when to ask and stay quiet otherwise.
@@ -83,31 +88,22 @@ when to ask and stay quiet otherwise.
 Garmin walks · Health walks · step-detected walks ──▶ EverydayMovement dedupe ──▶ kept walks
                                                                                    │
         DogWalkSuggestion (usual times) ──▶ "With Nanoq?" Yes/No ──▶ answer ───────┤
-my.tractive.com ──GPX/KML──▶ Files ──▶ TrackImport (pure) ──windows──▶ CompanionWalkMatching
                                                                                    ▼
                                                                  WalkBout.companion = .dog
 ```
 
-Every walk keeps at most one answer. A manual answer always wins. GPX windows only fill walks nobody answered.
-Confirmed walks, whether from a tap or an import, teach the suggestion its usual times.
+Every walk keeps at most one answer. Confirmed walks teach the suggestion its usual times.
 
 ### Matching
 
-`CompanionWalkMatching` (Domain, pure, [#155](https://github.com/droidsam1/overreach/issues/155)):
+`CompanionWalkMatching` (Domain, pure, [#155](https://github.com/droidsam1/overreach/issues/155)) applies the answers:
 
-1. A walk and a window are a candidate pair when they overlap by ≥ 50 % of the shorter interval (as
-   `RunDeduplication`) and their starts are at most 10 min apart. The phone is often started after leaving home, and
-   clocks differ.
-2. Each window tags at most one walk. The largest overlap wins, and ties go to the earlier start, so the result does not
-   depend on input order.
-3. Low-confidence windows (sparse collar tracks) need ≥ 70 % overlap.
-4. Windows never create walks.
-5. The tag and the answer survive dedupe. When `EverydayMovement` drops the Health copy of a Garmin walk, the kept walk
+1. An answer covers every copy of the same walk. Two walks from different sources are the same walk when they overlap
+   by ≥ 50 % of the shorter interval (as `RunDeduplication`).
+2. The tag and the answer survive dedupe. When `EverydayMovement` drops the Health copy of a Garmin walk, the kept walk
    inherits them.
-6. The matcher is idempotent. Windows are keyed by start and end rounded to the minute, and answers by the kept walk's
-   source and start, so re-imports and re-syncs change nothing.
-
-Thresholds are product heuristics, recorded as `walk-companion-matching` in `docs/evidence.md` when #155 lands.
+3. It is idempotent and independent of input order. Answers are keyed by the walk's source and start, so re-syncs change
+   nothing. On conflicting answers for one walk, "yes" wins.
 
 ### Suggest and confirm
 
@@ -123,55 +119,6 @@ ask about a walk of 10 min or more that has no answer:
 Today's movement card and the walk row in History show the question with Yes and No. One tap stores the answer, and
 History lets the athlete change it. The question never blocks anything, and an unanswered walk counts as an ordinary
 walk. `WalkingRoutine` gains an optional `dogName` for the wording.
-
-### Tractive location export (GPX/KML)
-
-[#158](https://github.com/droidsam1/overreach/issues/158). This is an optional backfill that tags months of past walks
-without a question for each:
-
-- A pure `TrackImport` module turns track points into movement windows: speed ≥ 0.5 m/s for ≥ 8 min, joining gaps of
-  ≤ 5 min, with confidence from point density.
-- Coordinates are discarded once the windows are computed.
-
-### Guided import
-
-[#165](https://github.com/droidsam1/overreach/issues/165), shaped by the device check
-[#164](https://github.com/droidsam1/overreach/issues/164). The download is manual by design: Tractive offers no API,
-and the app must not handle the Tractive login. The flow makes those few taps obvious and short. It follows the
-Garmin setup pattern (`GarminSetupView`) and the [iPhone UX guide](iphone-ux.md).
-
-```
-Onboarding: "Does Nanoq wear a Tractive collar?" ── yes ──▶ profile.petTracker = .tractive  (no import yet)
-Today card (after 7 days) · Settings → Walks → Tractive · History hint
-        │
-        ▼
-1 What you get ──▶ 2 Download: animated walkthrough ──▶ Open Tractive (SFSafariViewController)
-                                                              │ download GPX (≤ 60 days)
-3 Choose the file (.fileImporter) ◀── or Share → Overreach / AirDrop (GPX and KML document types)
-        │
-        ▼
-Preview: "41 movement periods · 34 match your walks" ──▶ Tag 34 walks ──▶ result in place
-```
-
-- **One main action per step**: Continue → Open Tractive → Choose GPX file → Tag N walks.
-- **Animated walkthrough.** Before opening the site, a short animation shows the four taps (tracker → Export Location
-  History → GPX, last 60 days → Download). It is drawn by us with SF Symbols and shapes, never with Tractive
-  screenshots or logos. It uses `PhaseAnimator` or `KeyframeAnimator`. With Reduce Motion on, it shows a static
-  numbered list. The labels come from #164.
-- **No credentials.** `SFSafariViewController` keeps the Tractive login out of the app, unlike a `WKWebView`, where the
-  app could read what is typed.
-- **Any route in.** The app declares GPX (`com.topografix.gpx`) and KML (`com.google.earth.kml`) as importable document
-  types. A file shared from Files, Safari's downloads or AirDrop from a Mac opens the sheet at step 3. If #164 finds
-  the export does not work on a phone, the desktop route (computer → AirDrop or iCloud Drive) becomes the main path.
-- **Result where it happened.** The success state has a check animation, a haptic and a VoiceOver announcement. It
-  also suggests deleting the downloaded file, which contains the home location. The app deletes its own temporary copy
-  at once. Each failure (wrong type, no movement, nothing new, malformed) says what happened and offers **Choose
-  another file**.
-- **Staying current.** Settings shows the covered range and offers **Import newer walks** and **Remove imported tags**.
-  An optional reminder, off until enabled in the sheet, fires after 30 days. Day-to-day tagging stays with the one-tap
-  question, so the import never becomes a chore.
-- **Testable.** `TractiveImportModel` (SettingsPresentation) owns the steps, preview, result, errors, texts and the jump
-  to step 3, and is tested on Linux. The views only render (ADR-0014). Strings are in en, es and gl.
 
 ### Use in recommendations
 
@@ -189,12 +136,9 @@ These apply to every part and are acceptance criteria in the issues.
   feature cannot break because a vendor changed an API.
 - **Official channels only.** No password storage and no impersonation of a vendor's client (ADR-0022).
 - **Optional.** With no dog in the profile, or the question turned off, the app behaves exactly as today.
-- **Pure core, thin adapters.** Suggestion, parsing, movement detection and matching live in OverreachCore and are
+- **Pure core, thin adapters.** Suggestion and matching live in OverreachCore and are
   tested on Linux with synthetic fixtures. Views only render (ADR-0014).
-- **Idempotent.** Stable keys for answers and windows. Re-importing a file or re-syncing never asks again or doubles
-  a tag.
-- **Tolerant parsing.** A malformed point is skipped and counted. A malformed file is rejected as a whole with a clear
-  message, and nothing is imported.
+- **Idempotent.** Stable keys for answers. Re-syncing never asks again or doubles a tag.
 - **Time.** Matching uses absolute `Date`s. Time-of-day slots use the user's calendar in one place, with tests for DST
   and midnight.
 - **Privacy.** Routes and coordinates are never stored, which also protects the home location. The tag and answers
@@ -208,11 +152,9 @@ These apply to every part and are acceptance criteria in the issues.
 | 1 | [#155](https://github.com/droidsam1/overreach/issues/155) Companion tag, answers and matcher (Domain) | P2 | — |
 | 2 | [#163](https://github.com/droidsam1/overreach/issues/163) "With Nanoq?" suggestion and one-tap confirm | P2 | #155 |
 | 3 | [#159](https://github.com/droidsam1/overreach/issues/159) Dog walks in Today and movement details | P2 | #155, #163 |
-| — | [#164](https://github.com/droidsam1/overreach/issues/164) Device check: GPX download on an iPhone (a person) | P3 | — (any time) |
-| 4 | [#158](https://github.com/droidsam1/overreach/issues/158) Parse the GPX/KML export into windows | P3 | #155 |
-| 5 | [#165](https://github.com/droidsam1/overreach/issues/165) Guided, animated import flow | P3 | #158, #164 |
 
-Not planned: [#156](https://github.com/droidsam1/overreach/issues/156),
+Not planned: the GPX/KML backfill ([#154](https://github.com/droidsam1/overreach/issues/154), #158, #164, #165) and
+[#156](https://github.com/droidsam1/overreach/issues/156),
 [#157](https://github.com/droidsam1/overreach/issues/157) and [#160](https://github.com/droidsam1/overreach/issues/160)
 (the Strava routes).
 
@@ -221,8 +163,4 @@ and protects fixed walks without changing today's training decision.
 
 ## Open questions
 
-- #164: does the export work in Safari on an iPhone and in `SFSafariViewController`, where does the file land, and what
-  are the exact labels in English and Spanish?
-- #164: whether the GPX export has per-point timestamps in UTC (expected for GPX 1.1), and the point density while
-  walking. Confirm with a real export, which must not be committed.
 - Tractive's general terms (F5). Read them before any revisit of option 5.
