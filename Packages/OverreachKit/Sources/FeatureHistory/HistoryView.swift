@@ -17,8 +17,19 @@ public struct HistoryView: View {
     @State private var model: HistoryModel
     @AppStorage("history.layout") private var layout = HistoryLayout.list
 
-    public init(model: HistoryModel) {
+    private let onOpenTrain: () -> Void
+
+    private var searchPlacement: SearchFieldPlacement {
+        #if os(iOS)
+        .navigationBarDrawer(displayMode: .always)
+        #else
+        .automatic
+        #endif
+    }
+
+    public init(model: HistoryModel, onOpenTrain: @escaping () -> Void) {
         _model = State(initialValue: model)
+        self.onOpenTrain = onOpenTrain
     }
 
     public var body: some View {
@@ -114,18 +125,26 @@ public struct HistoryView: View {
                 ProgressView()
                     .frame(maxWidth: .infinity)
             } else if model.showsEmptyState {
-                ContentUnavailableView(
-                    "No activities yet",
-                    systemImage: "calendar",
-                    description: Text("Finished workouts and runs from connected sources appear here.")
-                )
+                ContentUnavailableView {
+                    Label("No activities yet", systemImage: "calendar")
+                } description: {
+                    Text("Finished workouts and runs from connected sources appear here.")
+                } actions: {
+                    Button("Open Train", action: onOpenTrain)
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                }
             } else if model.showsFilteredEmptyState {
                 ContentUnavailableView("No matching activities", systemImage: "line.3.horizontal.decrease.circle")
                 Button("Clear search and filters") { model.clearFilters() }
             }
         }
         .refreshable { await model.load() }
-        .searchable(text: $model.searchText, prompt: "Search exercises, runs, sources")
+        .searchable(
+            text: $model.searchText,
+            placement: searchPlacement,
+            prompt: "Search exercises, runs, sources"
+        )
     }
 
     private func lastTimeCard(_ last: LastExerciseResult) -> some View {

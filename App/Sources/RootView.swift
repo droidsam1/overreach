@@ -137,7 +137,7 @@ struct RootView: View {
                 WorkoutView(model: workoutModel, routines: routinesModel)
             }
             Tab("History", systemImage: "calendar", value: AppTab.history) {
-                HistoryView(model: historyModel)
+                HistoryView(model: historyModel, onOpenTrain: openWorkout)
             }
             Tab("Plan", systemImage: "list.bullet.clipboard", value: AppTab.plan) {
                 PlanView(model: planModel, suggestedRun: $suggestedRun, assistant: {

@@ -20,13 +20,11 @@ and the logger come before review tools, and work that only a person with an iPh
    [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data). #181–#185 touch Today: never in
    parallel. [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements) shipped
    lift records and set feedback; a running-goal milestone waits for a goal-progress event to attach it to.
-2. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92). Search and "Last time"
-   shipped; the before/after timing remains a device check in [#21](https://github.com/droidsam1/overreach/issues/21).
-3. **GPX backfill for dog walks** — [#154](https://github.com/droidsam1/overreach/issues/154):
+2. **GPX backfill for dog walks** — [#154](https://github.com/droidsam1/overreach/issues/154):
    [#158](https://github.com/droidsam1/overreach/issues/158) (parser), then
    [#165](https://github.com/droidsam1/overreach/issues/165) (guided import) once #164 is done. Design:
    [companion walks](design/companion-walks.md).
-4. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
+3. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
 
 ## Needs a person or an iPhone
 
@@ -37,7 +35,8 @@ Agents can prepare these but not finish them.
 
 - Data survives re-signing and reinstall — [#11](https://github.com/droidsam1/overreach/issues/11).
 - Real-device review — [#21](https://github.com/droidsam1/overreach/issues/21). Compare the Today decision,
-  access to recovery and everyday movement details (#125), and Plan scheduling. Time the active logger
+  access to recovery and everyday movement details (#125), and Plan scheduling. Compare the time and taps
+  to find a Garmin run and a prior lift in History (#92). Time the active logger
   one-handed (#93). Use the [iPhone UX guide](design/iphone-ux.md#repeatable-beforeafter-check)
   to record large text, VoiceOver and before/after timings. Revisit tab placement with those observations.
 - Clinical review of symptom wording —
