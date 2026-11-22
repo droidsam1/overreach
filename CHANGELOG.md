@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Under the verdict Today shows at most one question or notice at a time: a failed source, the break
+  confirmation, the check-in, connecting Apple Health or Garmin, or the dog walk, in that order. Answering one
+  shows the next on the next refresh. Connecting a source stays in Settings.
 - Today leads with the readiness verdict, its main reason and one action. Start a strength routine, open the
   run instructions or view Recovery on a rest day. Further reasons are under “Why this recommendation?”.
 - Today shows confirmed dog walks separately, with their time, recorded distance and progress against your usual

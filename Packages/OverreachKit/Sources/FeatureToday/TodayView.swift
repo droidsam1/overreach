@@ -100,8 +100,7 @@ public struct TodayView: View {
                     if model.showsReadinessDetails && model.showsReadinessCard {
                         TodayReadinessDetails(model: model)
                     }
-                    warnings
-                    if primary != .deload, let advice = model.deloadAdvice {
+                    if primary != .deload, let advice = model.deloadAdvice, !advice.isBreakConfirmation {
                         deload(advice)
                     }
                     if model.canRequestStrengthOption {
@@ -117,22 +116,13 @@ public struct TodayView: View {
                             }
                         }
                     }
-                    if primary != .checkIn, model.showsCheckIn, model.showsReadinessCard {
-                        checkIn(prominent: false)
-                    }
                     if !model.movementNotes.isEmpty {
                         TodayMovement(model: model)
                     }
-                    if let question = model.dogWalkQuestion {
-                        DogWalkQuestionCard(question: question) { model.answerDogWalk(withDog: $0) }
+                    if let prompt = model.pendingPrompt {
+                        pendingPrompt(prompt)
                     }
                     if model.showsReadinessCard {
-                        if primary != .connectHealth, model.showsConnectHealth {
-                            connectHealth(prominent: false)
-                        }
-                        if primary != .connectGarmin, model.showsConnectGarmin {
-                            connectGarmin(prominent: false)
-                        }
                         if let recoveryDestination {
                             NavigationLink(destination: recoveryDestination()) {
                                 Label("View recovery", systemImage: "heart.text.square")
@@ -192,6 +182,59 @@ public struct TodayView: View {
             }
             .task { await model.load() }
             .refreshable { await model.load() }
+        }
+    }
+
+    /// The one secondary prompt under the hero (ADR-0041).
+    @ViewBuilder private func pendingPrompt(_ prompt: TodayPrompt) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            switch prompt {
+            case .sourceFailure: sourceFailurePrompt
+            case .confirmBreak:
+                if case let .confirmBreak(period)? = model.deloadAdvice?.state { breakPrompt(period) }
+            case .checkIn: checkIn(prominent: false)
+            case .connectHealth: connectHealth(prominent: false)
+            case .connectGarmin: connectGarmin(prominent: false)
+            case .dogWalk:
+                if let question = model.dogWalkQuestion {
+                    DogWalkQuestionCard(question: question) { model.answerDogWalk(withDog: $0) }
+                }
+            }
+        }
+        .padding(Spacing.medium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
+    }
+
+    @ViewBuilder private var sourceFailurePrompt: some View {
+        if let note = model.trainingReadNote {
+            Label(note, systemImage: "exclamationmark.triangle").font(.footnote).foregroundStyle(.secondary)
+        }
+        if model.showsSourceWarning {
+            Label("Some sources could not be updated.", systemImage: "exclamationmark.triangle")
+                .font(.footnote).foregroundStyle(.secondary)
+            if let detail = model.sourceWarningDetail {
+                Text(detail).font(.footnote).foregroundStyle(.secondary).textSelection(.enabled)
+            }
+        }
+        retryLoad(prominent: false)
+    }
+
+    private func breakPrompt(_ period: DeloadAdvice.DetectedBreak) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            Label("Did you already take a break?", systemImage: "questionmark.circle.fill")
+                .font(.headline)
+                .foregroundStyle(.orange)
+            Text(period.details.dates).font(.subheadline)
+            if let strength = period.details.strength { Text(strength).font(.subheadline) }
+            if let running = period.details.running { Text(running).font(.subheadline) }
+            Text(period.details.reason).font(.footnote).foregroundStyle(.secondary)
+            HStack {
+                Button("Yes, it was rest") { Task { await model.reviewBreak(accepted: true) } }
+                    .buttonStyle(.bordered)
+                Button("No") { Task { await model.reviewBreak(accepted: false) } }
+                    .buttonStyle(.bordered)
+            }
         }
     }
 

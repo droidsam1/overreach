@@ -6,6 +6,11 @@ import TrainingServices
 
 /// What Today shows about deloads: a proposal with its reasons, or the deload week in progress.
 public struct DeloadAdvice: Hashable, Sendable {
+    /// The break question is a pending prompt, not a deload card (ADR-0041).
+    public var isBreakConfirmation: Bool {
+        if case .confirmBreak = state { true } else { false }
+    }
+
     public enum State: Hashable, Sendable {
         /// Training and recovery suggest a deload week now.
         case proposed(DeloadExplanation)
