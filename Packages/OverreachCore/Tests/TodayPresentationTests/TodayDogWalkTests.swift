@@ -36,7 +36,7 @@ private struct DogProfile: ProfileRepository {
 @Suite("Today: With the dog?")
 struct TodayDogWalkTests {
     private let now = Date(timeIntervalSince1970: 1_790_000_000)
-    private let calendar = Calendar(identifier: .gregorian)
+    private let calendar = Calendar(identifier: .iso8601)
     private let format = Format(locale: Locale(identifier: "en_US"))
     private var today: CalendarDay { CalendarDay(now, calendar: calendar) }
 
@@ -93,6 +93,24 @@ struct TodayDogWalkTests {
         let model = model(routine: WalkingRoutine(hasDog: true), walks: [recentWalk], answers: [answered])
         await model.load(now: now)
         #expect(model.dogWalkQuestion == nil)
+    }
+
+    @Test func aConfirmedMirrorCountsOnceAndKeepsThePreferredRecording() async {
+        let start = today.startDate(in: calendar)
+        let garmin = WalkBout(start: start, durationSeconds: 1_200, distanceMeters: 1_500, source: .garmin)
+        let mirror = WalkBout(start: start.addingTimeInterval(60), durationSeconds: 1_200, source: .appleHealth)
+        let other = WalkBout(start: start.addingTimeInterval(2_400), durationSeconds: 600, source: .garmin)
+        let routine = WalkingRoutine(hasDog: true, dogName: "Nanoq", usualWalksPerDay: 3, walksAreFixed: true)
+        let model = model(
+            routine: routine, walks: [garmin, mirror, other],
+            answers: [WalkCompanionAnswer(walk: mirror, withCompanion: true)]
+        )
+        await model.load(now: max(now, other.end))
+        #expect(model.movementNotes.last?.text == "Walks with Nanoq today: 1 of your usual 3. 20 min, 1.5 km")
+
+        #expect(model.dogWalkQuestion?.walk == other)
+        model.answerDogWalk(withDog: true)
+        #expect(model.movementNotes.last?.text == "Walks with Nanoq today: 2 of your usual 3. 30 min")
     }
 
     @Test func oneTapStoresTheAnswerAndClearsTheQuestion() async {

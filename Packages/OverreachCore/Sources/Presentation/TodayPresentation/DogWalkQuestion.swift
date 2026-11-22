@@ -23,16 +23,15 @@ public struct DogWalkQuestion: Hashable, Sendable {
     }
 
     static func next(
-        activity: [DailyActivity], answers: [WalkCompanionAnswer], routine: WalkingRoutine, now: Date,
+        walks: [WalkBout], answers: [WalkCompanionAnswer], routine: WalkingRoutine, now: Date,
         in context: Context
     ) -> DogWalkQuestion? {
         let (calendar, format) = (context.calendar, context.format)
         guard routine.hasDog else { return nil }
         let since = now.addingTimeInterval(-recentHours * 3_600)
         // The whole history teaches the usual slots; only the latest unanswered recent walk is asked about.
-        let walks = activity.flatMap(\.walks).filter { $0.start <= now }
         guard let walk = DogWalkSuggestion.walksToAsk(
-            walks: walks, answers: answers, now: now, calendar: calendar
+            walks: walks.filter { $0.start <= now }, answers: answers, now: now, calendar: calendar
         ).last(where: { $0.start >= since }) else { return nil }
 
         let text = DogWalkAnswers.question(for: routine)
