@@ -221,7 +221,7 @@ private struct SessionList: View {
         }
         .animation(.default, value: isReordering)
         // Confirms the long press switched to reordering.
-        .sensoryFeedback(.impact, trigger: isReordering) { _, isOn in isOn }
+        .haptic(.modeChanged, trigger: isReordering) { _, isOn in isOn }
         .sheet(isPresented: Binding(
             get: { progressionExercise != nil },
             set: { if !$0 { progressionExercise = nil } }
@@ -484,6 +484,7 @@ private struct SetRow: View {
     @Binding var set: DraftSet
     let showsRepsInReserve: Bool
     let onDoneChange: (Bool) -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         SetEntryRow(number: SetNumberLabel(number, isWarmUp: set.isWarmUp)) {
@@ -495,12 +496,15 @@ private struct SetRow: View {
                 Label("Set \(number) done", systemImage: set.isDone ? "checkmark.circle.fill" : "circle")
                     .labelStyle(.iconOnly)
                     .font(.title3)
+                    // A short checkmark transition; Reduce Motion keeps the haptic and drops the animation.
+                    .contentTransition(.symbolEffect(.replace))
+                    .animation(reduceMotion ? nil : .snappy, value: set.isDone)
                     .frame(minWidth: 44, minHeight: 44)
                     .contentShape(Rectangle())
             }
             .toggleStyle(.button)
             // Confirms completion without looking at the screen.
-            .sensoryFeedback(.success, trigger: set.isDone) { _, isDone in isDone }
+            .haptic(.completed, trigger: set.isDone) { _, isDone in isDone }
         }
     }
 }
