@@ -383,6 +383,15 @@ public struct TodayView: View {
             }
             Text(option.advice).font(.subheadline)
             if let context = option.context { Text(context).font(.caption).foregroundStyle(.secondary) }
+            if let adjustment = option.adjustment {
+                HStack {
+                    Button(adjustment.applyTitle) { Task { await model.applyRunningAdjustment() } }
+                        .buttonStyle(.borderedProminent)
+                    Button(adjustment.keepTitle) { model.keepPlannedRun() }
+                        .buttonStyle(.bordered)
+                }
+                .padding(.vertical, Spacing.xSmall)
+            }
             if let evidence = option.evidence, let source = option.source {
                 DisclosureGroup("Why this running option?") {
                     VStack(alignment: .leading, spacing: Spacing.xSmall) {

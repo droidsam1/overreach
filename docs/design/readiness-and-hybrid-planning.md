@@ -125,7 +125,8 @@ covers the prescription fields, race priority, moves and postponement. Applying 
 
 [#89](https://github.com/droidsam1/overreach/pull/89) compares a saved session with a conversational run when
 recovery signals and recent running support it. [#95](https://github.com/droidsam1/overreach/pull/95) extends the
-checks to all running entries through tomorrow. Applying an adjustment and recommendations for combined
+checks to all running entries through tomorrow. Today can apply the easy run to a due hard or long run (the entry
+keeps its identity and first date; declining saves nothing). Moves and recommendations for combined
 strength and running days remain open.
 
 - [ ] After tasks 5 and 7, extend the comparison to running and race days. Use duration, effort, repetitions, grade or terrain when relevant and available. Prefer plain cues such as conversational effort. Show zones only when their scale and the athlete's settings are known. With a free day and user intent to train, build from the next run/routine/race and remaining weekly context, or offer a familiar easy option when none exists. Inspect upcoming key sessions before offering a replacement or a move.

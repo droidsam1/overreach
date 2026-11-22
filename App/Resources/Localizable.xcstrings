@@ -2126,6 +2126,23 @@
         }
       }
     },
+    "Change to {1} min easy": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar a {1} min fáciles"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar a {1} min fáciles"
+          }
+        }
+      }
+    },
     "Change to {1}–{2} reps": {
       "extractionState": "manual",
       "localizations": {
@@ -7086,6 +7103,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mantén o último peso. Nos axustes do exercicio podes escoller un incremento máis pequeno para avanzar."
+          }
+        }
+      }
+    },
+    "Keep the planned run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantener la carrera planificada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manter a carreira planificada"
           }
         }
       }

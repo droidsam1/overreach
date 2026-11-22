@@ -13,6 +13,8 @@ and the logger come before review tools, and work that only a person with an iPh
 1. **Adjust planned runs and protect nearby sessions** —
    [hybrid backlog task 8](design/readiness-and-hybrid-planning.md#8-adjust-planned-runs-and-protect-nearby-sessions).
    Plan already supports running and strength priorities and structured runs in the shared schedule.
+   Today can already replace a due non-easy run with a shorter easy one; moving sessions, race-week and
+   strength/run double advice remain.
 2. **Planned versus completed work for imported plans** — follow-up of
    [#34](https://github.com/droidsam1/overreach/issues/34).
 3. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92).
