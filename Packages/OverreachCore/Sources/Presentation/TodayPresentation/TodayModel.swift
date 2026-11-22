@@ -35,6 +35,7 @@ public final class TodayModel {
     public private(set) var accessError: String?
     /// Today's check-in, once filled in.
     public private(set) var checkIn: CheckIn?
+    private var weekProgress: WeekProgress?
     private var recentRunPain = false
     public private(set) var recentTrainingDays: [RecentTrainingDay] = []
     public private(set) var scheduledStrengthToday: ScheduledTrainingRow?
@@ -406,6 +407,23 @@ public final class TodayModel {
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
+    /// The "Your week" card: this week's days, progress and today's session. `nil` without a plan or any training.
+    public var yourWeek: TodayWeek? {
+        let detail = strengthOption.map { option in
+            [L10n.format("Exercises: {1}", option.exerciseRows.count), option.exerciseRows.first.map {
+                "\($0.title) \($0.suggestion)"
+            }].compactMap { $0 }.joined(separator: " · ")
+        }
+        return TodayWeek.make(
+            weekProgress,
+            today: .init(
+                strength: scheduledStrengthToday, strengthDetail: detail?.isEmpty == false ? detail : nil,
+                runs: scheduledRunsToday, adjustedRun: runningOption?.adjustment
+            ),
+            calendar: calendar, format: format
+        )
+    }
+
     /// The check-in sheet for today. After it saves, call `load()` to update the light.
     public func makeCheckInModel(now: Date = .now) -> CheckInModel? {
         guard let checkIns else { return nil }
@@ -550,6 +568,7 @@ public final class TodayModel {
         isLoading = true
         scheduledStrengthToday = nil
         scheduledRunsToday = []
+        weekProgress = nil
         strengthOption = nil
         strengthInputs = nil
         runningOption = nil
@@ -625,6 +644,14 @@ public final class TodayModel {
         )
         loadWorkoutContext(today: today, profile: profile, record: record)
         updateDeloadSession()
+        weekProgress = WeekProgress.make(
+            .init(
+                strength: goal?.scheduledStrength ?? [], runs: goal?.scheduledRuns ?? [],
+                sessions: snapshot.allSessions, recordedRuns: record.runs, restDays: profile?.restDays ?? [],
+                currentBlock: PlanSchedule.runningBlock(profile?.declaredBlocks ?? [], today: today, calendar: calendar)
+            ),
+            now: now, calendar: calendar
+        )
 
         let assignment = goal?.scheduledStrength.first { $0.day == today }
         let assignedRoutine = assignment?.routineID.flatMap { id in record.routines.first { $0.id == id } }

@@ -4217,6 +4217,23 @@
         }
       }
     },
+    "Days trained this week: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Días entrenados esta semana: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Días adestrados esta semana: {1}"
+          }
+        }
+      }
+    },
     "Daytime HRV": {
       "extractionState": "manual",
       "localizations": {
@@ -5101,6 +5118,23 @@
         }
       }
     },
+    "Easy run · {1} min": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera suave · {1} min"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira suave · {1} min"
+          }
+        }
+      }
+    },
     "Edit": {
       "extractionState": "manual",
       "localizations": {
@@ -5539,6 +5573,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Exercicios en castelán"
+          }
+        }
+      }
+    },
+    "Exercises: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejercicios: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercicios: {1}"
           }
         }
       }
@@ -10473,6 +10524,40 @@
         }
       }
     },
+    "Nothing planned": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada previsto"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada previsto"
+          }
+        }
+      }
+    },
+    "Nothing planned this week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada previsto esta semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada previsto esta semana"
+          }
+        }
+      }
+    },
     "Nothing recorded on this day.": {
       "extractionState": "manual",
       "localizations": {
@@ -11234,6 +11319,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Planea {1} sesións por semana en vez de {2}."
+          }
+        }
+      }
+    },
+    "Planned": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsto"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsto"
           }
         }
       }
@@ -12649,6 +12751,23 @@
         }
       }
     },
+    "Rest logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descanso registrado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descanso rexistrado"
+          }
+        }
+      }
+    },
     "Rest logged. Recovery is training too.": {
       "extractionState": "manual",
       "localizations": {
@@ -13342,6 +13461,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Detalles da carreira"
+          }
+        }
+      }
+    },
+    "Run done": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera hecha"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira feita"
           }
         }
       }
@@ -15573,6 +15709,23 @@
         }
       }
     },
+    "Strength and run done": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuerza y carrera hechas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forza e carreira feitas"
+          }
+        }
+      }
+    },
     "Strength athletes report taking lighter weeks roughly every five to six weeks.": {
       "extractionState": "manual",
       "localizations": {
@@ -15603,6 +15756,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Día de forza"
+          }
+        }
+      }
+    },
+    "Strength done": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuerza hecha"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forza feita"
           }
         }
       }
@@ -20384,6 +20554,23 @@
         }
       }
     },
+    "{1} block · week {2} of {3}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloque de {1} · semana {2} de {3}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloque de {1} · semana {2} de {3}"
+          }
+        }
+      }
+    },
     "{1} completed / {2} planned": {
       "extractionState": "manual",
       "localizations": {
@@ -20635,6 +20822,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} ms o {2}"
+          }
+        }
+      }
+    },
+    "{1} of {2} sessions": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} de {2} sesiones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} de {2} sesións"
           }
         }
       }
@@ -21030,6 +21234,57 @@
         }
       }
     },
+    "{1} · today completes this week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · hoy completas la semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · hoxe completas a semana"
+          }
+        }
+      }
+    },
+    "{1} · today completes this week's running": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · hoy completas el running de la semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · hoxe completas o running da semana"
+          }
+        }
+      }
+    },
+    "{1} · today completes this week's strength": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · hoy completas la fuerza de la semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · hoxe completas a forza da semana"
+          }
+        }
+      }
+    },
     "{1} · week {2}": {
       "extractionState": "manual",
       "localizations": {
@@ -21128,6 +21383,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1}, últimas {2} semanas: {3} a última semana, {4} de media, máximo {5}."
+          }
+        }
+      }
+    },
+    "{1}, today: {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}, hoy: {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}, hoxe: {2}"
           }
         }
       }
