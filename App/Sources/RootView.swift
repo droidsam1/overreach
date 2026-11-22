@@ -97,6 +97,22 @@ struct RootView: View {
         }
     }
 
+    /// Starts today's session from Today's hero: the routine when it still exists, otherwise an empty workout with
+    /// the session's name. An active or unsaved workout is opened instead of replaced.
+    private func startWorkout(named name: String, routineID: UUID?) {
+        selectedTab = .train
+        guard !workoutModel.isSessionActive, workoutModel.recoverableWorkoutName == nil,
+              !workoutModel.needsDraftRecovery else { return }
+        Task {
+            if routinesModel.routines.isEmpty { await routinesModel.load() }
+            if let routineID, let routine = routinesModel.routines.first(where: { $0.id == routineID }) {
+                await workoutModel.start(routine)
+            } else {
+                workoutModel.start(name: name)
+            }
+        }
+    }
+
     /// Recovery & Progress, with the progress detail from Plan's analysis. `section` opens one detail directly.
     private func recoveryProgress(section: RecoveryProgressModel.Section?) -> some View {
         TrendsView(
@@ -115,6 +131,8 @@ struct RootView: View {
                     onConnectGarmin: { garminModel.start() },
                     recoveryHistory: { PlanProgressView(model: planModel) }
                 )
+                .startStrength { name, routineID in startWorkout(named: name, routineID: routineID) }
+                .openPlan { selectedTab = .plan }
                 .reviewRunMove { entry, day in
                     suggestedRun = planModel.reviewRunMove(entry, to: day)
                     selectedTab = .plan

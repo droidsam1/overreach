@@ -8,6 +8,7 @@ import TodayPresentation
 public struct TodayView: View {
     @State private var model: TodayModel
     @State private var checkInSheet: CheckInModel?
+    @State private var showsRecovery = false
     private let onConnectGarmin: () -> Void
     private let recoveryHistory: (() -> AnyView)?
     private var recoveryDestination: (() -> AnyView)?
@@ -15,6 +16,8 @@ public struct TodayView: View {
     private var showsSettings = Binding.constant(false)
     private var settingsBadgeCount = 0
     private var onReviewRunMove: ((PlannedRun, CalendarDay) -> Void)?
+    private var onStartStrength: ((String, UUID?) -> Void)?
+    private var onOpenPlan: (() -> Void)?
 
     private let workoutContinuation: TodayModel.WorkoutContinuation?
     private let onOpenTrain: () -> Void
@@ -64,6 +67,21 @@ public struct TodayView: View {
         copy.showsSettings = isPresented
         copy.settingsDestination = { AnyView(destination()) }
         copy.settingsBadgeCount = badgeCount
+        return copy
+    }
+
+    /// Starts today's strength session from the hero: the routine when known, otherwise an empty workout by name.
+    /// Without it the hero opens Train.
+    public func startStrength(_ action: @escaping (String, UUID?) -> Void) -> TodayView {
+        var copy = self
+        copy.onStartStrength = action
+        return copy
+    }
+
+    /// Where the hero's run action goes: today's run in Plan. Without it the hero opens Train.
+    public func openPlan(_ action: @escaping () -> Void) -> TodayView {
+        var copy = self
+        copy.onOpenPlan = action
         return copy
     }
 
@@ -158,6 +176,9 @@ public struct TodayView: View {
             .navigationDestination(isPresented: showsSettings) {
                 settingsDestination?()
             }
+            .navigationDestination(isPresented: $showsRecovery) {
+                recoveryDestination?()
+            }
             .sheet(item: $checkInSheet) { sheet in
                 CheckInView(model: sheet) { Task { await model.load() } }
             }
@@ -170,36 +191,51 @@ public struct TodayView: View {
         model.nextAction(continuing: workoutContinuation)
     }
 
-    private func continueWorkout(_ continuation: TodayModel.WorkoutContinuation) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.xSmall) {
-            switch continuation {
-            case let .resume(name):
-                Button("Resume workout", systemImage: "dumbbell", action: onOpenTrain)
-                Text(name).font(.subheadline)
-            case .reviewDraft:
-                Button("Review saved workout", systemImage: "dumbbell", action: onOpenTrain)
-            }
-        }
-        .buttonStyle(BrandButtonStyle())
-    }
-
-    private var primaryDecision: some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
-            primaryAction
+    /// The hero (ADR-0041 rule 1): the verdict with one leading reason, then one prominent, verb-named button.
+    @ViewBuilder private var primaryDecision: some View {
+        let hero = VStack(alignment: .leading, spacing: Spacing.medium) {
             if model.showsReadinessCard {
                 readinessSummary
             }
+            primaryAction
         }
+        if primary == .deload || primary == .loading {
+            hero
+        } else {
+            hero
+                .padding(Spacing.medium)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
+        }
+    }
+
+    private func heroButton(symbol: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(model.primaryActionTitle(for: primary) ?? "", systemImage: symbol)
+        }
+        .buttonStyle(BrandButtonStyle())
     }
 
     @ViewBuilder private var primaryAction: some View {
         switch primary {
         case let .continueWorkout(workout):
-            continueWorkout(workout)
+            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                heroButton(symbol: "dumbbell", action: onOpenTrain)
+                if case let .resume(name) = workout { Text(name).font(.subheadline) }
+            }
         case .loading:
             ProgressView("Loading Today…")
-        case .readiness:
-            EmptyView()
+        case let .startStrength(name, routineID):
+            heroButton(symbol: "dumbbell") {
+                if let onStartStrength { onStartStrength(name, routineID) } else { onOpenTrain() }
+            }
+        case .startRun:
+            heroButton(symbol: "figure.run", action: onOpenPlan ?? onOpenTrain)
+        case .rest:
+            // Until rest is recorded as a completed action (#183), resting opens the recovery details.
+            heroButton(symbol: "bed.double") { showsRecovery = recoveryDestination != nil }
+        case .reviewTraining:
+            heroButton(symbol: "calendar", action: onOpenHistory)
         case .deload:
             if let advice = model.deloadAdvice {
                 deload(advice, prominent: true)
@@ -213,8 +249,7 @@ public struct TodayView: View {
         case .connectGarmin:
             connectGarmin(prominent: true)
         case .train:
-            Button("Open Train", systemImage: "dumbbell", action: onOpenTrain)
-                .buttonStyle(BrandButtonStyle())
+            heroButton(symbol: "dumbbell", action: onOpenTrain)
         }
     }
 
@@ -384,10 +419,21 @@ public struct TodayView: View {
 
     private var readinessSummary: some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
-            Text(model.readinessAdvice).font(.headline).accessibilityAddTraits(.isHeader)
+            Text(model.heroTitle).font(.headline).accessibilityAddTraits(.isHeader)
             StatusBadge(title: model.readinessTitle, tone: model.readinessLevel.tone)
-            if let summary = model.readinessSummary {
-                Text(summary).font(.subheadline)
+            if let reason = model.heroReason {
+                Text(reason).font(.subheadline)
+            }
+            // The level-2 Why screen replaces this disclosure (#182).
+            if !model.heroMoreReasons.isEmpty {
+                DisclosureGroup("Why this recommendation?") {
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        ForEach(model.heroMoreReasons, id: \.self) { Text($0) }
+                    }
+                    .font(.subheadline)
+                    .padding(.top, Spacing.xSmall)
+                }
+                .font(.subheadline)
             }
         }
     }
@@ -534,6 +580,12 @@ struct PreviewMetricsSource: MetricsSource {
 
 #Preview("Large text in dark mode") {
     TodayView(model: TodayModel(sources: [PreviewMetricsSource()]))
+        .environment(\.dynamicTypeSize, .accessibility3)
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Hero with a workout to resume, large text, dark") {
+    TodayView(model: TodayModel(sources: [PreviewMetricsSource()]), workoutContinuation: .resume("Legs A"))
         .environment(\.dynamicTypeSize, .accessibility3)
         .preferredColorScheme(.dark)
 }

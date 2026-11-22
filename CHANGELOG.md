@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today opens with one hero: the verdict, its leading reason and one button that says what to do, such as
+  "Start Legs A", "Start Easy run · 30 min", "Rest today" or "Review today's training". "Start Legs A" opens the
+  logger with that routine ready. Further reasons sit behind "Why this recommendation?".
+
 - The exercise picker in Train and in the routine editor can create an exercise search does not find. The typed
   name is kept, equipment comes from the name ("barra", "mancuernas"…) and muscles from the most similar exercise,
   so most of the time it is one tap on Add. A name that an exercise already answers to offers that one instead.

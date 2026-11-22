@@ -10456,23 +10456,6 @@
         }
       }
     },
-    "Open Train": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Abrir Entrenar"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Abrir Adestrar"
-          }
-        }
-      }
-    },
     "Opens in the browser": {
       "extractionState": "manual",
       "localizations": {
@@ -12479,6 +12462,23 @@
         }
       }
     },
+    "Rest today": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descansa hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descansa hoxe"
+          }
+        }
+      }
+    },
     "Rest today. Ease back into training once you feel well again.": {
       "extractionState": "manual",
       "localizations": {
@@ -12934,6 +12934,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Revisar coincidencias de forza"
+          }
+        }
+      }
+    },
+    "Review today's training": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisa el entrenamiento de hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisa o adestramento de hoxe"
           }
         }
       }
@@ -14893,6 +14910,23 @@
         }
       }
     },
+    "Start a workout": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empieza un entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comeza un adestramento"
+          }
+        }
+      }
+    },
     "Start deload week": {
       "extractionState": "manual",
       "localizations": {
@@ -14991,6 +15025,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Comezar co catálogo de exercicios"
+          }
+        }
+      }
+    },
+    "Start {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empieza {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comeza {1}"
           }
         }
       }
@@ -15722,6 +15773,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sincronízase soa"
+          }
+        }
+      }
+    },
+    "Take a recovery day": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haz un día de recuperación"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fai un día de recuperación"
           }
         }
       }

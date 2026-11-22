@@ -187,8 +187,9 @@ struct CheckInModelTests {
         await model.load(now: now)
         let initialReadiness = model.readiness
         #expect(model.checkInButtonTitle == "Do new symptoms make you feel too unwell to train today?")
-        #expect(model.readinessSummary?.contains("comparable readings low") == true)
-        #expect(model.readinessSummary?.contains("bpm above your usual") == true)
+        let reasons = [model.heroReason].compactMap { $0 } + model.heroMoreReasons
+        #expect(reasons.contains { $0.contains("comparable readings low") })
+        #expect(reasons.contains { $0.contains("bpm above your usual") })
 
         let sheet = try #require(model.makeCheckInModel(now: now))
         sheet.contextAnswer = .yes
@@ -197,7 +198,7 @@ struct CheckInModelTests {
 
         #expect(model.readiness.reasons == [.symptomsLimitTraining])
         #expect(model.readinessAdvice == "Skip training today and reassess how you feel.")
-        #expect(model.readinessSummary == "You reported symptoms that make you feel too unwell to train.")
+        #expect(model.heroReason == "You reported symptoms that make you feel too unwell to train.")
         #expect(model.readinessObservations.isEmpty)
         #expect(model.readinessSources.isEmpty)
         #expect(model.checkIn?.isSick == false)

@@ -42,6 +42,10 @@ public final class TodayModel {
     public private(set) var strengthOption: StrengthOption?
     public private(set) var runningOption: RunningOption?
     private var keptPlannedRunDay: CalendarDay?
+    /// The hero action today's plan calls for, when there is a plan for today.
+    private var plannedAction: NextAction?
+    /// A strength session was logged or recorded today, planned or not.
+    private var strengthDoneToday = false
     private var hasRunningGoal = false
     /// A deload proposal (training reinforced by recovery, `deload-recovery-signals`) or the deload week in progress.
     public private(set) var deloadAdvice: DeloadAdvice?
@@ -98,32 +102,77 @@ public final class TodayModel {
         case resume(String), reviewDraft
     }
 
+    /// The one prominent action of Today's hero (ADR-0041 rule 1). Every case except `loading` has a verb-named title.
     public enum NextAction: Equatable {
         case continueWorkout(WorkoutContinuation)
-        case loading, readiness, checkIn, deload, retry, connectHealth, connectGarmin, train
+        /// Today's planned or next strength session, by name. The routine is known when the session comes from one.
+        case startStrength(String, routineID: UUID?)
+        /// Today's planned run, by its plan title.
+        case startRun(String)
+        /// Rest or a recovery day: advised by readiness, or today is a planned rest day.
+        case rest
+        /// Today's training is done.
+        case reviewTraining
+        case loading, checkIn, deload, retry, connectHealth, connectGarmin
+        /// No plan and no known next session: start a workout.
+        case train
     }
 
     public func nextAction(continuing workout: WorkoutContinuation?) -> NextAction {
         workout.map(NextAction.continueWorkout) ?? nextAction
     }
 
-    /// Orders existing actions for the first viewport. Readiness can advise an action without a button.
+    /// The hero's action for the first viewport: safety and questions that change the decision first, then today's
+    /// training.
     public var nextAction: NextAction {
         guard loadedDay != nil else { return .loading }
-        if readiness.reasons.contains(where: \.advisesSkippingTraining) { return .readiness }
+        if advisesSkipping { return .rest }
         if showsCheckIn, suggestedContextQuestion != nil { return .checkIn }
-        if readinessLevel == .red { return .readiness }
+        if readinessLevel == .red { return .rest }
         if case .proposed = deloadAdvice?.state { return .deload }
-        if readinessLevel == .amber { return .readiness }
+        if readinessLevel == .amber { return trainingAction }
         if showsSourceWarning, readinessLevel == .unknown { return .retry }
         if showsConnectGarmin, !showsMetrics { return .connectGarmin }
         if showsConnectHealth, !showsMetrics { return .connectHealth }
         if readinessLevel == .unknown, showsCheckIn, checkIn == nil { return .checkIn }
-        if readinessLevel == .green, hasRunningGoal || !scheduledRunsToday.isEmpty || scheduledStrengthToday != nil {
-            return .readiness
+        return trainingAction
+    }
+
+    /// What training today means: the plan's next item, a review once it is done, or the next known session.
+    private var trainingAction: NextAction {
+        if let plannedAction { return plannedAction }
+        if strengthDoneToday { return .reviewTraining }
+        if let slot = recentWorkouts?.planned ?? nextWorkout?.slot {
+            return .startStrength(slot.name, routineID: UUID(uuidString: slot.id))
         }
         return .train
     }
+
+    private var advisesSkipping: Bool { readiness.reasons.contains(where: \.advisesSkippingTraining) }
+
+    /// The hero button's label: a verb naming the outcome. `nil` only while loading.
+    public func primaryActionTitle(for action: NextAction) -> String? {
+        switch action {
+        case .loading: nil
+        case .continueWorkout(.resume): L10n.text("Resume workout")
+        case .continueWorkout(.reviewDraft): L10n.text("Review saved workout")
+        case let .startStrength(name, _), let .startRun(name): L10n.format("Start {1}", name)
+        case .rest: readinessLevel == .red && !advisesSkipping
+            ? L10n.text("Take a recovery day") : L10n.text("Rest today")
+        case .reviewTraining: L10n.text("Review today's training")
+        case .checkIn: checkInButtonTitle
+        case .deload: DeloadProposalText.start(steadier: deloadPlan == .stressAware)
+        case .retry: L10n.text("Try again")
+        case .connectHealth: L10n.text("Connect Apple Health")
+        case .connectGarmin: L10n.text("Connect your Garmin")
+        case .train: L10n.text("Start a workout")
+        }
+    }
+
+    public var primaryActionTitle: String? { primaryActionTitle(for: nextAction) }
+
+    /// The hero's verdict: what the light means for today's training.
+    public var heroTitle: String { readinessAdvice }
 
     public var readinessLevel: ReadinessLevel { readiness.level }
     public var readinessTitle: String { readiness.level.displayName }
@@ -209,10 +258,13 @@ public final class TodayModel {
     public var showsReadinessDetails: Bool { !readiness.reasons.isEmpty || !readiness.inputs.isEmpty }
     public var showsReadinessCard: Bool { loadedDay != nil }
 
-    public var readinessSummary: String? {
-        let reasons = readiness.reasons.filter { observationKind(for: $0) == .supporting }.prefix(2)
-        let summary = reasons.map { text(for: $0) }.joined(separator: " ")
-        return summary.isEmpty ? nil : summary
+    /// The leading reason behind the light, in one sentence. Other reasons are one tap away (`heroMoreReasons`).
+    public var heroReason: String? { supportingReasons.first }
+    /// Reasons after the leading one, shown behind "Why this recommendation?".
+    public var heroMoreReasons: [String] { Array(supportingReasons.dropFirst()) }
+
+    private var supportingReasons: [String] {
+        readiness.reasons.filter { observationKind(for: $0) == .supporting }.map { text(for: $0) }
     }
 
     public var readinessObservations: [ReadinessObservation] { explanation.observations }
@@ -422,6 +474,8 @@ public final class TodayModel {
         isLoading = true
         scheduledStrengthToday = nil
         scheduledRunsToday = []
+        plannedAction = nil
+        strengthDoneToday = false
         strengthOption = nil
         strengthInputs = nil
         runningOption = nil
@@ -500,6 +554,12 @@ public final class TodayModel {
                                           now: now, calendar: calendar)
         }
         let activeRuns = goal?.scheduledRuns.filter { $0.day == today && !$0.isPostponed } ?? []
+        let strengthDone = hasStrengthToday(sessions: snapshot.allSessions, recordings: record.recordings, now: now)
+        strengthDoneToday = strengthDone
+        plannedAction = Self.plannedAction(
+            strength: assignment, routine: assignedRoutine, strengthDone: scheduledStrengthToday?.status != nil,
+            runs: activeRuns, format: format
+        )
         updateMovement(
             record.activity, today: today, now: now, profile: profile,
             schedule: .init(strength: assignment,
@@ -509,11 +569,26 @@ public final class TodayModel {
         guard assignment == nil || assignedRoutine != nil,
               readiness.level == .amber, !readiness.reasons.contains(where: \.advisesSkippingTraining),
               workouts != nil, !snapshot.sessionsFailed,
-              !hasStrengthToday(sessions: snapshot.allSessions, recordings: record.recordings, now: now) else { return }
+              !strengthDone else { return }
         if assignment == nil, activeRuns.contains(where: { $0.purpose == .race && $0.completion == nil }) { return }
         loadStrengthOption(
             today: today, now: now, profile: profile, assignedRoutine: assignedRoutine, snapshot: snapshot
         )
+    }
+
+    /// The plan's next item today: the strength session, then a run, then a review once everything planned is done.
+    /// A day with only rest entries is a rest day. A strength assignment whose routine is missing gives no action.
+    static func plannedAction(
+        strength: PlannedStrength?, routine: Routine?, strengthDone: Bool, runs: [PlannedRun], format: Format
+    ) -> NextAction? {
+        let strengthPending = strength?.routineID != nil && !strengthDone
+        if strengthPending, let routine { return .startStrength(routine.name, routineID: routine.id) }
+        if let run = runs.first(where: { $0.purpose != .rest && $0.completion == nil }) {
+            return .startRun(run.displayName(format: format))
+        }
+        if strengthPending { return nil }
+        if strengthDone || runs.contains(where: { $0.completion != nil }) { return .reviewTraining }
+        return strength != nil || !runs.isEmpty ? .rest : nil
     }
 
     private func loadRunningPlan(

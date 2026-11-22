@@ -152,7 +152,7 @@ struct TodayWeekTests {
         await model.load(now: now)
 
         #expect(model.readinessLevel == .amber)
-        #expect(model.readinessSummary?.contains("4 of 5 comparable readings low in the last 7 days") == true)
+        #expect(model.heroReason?.contains("4 of 5 comparable readings low in the last 7 days") == true)
         #expect(model.readinessLines.first?.kind == .supporting)
         #expect(model.readinessAdvice == "Keep it easy today. Run at a pace you can talk at, or lift with light effort.")
         #expect(model.readinessLines.first?.text.contains("4 of 5 comparable readings low") == true)
@@ -330,7 +330,8 @@ struct TodayWeekTests {
                               workouts: store, calendar: calendar)
         await sick.load(now: now)
         #expect(sick.readinessLevel == .red)
-        #expect(sick.nextAction == .readiness)
+        #expect(sick.nextAction == .rest)
+        #expect(sick.primaryActionTitle == "Rest today")
         #expect(!sick.canRequestStrengthOption)
         #expect(sick.strengthOption == nil)
 
