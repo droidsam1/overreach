@@ -11,29 +11,25 @@ and the logger come before review tools, and work that only a person with an iPh
 
 ## Ready to implement
 
-0. **Coherent daily recommendation after training** — one task at a time, in this order (all touch Today: never in
-   parallel with #181–#185):
-   1. Done: after a lift or run today the hero says so and recommends no second session unless the plan has one.
-   2. Lower-body strength before a run: from the exercises' `BodyRegion`, count a lower-body session today, or
-      yesterday with heavy or hard-eccentric work, as a conflict. Without a run goal or a dated run, Today offers no
-      optional run and the other-options run says why; with a dated run it keeps the run, easy, and shows the
-      spacing note. Evidence: `docs/evidence-readiness-and-hybrid.md` (concurrent training, same-day sequence).
-   3. Share the rule with the Assistant context and Plan: `TrainingServices` answers "trained today" and
-      "lower-body load in the last 24 h" once, and `AIExchange` and Plan's easy-run proposals use it.
-   4. Evidence register entry for the rule (`concurrent-lower-body-run`, heuristic) and a replay case.
-
-1. **Minimal UI with progressive disclosure** — [#179](https://github.com/droidsam1/overreach/issues/179)
+1. **Coherent daily recommendation after training** — [#202](https://github.com/droidsam1/overreach/issues/202),
+   one task at a time in this order (all touch Today: never in parallel with #181–#185):
+   [#203](https://github.com/droidsam1/overreach/issues/203) (no run after lower-body strength unless planned),
+   [#204](https://github.com/droidsam1/overreach/issues/204) (share the rule with the Assistant and Plan),
+   [#205](https://github.com/droidsam1/overreach/issues/205) (evidence entry and replay case). Shipped in
+   [#201](https://github.com/droidsam1/overreach/pull/201): after a lift or run today Today recommends no second
+   session unless the plan has one.
+2. **Minimal UI with progressive disclosure** — [#179](https://github.com/droidsam1/overreach/issues/179)
    ([ADR-0041](adr/0041-minimal-ui-progressive-disclosure.md)), one task at a time in this order:
    [#181](https://github.com/droidsam1/overreach/issues/181) (one pending prompt),
    [#184](https://github.com/droidsam1/overreach/issues/184) (two-step onboarding),
    [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data). #181–#185 touch Today: never in
    parallel. [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements) shipped
    lift records and set feedback; a running-goal milestone waits for a goal-progress event to attach it to.
-2. **GPX backfill for dog walks** — [#154](https://github.com/droidsam1/overreach/issues/154):
+3. **GPX backfill for dog walks** — [#154](https://github.com/droidsam1/overreach/issues/154):
    [#158](https://github.com/droidsam1/overreach/issues/158) (parser), then
    [#165](https://github.com/droidsam1/overreach/issues/165) (guided import) once #164 is done. Design:
    [companion walks](design/companion-walks.md).
-3. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
+4. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
 
 ## Needs a person or an iPhone
 
