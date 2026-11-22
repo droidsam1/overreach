@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 - Today asks "With <dog>?" about your latest recent walk, with Yes and No. One tap saves the answer, and the
-  app learns the times you usually walk the dog. History and the dog's name in Settings come next.
+  app learns the times you usually walk the dog. You can set the dog's name in onboarding and Settings; History comes next.
 
 - The profile can store the dog's name, and the app can now work out which walks to ask "With <dog>?" about:
   every walk at first, then only near the times you usually walk the dog. No screen yet.
