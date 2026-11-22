@@ -78,17 +78,9 @@ public struct TodaySignal: Hashable, Sendable, Identifiable {
     /// The tiles to show, in order: the leading reason's signal first, then HRV, sleep and resting heart rate.
     /// Load replaces the least informative of them when it is a reason. A signal without data is left out.
     public static func signals(_ inputs: Inputs) -> [TodaySignal] {
-        guard let today = inputs.today else { return [] }
+        guard inputs.today != nil else { return [] }
         let leadingKind = leadingKind(inputs)
-        func make(_ kind: Kind) -> TodaySignal? {
-            switch kind {
-            case .hrv: hrv(inputs, today: today, leading: leadingKind == .hrv)
-            case .sleep: sleep(inputs, today: today, leading: leadingKind == .sleep)
-            case .restingHeartRate: restingHeartRate(inputs, today: today, leading: leadingKind == .restingHeartRate)
-            case .load: load(inputs, leading: leadingKind == .load)
-            case .bodyBattery: nil
-            }
-        }
+        func make(_ kind: Kind) -> TodaySignal? { signal(kind, inputs) }
         var order: [Kind] = [.hrv, .sleep, .restingHeartRate]
         if let leadingKind { order = [leadingKind] + order.filter { $0 != leadingKind } }
         var chosen = order.compactMap(make)
@@ -99,6 +91,19 @@ public struct TodaySignal: Hashable, Sendable, Identifiable {
             chosen.append(load)
         }
         return Array(chosen.prefix(limit))
+    }
+
+    /// One signal on its own, whatever the tile limit: the Why screen builds a card for each reason with a signal.
+    static func signal(_ kind: Kind, _ inputs: Inputs) -> TodaySignal? {
+        guard let today = inputs.today else { return nil }
+        let leading = leadingKind(inputs) == kind
+        switch kind {
+        case .hrv: return hrv(inputs, today: today, leading: leading)
+        case .sleep: return sleep(inputs, today: today, leading: leading)
+        case .restingHeartRate: return restingHeartRate(inputs, today: today, leading: leading)
+        case .load: return load(inputs, leading: leading)
+        case .bodyBattery: return nil
+        }
     }
 
     // MARK: Leading reason

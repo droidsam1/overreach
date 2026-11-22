@@ -488,6 +488,20 @@ public final class TodayModel {
         )
     }
 
+    /// The level-2 Why screen. `readinessLines` stays available for VoiceOver and the Assistant context.
+    public var why: TodayWhy {
+        TodayWhy.make(
+            .init(
+                signals: .init(
+                    today: loadedDay, metrics: metrics, nights: recentNights, readiness: readiness,
+                    load: deloadAdvice?.loadSignal, calendar: calendar, format: format
+                ),
+                lines: readinessLines, trainingContext: readinessTrainingContext, sources: readinessSources,
+                coverageNote: hrvCoverageNote
+            )
+        )
+    }
+
     public var hrvMs: Double? { metrics?.hrvNightlyAverageMs }
     public var restingHeartRate: Double? { metrics?.restingHeartRate }
     /// Sleep in hours (stored in seconds).
