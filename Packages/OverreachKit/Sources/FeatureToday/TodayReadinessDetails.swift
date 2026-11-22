@@ -4,9 +4,11 @@ import TodayPresentation
 
 struct TodayReadinessDetails: View {
     let model: TodayModel
+    var startsExpanded = false
+    @State private var isExpanded = false
 
     var body: some View {
-        DisclosureGroup("Why this recommendation?") {
+        DisclosureGroup("Reasons", isExpanded: $isExpanded) {
             VStack(alignment: .leading, spacing: Spacing.small) {
                 ForEach(model.readinessLines, id: \.self) { line in
                     VStack(alignment: .leading, spacing: Spacing.xSmall) {
@@ -41,6 +43,7 @@ struct TodayReadinessDetails: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.top, Spacing.small)
         }
+        .onAppear { if startsExpanded { isExpanded = true } }
     }
 }
 

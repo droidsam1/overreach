@@ -11935,6 +11935,23 @@
         }
       }
     },
+    "Reasons": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motivos"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motivos"
+          }
+        }
+      }
+    },
     "Recent break": {
       "extractionState": "manual",
       "localizations": {
@@ -18174,40 +18191,6 @@
         }
       }
     },
-    "View recent training": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ver entrenamientos recientes"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ver adestramentos recentes"
-          }
-        }
-      }
-    },
-    "View recovery": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ver recuperación"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ver recuperación"
-          }
-        }
-      }
-    },
     "View summary": {
       "extractionState": "manual",
       "localizations": {
@@ -18816,6 +18799,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Que exercicios están estancados e que debería probar?"
+          }
+        }
+      }
+    },
+    "Why": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por qué"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por que"
           }
         }
       }

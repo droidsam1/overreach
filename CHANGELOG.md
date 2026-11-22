@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today ends with one row of links: **Why · Other options · Recovery · History**. Reasons, evidence, guidance,
+  the deload details and everyday movement moved to **Why this recommendation?**; the optional run and easy
+  strength session moved to **Other options**. A test keeps Today to four blocks.
 - Under the verdict Today shows at most one question or notice at a time: a failed source, the break
   confirmation, the check-in, connecting Apple Health or Garmin, or the dog walk, in that order. Answering one
   shows the next on the next refresh. Connecting a source stays in Settings.
