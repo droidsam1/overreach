@@ -108,14 +108,6 @@ confirmed dog walks in the last 28 days; a slot whose last 5 answers are all "No
 learned apart once weekends have 10 answers of their own. Implemented in `DogWalkSuggestion`. Product heuristics to
 keep the question rare once learned; none is a clinical rule. Reviewed 2026-11-22.
 
-### `walk-companion-matching` — heuristic
-A tracker's movement window tags a walk the app already has when both overlap by at least 50 % of the shorter one
-(70 % for a low-confidence window from a sparse track) and their starts differ by at most 10 minutes. Each window tags
-one walk (largest overlap, ties to the earlier start); the athlete's own answer always wins. Implemented in
-`CompanionWalkMatching`. The overlap rule is the one used for runs and strength (`RunDeduplication`); the 70 % and
-10 minutes are product heuristics: the phone is often started after leaving home, and a collar reports a position
-every 2–60 minutes. Not a clinical rule. Reviewed 2026-11-22.
-
 ### `first-progression` — heuristic
 Repeat the first session as a starting point. Progressive overload for long-term adaptation can come from
 load or reps. Plotkin et al. compared both in trained lifters over eight weeks and found broadly similar
