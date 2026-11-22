@@ -7,11 +7,14 @@ public enum Haptic: Sendable {
     case completed
     /// The screen switched mode, such as reordering.
     case modeChanged
+    /// One option of a short list was picked, such as an answer on a scale.
+    case selected
 
     var feedback: SensoryFeedback {
         switch self {
         case .completed: .success
         case .modeChanged: .impact
+        case .selected: .selection
         }
     }
 }
