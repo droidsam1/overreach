@@ -2,6 +2,7 @@ import Domain
 import ExercisesPresentation
 import Fixtures
 import Foundation
+import PresentationKit
 import Testing
 
 @Suite("MappingDraft")

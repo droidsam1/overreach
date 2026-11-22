@@ -50,9 +50,18 @@ public struct WorkoutView: View {
             .inlineTitle(model.isSessionActive)
             .toolbar { toolbar }
             .sheet(isPresented: $isPickingExercise) {
-                ExercisePicker(items: model.exerciseChoices.map(PickerItem.init)) { id in
-                    Task { await model.add(exerciseID: id) }
-                }
+                ExercisePicker(
+                    items: model.exerciseChoices.map(PickerItem.init),
+                    onPick: { id in Task { await model.add(exerciseID: id) } },
+                    createForm: { name, finish in
+                        NewExerciseForm(
+                            model: model.newExercise(named: name),
+                            onCreated: { exercise in Task { await model.addCreated(exercise) } },
+                            onUseExisting: { id in Task { await model.add(exerciseID: id) } },
+                            finish: finish
+                        )
+                    }
+                )
                 // Exercises may have been created since this screen first appeared.
                 .task { await model.load() }
             }

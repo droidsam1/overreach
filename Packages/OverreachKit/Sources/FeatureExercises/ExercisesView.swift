@@ -1,5 +1,6 @@
 import DesignSystem
 import ExercisesPresentation
+import PresentationKit
 import SwiftUI
 
 // Views only: layout, styling and navigation. Every decision, filter and text derived from rules comes from

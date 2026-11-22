@@ -88,7 +88,7 @@ public struct LargeHistory: Sendable {
         let exercises: [String]
     }
 
-    private static let customNames = ["Landmine Press", "Sled Push", "Copenhagen Plank"]
+    private static let customNames = ["Zercher Squat", "Jefferson Curl", "Copenhagen Plank"]
 
     private static let templates: [Template] = [
         Template(name: "Upper A", exercises: [
@@ -97,11 +97,11 @@ public struct LargeHistory: Sendable {
         ]),
         Template(name: "Lower A", exercises: [
             "Squat (Barbell)", "Romanian Deadlift (Barbell)", "Leg Press", "Lying Leg Curl (Machine)",
-            "Standing Calf Raise (Dumbbell)", "Sled Push",
+            "Standing Calf Raise (Dumbbell)", "Zercher Squat",
         ]),
         Template(name: "Upper B", exercises: [
             "Overhead Press (Barbell)", "Pull Up", "Incline Bench Press (Dumbbell)", "Seated Row (Cable)",
-            "Triceps Pushdown (Cable - Rope)", "Landmine Press",
+            "Triceps Pushdown (Cable - Rope)", "Jefferson Curl",
         ]),
         Template(name: "Lower B", exercises: [
             "Deadlift (Barbell)", "Front Squat (Barbell)", "Bulgarian Split Squat", "Hip Thrust (Barbell)",

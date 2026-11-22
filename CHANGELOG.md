@@ -7,6 +7,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- The exercise picker in Train and in the routine editor can create an exercise search does not find. The typed
+  name is kept, equipment comes from the name ("barra", "mancuernas"…) and muscles from the most similar exercise,
+  so most of the time it is one tap on Add. A name that an exercise already answers to offers that one instead.
+
+- 52 common exercises join the catalog, with Spanish names: barbell lunges, walking and reverse lunges, split
+  squats, trap bar and single-leg Romanian deadlifts, push press, landmine press, Nordic curls, hip adduction,
+  cable crunches, Pallof press, box jumps, farmer's walks, sled pushes and more.
 - The logger can reorder exercises mid-session: long-press an exercise's name (or pick "Reorder exercises" in
   the session options) and the session collapses to names you drag, then Done. Each exercise's menu also has
   Move up and Move down. Sets and typed values move with the exercise.

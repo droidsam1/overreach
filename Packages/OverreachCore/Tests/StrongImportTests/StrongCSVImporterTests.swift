@@ -14,7 +14,7 @@ Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,
 2026-10-20 18:30:00,"Torso A",1h 6m,"Plank",1,0.0,0.0,0,45.0,
 2026-10-22 07:05:10,"Pierna, día 2",37m,"Front Squat (Barbell)",1,70.0,5.0,0,0.0,
 2026-10-22 07:05:10,"Pierna, día 2",37m,"Sentadilla Búlgara",1,12.5,10.0,0,0.0,
-2026-10-22 07:05:10,"Pierna, día 2",37m,"Nordic Curl",1,0,6,0,0,
+2026-10-22 07:05:10,"Pierna, día 2",37m,"Jefferson Curl",1,0,6,0,0,
 
 """
 
@@ -84,7 +84,7 @@ struct StrongCSVImporterTests {
 
         let bulgarian = try catalogExercise("Bulgarian Split Squat")
         #expect(leg.entries[1].exerciseID == bulgarian.id)
-        #expect(result.newExercises.map(\.name) == ["Nordic Curl"])
+        #expect(result.newExercises.map(\.name) == ["Jefferson Curl"])
         #expect(result.newExercises.allSatisfy { $0.isCustom && $0.needsMuscleMapping })
         #expect(leg.entries[2].exerciseID == result.newExercises[0].id)
     }

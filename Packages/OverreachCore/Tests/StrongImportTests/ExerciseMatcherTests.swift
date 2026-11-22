@@ -14,7 +14,7 @@ struct ExerciseMatcherTests {
 
     @Test func unknownNamesBecomeCustomExercises() {
         var matcher = ExerciseMatcher(catalog: ExerciseCatalog.builtIn)
-        let created = matcher.resolve("Press Landmine")
+        let created = matcher.resolve("Zercher Squat")
         #expect(created.isCustom)
         #expect(created.needsMuscleMapping)
         #expect(matcher.created == [created])
