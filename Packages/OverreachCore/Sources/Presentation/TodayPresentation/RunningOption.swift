@@ -64,16 +64,7 @@ public struct RunningOption: Hashable, Sendable {
         case .example(let minutes, let next, let isToday, let recentRuns):
             let plan = next.map { Self.planText($0, isToday: isToday, calendar: calendar, format: format) }
             let reduction = isToday && (next?.purpose != .easy || next?.durationMinutes != minutes)
-            let advice: String
-            if isToday, !reduction {
-                advice = L10n.text("Keep today's planned easy run at a conversational pace.")
-            } else if isToday, next?.purpose == .easy {
-                advice = L10n.format("Keep today's run easy. Try {1} min at a conversational pace.", String(minutes))
-            } else if isToday {
-                advice = L10n.format("Try {1} min at a conversational pace in place of the planned session.", String(minutes))
-            } else {
-                advice = L10n.format("If you want to run today, try {1} min at a conversational pace.", String(minutes))
-            }
+            let advice = Self.exampleAdvice(minutes: minutes, next: next, isToday: isToday, reduction: reduction)
             let anchor = L10n.format("Duration based on {1} recent runs.", String(recentRuns))
             self.init(
                 goal: title, advice: advice, plan: plan, context: Self.painFreeContext(anchor, goal: goal),
@@ -84,6 +75,17 @@ public struct RunningOption: Hashable, Sendable {
                 isOptional: !isToday
             )
         }
+    }
+
+    private static func exampleAdvice(minutes: Int, next: PlannedRun?, isToday: Bool, reduction: Bool) -> String {
+        guard isToday else {
+            return L10n.format("If you want to run today, try {1} min at a conversational pace.", String(minutes))
+        }
+        guard reduction else { return L10n.text("Keep today's planned easy run at a conversational pace.") }
+        if next?.purpose == .easy {
+            return L10n.format("Keep today's run easy. Try {1} min at a conversational pace.", String(minutes))
+        }
+        return L10n.format("Try {1} min at a conversational pace in place of the planned session.", String(minutes))
     }
 
     private static func returningOption(
