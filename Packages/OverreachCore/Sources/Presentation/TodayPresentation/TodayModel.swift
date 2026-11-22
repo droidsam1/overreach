@@ -618,7 +618,10 @@ public final class TodayModel {
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         loadRunningPlan(
             goal: goal, today: today, now: now, runs: record.runs,
-            runningBreak: runningBreak, runReadFailed: record.runReadFailed
+            runningBreak: runningBreak, runReadFailed: record.runReadFailed,
+            lowerBody: snapshot.sessionsFailed ? .none : LowerBodyLoad.assess(
+                sessions: snapshot.allSessions, exercises: record.exercises, now: now, calendar: calendar
+            )
         )
         loadWorkoutContext(today: today, profile: profile, record: record)
         updateDeloadSession()
@@ -714,7 +717,7 @@ public final class TodayModel {
 
     private func loadRunningPlan(
         goal: TrainingGoal?, today: CalendarDay, now: Date, runs: [RunActivity],
-        runningBreak: DetectedDeload?, runReadFailed: Bool
+        runningBreak: DetectedDeload?, runReadFailed: Bool, lowerBody: LowerBodyLoad.Level
     ) {
         let running = goal?.running
         let schedule = goal?.scheduledRuns.filter { !$0.isPostponed } ?? []
@@ -730,11 +733,12 @@ public final class TodayModel {
             goal: running, targetDay: goal?.targetDate, schedule: schedule, readiness: readiness, metrics: metrics,
             runs: runReadFailed ? [] : runs, now: now, calendar: calendar,
             runningBreak: runReadFailed ? nil : runningBreak, strength: goal?.scheduledStrength ?? [],
-            priority: goal?.effectivePriority ?? .balanced, allowEffortOnly: !runReadFailed
+            priority: goal?.effectivePriority ?? .balanced, allowEffortOnly: !runReadFailed,
+            lowerBody: lowerBody
         ), decision != .plannedRest {
             runningOption = RunningOption(
                 goal: goal, decision: decision, hasRunToday: !scheduledRunsToday.isEmpty,
-                calendar: calendar, format: format
+                lowerBody: lowerBody, calendar: calendar, format: format
             )
         }
     }

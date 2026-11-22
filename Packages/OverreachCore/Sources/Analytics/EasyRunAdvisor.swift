@@ -24,6 +24,8 @@ public enum EasyRunAdvisor {
         case scheduledStrength
         case familiarEffort
         case multipleToday
+        /// Lower-body strength today or a heavy session yesterday, and no run planned for today.
+        case lowerBodyRecovery(LowerBodyLoad.Level)
         case returningFromBreak(replacePlanned: Bool)
         case example(minutes: Int, plan: PlannedRun?, isToday: Bool, recentRuns: Int)
     }
@@ -32,7 +34,8 @@ public enum EasyRunAdvisor {
         goal: RunningGoal?, targetDay: CalendarDay?, schedule: [PlannedRun], readiness: Readiness,
         metrics: DailyMetrics?, runs: [RunActivity], now: Date, calendar: Calendar = .current,
         runningBreak: DetectedDeload? = nil, strength: [PlannedStrength] = [],
-        priority: DisciplinePriority = .balanced, allowEffortOnly: Bool = true, settings: Settings = .init()
+        priority: DisciplinePriority = .balanced, allowEffortOnly: Bool = true, lowerBody: LowerBodyLoad.Level = .none,
+        settings: Settings = .init()
     ) -> Decision? {
         guard readiness.level == .green || readiness.level == .amber,
               !readiness.reasons.contains(where: \.advisesSkippingTraining) else { return nil }
@@ -64,11 +67,16 @@ public enum EasyRunAdvisor {
         guard !completed.contains(where: { $0.startedAt.addingTimeInterval($0.durationSeconds) >= dayStart })
         else { return nil }
         if liftingToday && !scheduledToday && priority != .running { return .scheduledStrength }
+
+        // An unplanned run waits when the legs have just worked, unless the athlete puts running first. A planned run
+        // stays, kept short like one next to other sessions.
+        let legsWorked = priority != .running && lowerBody != .none
+        if legsWorked, !scheduledToday { return .lowerBodyRecovery(lowerBody) }
         let qualityTomorrow = pending.contains {
             $0.day == tomorrow && [.intervals, .tempo, .threshold, .long].contains($0.purpose)
         }
         let protectStrength = priority != .running && (liftingToday || liftingTomorrow)
-        let protectNearby = qualityTomorrow || protectStrength
+        let protectNearby = qualityTomorrow || protectStrength || legsWorked
         let returnRuns = DeloadDetection.BreakSettings().runningReturnRuns
         if let resumed, !protectNearby,
            completed.lazy.filter({ $0.startedAt >= resumed }).prefix(returnRuns).count < returnRuns {

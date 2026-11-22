@@ -46,7 +46,7 @@ public struct RunningOption: Hashable, Sendable {
 
     init(
         goal trainingGoal: TrainingGoal?, decision: EasyRunAdvisor.Decision, hasRunToday: Bool,
-        calendar: Calendar, format: Format
+        lowerBody: LowerBodyLoad.Level = .none, calendar: Calendar, format: Format
     ) {
         let goal = trainingGoal?.running
         let title = goal?.displayName(format: format) ?? L10n.text("Running")
@@ -71,6 +71,18 @@ public struct RunningOption: Hashable, Sendable {
             self.init(goal: title, advice: L10n.text(
                 "You have several runs planned today. Review them in Plan before adding or replacing a run."
             ))
+        case .lowerBodyRecovery(let level):
+            let reason = level == .today
+                ? L10n.text("You trained your legs today. An extra run now adds load without a plan behind it.")
+                : L10n.text("You trained your legs hard yesterday. An extra run now adds load without a plan behind it.")
+            self.init(
+                goal: title, advice: L10n.text("Leave the run for another day, or keep to a walk."),
+                context: reason, evidence: LowerBodyLoad.evidence,
+                explanation: L10n.text(
+                    "Strength and endurance work together well over a week. Sessions close together can blunt "
+                        + "explosive strength and make the second one harder. A heuristic, not a rule."
+                )
+            )
         case .returningFromBreak(let replacePlanned):
             self = Self.returningOption(
                 title: title, goal: goal, replacePlanned: replacePlanned, hasRunToday: hasRunToday
@@ -79,7 +91,9 @@ public struct RunningOption: Hashable, Sendable {
             let plan = next.map { Self.planText($0, isToday: isToday, calendar: calendar, format: format) }
             let reduction = isToday && (next?.purpose != .easy || next?.durationMinutes != minutes)
             let advice = Self.exampleAdvice(minutes: minutes, next: next, isToday: isToday, reduction: reduction)
-            let anchor = L10n.format("Duration based on {1} recent runs.", String(recentRuns))
+            let basis = L10n.format("Duration based on {1} recent runs.", String(recentRuns))
+            let anchor = lowerBody == .none ? basis
+                : basis + " " + L10n.text("Kept short because you trained your legs close to this run.")
             self.init(
                 goal: title, advice: advice, plan: plan, context: Self.painFreeContext(anchor, goal: goal),
                 evidence: EasyRunAdvisor.evidence, source: "https://pubmed.ncbi.nlm.nih.gov/18277826/",

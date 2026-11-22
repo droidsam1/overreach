@@ -18,7 +18,7 @@ struct EasyRunAdvisorTests {
         level: ReadinessLevel = .amber, reasons: [ReadinessReason] = [.shortSleep(hours: 5)],
         schedule: [PlannedRun] = [], runs: [RunActivity], withMetrics: Bool = true, painFree: Bool = false,
         runningBreak: DetectedDeload? = nil, strength: [PlannedStrength] = [],
-        priority: DisciplinePriority = .balanced
+        priority: DisciplinePriority = .balanced, lowerBody: LowerBodyLoad.Level = .none
     ) -> EasyRunAdvisor.Decision? {
         var metrics = DailyMetrics(day: today)
         metrics.sleepSeconds = (level == .green ? 8 : 5) * 3_600
@@ -26,7 +26,7 @@ struct EasyRunAdvisorTests {
             goal: RunningGoal(distanceMeters: 5_000, targetSeconds: 900, aimsForPainFree: painFree),
             targetDay: nil, schedule: schedule, readiness: Readiness(level: level, reasons: reasons),
             metrics: withMetrics ? metrics : nil, runs: runs, now: now, calendar: calendar, runningBreak: runningBreak,
-            strength: strength, priority: priority
+            strength: strength, priority: priority, lowerBody: lowerBody
         )
     }
 
@@ -124,5 +124,24 @@ struct EasyRunAdvisorTests {
         #expect(decision(runs: recent + [run(daysAgo: 0, minutes: 30, id: "today")]) == nil)
         #expect(decision(runs: recent, painFree: true) == .example(minutes: 20, plan: nil, isToday: false, recentRuns: 1))
         #expect(decision(reasons: [.highSoreness(score: 3)], runs: recent) == nil)
+    }
+
+    @Test func legsWorkedHoldBackAnUnplannedRun() {
+        let runs = [run(daysAgo: 2, minutes: 30)]
+        #expect(decision(runs: runs, lowerBody: .today) == .lowerBodyRecovery(.today))
+        #expect(decision(runs: runs, lowerBody: .yesterdayHeavy) == .lowerBodyRecovery(.yesterdayHeavy))
+        #expect(decision(runs: [], lowerBody: .today) == .lowerBodyRecovery(.today))
+    }
+
+    @Test func aPlannedRunStaysButShort() {
+        let plan = PlannedRun(day: today, purpose: .easy, durationMinutes: 30)
+        let runs = [run(daysAgo: 2, minutes: 40)]
+        #expect(decision(schedule: [plan], runs: runs, lowerBody: .today)
+            == .example(minutes: 15, plan: plan, isToday: true, recentRuns: 1))
+    }
+
+    @Test func runningPriorityIgnoresTheLegs() {
+        let runs = [run(daysAgo: 2, minutes: 30)]
+        #expect(decision(runs: runs, priority: .running, lowerBody: .today) != .lowerBodyRecovery(.today))
     }
 }

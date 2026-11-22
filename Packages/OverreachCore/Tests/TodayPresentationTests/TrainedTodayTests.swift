@@ -68,6 +68,25 @@ struct TrainedTodayTests {
         let model = await model(sessions: [yesterday])
         #expect(model.nextAction != .trainedToday)
     }
+
+    @Test func heavyLegsYesterdayHoldBackAnUnplannedRun() async throws {
+        var legs = lift
+        legs.startedAt = morning.addingTimeInterval(-86_400)
+        legs.endedAt = morning.addingTimeInterval(-86_400 + 3_600)
+        legs.entries = [ExerciseEntry(exerciseID: squat.id, sets: Array(
+            repeating: WorkoutSet(weightKg: 100, reps: 5, rpe: 7), count: 8
+        ))]
+        let model = await model(sessions: [legs])
+        let option = try #require(model.runningOption)
+        #expect(!option.isOptional)
+        #expect(option.advice == "Leave the run for another day, or keep to a walk.")
+        #expect(option.context == "You trained your legs hard yesterday. An extra run now adds load without a plan behind it.")
+    }
+
+    @Test func noLegsMeansNoHoldBack() async {
+        let model = await model()
+        #expect(model.runningOption?.advice != "Leave the run for another day, or keep to a walk.")
+    }
 }
 
 private struct RestedSource: MetricsSource {
