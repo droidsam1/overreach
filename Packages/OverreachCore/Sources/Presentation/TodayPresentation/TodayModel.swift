@@ -170,6 +170,37 @@ public final class TodayModel {
         return .train
     }
 
+    /// The single prompt under the hero. Fixed at each load: answering or dismissing one reveals the next on the next
+    /// load, not at once.
+    public var pendingPrompt: TodayPrompt? {
+        guard promptHandledLoad != activeLoadCount else { return nil }
+        return TodayPrompt.next(promptFacts)
+    }
+
+    private var promptFacts: TodayPrompt.Facts {
+        var facts = TodayPrompt.Facts()
+        guard showsReadinessCard else { return facts }
+        facts.sourceFailure = showsSourceWarning || trainingReadNote != nil
+        if case .confirmBreak = deloadAdvice?.state { facts.confirmBreak = true }
+        facts.checkIn = showsCheckIn
+        facts.connectHealth = showsConnectHealth
+        facts.connectGarmin = showsConnectGarmin
+        facts.dogWalk = dogWalkQuestion != nil
+        facts.shownByPrimary = switch nextAction {
+        case .retry: .sourceFailure
+        case .checkIn: .checkIn
+        case .connectHealth: .connectHealth
+        case .connectGarmin: .connectGarmin
+        default: nil
+        }
+        return facts
+    }
+
+    /// Hides the prompt until the next load.
+    public func dismissPendingPrompt() { promptHandledLoad = activeLoadCount }
+    private var activeLoadCount = 0
+    private var promptHandledLoad = -1
+
     public var readinessLevel: ReadinessLevel { readiness.level }
     public var readinessTitle: String { readiness.level.displayName }
 
@@ -466,6 +497,7 @@ public final class TodayModel {
     public func load(now: Date = .now) async {
         let loadID = UUID()
         activeLoad = loadID
+        activeLoadCount += 1
         isLoading = true
         scheduledStrengthToday = nil
         scheduledRunsToday = []
@@ -966,6 +998,7 @@ public final class TodayModel {
     public func answerDogWalk(withDog: Bool) {
         guard let question = dogWalkQuestion else { return }
         companionAnswers.answer(question.walk, among: movementWalks, withDog: withDog)
+        if pendingPrompt == .dogWalk { dismissPendingPrompt() }
     }
 
     private func has(_ value: (DailyMetrics) -> Double?) -> Bool {
