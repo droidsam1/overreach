@@ -148,26 +148,30 @@ private final class TrackParserDelegate: NSObject, XMLParserDelegate {
             whens.append(timeParser.date(value))
         case "coord" where inTrack:
             coords.append(Self.spaceSeparated(value))
-        case "Track":
-            inTrack = false
-            for index in 0..<max(whens.count, coords.count) {
-                emit(
-                    time: index < whens.count ? whens[index] : nil, position: index < coords.count ? coords[index] : nil
-                )
-            }
+        case "Track": finishTrack()
         case "when" where inPlacemark:
             placemarkTime = timeParser.date(value)
         case "coordinates" where inPlacemark && inPoint:
             placemarkPosition = Self.commaSeparated(value)
             if placemarkPosition == nil { placemarkTime = nil }
         case "Point": inPoint = false
-        case "Placemark":
-            inPlacemark = false
-            // A placemark with neither a time nor a point (a folder name, a route) is not a point.
-            if placemarkTime != nil || placemarkPosition != nil {
-                emit(time: placemarkTime, position: placemarkPosition)
-            }
+        case "Placemark": finishPlacemark()
         default: break
+        }
+    }
+
+    private func finishTrack() {
+        inTrack = false
+        for index in 0..<max(whens.count, coords.count) {
+            emit(time: index < whens.count ? whens[index] : nil, position: index < coords.count ? coords[index] : nil)
+        }
+    }
+
+    private func finishPlacemark() {
+        inPlacemark = false
+        // A placemark with neither a time nor a point (a folder name, a route) is not a point.
+        if placemarkTime != nil || placemarkPosition != nil {
+            emit(time: placemarkTime, position: placemarkPosition)
         }
     }
 
