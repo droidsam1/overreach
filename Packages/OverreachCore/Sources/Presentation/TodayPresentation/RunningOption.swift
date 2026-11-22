@@ -11,14 +11,22 @@ public struct RunningOption: Hashable, Sendable {
     public let evidence: String?
     public let source: URL?
     public let explanation: String?
-    public let adjustment: PlannedRun?
-    public let adjustmentMinutes: Int?
+    public let adjustment: Adjustment?
     public let isOptional: Bool
+
+    public struct Adjustment: Hashable, Sendable {
+        public let original: PlannedRun
+        public let minutes: Int
+        public let applyTitle: String
+        public let keepTitle: String
+        public let moveDay: CalendarDay?
+        public let moveTitle: String?
+        public var runID: UUID { original.id }
+    }
 
     private init(
         goal: String, advice: String, plan: String? = nil, context: String? = nil, evidence: EvidenceReference? = nil,
-        source: String? = nil, explanation: String? = nil, adjustment: PlannedRun? = nil,
-        adjustmentMinutes: Int? = nil, isOptional: Bool = false
+        source: String? = nil, explanation: String? = nil, adjustment: Adjustment? = nil, isOptional: Bool = false
     ) {
         self.goal = goal
         self.plan = plan
@@ -28,13 +36,14 @@ public struct RunningOption: Hashable, Sendable {
         self.source = source.flatMap { URL(string: $0) }
         self.explanation = explanation
         self.adjustment = adjustment
-        self.adjustmentMinutes = adjustmentMinutes
         self.isOptional = isOptional
     }
 
     init(
-        goal: RunningGoal?, decision: EasyRunAdvisor.Decision, hasRunToday: Bool, calendar: Calendar, format: Format
+        goal trainingGoal: TrainingGoal?, decision: EasyRunAdvisor.Decision, hasRunToday: Bool,
+        calendar: Calendar, format: Format
     ) {
+        let goal = trainingGoal?.running
         let title = goal?.displayName(format: format) ?? L10n.text("Running")
         switch decision {
         case .plannedRest:
@@ -71,7 +80,8 @@ public struct RunningOption: Hashable, Sendable {
                 evidence: EasyRunAdvisor.evidence, source: "https://pubmed.ncbi.nlm.nih.gov/18277826/",
                 explanation: L10n.text(
                     "A conversational pace keeps the effort easy. The duration is a coaching estimate."
-                ), adjustment: reduction && goal != nil ? next : nil, adjustmentMinutes: reduction ? minutes : nil,
+                ), adjustment: Self.adjustment(plan: isToday ? next : nil, goal: trainingGoal, minutes: minutes,
+                                               calendar: calendar, format: format),
                 isOptional: !isToday
             )
         }
@@ -101,6 +111,23 @@ public struct RunningOption: Hashable, Sendable {
             explanation: L10n.text(
                 "Endurance can change during a break. Keeping the first runs easy is a coaching estimate."
             ), isOptional: !hasRunToday
+        )
+    }
+
+    private static func adjustment(
+        plan: PlannedRun?, goal: TrainingGoal?, minutes: Int, calendar: Calendar, format: Format
+    ) -> Adjustment? {
+        guard let plan, let goal, goal.running != nil, plan.purpose != .easy,
+              plan.easingTo(minutes: minutes) != plan else { return nil }
+        let moveDay = EasyRunAdvisor.rescheduleDay(for: plan, goal: goal, calendar: calendar)
+        let style = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
+        let moveTitle = moveDay.map {
+            let date = $0.startDate(in: calendar).formatted(style.weekday(.wide).day().month(.abbreviated))
+            return L10n.format("Review move to {1}", date)
+        }
+        return Adjustment(
+            original: plan, minutes: minutes, applyTitle: L10n.format("Change to {1} min easy", String(minutes)),
+            keepTitle: L10n.text("Keep the planned run"), moveDay: moveDay, moveTitle: moveTitle
         )
     }
 

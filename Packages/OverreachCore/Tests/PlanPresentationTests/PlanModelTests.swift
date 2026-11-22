@@ -165,7 +165,7 @@ struct PlanModelTests {
         #expect(model.errorMessage == "A running rest day must be the only entry on that date.")
     }
 
-    @Test func savesAnEasyAdjustmentOnlyAfterReviewAndRejectsAStalePlan() async throws {
+    @Test func movesAnIntactRunOnlyAfterReviewAndRejectsANearbyRace() async throws {
         let (model, store) = await model()
         let today = CalendarDay(now, calendar: calendar)
         let original = PlannedRun(
@@ -176,9 +176,10 @@ struct PlanModelTests {
         try await store.save(AthleteProfile(goal: goal))
         await model.load()
 
-        let draft = model.reviewEasyRun(original, minutes: 20)
+        let destination = today.adding(days: 3, calendar: calendar)
+        let draft = model.reviewRunMove(original, to: destination)
         #expect(try await store.profile().goal?.scheduledRuns == [original])
-        let race = PlannedRun(day: today.adding(days: 1, calendar: calendar), purpose: .race)
+        let race = PlannedRun(day: destination.adding(days: 1, calendar: calendar), purpose: .race)
         goal.setRunningSchedule([original, race])
         try await store.save(AthleteProfile(goal: goal))
         #expect(!(await model.saveRunningEntry(draft)))
@@ -189,11 +190,12 @@ struct PlanModelTests {
         #expect(await model.saveRunningEntry(draft))
         let updated = try #require(try await store.profile().goal?.scheduledRuns.first)
         #expect(updated.id == original.id)
-        #expect(updated.day == today)
-        #expect(updated.purpose == .easy)
-        #expect(updated.durationMinutes == 20)
-        #expect(updated.distanceMeters == nil)
-        #expect(updated.prescription == nil)
+        #expect(updated.day == destination)
+        #expect(updated.originalDay == today)
+        #expect(updated.purpose == original.purpose)
+        #expect(updated.durationMinutes == original.durationMinutes)
+        #expect(updated.distanceMeters == original.distanceMeters)
+        #expect(updated.prescription == original.prescription)
         #expect(updated.completion == nil)
         #expect(!(await model.saveRunningEntry(draft)))
     }

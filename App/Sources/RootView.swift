@@ -115,8 +115,8 @@ struct RootView: View {
                     onConnectGarmin: { garminModel.start() },
                     recoveryHistory: { PlanProgressView(model: planModel) }
                 )
-                .reviewEasyRun { entry, minutes in
-                    suggestedRun = planModel.reviewEasyRun(entry, minutes: minutes)
+                .reviewRunMove { entry, day in
+                    suggestedRun = planModel.reviewRunMove(entry, to: day)
                     selectedTab = .plan
                 }
                 .settingsButton(

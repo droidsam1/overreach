@@ -2126,6 +2126,23 @@
         }
       }
     },
+    "Change to {1} min easy": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar a {1} min fáciles"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar a {1} min fáciles"
+          }
+        }
+      }
+    },
     "Change to {1}–{2} reps": {
       "extractionState": "manual",
       "localizations": {
@@ -7137,6 +7154,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mantén o último peso. Nos axustes do exercicio podes escoller un incremento máis pequeno para avanzar."
+          }
+        }
+      }
+    },
+    "Keep the planned run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantener la carrera planificada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manter a carreira planificada"
           }
         }
       }
@@ -12462,19 +12496,19 @@
         }
       }
     },
-    "Review easy run in Plan": {
+    "Review move to {1}": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Revisar el rodaje suave en Plan"
+            "value": "Revisar el cambio al {1}"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Revisar a carreira suave en Plan"
+            "value": "Revisar o cambio ao {1}"
           }
         }
       }
@@ -15165,6 +15199,23 @@
         }
       }
     },
+    "Switch to an easier run in Today or review a new date in Plan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambia a un rodaje más suave en Hoy o revisa una nueva fecha en Plan."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambia a unha carreira máis suave en Hoxe ou revisa unha nova data en Plan."
+          }
+        }
+      }
+    },
     "Switch to {1}–{2} reps": {
       "extractionState": "manual",
       "localizations": {
@@ -17830,23 +17881,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "O que escriba en Apple Saúde."
-          }
-        }
-      }
-    },
-    "When Today suggests an easier run, review and save the change in Plan.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Si Hoy te sugiere un rodaje más suave, revisa y guarda el cambio en Plan."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Se Hoxe che suxire unha carreira máis suave, revisa e garda o cambio en Plan."
           }
         }
       }

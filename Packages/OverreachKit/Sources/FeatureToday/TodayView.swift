@@ -14,7 +14,7 @@ public struct TodayView: View {
     private var settingsDestination: (() -> AnyView)?
     private var showsSettings = Binding.constant(false)
     private var settingsBadgeCount = 0
-    private var onReviewEasyRun: ((PlannedRun, Int) -> Void)?
+    private var onReviewRunMove: ((PlannedRun, CalendarDay) -> Void)?
 
     private let workoutContinuation: TodayModel.WorkoutContinuation?
     private let onOpenTrain: () -> Void
@@ -67,9 +67,9 @@ public struct TodayView: View {
         return copy
     }
 
-    public func reviewEasyRun(_ action: @escaping (PlannedRun, Int) -> Void) -> TodayView {
+    public func reviewRunMove(_ action: @escaping (PlannedRun, CalendarDay) -> Void) -> TodayView {
         var copy = self
-        copy.onReviewEasyRun = action
+        copy.onReviewRunMove = action
         return copy
     }
 
@@ -393,10 +393,19 @@ public struct TodayView: View {
                 Text(plan).font(.subheadline).foregroundStyle(.secondary)
             }
             Text(option.advice).font(.subheadline)
-            if let entry = option.adjustment, let minutes = option.adjustmentMinutes, let onReviewEasyRun {
-                Button("Review easy run in Plan") { onReviewEasyRun(entry, minutes) }
-            }
             if let context = option.context { Text(context).font(.caption).foregroundStyle(.secondary) }
+            if let adjustment = option.adjustment {
+                HStack {
+                    Button(adjustment.applyTitle) { Task { await model.applyRunningAdjustment() } }
+                        .buttonStyle(.borderedProminent)
+                    Button(adjustment.keepTitle) { model.keepPlannedRun() }
+                        .buttonStyle(.bordered)
+                }
+                .padding(.vertical, Spacing.xSmall)
+                if let day = adjustment.moveDay, let title = adjustment.moveTitle, let onReviewRunMove {
+                    Button(title) { onReviewRunMove(adjustment.original, day) }
+                }
+            }
             if let evidence = option.evidence, let source = option.source {
                 DisclosureGroup("Why this running option?") {
                     VStack(alignment: .leading, spacing: Spacing.xSmall) {

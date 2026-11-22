@@ -393,7 +393,9 @@ comparable HRV or sleep. Amber needs an active HRV, resting heart rate or sleep 
 reason to skip training or a run already completed today suppresses the example. An explicit running rest day is
 respected, and an event today or tomorrow takes precedence. Review multiple due runs in Plan. A confirmed link
 counts as a completed run even during a source outage. Green keeps planned quality and long runs in place.
-The athlete can review and save a suggested same-day easy session in Plan.
+The athlete can apply a suggested same-day easy session from Today. Plan rechecks available space before saving
+a suggested move. The search uses an empty running slot two to seven days away and leaves one day on either side
+of a hard run or event. That spacing is a schedule heuristic.
 
 Duration uses the lower median of the last five or fewer measured runs in 28 days, with at least one within 14 days.
 Use three quarters of that duration on amber and cap by the relevant planned duration when available. The example

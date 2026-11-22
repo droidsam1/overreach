@@ -126,9 +126,9 @@ recovery signals and recent running support it. [#95](https://github.com/droidsa
 checks to all running entries through tomorrow. Today distinguishes race day, keeps a running rest day and
 uses discipline priority on strength/run days. A free-day option opens on request.
 
-- [x] Compare planned runs with easy alternatives using recent duration and conversational effort. Review a
-  same-day change in Plan before saving. Protect races, next-day quality runs and nearby scheduled strength.
-  Rescheduling uses the regular calendar editor.
+- [x] Compare planned runs with easy alternatives using recent duration and conversational effort. Apply
+  a same-day change in Today or review a move in Plan. Search days two through seven for an empty running slot.
+  Leave a day around other quality runs and races, and around dated strength in balanced and strength-first plans.
 - **Done when** tests include hard intervals → easy, easy → shorter or unchanged, long run → a compatible alternative, race today, race soon, a strength/run double, explicit rest and no plan. Declining or skipping keeps the original schedule. Concrete example doses are configurable heuristics and never override the symptom pathway.
 
 ### 9. Research and validate hybrid planning rules before automating plans

@@ -514,16 +514,10 @@ extension PlanModel {
         return RunningCalendarDraft(entry: entry, today: clock(), calendar: calendar)
     }
 
-    public func reviewEasyRun(_ original: PlannedRun, minutes: Int) -> RunningCalendarDraft {
+    public func reviewRunMove(_ original: PlannedRun, to day: CalendarDay) -> RunningCalendarDraft {
         var draft = editRunningEntry(original)
-        draft.adjustmentOriginal = original
-        draft.purpose = .easy
-        draft.minutes = minutes
-        draft.distanceKm = 0
-        draft.repetitions = 0
-        draft.recoverySeconds = 0
-        draft.intensityBasis = nil
-        draft.intensityTarget = 0
+        draft.moveOriginal = original
+        draft.date = day.startDate(in: calendar)
         return draft
     }
 
@@ -531,7 +525,7 @@ extension PlanModel {
         guard draft.canSave else { return false }
         return await updateRunningCalendar(
             id: draft.id, entry: draft.entry(calendar: calendar), isNew: draft.isNew,
-            adjustmentOriginal: draft.adjustmentOriginal
+            moveOriginal: draft.moveOriginal
         )
     }
 
@@ -583,7 +577,7 @@ extension PlanModel {
     }
 
     private func updateRunningCalendar(
-        id: UUID, entry: PlannedRun?, isNew: Bool, adjustmentOriginal: PlannedRun? = nil
+        id: UUID, entry: PlannedRun?, isNew: Bool, moveOriginal: PlannedRun? = nil
     ) async -> Bool {
         guard showsRunningCalendar else { return false }
         return await updateCalendar { goal in
@@ -591,8 +585,8 @@ extension PlanModel {
             var schedule = goal.scheduledRuns
             let index = schedule.firstIndex { $0.id == id }
             if let entry {
-                if let original = adjustmentOriginal,
-                   !canApplyRunAdjustment(original, updated: entry, goal: goal) {
+                if let original = moveOriginal,
+                   !canApplyRunMove(original, updated: entry, goal: goal) {
                     errorMessage = L10n.text("Your schedule has changed. Review the current plan and try again.")
                     return false
                 }
@@ -608,15 +602,11 @@ extension PlanModel {
         }
     }
 
-    private func canApplyRunAdjustment(_ original: PlannedRun, updated: PlannedRun, goal: TrainingGoal) -> Bool {
+    private func canApplyRunMove(_ original: PlannedRun, updated: PlannedRun, goal: TrainingGoal) -> Bool {
         let today = CalendarDay(clock(), calendar: calendar)
-        let tomorrow = today.adding(days: 1, calendar: calendar)
-        guard original.day == today, updated.day == today, goal.scheduledRuns.contains(original),
-              goal.targetDate.map({ !(today...tomorrow).contains($0) }) ?? true else { return false }
-        return !goal.scheduledRuns.contains {
-            guard $0.id != original.id, !$0.isPostponed else { return false }
-            return $0.day == today || ($0.day == tomorrow && $0.purpose == .race && $0.completion == nil)
-        }
+        guard original.day == today, goal.scheduledRuns.contains(original),
+              updated.day > today, updated.completion == nil, !updated.isPostponed else { return false }
+        return EasyRunAdvisor.canReschedule(original, to: updated.day, goal: goal, calendar: calendar)
     }
 
     private func updateCalendar(_ change: (inout TrainingGoal) -> Bool) async -> Bool {

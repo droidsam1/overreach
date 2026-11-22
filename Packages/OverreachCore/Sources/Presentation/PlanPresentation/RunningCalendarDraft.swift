@@ -16,7 +16,7 @@ public struct RunningCalendarDraft: Identifiable, Hashable, Sendable {
     public var racePriority: PlannedRun.RacePriority?
     public var postponed: Bool
     public var completion: PlannedRunCompletion?
-    var adjustmentOriginal: PlannedRun?
+    var moveOriginal: PlannedRun?
     private let previousDay: CalendarDay?
     private let originalDay: CalendarDay?
 
@@ -38,7 +38,7 @@ public struct RunningCalendarDraft: Identifiable, Hashable, Sendable {
         originalDay = entry?.originalDay
     }
 
-    public var isRunAdjustment: Bool { adjustmentOriginal != nil }
+    public var isSuggestedRunMove: Bool { moveOriginal != nil }
     public var showsWorkoutDetails: Bool { purpose != .rest }
     public var showsRacePriority: Bool { purpose == .race }
     public var showsPostpone: Bool { showsWorkoutDetails && completion == nil }
@@ -74,8 +74,14 @@ public struct RunningCalendarDraft: Identifiable, Hashable, Sendable {
     }
 
     func entry(calendar: Calendar) -> PlannedRun {
-        let distance = showsWorkoutDetails ? Int((distanceKm * 1_000).rounded()) : 0
         let day = CalendarDay(date, calendar: calendar)
+        if let original = moveOriginal {
+            return PlannedRun(id: original.id, day: day, purpose: original.purpose,
+                              durationMinutes: original.durationMinutes, distanceMeters: original.distanceMeters,
+                              prescription: original.prescription, racePriority: original.racePriority,
+                              originalDay: original.originalDay ?? original.day)
+        }
+        let distance = showsWorkoutDetails ? Int((distanceKm * 1_000).rounded()) : 0
         let firstDay = originalDay ?? (previousDay == day ? nil : previousDay)
         return PlannedRun(id: id, day: day, purpose: purpose,
                           durationMinutes: minutes > 0 ? minutes : nil, distanceMeters: distance > 0 ? distance : nil,

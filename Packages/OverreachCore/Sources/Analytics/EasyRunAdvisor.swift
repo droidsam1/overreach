@@ -92,6 +92,32 @@ public enum EasyRunAdvisor {
         return .example(minutes: minutes, plan: next, isToday: scheduledToday, recentRuns: durations.count)
     }
 
+    /// Find a date with an empty running slot and room around the quality session.
+    public static func rescheduleDay(for run: PlannedRun, goal: TrainingGoal, calendar: Calendar) -> CalendarDay? {
+        (2...7).lazy.map { run.day.adding(days: $0, calendar: calendar) }.first {
+            canReschedule(run, to: $0, goal: goal, calendar: calendar)
+        }
+    }
+
+    public static func canReschedule(
+        _ run: PlannedRun, to day: CalendarDay, goal: TrainingGoal, calendar: Calendar
+    ) -> Bool {
+        let first = run.day.adding(days: 2, calendar: calendar)
+        let last = run.day.adding(days: 7, calendar: calendar)
+        guard (first...last).contains(day), [.intervals, .tempo, .threshold, .long].contains(run.purpose),
+              run.completion == nil, !run.isPostponed else { return false }
+        let neighborhood = day.adding(days: -1, calendar: calendar)...day.adding(days: 1, calendar: calendar)
+        guard goal.targetDate.map({ !neighborhood.contains($0) }) ?? true else { return false }
+        let conflicts = goal.scheduledRuns.contains { other in
+            guard other.id != run.id, !other.isPostponed, neighborhood.contains(other.day) else { return false }
+            return other.day == day || ![.easy, .rest].contains(other.purpose)
+        }
+        let strengthConflicts = goal.effectivePriority != .running && goal.scheduledStrength.contains {
+            $0.routineID != nil && neighborhood.contains($0.day)
+        }
+        return !conflicts && !strengthConflicts
+    }
+
     private static func suggestedMinutes(
         typical: Double, plan: PlannedRun?, isToday: Bool, ceiling: Int, fraction: Double
     ) -> Int? {

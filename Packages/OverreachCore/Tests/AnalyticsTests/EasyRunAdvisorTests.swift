@@ -93,6 +93,21 @@ struct EasyRunAdvisorTests {
             == .example(minutes: 30, plan: long, isToday: true, recentRuns: 1))
     }
 
+    @Test func findsRoomForAMovedQualityRunAroundRestRaceAndStrength() {
+        let original = PlannedRun(day: today, purpose: .intervals)
+        let race = PlannedRun(day: today.adding(days: 3, calendar: calendar), purpose: .race)
+        let rest = PlannedRun(day: today.adding(days: 5, calendar: calendar), purpose: .rest)
+        var goal = TrainingGoal(kind: .hybrid, nextRun: original)
+        goal.setRunningSchedule([original, race, rest])
+        let sixthDay = today.adding(days: 6, calendar: calendar)
+        #expect(EasyRunAdvisor.rescheduleDay(for: original, goal: goal, calendar: calendar) == sixthDay)
+
+        goal.setStrengthSchedule([PlannedStrength(day: sixthDay, routineID: UUID())])
+        #expect(EasyRunAdvisor.rescheduleDay(for: original, goal: goal, calendar: calendar) == nil)
+        goal.priority = .running
+        #expect(EasyRunAdvisor.rescheduleDay(for: original, goal: goal, calendar: calendar) == sixthDay)
+    }
+
     @Test func keepsAnEasyRunWhenTheGreenDayDoseAlreadyFits() {
         let easy = PlannedRun(day: today, purpose: .easy, durationMinutes: 20)
         let runs = [run(daysAgo: 2, minutes: 40)]
