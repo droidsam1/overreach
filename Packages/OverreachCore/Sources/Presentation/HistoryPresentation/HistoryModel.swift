@@ -112,6 +112,11 @@ public final class HistoryModel {
     private let profiles: (any ProfileRepository)?
     private let progression: (any ProgressionSettingsRepository)?
     private let recordedStrength: (any RecordedStrengthSource)?
+    private let walkSources: [any ActivitySource]
+    private let companionAnswers: DogWalkAnswers
+    private var walkingRoutine = WalkingRoutine()
+    private var walks: [WalkBout] = []
+    private var walkLines: [HistoryWalk] = []
     private let runSources: [any MetricsSource]
     private let format: Format
     private let clock: @Sendable () -> Date
@@ -144,6 +149,8 @@ public final class HistoryModel {
         activity: (any ActivitySource)? = nil,
         runSources: [any MetricsSource] = [],
         recordedStrength: (any RecordedStrengthSource)? = nil,
+        walkSources: [any ActivitySource] = [],
+        companionAnswers: DogWalkAnswers? = nil,
         calendar: Calendar = .current,
         format: Format = Format(),
         runChoices: [RunMatchPair: RunMatchChoice] = [:],
@@ -160,6 +167,8 @@ public final class HistoryModel {
         self.profiles = profiles
         self.progression = progression
         self.recordedStrength = recordedStrength
+        self.walkSources = walkSources
+        self.companionAnswers = companionAnswers ?? DogWalkAnswers()
         self.runSources = runSources
         self.format = format
         self.clock = clock
@@ -186,6 +195,7 @@ public final class HistoryModel {
         async let loadedRuns = HistoryRunReadings.load(
             sources: runSources, from: start.addingTimeInterval(-86_400), to: now.addingTimeInterval(86_400)
         )
+        async let loadedWalks = loadWalks(from: start, to: now)
         async let loadedRecordings = recordedStrength?.strengthActivities(from: .distantPast, to: now)
         var failed = false
         do {
@@ -204,6 +214,13 @@ public final class HistoryModel {
         }
         if let profile = try? await profiles?.profile() {
             effortScale = profile.effortScale
+            walkingRoutine = profile.walkingRoutine
+        }
+        walks = await loadedWalks
+        walkLines = EverydayMovement.removingDuplicateWalks(walks).map { walk in
+            let sources = Set(CompanionWalkMatching.answerKeys(for: walk, among: walks).map(\.source))
+            return HistoryWalk(walk, sources: sources.sorted { $0.rawValue < $1.rawValue },
+                               calendar: calendar.calendar, format: format)
         }
         recordings = await loadedRecordings ?? []
         let runReadings = await loadedRuns
@@ -213,6 +230,40 @@ public final class HistoryModel {
         resolveRuns()
         errorMessage = failed ? L10n.text("Could not load your history.") : nil
         runWarning = runReadings.warning()
+    }
+
+    private func loadWalks(from start: Date, to now: Date) async -> [WalkBout] {
+        let calendar = calendar.calendar
+        let range = CalendarDay(start, calendar: calendar)...CalendarDay(now, calendar: calendar)
+        var walks: [WalkKey: WalkBout] = [:]
+        for source in walkSources {
+            let days = (try? await source.dailyActivity(in: range)) ?? []
+            for walk in days.flatMap(\.walks) where walk.start >= start && walk.start <= now {
+                guard walk.durationSeconds.isFinite, walk.durationSeconds > 0 else { continue }
+                walks[WalkKey(walk)] = walk
+            }
+        }
+        return walks.values.sorted { ($0.start, $0.source.rawValue) < ($1.start, $1.source.rawValue) }
+    }
+
+    public var walkCompanionDetails: [WalkKey: HistoryWalkCompanion] {
+        guard walkingRoutine.hasDog else { return [:] }
+        let answers = CompanionWalkMatching.answers(for: walks, answers: companionAnswers.values)
+        let suggestions = Set(DogWalkSuggestion.walksToAsk(
+            walks: walks, answers: companionAnswers.values, now: clock(), calendar: calendar.calendar
+        ).map(WalkKey.init))
+        let question = DogWalkAnswers.question(for: walkingRoutine)
+        return Dictionary(uniqueKeysWithValues: walkLines.map { row in
+            let answer = answers[row.id].map { $0 ? L10n.text("Yes") : L10n.text("No") }
+            return (row.id, HistoryWalkCompanion(
+                question: question, answer: answer, showsSuggestion: suggestions.contains(row.id)
+            ))
+        })
+    }
+
+    public func answerWalk(_ id: WalkKey, withDog: Bool) {
+        guard walkingRoutine.hasDog, let row = walkLines.first(where: { $0.id == id }) else { return }
+        companionAnswers.answer(row.walk, among: walks, withDog: withDog)
     }
 
     private func resolveRuns() {
@@ -298,7 +349,7 @@ public final class HistoryModel {
 
     /// The most recent completed session with an exercise that matches the search, when one exists.
     public var lastTime: LastExerciseResult? {
-        guard isSearching, activityFilter != .running else { return nil }
+        guard isSearching, activityFilter == .all || activityFilter == .strength else { return nil }
         let matched = matchedExerciseIDs
         guard !matched.isEmpty else { return nil }
         let now = clock()
@@ -330,6 +381,8 @@ public final class HistoryModel {
             return SearchText.matches(searchText, [L10n.text("Strength"), recording.source])
         case let .run(run):
             return SearchText.matches(searchText, [run.title, run.sourceText, L10n.text("Run")])
+        case let .walk(walk):
+            return SearchText.matches(searchText, [walk.title, walk.sourceText])
         }
     }
 
@@ -487,7 +540,8 @@ public final class HistoryModel {
                 let recording = HistoryStrengthActivity($0, sources: strengthMatches.sources(for: $0), format: format)
                 return HistoryRow.recording(recording)
             }
-        timeline = (logged + watchOnly + runLines.map(HistoryRow.run)).sorted {
+        let movement = runLines.map(HistoryRow.run) + walkLines.map(HistoryRow.walk)
+        timeline = (logged + watchOnly + movement).sorted {
             if $0.date == $1.date { return $0.sortID < $1.sortID }
             return $0.date > $1.date
         }

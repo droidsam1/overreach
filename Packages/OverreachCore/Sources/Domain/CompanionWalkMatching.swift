@@ -131,6 +131,11 @@ public enum CompanionWalkMatching {
         return result
     }
 
+    /// Apply an edit to every available copy so it survives source changes and replaces older answers.
+    public static func answerKeys(for walk: WalkBout, among walks: [WalkBout]) -> Set<WalkKey> {
+        Set(walks.lazy.filter { isSameWalk(walk, $0) }.map(WalkKey.init)).union([WalkKey(walk)])
+    }
+
     // MARK: - Details
 
     private static func answerLookup(_ answers: [WalkCompanionAnswer]) -> [WalkKey: Bool] {

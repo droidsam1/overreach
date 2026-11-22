@@ -24,9 +24,6 @@ and the logger come before review tools, and work that only a person with an iPh
 2. **Faster History lookups** — [#92](https://github.com/droidsam1/overreach/issues/92). Search and "Last time"
    shipped; the before/after timing remains a device check in [#21](https://github.com/droidsam1/overreach/issues/21).
 3. **Dog walks from a pet tracker** — [#154](https://github.com/droidsam1/overreach/issues/154), one task at a time:
-   [#163](https://github.com/droidsam1/overreach/issues/163) (one-tap "With Nanoq?": the suggestion rules,
-   `dogName`, its field in onboarding and Settings, and the Today question with stored answers are done; still to
-   do: the History question), then
    [#159](https://github.com/droidsam1/overreach/issues/159), then the optional GPX backfill:
    [#158](https://github.com/droidsam1/overreach/issues/158) (parser), then
    [#165](https://github.com/droidsam1/overreach/issues/165) (guided import) once #164 is done. Design:

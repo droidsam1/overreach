@@ -97,7 +97,7 @@ public final class HistoryCalendarModel {
     private let workouts: any WorkoutRepository
     private let activity: (any ActivitySource)?
     private let runSources: [any MetricsSource]
-    private let calendar: Calendar
+    let calendar: Calendar
     private let format: Format
     private let clock: @Sendable () -> Date
 

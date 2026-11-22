@@ -65,9 +65,14 @@ public final class TodayModel {
     /// Steps and walks against the usual day (ADR-0010): spikes, very low days and recovery walks.
     public private(set) var movementNotes: [MovementNote] = []
     /// "With Nanoq?" for the latest recent walk nobody has answered yet.
-    public private(set) var dogWalkQuestion: DogWalkQuestion?
-    private var dogWalkAnswers: [WalkCompanionAnswer]
-    private let saveDogWalkAnswers: @MainActor ([WalkCompanionAnswer]) -> Void
+    public var dogWalkQuestion: DogWalkQuestion? {
+        guard let now = movementNow else { return nil }
+        return DogWalkQuestion.next(
+            activity: movementActivity, answers: companionAnswers.values, routine: movementRoutine, now: now,
+            in: .init(calendar: calendar, format: format)
+        )
+    }
+    private let companionAnswers: DogWalkAnswers
     private var movementActivity: [DailyActivity] = []
     private var movementRoutine = WalkingRoutine()
     private var movementNow: Date?
@@ -390,12 +395,12 @@ public final class TodayModel {
         activityMatchChoices: @escaping @MainActor () -> ActivityMatchChoices = { .init() },
         dogWalkAnswers: [WalkCompanionAnswer] = [],
         saveDogWalkAnswers: @escaping @MainActor ([WalkCompanionAnswer]) -> Void = { _ in },
+        companionAnswers: DogWalkAnswers? = nil,
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
         self.activityMatchChoices = activityMatchChoices
-        self.dogWalkAnswers = dogWalkAnswers
-        self.saveDogWalkAnswers = saveDogWalkAnswers
+        self.companionAnswers = companionAnswers ?? DogWalkAnswers(dogWalkAnswers, save: saveDogWalkAnswers)
         recordLoader = TrainingRecordLoader(
             sources: sources, activity: activity, checkIns: checkIns, workouts: workouts, exercises: exercises,
             recordedStrength: recordedStrength, routines: routines, progression: progression, cycle: cycle
@@ -868,7 +873,6 @@ public final class TodayModel {
         movementActivity = activity
         movementRoutine = profile?.walkingRoutine ?? WalkingRoutine()
         movementNow = now
-        updateDogWalkQuestion()
         let baseline = EverydayMovement.baseline(activity, before: today, calendar: calendar)
         usualSteps = baseline.steps
         let signals = EverydayMovement.signals(activity, today: today, calendar: calendar)
@@ -880,21 +884,10 @@ public final class TodayModel {
         )
     }
 
-    private func updateDogWalkQuestion() {
-        guard let now = movementNow else { return }
-        dogWalkQuestion = DogWalkQuestion.next(
-            activity: movementActivity, answers: dogWalkAnswers, routine: movementRoutine, now: now,
-            in: .init(calendar: calendar, format: format)
-        )
-    }
-
     /// One tap on Yes or No. The answer is kept for this walk and teaches the usual dog walk times.
     public func answerDogWalk(withDog: Bool) {
         guard let question = dogWalkQuestion else { return }
-        dogWalkAnswers.removeAll { $0.key == WalkKey(question.walk) }
-        dogWalkAnswers.append(WalkCompanionAnswer(walk: question.walk, withCompanion: withDog))
-        saveDogWalkAnswers(dogWalkAnswers)
-        updateDogWalkQuestion()
+        companionAnswers.answer(question.walk, among: movementActivity.flatMap(\.walks), withDog: withDog)
     }
 
     private func has(_ value: (DailyMetrics) -> Double?) -> Bool {
