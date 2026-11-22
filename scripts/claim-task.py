@@ -35,7 +35,8 @@ _spec.loader.exec_module(claims)
 
 ITEM = re.compile(r"^(?:\d+\.|-)\s", re.M)
 TASK = re.compile(r"\]\(((?:https://github\.com/[^)]+/issues/\d+)|(?:[\w./-]+\.md#[\w-]+))\)")
-BLOCKED_BY = re.compile(r"once\s+#(\d+)\s+is\s+done", re.I)
+# "once #12 is done", "once #12 and #13 are done", "once #12, #13 and #14 are done"
+BLOCKED_BY = re.compile(r"#(\d+)(?=(?:,?\s*(?:and\s+)?#\d+)*\s+(?:is|are)\s+done)", re.I)
 MAX_ATTEMPTS = 5
 
 
@@ -78,8 +79,7 @@ def ready_items():
             if match.group(1) in elsewhere:
                 continue
             following = body[match.end():].split("](", 1)[0]
-            blocker = BLOCKED_BY.search(following)
-            tasks.append((match.group(1), blocker.group(1) if blocker else None))
+            tasks.append((match.group(1), BLOCKED_BY.findall(following)))
         items.append((body, tasks))
     return items
 
@@ -99,15 +99,15 @@ def next_task(owner, repo, skip):
     """The first task of "Ready to implement" that is open, unblocked and unclaimed."""
     claimed = {claims.task_key(pull.get("body")) for pull in open_pulls(owner, repo)}
     for body, tasks in ready_items():
-        keys = [(link, claims.task_key(f"Task: {link}"), blocker) for link, blocker in tasks]
+        keys = [(link, claims.task_key(f"Task: {link}"), blockers) for link, blockers in tasks]
         one_at_a_time = "one task at a time" in body.lower()
         if one_at_a_time and any(key in claimed for _, key, _ in keys):
             continue
-        for link, key, blocker in keys:
+        for link, key, blockers in keys:
             number = key[1:] if key.startswith("#") else None
             if number and issue_state(owner, repo, number) != "open":
                 continue
-            if blocker and issue_state(owner, repo, blocker) == "open":
+            if any(issue_state(owner, repo, blocker) == "open" for blocker in blockers):
                 continue
             if key in claimed or key in skip:
                 if one_at_a_time:
