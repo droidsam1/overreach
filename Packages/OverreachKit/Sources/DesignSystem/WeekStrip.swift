@@ -113,6 +113,14 @@ private struct DayCell: View {
     }
 }
 
+#Preview("Week, light") {
+    WeekStrip(days: previewDays).padding().preferredColorScheme(.light)
+}
+
+#Preview("Week, dark") {
+    WeekStrip(days: previewDays).padding().preferredColorScheme(.dark)
+}
+
 private let previewDays: [WeekDay] = [
     .init(id: 0, initial: "M", kind: .strengthDone, accessibilityLabel: "Monday: strength done"),
     .init(id: 1, initial: "T", kind: .runDone, accessibilityLabel: "Tuesday: run done"),
@@ -122,11 +130,3 @@ private let previewDays: [WeekDay] = [
     .init(id: 5, initial: "S", kind: .plannedRun, accessibilityLabel: "Saturday: run planned"),
     .init(id: 6, initial: "S", kind: .empty, accessibilityLabel: "Sunday: nothing planned"),
 ]
-
-#Preview("Week, light") {
-    WeekStrip(days: previewDays).padding().preferredColorScheme(.light)
-}
-
-#Preview("Week, dark") {
-    WeekStrip(days: previewDays).padding().preferredColorScheme(.dark)
-}

@@ -35,6 +35,14 @@ public struct LinkTile: View {
     }
 }
 
+#Preview("Link tiles, light") {
+    NavigationStack { LinkTileGrid() }.preferredColorScheme(.light)
+}
+
+#Preview("Link tiles, dark") {
+    NavigationStack { LinkTileGrid() }.preferredColorScheme(.dark)
+}
+
 private struct LinkTileGrid: View {
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.small), count: 4)) {
@@ -46,12 +54,4 @@ private struct LinkTileGrid: View {
         .buttonStyle(.plain)
         .padding()
     }
-}
-
-#Preview("Link tiles, light") {
-    NavigationStack { LinkTileGrid() }.preferredColorScheme(.light)
-}
-
-#Preview("Link tiles, dark") {
-    NavigationStack { LinkTileGrid() }.preferredColorScheme(.dark)
 }

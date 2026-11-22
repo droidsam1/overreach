@@ -88,14 +88,6 @@ public struct AnswerScale: View {
     }
 }
 
-private let previewOptions = [
-    AnswerOption(id: "1", symbolName: "cloud.bolt", label: "Awful"),
-    AnswerOption(id: "2", symbolName: "cloud.rain", label: "Low"),
-    AnswerOption(id: "3", symbolName: "minus.circle", label: "Okay"),
-    AnswerOption(id: "4", symbolName: "sun.min", label: "Good"),
-    AnswerOption(id: "5", symbolName: "sun.max", label: "Great"),
-]
-
 #Preview("Answer scale, light") {
     AnswerScale(options: previewOptions, selectedID: "4") { _ in }
         .padding().preferredColorScheme(.light)
@@ -110,3 +102,11 @@ private let previewOptions = [
     AnswerScale(options: previewOptions, selectedID: "2") { _ in }
         .padding().environment(\.dynamicTypeSize, .accessibility3)
 }
+
+private let previewOptions = [
+    AnswerOption(id: "1", symbolName: "cloud.bolt", label: "Awful"),
+    AnswerOption(id: "2", symbolName: "cloud.rain", label: "Low"),
+    AnswerOption(id: "3", symbolName: "minus.circle", label: "Okay"),
+    AnswerOption(id: "4", symbolName: "sun.min", label: "Good"),
+    AnswerOption(id: "5", symbolName: "sun.max", label: "Great"),
+]
