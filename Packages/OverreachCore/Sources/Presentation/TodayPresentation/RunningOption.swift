@@ -58,48 +58,47 @@ public struct RunningOption: Hashable, Sendable {
                 "You have several runs planned today. Review them in Plan before adding or replacing a run."
             ))
         case .returningFromBreak(let replacePlanned):
-            let advice = replacePlanned
-                ? L10n.text("Replace today's planned run with an easy run at a conversational pace.")
-                : L10n.text("If you run today, keep it easy and at a conversational pace.")
-            let text = L10n.text("You're returning from a running break.")
-            self.init(
-                goal: title, advice: advice, context: Self.painFreeContext(text, goal: goal),
-                evidence: EasyRunAdvisor.returnEvidence, source: "https://pubmed.ncbi.nlm.nih.gov/33517866/",
-                explanation: L10n.text(
-                    "Endurance can change during a break. Keeping the first runs easy is a coaching estimate."
-                ), isOptional: !hasRunToday
+            self = Self.returningOption(
+                title: title, goal: goal, replacePlanned: replacePlanned, hasRunToday: hasRunToday
             )
         case .example(let minutes, let next, let isToday, let recentRuns):
-            self = Self.example(
-                goal: goal, title: title, example: (minutes, next, isToday, recentRuns), calendar: calendar, format: format
+            let plan = next.map { Self.planText($0, isToday: isToday, calendar: calendar, format: format) }
+            let reduction = isToday && (next?.purpose != .easy || next?.durationMinutes != minutes)
+            let advice: String
+            if isToday, !reduction {
+                advice = L10n.text("Keep today's planned easy run at a conversational pace.")
+            } else if isToday, next?.purpose == .easy {
+                advice = L10n.format("Keep today's run easy. Try {1} min at a conversational pace.", String(minutes))
+            } else if isToday {
+                advice = L10n.format("Try {1} min at a conversational pace in place of the planned session.", String(minutes))
+            } else {
+                advice = L10n.format("If you want to run today, try {1} min at a conversational pace.", String(minutes))
+            }
+            let anchor = L10n.format("Duration based on {1} recent runs.", String(recentRuns))
+            self.init(
+                goal: title, advice: advice, plan: plan, context: Self.painFreeContext(anchor, goal: goal),
+                evidence: EasyRunAdvisor.evidence, source: "https://pubmed.ncbi.nlm.nih.gov/18277826/",
+                explanation: L10n.text(
+                    "A conversational pace keeps the effort easy. The duration is a coaching estimate."
+                ), adjustment: reduction && goal != nil ? next : nil, adjustmentMinutes: reduction ? minutes : nil,
+                isOptional: !isToday
             )
         }
     }
 
-    private static func example(
-        goal: RunningGoal?, title: String, example: (Int, PlannedRun?, Bool, Int), calendar: Calendar, format: Format
+    private static func returningOption(
+        title: String, goal: RunningGoal?, replacePlanned: Bool, hasRunToday: Bool
     ) -> Self {
-        let (minutes, next, isToday, recentRuns) = example
-        let plan = next.map { Self.planText($0, isToday: isToday, calendar: calendar, format: format) }
-        let reduction = isToday && (next?.purpose != .easy || next?.durationMinutes != minutes)
-        let advice: String
-        if isToday, !reduction {
-            advice = L10n.text("Keep today's planned easy run at a conversational pace.")
-        } else if isToday, next?.purpose == .easy {
-            advice = L10n.format("Keep today's run easy. Try {1} min at a conversational pace.", String(minutes))
-        } else if isToday {
-            advice = L10n.format("Try {1} min at a conversational pace in place of the planned session.", String(minutes))
-        } else {
-            advice = L10n.format("If you want to run today, try {1} min at a conversational pace.", String(minutes))
-        }
-        let anchor = L10n.format("Duration based on {1} recent runs.", String(recentRuns))
+        let advice = replacePlanned
+            ? L10n.text("Replace today's planned run with an easy run at a conversational pace.")
+            : L10n.text("If you run today, keep it easy and at a conversational pace.")
+        let text = L10n.text("You're returning from a running break.")
         return Self(
-            goal: title, advice: advice, plan: plan, context: Self.painFreeContext(anchor, goal: goal),
-            evidence: EasyRunAdvisor.evidence, source: "https://pubmed.ncbi.nlm.nih.gov/18277826/",
+            goal: title, advice: advice, context: Self.painFreeContext(text, goal: goal),
+            evidence: EasyRunAdvisor.returnEvidence, source: "https://pubmed.ncbi.nlm.nih.gov/33517866/",
             explanation: L10n.text(
-                "A conversational pace keeps the effort easy. The duration is a coaching estimate."
-            ), adjustment: reduction && goal != nil ? next : nil, adjustmentMinutes: reduction ? minutes : nil,
-            isOptional: !isToday
+                "Endurance can change during a break. Keeping the first runs easy is a coaching estimate."
+            ), isOptional: !hasRunToday
         )
     }
 
