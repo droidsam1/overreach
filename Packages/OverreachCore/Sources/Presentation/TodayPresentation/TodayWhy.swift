@@ -2,6 +2,11 @@ import Domain
 import Foundation
 import PresentationKit
 
+/// The details a Why row opens.
+public enum WhyRowKind: String, Hashable, Sendable {
+    case trainingThatCounts, sourcesAndCoverage, furtherReading
+}
+
 /// The level-2 "Why" screen of Today: what weighs on the verdict, a card per reason with a signal, the signals in
 /// range and the rows to the details that already exist. It only arranges what the readiness rules and
 /// `TodaySignal` already computed: there is no composite score and no new threshold (ADR-0041, ADR-0042).
@@ -41,16 +46,12 @@ public struct TodayWhy: Hashable, Sendable {
 
     /// A row to a level-2 detail that already exists.
     public struct Row: Hashable, Sendable, Identifiable {
-        public enum Kind: String, Hashable, Sendable {
-            case trainingThatCounts, sourcesAndCoverage, furtherReading
-        }
-
-        public let kind: Kind
+        public let kind: WhyRowKind
         public let title: String
         /// A one-line preview of what the detail holds.
         public let detail: String
 
-        public var id: Kind { kind }
+        public var id: WhyRowKind { kind }
     }
 
     public let level: ReadinessLevel
@@ -104,7 +105,8 @@ public struct TodayWhy: Hashable, Sendable {
             }
         }
 
-        let normal: [Normal] = skipsTraining ? [] : [TodaySignal.Kind.hrv, .sleep, .restingHeartRate].compactMap { kind in
+        let normalKinds: [TodaySignal.Kind] = [.hrv, .sleep, .restingHeartRate]
+        let normal: [Normal] = skipsTraining ? [] : normalKinds.compactMap { kind in
             guard !reasonKinds.contains(kind), let signal = TodaySignal.signal(kind, inputs.signals),
                   signal.tone != .amber, signal.tone != .red else { return nil }
             return Normal(
@@ -130,7 +132,9 @@ public struct TodayWhy: Hashable, Sendable {
     private static func rows(_ inputs: Inputs, lines: [ReadinessLine]) -> [Row] {
         var rows: [Row] = []
         if let context = inputs.trainingContext {
-            rows.append(Row(kind: .trainingThatCounts, title: L10n.text("Training that counts"), detail: context.heading))
+            rows.append(Row(
+                kind: .trainingThatCounts, title: L10n.text("Training that counts"), detail: context.heading
+            ))
         }
         if !inputs.sources.isEmpty || inputs.coverageNote != nil {
             rows.append(Row(

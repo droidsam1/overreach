@@ -14,7 +14,7 @@ struct TodayWhyTests {
     }()
     private let today = CalendarDay(year: 2026, month: 11, day: 20)
     private let format = Format(locale: Locale(identifier: "en_US"))
-    private let source = URL(string: "https://example.org/evidence")  // swiftlint:disable:this force_unwrapping
+    private let source = URL(string: "https://example.org/evidence")
 
     private func nights(hrv: Double? = 50, sleep: Double? = 7, rhr: Double? = 52) -> [DailyMetrics] {
         (-6...0).map { offset in
