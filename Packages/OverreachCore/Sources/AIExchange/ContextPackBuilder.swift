@@ -309,7 +309,7 @@ public enum ContextPackBuilder {
             movingDurationSeconds: rounded(run.movingDurationSeconds, places: 0),
             lapCount: run.lapCount,
             runningPaceSecondsPerKm: rounded(run.runningPaceSecondsPerKm, places: 0),
-            longestContinuousRunMeters: run.runWalk == nil ? nil : rounded(run.longestContinuousRunMeters, places: 0),
+            longestContinuousRunMeters: run.runWalk.map { _ in rounded(run.longestContinuousRunMeters, places: 0) },
             runWalk: run.runWalk.map { split in
                 ContextPack.RunWalk(running: split.running.map(part), walking: split.walking.map(part),
                                     standing: split.standing.map(part))
