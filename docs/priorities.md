@@ -14,25 +14,21 @@ and the logger come before review tools, and work that only a person with an iPh
 
 1. **Minimal UI with progressive disclosure** — [#179](https://github.com/droidsam1/overreach/issues/179)
    ([ADR-0041](adr/0041-minimal-ui-progressive-disclosure.md)), one task at a time in this order:
-   [#181](https://github.com/droidsam1/overreach/issues/181) (one pending prompt),
    [#184](https://github.com/droidsam1/overreach/issues/184) (two-step onboarding),
-   [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data, once #220 is done, so it builds on the
-   new hero). #181–#185 touch Today: never in parallel. [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements) shipped
+   [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data, on top of the visual hero). #184 and #185
+   touch Today: never in parallel. [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements) shipped
    lift records and set feedback; a running-goal milestone waits for a goal-progress event to attach it to.
 2. **Rotation after a recorded run** — [#268](https://github.com/droidsam1/overreach/issues/268)
    ([ADR-0044](adr/0044-rotation-after-a-recorded-run.md)), one task at a time in this order:
    [#269](https://github.com/droidsam1/overreach/issues/269) (run carry-over),
    [#270](https://github.com/droidsam1/overreach/issues/270) (record swaps),
    [#271](https://github.com/droidsam1/overreach/issues/271) (decision ladder, once #269 and #270 are done),
-   [#272](https://github.com/droidsam1/overreach/issues/272) (Today, once #271 is done; never in parallel with #181–#185),
+   [#272](https://github.com/droidsam1/overreach/issues/272) (Today, once #271 is done; never in parallel with #185),
    [#273](https://github.com/droidsam1/overreach/issues/273) (replay and AI context, once #271 is done),
    [#274](https://github.com/droidsam1/overreach/issues/274) (elevation loss).
 3. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
-4. **Pain for any run** — [#256](https://github.com/droidsam1/overreach/issues/256): ask about pain after every run of
-   a pain-free goal, with severity and next-morning status, so the run/walk progression
-   ([ADR-0043](adr/0043-running-dose-single-session-ceiling.md)) stops reading unreported pain as none.
-5. **Per-lap Garmin values** — [#259](https://github.com/droidsam1/overreach/issues/259).
-6. **Run offer follow-up** — [#265](https://github.com/droidsam1/overreach/issues/265) (learn usual run slots).
+4. **Per-lap Garmin values** — [#259](https://github.com/droidsam1/overreach/issues/259).
+5. **Run offer follow-up** — [#265](https://github.com/droidsam1/overreach/issues/265) (learn usual run slots).
 
 ## Needs a person or an iPhone
 
