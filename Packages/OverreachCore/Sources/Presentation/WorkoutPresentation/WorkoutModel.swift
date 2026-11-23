@@ -70,6 +70,9 @@ public struct DraftExercise: Identifiable, Hashable, Codable, Sendable {
     /// The sets that count: everything except warm-ups.
     public var workingSets: [DraftSet] { sets.filter { !$0.isWarmUp } }
 
+    /// One line for the compact card shown while the exercise is dragged to a new place.
+    public var collapsedSummary: String { L10n.format("Sets: {1}", workingSets.count) }
+
     /// Whether the suggested warm-up can be added whole: there is one and no warm-up set was logged yet.
     public var canAddWarmUp: Bool { !warmUpPlan.isEmpty && !sets.contains(where: \.isWarmUp) }
 
@@ -734,6 +737,13 @@ public final class WorkoutModel {
     public func canMoveExercise(_ exerciseID: DraftExercise.ID, by offset: Int) -> Bool {
         guard let index = exercises.firstIndex(where: { $0.id == exerciseID }) else { return false }
         return offset != 0 && exercises.indices.contains(index + offset)
+    }
+
+    /// Moves an exercise so it ends at `index` of the session (0 = first), as a drag and drop does.
+    public func moveExercise(_ exerciseID: DraftExercise.ID, toIndex index: Int) {
+        guard let current = exercises.firstIndex(where: { $0.id == exerciseID }),
+              exercises.indices.contains(index), index != current else { return }
+        moveExercises(from: [current], to: index > current ? index + 1 : index)
     }
 
     /// Moves one exercise up (negative) or down (positive) in the session.

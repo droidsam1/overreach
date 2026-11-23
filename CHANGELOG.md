@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Reorder exercises in a session by touching one for a moment and dragging without lifting your finger: the session
+  folds to compact cards, the others slide out of the way with a light tick, the screen scrolls near its edges, and
+  letting go unfolds the sets with the moved exercise in view. Move up / Move down stay in the exercise menu and as
+  VoiceOver actions, and Reduce Motion drops the sliding.
 - Today is drawn as cards (ADR-0042): a hero with the readiness ring, verdict, one reason, up to three recovery
   signals with their trend and one action; Your week with the seven days and progress; one prompt with a one-tap
   check-in; and tiles for **Why · Options · Recovery · History**. **Why** shows what weighs, a chart or gauge per

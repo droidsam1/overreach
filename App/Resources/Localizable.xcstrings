@@ -4931,23 +4931,6 @@
         }
       }
     },
-    "Drag the exercises into the order you want. Sets and values move with them.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Arrastra los ejercicios al orden que quieras. Las series y los valores se mueven con ellos."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Arrastra os exercicios á orde que queiras. As series e os valores móvense con eles."
-          }
-        }
-      }
-    },
     "Drop set": {
       "extractionState": "manual",
       "localizations": {
@@ -14621,6 +14604,23 @@
         }
       }
     },
+    "Sets: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series: {1}"
+          }
+        }
+      }
+    },
     "Settings": {
       "extractionState": "manual",
       "localizations": {
@@ -17796,6 +17796,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hai moi poucas lecturas recentes."
+          }
+        }
+      }
+    },
+    "Touch and hold, then drag, to reorder": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén pulsado y arrastra para reordenar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén premido e arrastra para reordenar"
           }
         }
       }
