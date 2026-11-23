@@ -19,7 +19,10 @@ public struct SessionRotation: Hashable, Sendable {
 
     /// The rotation in order, starting with the workout that comes next.
     public let order: [Slot]
-    public var next: Slot { order[0] }
+    /// The workout that comes next instead of `order[0]` when a recorded swap is half done: the first workout of the
+    /// pair is done, the second follows, and the original order resumes after it (ADR-0044).
+    public var swappedNext: Slot?
+    public var next: Slot { swappedNext ?? order[0] }
 
     public static let longestRotation = 6
     /// Full repetitions of the order needed before the rotation is trusted.
@@ -27,10 +30,16 @@ public struct SessionRotation: Hashable, Sendable {
 
     private static let duplicateWindow: TimeInterval = 12 * 3_600
 
-    /// - Parameter sessions: completed strength sessions, in any order. The same workout recorded twice within a few
-    ///   hours (a split or duplicated record) counts once.
-    public static func detect(in sessions: [StrengthSession]) -> SessionRotation? {
-        let sequence = slots(sessions)
+    /// - Parameters:
+    ///   - sessions: completed strength sessions, in any order. The same workout recorded twice within a few hours
+    ///     (a split or duplicated record) counts once.
+    ///   - adjustments: swaps and postponements the athlete accepted. A cycle matches when its order differs only
+    ///     by a recorded swap; without a record the order must repeat exactly.
+    public static func detect(
+        in sessions: [StrengthSession], adjustments: [RotationAdjustment] = [], calendar: Calendar = .current
+    ) -> SessionRotation? {
+        let planned = plannedSlots(timeline(sessions), adjustments: adjustments, calendar: calendar)
+        let sequence = planned.slots
         for length in 1...longestRotation {
             let cycle = Array(sequence.suffix(length))
             guard cycle.count == length, Set(cycle.map(\.id)).count == length else { continue }
@@ -42,7 +51,7 @@ public struct SessionRotation: Hashable, Sendable {
             }
             // A single workout repeated needs three sessions in a row; longer rotations need two full cycles.
             let needed = length == 1 ? 2 : length * (requiredCycles - 1)
-            if repeated >= needed { return SessionRotation(order: cycle) }
+            if repeated >= needed { return SessionRotation(order: cycle, swappedNext: planned.pendingNext) }
         }
         return nil
     }
@@ -59,6 +68,28 @@ public struct SessionRotation: Hashable, Sendable {
         if let routineID = session.routineID { return Slot(id: routineID.uuidString, name: name) }
         let key = name.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
         return Slot(id: "name:" + key, name: name)
+    }
+
+    /// The slots in planned order: every recorded swap that was carried out is undone. A swap whose second session has
+    /// not happened yet reads as the planned workout, and `pendingNext` names the one that really comes next.
+    static func plannedSlots(
+        _ timeline: [(slot: Slot, session: StrengthSession)], adjustments: [RotationAdjustment], calendar: Calendar
+    ) -> (slots: [Slot], pendingNext: Slot?) {
+        var slots = timeline.map(\.slot)
+        var pendingNext: Slot?
+        for adjustment in adjustments {
+            guard case let .swap(from, to) = adjustment.kind,
+                  let index = timeline.firstIndex(where: {
+                      CalendarDay($0.session.startedAt, calendar: calendar) == adjustment.day
+                  }), slots[index].id == to else { continue }
+            if index + 1 < slots.count {
+                if slots[index + 1].id == from { slots.swapAt(index, index + 1) }
+            } else if let planned = slots.last(where: { $0.id == from }) {
+                pendingNext = planned
+                slots[index] = planned
+            }
+        }
+        return (slots, pendingNext)
     }
 
     private static func slots(_ sessions: [StrengthSession]) -> [Slot] {

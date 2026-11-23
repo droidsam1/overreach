@@ -103,6 +103,9 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
     public var restDays: [CalendarDay]
     /// Counts gaps in recorded training as recovery for the discipline that stopped.
     public var countsBreaksAutomatically: Bool
+    /// Swaps and postponements of the strength rotation the person accepted, oldest first (ADR-0044). Absent in
+    /// older backups.
+    public var rotationAdjustments: [RotationAdjustment]
 
     public init(
         sex: BiologicalSex? = nil,
@@ -120,7 +123,8 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         deloadPostponedUntil: CalendarDay? = nil,
         deloadDecisions: [DeloadDecision] = [],
         restDays: [CalendarDay] = [],
-        countsBreaksAutomatically: Bool = true
+        countsBreaksAutomatically: Bool = true,
+        rotationAdjustments: [RotationAdjustment] = []
     ) {
         self.sex = sex
         self.birthYear = birthYear
@@ -138,6 +142,14 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         self.deloadDecisions = deloadDecisions
         self.restDays = restDays
         self.countsBreaksAutomatically = countsBreaksAutomatically
+        self.rotationAdjustments = rotationAdjustments
+    }
+
+    /// Records an accepted adjustment. Recording the same one again changes nothing; the newest
+    /// `RotationAdjustment.keptCount` are kept.
+    public mutating func record(_ adjustment: RotationAdjustment) {
+        guard !rotationAdjustments.contains(adjustment) else { return }
+        rotationAdjustments = Array((rotationAdjustments + [adjustment]).suffix(RotationAdjustment.keptCount))
     }
 
     public mutating func recordDeloadDecision(_ decision: DeloadDecision) {
@@ -162,7 +174,7 @@ extension AthleteProfile {
     private enum CodingKeys: String, CodingKey {
         case sex, birthYear, bodyMassKg, maxHeartRate, restingHeartRate, cycleTracking, walkingRoutine, goal
         case declaredBlocks, effortScale, wearables, deloads, deloadPostponedUntil, deloadDecisions, restDays
-        case countsBreaksAutomatically
+        case countsBreaksAutomatically, rotationAdjustments
     }
 
     /// Tolerant decoding: fields added in later versions fall back to their defaults, so older stores and
@@ -190,7 +202,10 @@ extension AthleteProfile {
             deloadDecisions: try container.decodeIfPresent([DeloadDecision].self, forKey: .deloadDecisions) ?? [],
             restDays: try container.decodeIfPresent([CalendarDay].self, forKey: .restDays) ?? [],
             countsBreaksAutomatically: try container.decodeIfPresent(Bool.self, forKey: .countsBreaksAutomatically)
-                ?? true
+                ?? true,
+            rotationAdjustments: try container.decodeIfPresent(
+                [RotationAdjustment].self, forKey: .rotationAdjustments
+            ) ?? []
         )
     }
 }

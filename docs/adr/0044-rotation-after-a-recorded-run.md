@@ -57,6 +57,8 @@ No trial tests "swap B and C after an extra run". The ladder below is a heuristi
 
 - The athlete's habit of postponing becomes a choice with reasons; after an easy run the usual answer is keep.
 - A swap changes the order inside one cycle only; the original order resumes after the pair.
+- Adjustments live in `AthleteProfile.rotationAdjustments` (device and backup; absent in older backups). A swap is
+  matched by the two workouts on the day it was planned; a postponement by the days it moved the session.
 - Apple Health runs lack training effect: intensity counts as unknown and the explanation says so.
 - Descent is a better eccentric marker than gain; until #274 the rule uses gain.
 - Proposed until replay on real histories (#273) checks how often each outcome fires and whether adjusted sessions

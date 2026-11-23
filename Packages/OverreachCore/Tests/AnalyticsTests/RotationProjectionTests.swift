@@ -140,4 +140,58 @@ struct RotationProjectionTests {
         #expect(projection.upcoming[0].demand == .none)
         #expect(advice(rotation: projection) == .example(minutes: 30, plan: nil, isToday: false, recentRuns: 1))
     }
+
+    private func offsets(_ workouts: [Workout], _ days: [Int]) -> [StrengthSession] {
+        zip(workouts, days).map { session($0, on: $1) }
+    }
+
+    @Test func aRecordedSwapKeepsTheProjectionAndTheOriginalOrderResumes() throws {
+        let lifts = fourDay
+        let order = [lifts[0], lifts[1], lifts[2], lifts[3], lifts[0], lifts[2], lifts[1], lifts[3], lifts[0], lifts[1], lifts[2], lifts[3]]
+        let sessions = offsets(order, (0..<12).map { -23 + 2 * $0 })
+        #expect(project(sessions) == nil)
+        let swap = RotationAdjustment(
+            day: day(-13), kind: .swap(from: lifts[1].routine.uuidString, to: lifts[2].routine.uuidString), reason: .runCarryover
+        )
+        let projection = try #require(RotationProjection.project(
+            sessions: sessions, exercises: exercises, now: now, calendar: calendar, adjustments: [swap]
+        ))
+        #expect(projection.upcoming.map(\.day) == [day(1), day(3), day(5), day(7)])
+        #expect(projection.upcoming.map(\.slot.name) == ["A", "B", "C", "D"])
+    }
+
+    @Test func aRecordedPostponementShiftsTheProjectionInsteadOfDroppingIt() throws {
+        let lifts = fourDay
+        let order = lifts + lifts
+        let sessions = offsets(order, [-16, -14, -12, -10, -8, -6, -3, -1])
+        #expect(project(sessions) == nil)
+        let postponement = RotationAdjustment(day: day(-4), kind: .postpone(days: 1))
+        let projection = try #require(RotationProjection.project(
+            sessions: sessions, exercises: exercises, now: now, calendar: calendar, adjustments: [postponement]
+        ))
+        #expect(projection.cadenceDays == 2)
+        #expect(projection.upcoming.map(\.day) == [day(1), day(3), day(5), day(7)])
+    }
+
+    @Test func aPostponementAcceptedForTheNextSessionShiftsItsDay() throws {
+        let sessions = history(fourDay, gaps: [2], lastOffset: -1)
+        let postponement = RotationAdjustment(day: day(1), kind: .postpone(days: 1))
+        let projection = try #require(RotationProjection.project(
+            sessions: sessions, exercises: exercises, now: now, calendar: calendar, adjustments: [postponement]
+        ))
+        #expect(projection.upcoming.map(\.day) == [day(2), day(4), day(6), day(8)])
+    }
+
+    @Test func aHalfDoneSwapProjectsThePlannedSecondWorkoutNext() throws {
+        let lifts = fourDay
+        let order = [lifts[0], lifts[1], lifts[2], lifts[3], lifts[0], lifts[1], lifts[2], lifts[3], lifts[0], lifts[2]]
+        let sessions = offsets(order, (0..<10).map { -19 + 2 * $0 })
+        let swap = RotationAdjustment(
+            day: day(-1), kind: .swap(from: lifts[1].routine.uuidString, to: lifts[2].routine.uuidString)
+        )
+        let projection = try #require(RotationProjection.project(
+            sessions: sessions, exercises: exercises, now: now, calendar: calendar, adjustments: [swap]
+        ))
+        #expect(projection.upcoming.map(\.slot.name) == ["B", "D", "A", "B"])
+    }
 }

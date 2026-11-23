@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Swaps and one-day postponements of the strength rotation can be recorded (`RotationAdjustment`, ADR-0044), stored in the profile and in backups (older backups load without them). Rotation detection and the projection tolerate a recorded swap or postponement, so Today keeps knowing the rotation; without a record, any change of order or rhythm still drops it. Nothing in the app records them yet.
 - Analytics rates how much a recorded run carries over into the next lift (`RunCarryover`, ADR-0044): notable after a hard, long, hilly or unaccustomed run, less than 24 h before the lift, or with soreness or pain that holds; light otherwise; unknown without a duration. Runs without training effect, such as Apple Health runs, are rated on the other criteria. Nothing in the app uses it yet.
 - Sections appear only when there is data behind them (ADR-0041). Today shows only the rest-day hero and the way to connect a source until a reading or a recorded workout or run exists, then adds the Recovery and History links one by one. Recovery & Progress lists Recovery with a reading, Recent load with a logged session or run and Progress with a goal or a lift trained twice, hides trend charts without points, and says what unlocks them when nothing is available yet.
 - Today offers an optional "Good day for an easy run" (with your dog's name when you have one) under the rest
