@@ -11034,6 +11034,23 @@
         }
       }
     },
+    "Options": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opciones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opcións"
+          }
+        }
+      }
+    },
     "Or type it here": {
       "extractionState": "manual",
       "localizations": {
@@ -15454,6 +15471,23 @@
         }
       }
     },
+    "Source update failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error al actualizar los datos"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erro ao actualizar os datos"
+          }
+        }
+      }
+    },
     "Sources": {
       "extractionState": "manual",
       "localizations": {
@@ -18412,6 +18446,23 @@
         }
       }
     },
+    "Use health data to inform your training recommendation.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa tus datos de salud para personalizar tu recomendación de entrenamiento."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa os teus datos de saúde para personalizar a túa recomendación de adestramento."
+          }
+        }
+      }
+    },
     "Use last time's values": {
       "extractionState": "manual",
       "localizations": {
@@ -20108,6 +20159,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "A túa chave de Garmin caducou. Crea unha nova para seguir importando."
+          }
+        }
+      }
+    },
+    "Your answer can change today's recommendation.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu respuesta puede cambiar la recomendación de hoy."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa resposta pode cambiar a recomendación de hoxe."
           }
         }
       }

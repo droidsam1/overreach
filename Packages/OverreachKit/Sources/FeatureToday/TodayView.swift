@@ -6,7 +6,9 @@ import TodayPresentation
 
 /// "How should I train today?" — readiness, key recovery metrics and (phase 3) today's proposed session.
 public struct TodayView: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var model: TodayModel
+    @State private var savingEnergy: Int?
     @State private var checkInSheet: CheckInModel?
     @State private var showsRun = false
     @State private var showsRestRecovery = false
@@ -99,7 +101,7 @@ public struct TodayView: View {
                     if let prompt = model.pendingPrompt {
                         pendingPrompt(prompt)
                     }
-                    linkRow
+                    if !model.links.isEmpty { linkTiles }
                 }
                 .padding(Spacing.medium)
             }
@@ -165,36 +167,35 @@ public struct TodayView: View {
             .accessibilityAddTraits(.isHeader)
     }
 
-    /// Level 1 ends here: one row of routes to the pushed screens (ADR-0041).
-    @ViewBuilder private var linkRow: some View {
-        if !model.links.isEmpty {
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: Spacing.medium) { linkButtons }
-                VStack(alignment: .leading, spacing: Spacing.small) { linkButtons }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-
-    @ViewBuilder private var linkButtons: some View {
-        ForEach(model.links, id: \.self) { link in
-            switch link {
-            case .why:
-                Button("Why", systemImage: "questionmark.circle") { showsWhy = true }
-            case .otherOptions:
-                Button("Other options", systemImage: "arrow.triangle.branch") { showsOptions = true }
-            case .recovery:
-                if let recoveryDestination {
-                    NavigationLink(destination: recoveryDestination()) {
-                        Label("Recovery", systemImage: "heart.text.square")
+    private var linkTiles: some View {
+        let links = model.links
+        let columns = typeSize.isAccessibilitySize ? 2 : links.count
+        return LazyVGrid(
+            columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.small), count: columns),
+            spacing: Spacing.small
+        ) {
+            ForEach(links, id: \.self) { link in
+                switch link {
+                case .why:
+                    Button { showsWhy = true } label: {
+                        LinkTile(title: "Why", symbolName: "questionmark.circle", color: .orange)
                     }
-                } else {
-                    Button("Recovery", systemImage: "heart.text.square") { showsRestRecovery = true }
+                case .otherOptions:
+                    Button { showsOptions = true } label: {
+                        LinkTile(title: "Options", symbolName: "arrow.triangle.branch", color: .blue)
+                    }
+                case .recovery:
+                    Button { showsRestRecovery = true } label: {
+                        LinkTile(title: "Recovery", symbolName: "heart.text.square", color: .teal)
+                    }
+                case .history:
+                    Button(action: onOpenHistory) {
+                        LinkTile(title: "History", symbolName: "clock.fill", color: .purple)
+                    }
                 }
-            case .history:
-                Button("History", systemImage: "calendar", action: onOpenHistory)
             }
         }
+        .buttonStyle(.plain)
     }
 
     /// Level 2: everything that explains the decision. The cards of running advice, deload and movement keep
@@ -242,23 +243,79 @@ public struct TodayView: View {
 
     /// The one secondary prompt under the hero (ADR-0041).
     @ViewBuilder private func pendingPrompt(_ prompt: TodayPrompt) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
-            switch prompt {
-            case .sourceFailure: sourceFailurePrompt
-            case .confirmBreak:
-                if case let .confirmBreak(period)? = model.deloadAdvice?.state { breakPrompt(period) }
-            case .checkIn: checkIn(prominent: false)
-            case .connectHealth: connectHealth(prominent: false)
-            case .connectGarmin: connectGarmin(prominent: false)
-            case .dogWalk:
-                if let question = model.dogWalkQuestion {
-                    DogWalkQuestionCard(question: question) { model.answerDogWalk(withDog: $0) }
+        switch prompt {
+        case .sourceFailure:
+            TodayPromptCard(title: Text("Source update failed"), dismiss: model.dismissPendingPrompt) {
+                sourceFailurePrompt
+            }
+        case .confirmBreak:
+            if case let .confirmBreak(period)? = model.deloadAdvice?.state { breakPrompt(period) }
+        case .checkIn:
+            quickCheckInPrompt
+        case .connectHealth:
+            TodayPromptCard(
+                title: Text("Apple Health"), detail: Text("Use health data to inform your training recommendation."),
+                dismiss: model.dismissPendingPrompt
+            ) {
+                connectHealth(prominent: false)
+            }
+        case .connectGarmin:
+            TodayPromptCard(
+                title: Text("Garmin"), detail: Text("Use health data to inform your training recommendation."),
+                dismiss: model.dismissPendingPrompt
+            ) {
+                connectGarmin(prominent: false)
+            }
+        case .dogWalk:
+            if let question = model.dogWalkQuestion {
+                DogWalkQuestionCard(question: question, dismiss: model.dismissPendingPrompt) {
+                    model.answerDogWalk(withDog: $0)
                 }
             }
         }
-        .padding(Spacing.medium)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
+    }
+
+    private var quickCheckInPrompt: some View {
+        TodayPromptCard(
+            title: Text(model.checkInButtonTitle),
+            detail: Text("Your answer can change today's recommendation."),
+            dismiss: model.dismissPendingPrompt
+        ) {
+            AnswerScale(
+                options: model.quickCheckIn.map {
+                    AnswerOption(id: String($0.value), symbolName: energySymbol($0.value), label: $0.name)
+                },
+                selectedID: (savingEnergy ?? model.checkIn?.energy).map { String($0) }
+            ) { id in
+                guard savingEnergy == nil, let answer = Int(id) else { return }
+                savingEnergy = answer
+                Task {
+                    await model.answerQuickCheckIn(answer)
+                    if model.quickCheckInNeedsDetails || model.checkIn?.energy != answer {
+                        let sheet = model.makeCheckInModel()
+                        sheet?.energy = answer
+                        checkInSheet = sheet
+                    }
+                    savingEnergy = nil
+                }
+            }
+            if let summary = model.checkInSummary {
+                Text(summary).font(.caption).foregroundStyle(.secondary)
+            }
+            Button(model.quickCheckInMoreTitle) { checkInSheet = model.makeCheckInModel() }
+                .controlSize(.large)
+        }
+        .disabled(savingEnergy != nil)
+    }
+
+    private func energySymbol(_ energy: Int) -> String {
+        switch energy {
+        case 1: "cloud.bolt"
+        case 2: "cloud.rain"
+        case 3: "minus.circle"
+        case 4: "sun.min"
+        default: "sun.max"
+        }
     }
 
     @ViewBuilder private var sourceFailurePrompt: some View {
@@ -276,21 +333,25 @@ public struct TodayView: View {
     }
 
     private func breakPrompt(_ period: DeloadAdvice.DetectedBreak) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
-            Label("Did you already take a break?", systemImage: "questionmark.circle.fill")
-                .font(.headline)
-                .foregroundStyle(.orange)
+        TodayPromptCard(
+            title: Text("Did you already take a break?"), detail: Text(period.details.reason),
+            dismiss: model.dismissPendingPrompt
+        ) {
             Text(period.details.dates).font(.subheadline)
             if let strength = period.details.strength { Text(strength).font(.subheadline) }
             if let running = period.details.running { Text(running).font(.subheadline) }
-            Text(period.details.reason).font(.footnote).foregroundStyle(.secondary)
-            HStack {
-                Button("Yes, it was rest") { Task { await model.reviewBreak(accepted: true) } }
-                    .buttonStyle(.bordered)
-                Button("No") { Task { await model.reviewBreak(accepted: false) } }
-                    .buttonStyle(.bordered)
+            ViewThatFits(in: .horizontal) {
+                HStack { breakAnswers }
+                VStack(alignment: .leading, spacing: Spacing.small) { breakAnswers }
             }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
         }
+    }
+
+    @ViewBuilder private var breakAnswers: some View {
+        Button("Yes, it was rest") { Task { await model.reviewBreak(accepted: true) } }
+        Button("No") { Task { await model.reviewBreak(accepted: false) } }
     }
 
     private var primary: TodayModel.NextAction {
