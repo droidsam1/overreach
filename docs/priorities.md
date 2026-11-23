@@ -20,6 +20,12 @@ and the logger come before review tools, and work that only a person with an iPh
    new hero). #181–#185 touch Today: never in parallel. [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements) shipped
    lift records and set feedback; a running-goal milestone waits for a goal-progress event to attach it to.
 2. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
+3. **Pain for any run** — [#256](https://github.com/droidsam1/overreach/issues/256): ask about pain after every run of
+   a pain-free goal, with severity and next-morning status, so the run/walk progression
+   ([ADR-0043](adr/0043-running-dose-single-session-ceiling.md)) stops reading unreported pain as none.
+4. **Single-session ceiling in Plan** — [#257](https://github.com/droidsam1/overreach/issues/257).
+5. **Run/walk split in History and the AI context** — [#258](https://github.com/droidsam1/overreach/issues/258).
+6. **Per-lap Garmin values** — [#259](https://github.com/droidsam1/overreach/issues/259).
 
 ## Needs a person or an iPhone
 

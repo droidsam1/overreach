@@ -441,7 +441,7 @@ repeats the last pain-free session. Pain after two runs in a row shortens the st
 lengths, the 14-day gap and the step back are conservative product defaults, not research findings. The app records
 pain as yes or no; clinical pain-monitoring models accept mild pain (up to 5/10) that settles by the next morning, so
 treating any reported pain as a hold is the more cautious choice. Not medical advice: pain that persists belongs with
-a clinician. Reviewed 2026-11-23.
+a clinician. Decision record: [ADR-0043](adr/0043-running-dose-single-session-ceiling.md). Reviewed 2026-11-23.
 [Single-session spike cohort](https://doi.org/10.1136/bjsports-2024-109380) · [Graded novice programme trial](https://doi.org/10.1177/0363546507307505) · [Weekly progression cohort](https://www.jospt.org/doi/10.2519/jospt.2014.5164) · [Pain-monitoring model trial](https://doi.org/10.1177/0363546506298279)
 
 ### `easy-strength-example` — heuristic
