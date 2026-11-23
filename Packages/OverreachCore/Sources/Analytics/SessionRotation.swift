@@ -62,18 +62,21 @@ public struct SessionRotation: Hashable, Sendable {
     }
 
     private static func slots(_ sessions: [StrengthSession]) -> [Slot] {
-        var result: [Slot] = []
-        var lastStart: Date?
+        timeline(sessions).map(\.slot)
+    }
+
+    /// The sessions that make up the sequence, oldest first, with their workout. Duplicates count once (the first).
+    static func timeline(_ sessions: [StrengthSession]) -> [(slot: Slot, session: StrengthSession)] {
+        var result: [(slot: Slot, session: StrengthSession)] = []
         for session in sessions.sorted(by: { $0.startedAt < $1.startedAt }) where !session.entries.isEmpty {
             let slot = slot(for: session)
             guard !slot.name.isEmpty || session.routineID != nil else { continue }
             // The same workout twice within a few hours is one session recorded twice or split in two.
-            if result.last?.id == slot.id, let lastStart,
-               session.startedAt.timeIntervalSince(lastStart) < duplicateWindow {
+            if let last = result.last, last.slot.id == slot.id,
+               session.startedAt.timeIntervalSince(last.session.startedAt) < duplicateWindow {
                 continue
             }
-            result.append(slot)
-            lastStart = session.startedAt
+            result.append((slot, session))
         }
         return result
     }
