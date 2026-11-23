@@ -276,5 +276,31 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var trainingLoad: Double?
         public var aerobicTrainingEffect: Double?
         public var anaerobicTrainingEffect: Double?
+        /// Time in motion, without pauses. Optional, added after v1 shipped.
+        public var movingDurationSeconds: Double?
+        /// Laps the watch recorded. Optional, added after v1 shipped.
+        public var lapCount: Int?
+        /// Pace of the running segments only, when the watch split running from walking. Optional, added after v1.
+        public var runningPaceSecondsPerKm: Double?
+        /// Longest continuous running stretch, when the watch split running from walking. Optional, added after v1.
+        public var longestContinuousRunMeters: Double?
+        /// The watch's run/walk detection. Optional, added after v1 shipped.
+        public var runWalk: RunWalk?
+    }
+
+    /// Running, walking and standing parts of a run, each summing the segments of that kind.
+    public struct RunWalk: Codable, Hashable, Sendable {
+        public var running: RunWalkPart?
+        public var walking: RunWalkPart?
+        public var standing: RunWalkPart?
+    }
+
+    public struct RunWalkPart: Codable, Hashable, Sendable {
+        public var distanceMeters: Double
+        public var durationSeconds: Double
+        public var segments: Int
+        public var longestSegmentMeters: Double?
+        /// Steps per minute.
+        public var averageCadence: Double?
     }
 }

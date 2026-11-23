@@ -67,6 +67,13 @@ struct HistoryRunDetail: View {
                     LabeledContent(metric.label, value: metric.value)
                 }
             }
+            if !run.movementMetrics.isEmpty {
+                Section("Running and walking") {
+                    ForEach(run.movementMetrics) { metric in
+                        LabeledContent(metric.label, value: metric.value)
+                    }
+                }
+            }
             if let match = run.match {
                 Section {
                     Button("Undo run link") {

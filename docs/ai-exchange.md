@@ -31,7 +31,7 @@ Shared from **Plan → Ask AI**. It is raw data with no instructions. Its top-le
 | `checkIns` | `date`, `isSick`, `energy` (1–5), `soreness` (1–5), `note` |
 | `dailyMetrics` | Per day and `source`: HRV, its statistic (`hrvMetric`: Garmin `rmssd` or Apple Watch `sdnn`, never comparable) and its baseline, resting heart rate, sleep (total, deep, REM, score), body battery, stress, steps, VO2max, training readiness, acute load, recovery time |
 | `today` | Optional local readiness and deload decisions for `period.to`, and `training`: what was already done that day. See the decision fields below. |
-| `runs` | `date`, `startedAt`, `source`, `durationSeconds`, `distanceMeters`, `paceSecondsPerKm`, heart rate, elevation, training load and effect |
+| `runs` | `date`, `startedAt`, `source`, `durationSeconds`, `distanceMeters`, `paceSecondsPerKm`, heart rate, elevation, training load and effect; when the watch recorded them, `movingDurationSeconds`, `lapCount` and the run/walk split (see below) |
 
 ### Values
 
@@ -44,6 +44,12 @@ Shared from **Plan → Ask AI**. It is raw data with no instructions. Its top-le
   `primary` or `secondary`. Moved entries keep their `originalDay`. `athlete.goal.nextRun` skips entries marked
   `postponed`, which remain in the calendar.
 
+- **Run/walk split:** optional, added after v1 shipped (ADR-0043). `runWalk` has `running`, `walking` and `standing`,
+  each summing the watch's segments of that kind: `distanceMeters`, `durationSeconds`, `segments`,
+  `longestSegmentMeters` and `averageCadence` (steps per minute). With a split, `runningPaceSecondsPerKm` is the pace
+  of the running segments only and `longestContinuousRunMeters` the longest running segment. Absent for Apple Health
+  runs and watches without run/walk detection: read `paceSecondsPerKm`, which includes walk breaks, and treat the
+  whole run as unknown in how it split.
 - **Set:** `weightKg`, `reps`, `rpe`, `durationSeconds`, `distanceMeters`. `kind` is absent for working sets,
   otherwise `warmup`, `dropSet` or `failure`.
 - **RPE:** on the reps-in-reserve scale, so RPE 8 means about 2 reps were left. It is absent when not logged.
