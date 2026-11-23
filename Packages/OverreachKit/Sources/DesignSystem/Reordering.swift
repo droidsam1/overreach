@@ -249,16 +249,16 @@ public struct ReorderCardList<Item: Identifiable, Card: View>: View where Item.I
         } action: { _, new in
             metrics = new
         }
-        .onChange(of: drag?.fingerY, initial: true) { _, y in fingerY = y }
+        .onChange(of: drag?.fingerY, initial: true) { _, newY in fingerY = newY }
         .task(id: drag != nil) { await autoScroll() }
     }
 
     /// Scrolls while the finger rests near the top or bottom edge, faster the closer it is.
     private func autoScroll() async {
         var offset = metrics.offset
-        while !Task.isCancelled, let y = fingerY {
-            let top = Self.edgeZone - y
-            let bottom = y - (metrics.viewport - Self.edgeZone)
+        while !Task.isCancelled, let finger = fingerY {
+            let top = Self.edgeZone - finger
+            let bottom = finger - (metrics.viewport - Self.edgeZone)
             let speed = top > 0 ? -min(top, Self.edgeZone) : (bottom > 0 ? min(bottom, Self.edgeZone) : 0)
             if speed != 0 {
                 offset = min(max(offset + speed / Self.edgeZone * Self.maxStep, 0), metrics.maxOffset)
