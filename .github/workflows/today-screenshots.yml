@@ -7,6 +7,12 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - run: sudo xcode-select -s /Applications/Xcode_16.4.app
+      - name: Start simulator
+        run: |
+          device=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; print(next(d["udid"] for ds in [ds for runtime, ds in json.load(sys.stdin)["devices"].items() if "iOS-18" in runtime] for d in ds if "iPhone" in d["name"] and "Pro Max" in d["name"]))')
+          echo "SCREENSHOT_DEVICE=$device" >> "$GITHUB_ENV"
+          xcrun simctl boot "$device"
       - run: brew install xcodegen
       - run: xcodegen generate
         working-directory: App
@@ -16,9 +22,8 @@ jobs:
             -derivedDataPath build -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
       - name: Capture
         run: |
-          device=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; print(next(d["udid"] for ds in reversed(list(json.load(sys.stdin)["devices"].values())) for d in ds if "iPhone" in d["name"] and "Pro Max" in d["name"]))')
-          xcrun simctl boot "$device"
-          xcrun simctl bootstatus "$device" -b
+          device="$SCREENSHOT_DEVICE"
+          python3 -c 'import subprocess, sys; subprocess.run(["xcrun", "simctl", "bootstatus", sys.argv[1], "-b"], timeout=100, check=True)' "$device"
           xcrun simctl install "$device" build/Build/Products/Debug-iphonesimulator/Overreach.app
           xcrun simctl status_bar "$device" override --time '9:41' --dataNetwork wifi --wifiMode active --wifiBars 3 --cellularMode active --cellularBars 4 --batteryState unplugged --batteryLevel 100
           mkdir screenshots
