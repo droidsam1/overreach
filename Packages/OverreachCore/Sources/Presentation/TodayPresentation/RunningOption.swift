@@ -137,6 +137,7 @@ public struct RunningOption: Hashable, Sendable {
     private static func applying(_ progression: RunWalkProgression.Result?, to option: Self, format: Format) -> Self {
         guard let progression, progression.phase != .goalReached, !progression.blocks.isEmpty else { return option }
         let line = progressionLine(progression.blocks, format: format)
+        let settings = RunWalkProgression.Settings()
         let reason = switch progression.phase {
         case .start: L10n.text("No recent run to build on, so this starts gently.")
         case .progress: L10n.text("Your last run had no reported pain, so this adds one small step.")
@@ -153,12 +154,13 @@ public struct RunningOption: Hashable, Sendable {
             goal: option.goal, advice: L10n.format("If you want to run today, try {1}.", line), plan: option.plan,
             context: option.context, evidence: RunWalkProgression.evidence,
             source: "https://doi.org/10.1136/bjsports-2024-109380",
-            explanation: [reason, L10n.text(
-                "The whole session stays within 10% of your longest run in the last 30 days, walking included."
+            explanation: [reason, L10n.format(
+                "The whole session stays within {1} of your longest run in the last {2} days, walking included.",
+                settings.sessionIncreaseFraction.formatted(.percent.locale(format.locale)), String(settings.historyDays)
             ), L10n.text(
                 "Distances, not pace, set the effort. Stop and walk if you notice pain. A coaching estimate."
-            )].joined(separator: " "), adjustment: option.adjustment, isOptional: option.isOptional, offersEasyRun: option.offersEasyRun,
-            suggestedMinutes: nil
+            )].joined(separator: " "), adjustment: option.adjustment, isOptional: option.isOptional,
+            offersEasyRun: option.offersEasyRun, suggestedMinutes: nil
         )
     }
 

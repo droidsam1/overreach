@@ -17188,19 +17188,19 @@
         }
       }
     },
-    "The whole session stays within 10% of your longest run in the last 30 days, walking included.": {
+    "The whole session stays within {1} of your longest run in the last {2} days, walking included.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "La sesión completa, incluido lo que camines, no supera en más de un 10 % tu carrera más larga de los últimos 30 días."
+            "value": "La sesión completa, incluido lo que camines, no supera en más de un {1} tu carrera más larga de los últimos {2} días."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "A sesión completa, incluído o que camiñes, non supera en máis dun 10 % a túa carreira máis longa dos últimos 30 días."
+            "value": "A sesión completa, incluído o que camiñes, non supera en máis dun {1} a túa carreira máis longa dos últimos {2} días."
           }
         }
       }

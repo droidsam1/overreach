@@ -152,7 +152,9 @@ public enum RunWalkProgression {
     }
 
     private static func layout(run: Int, walk: Int, repeats: Int) -> [Block] {
-        (0..<repeats).flatMap { index in index == 0 ? [Block.run(meters: run)] : [.walk(meters: walk), .run(meters: run)] }
+        (0..<repeats).flatMap { index in
+            index == 0 ? [Block.run(meters: run)] : [.walk(meters: walk), .run(meters: run)]
+        }
     }
 
     /// The athlete's own typical walk break, measured by the watch, or the default.
