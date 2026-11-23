@@ -26,6 +26,9 @@ and the logger come before review tools, and work that only a person with an iPh
 4. **Single-session ceiling in Plan** — [#257](https://github.com/droidsam1/overreach/issues/257).
 5. **Run/walk split in History and the AI context** — [#258](https://github.com/droidsam1/overreach/issues/258).
 6. **Per-lap Garmin values** — [#259](https://github.com/droidsam1/overreach/issues/259).
+7. **Run offer follow-ups** — [#264](https://github.com/droidsam1/overreach/issues/264) (keep "Not today" across
+   relaunches), then [#265](https://github.com/droidsam1/overreach/issues/265) (learn usual run slots). Both touch
+   Today: never in parallel.
 
 ## Needs a person or an iPhone
 
