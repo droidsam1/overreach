@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Sections appear only when there is data behind them (ADR-0041). Today shows only the rest-day hero and the way to connect a source until a reading or a recorded workout or run exists, then adds the Recovery and History links one by one. Recovery & Progress lists Recovery with a reading, Recent load with a logged session or run and Progress with a goal or a lift trained twice, hides trend charts without points, and says what unlocks them when nothing is available yet.
 - Today offers an optional "Good day for an easy run" (with your dog's name when you have one) under the rest
   hero on a rest day of your strength rotation that suits a run, with the run/walk example, a "Not today" button
   that hides it for the rest of the day, also after closing and reopening the app, and "Not today? Thursday also works" when another good day is left. The week strip

@@ -13,15 +13,17 @@ and the logger come before review tools, and work that only a person with an iPh
 ## Ready to implement
 
 1. **Minimal UI with progressive disclosure** — [#179](https://github.com/droidsam1/overreach/issues/179)
-   ([ADR-0041](adr/0041-minimal-ui-progressive-disclosure.md)), next task:
-   [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data, on top of the visual hero). [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements) shipped
-   lift records and set feedback; a running-goal milestone waits for a goal-progress event to attach it to.
+   ([ADR-0041](adr/0041-minimal-ui-progressive-disclosure.md)): all sub-issues shipped, including
+   [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data) and
+   [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements); a running-goal
+   milestone waits for a goal-progress event to attach it to. What remains is the device measurement in
+   [#21](https://github.com/droidsam1/overreach/issues/21).
 2. **Rotation after a recorded run** — [#268](https://github.com/droidsam1/overreach/issues/268)
    ([ADR-0044](adr/0044-rotation-after-a-recorded-run.md)), one task at a time in this order:
    [#269](https://github.com/droidsam1/overreach/issues/269) (run carry-over),
    [#270](https://github.com/droidsam1/overreach/issues/270) (record swaps),
    [#271](https://github.com/droidsam1/overreach/issues/271) (decision ladder, once #269 and #270 are done),
-   [#272](https://github.com/droidsam1/overreach/issues/272) (Today, once #271 is done; never in parallel with #185),
+   [#272](https://github.com/droidsam1/overreach/issues/272) (Today, once #271 is done; Today work, now free to start),
    [#273](https://github.com/droidsam1/overreach/issues/273) (replay and AI context, once #271 is done),
    [#274](https://github.com/droidsam1/overreach/issues/274) (elevation loss).
 3. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.

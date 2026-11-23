@@ -12,6 +12,7 @@ private struct BudgetSource: MetricsSource {
         range.upperBound.days(back: 28, through: range.upperBound).map { day in
             var metrics = DailyMetrics(day: day, sources: [.garmin])
             metrics.steps = 9_000
+            metrics.sleepSeconds = 7 * 3_600
             return metrics
         }
     }
@@ -55,7 +56,7 @@ struct TodayBlockBudgetTests {
         await model.load(now: now)
         let links = model.links
         #expect(links.first == .why)
-        #expect(links.suffix(2) == [.recovery, .history])
+        #expect(links.last == .recovery)
         #expect(model.visibleBlocks.contains(.linkRow))
     }
 

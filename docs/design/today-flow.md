@@ -22,7 +22,8 @@ path from data to the screen.
    `TodayDoneSummary` once `doneToday` is set; `TodayHeroPlaceholder` while loading. `TodayWeekCard` draws `yourWeek`,
    `TodayPromptCard` the `pendingPrompt` (the last one, `profileQuestion`, asks the cycle or dog question once when it
 would change a recommendation, and "Later" brings it back tomorrow), and the link tiles open `TodayWhyView` (`why`), Other options, Recovery
-   and History.
+   and History. `SectionAvailability` (PresentationKit) decides which exist: Recovery needs a reading and History a
+   logged session or run; with neither there are no links (ADR-0041, rule 6).
 
 A new hero state is a `NextAction` case, its title in `NextAction.title`, its place in `baseAction` or
 `trainingAction`, and one case in the view's switch. Tests in `Tests/TodayPresentationTests` build a `TodayModel` with

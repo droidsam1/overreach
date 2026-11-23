@@ -77,6 +77,10 @@ public final class TodayModel {
     private var completedSessions: [TodayDone.Session] = []
     /// Whether a Garmin account is connected (ADR-0022).
     public private(set) var isGarminConnected = false
+    /// What the record holds, for the sections that need data (ADR-0041, rule 6).
+    private var recoveryReadingCount = 0
+    private var loggedSessionCount = 0
+    private var loggedRunCount = 0
     /// The person said they use a Garmin (first-run setup).
     private var wearsGarmin = false
     /// Steps and walks against the usual day (ADR-0010): spikes, very low days and recovery walks.
@@ -331,14 +335,21 @@ public final class TodayModel {
         return blocks
     }
 
-    /// The routes from Today to level 2, in order: Why · Other options · Recovery · History.
+    /// The routes from Today to level 2, in order: Why · Other options · Recovery · History. Recovery and
+    /// History appear when there is data behind them; with none, there are no links.
     public enum Link: Equatable, Sendable { case why, otherOptions, recovery, history }
 
     public var links: [Link] {
         guard showsReadinessCard else { return [] }
+        let showsRecovery = SectionAvailability.recovery(readings: recoveryReadingCount)
+        let showsHistory = SectionAvailability.history(sessions: loggedSessionCount, runs: loggedRunCount)
+        // With no data at all Today is the hero and the way to connect a source, nothing else.
+        guard showsRecovery || showsHistory else { return [] }
         var links: [Link] = [.why]
         if showsOtherOptions { links.append(.otherOptions) }
-        return links + [.recovery, .history]
+        if showsRecovery { links.append(.recovery) }
+        if showsHistory { links.append(.history) }
+        return links
     }
 
     /// Alternatives to the hero: an optional run or an easy strength session.
@@ -764,6 +775,11 @@ public final class TodayModel {
         restLoggedToday = profile?.restDays.contains(today) ?? false
         let weekStart = today.adding(days: -6, calendar: calendar)
         let history = snapshot.record.metrics
+        recoveryReadingCount = history.filter {
+            $0.sleepSeconds != nil || $0.restingHeartRate != nil || $0.hrvNightlyAverageMs != nil
+        }.count
+        loggedSessionCount = snapshot.record.sessions.count + snapshot.strengthOriginals.count
+        loggedRunCount = snapshot.runOriginals.count
         week = history.filter { $0.day >= weekStart }
         recentNights = history.filter { $0.day >= weekStart.adding(days: -7, calendar: calendar) }
         metrics = history.last { $0.day == today }

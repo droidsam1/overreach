@@ -44,18 +44,23 @@ public struct TrendsView<Progress: View>: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.large) {
                 SourceStatus(model: model, onConnectGarmin: onConnectGarmin)
-                NavigationLink(destination: RecoveryDetail(model: model, onConnectGarmin: onConnectGarmin)) {
-                    SectionRow(
-                        title: "Recovery", systemImage: "heart.text.square", summary: model.recoverySummary
-                    )
+                if model.showsRecovery {
+                    NavigationLink(destination: RecoveryDetail(model: model, onConnectGarmin: onConnectGarmin)) {
+                        SectionRow(
+                            title: "Recovery", systemImage: "heart.text.square", summary: model.recoverySummary
+                        )
+                    }
                 }
                 RecentLoadLink(model: model, onConnectGarmin: onConnectGarmin)
-                if Progress.self != EmptyView.self {
+                if model.showsProgress, Progress.self != EmptyView.self {
                     NavigationLink(destination: progress) {
                         SectionRow(
                             title: "Progress", systemImage: "chart.line.uptrend.xyaxis", summary: progressSummary
                         )
                     }
+                }
+                if let hint = model.unlockHint {
+                    Text(hint).font(.subheadline).foregroundStyle(.secondary)
                 }
             }
             .buttonStyle(.plain)
@@ -164,7 +169,7 @@ private struct RecoveryDetail: View {
                 ForEach(model.readings) { reading in
                     ReadingCard(reading: reading)
                 }
-                if model.hasLoaded { TrendSection(model: model, charts: model.recoveryCharts) }
+                if model.showsRecoveryTrends { TrendSection(model: model, charts: model.recoveryCharts) }
             }
             .padding(Spacing.medium)
         }
@@ -229,7 +234,7 @@ private struct RecentLoadDetail: View {
                     .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
                     .accessibilityElement(children: .combine)
                 }
-                if model.hasLoaded { TrendSection(model: model, charts: model.weeklyCharts) }
+                if model.showsLoadTrends { TrendSection(model: model, charts: model.weeklyCharts) }
             }
             .padding(Spacing.medium)
         }

@@ -11153,6 +11153,23 @@
         }
       }
     },
+    "Nothing to show yet. Connect a source or log a workout, and recovery and load appear here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no hay nada que mostrar. Conecta una fuente o registra un entrenamiento y aquí aparecerán la recuperación y la carga."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda non hai nada que amosar. Conecta unha fonte ou rexistra un adestramento e aquí aparecerán a recuperación e a carga."
+          }
+        }
+      }
+    },
     "Now stalled: next time, open its target to see why and what to try.": {
       "extractionState": "manual",
       "localizations": {
