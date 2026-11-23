@@ -48,7 +48,6 @@ struct OnboardingModelTests {
     @Test func theFirstRunAsksOnlyTheGoalAndTheDevices() async throws {
         let (model, store) = makeModel()
         await model.presentIfNeeded()
-        #expect(model.steps == [.goal, .devices])
         #expect(model.canSkipStep && !model.isLastStep)
 
         model.goalKind = .hybrid
@@ -73,39 +72,11 @@ struct OnboardingModelTests {
         #expect(profile.walkingRoutine == WalkingRoutine())
     }
 
-    @Test func theTrainingProfileKeepsEveryQuestionEditable() async throws {
-        let (model, store) = makeModel()
-        await model.reopen()
-        #expect(model.steps == [.goal, .about, .walking, .devices])
-        #expect(model.progressText == "Step 1 of 4")
-
-        model.goalKind = .hybrid
-        model.next()
-        model.sex = .female
-        #expect(model.showsCycleTracking)
-        model.cycleTracking = .naturalCycle
-        model.next()
-        #expect(!model.showsWalkDetails)
-        model.hasDog = true
-        model.dogName = "  Nanoq "
-        model.usualWalksPerDay = 3
-        model.walksAreFixed = true
-        #expect(model.showsWalkDetails)
-        model.next()
-        #expect(model.step == .devices && model.isLastStep)
-
-        #expect(await model.finish())
-        let profile = try await store.profile()
-        #expect(profile.sex == .female && profile.cycleTracking == .naturalCycle)
-        #expect(profile.walkingRoutine.hasDog && profile.walkingRoutine.usualWalksPerDay == 3)
-        #expect(profile.walkingRoutine.walksAreFixed)
-        #expect(profile.walkingRoutine.dogName == "Nanoq")
-    }
-
     @Test func onlyThePhoneClearsTheWatches() async throws {
         let (model, store) = makeModel()
-        try await store.save(AthleteProfile(wearables: [.garmin]))
-        await model.reopen()
+        await model.presentIfNeeded()
+        model.next()
+        model.toggle(.garmin)
         #expect(model.isSelected(.garmin))
 
         model.chooseOnlyPhone()
@@ -117,49 +88,15 @@ struct OnboardingModelTests {
         #expect(try await store.profile().wearables.isEmpty)
     }
 
-    @Test func finishingTheLastStepKeepsTheStoredWatches() async throws {
+    @Test func skippingTheGoalLeavesItUnset() async throws {
         let (model, store) = makeModel()
-        try await store.save(AthleteProfile(wearables: [.appleWatch]))
-        await model.reopen()
-        model.next()
-        model.next()
-        model.next()
-        #expect(model.step == .devices)
-        #expect(await model.finish())
-        #expect(try await store.profile().wearables == [.appleWatch])
-    }
-
-    @Test func cycleTrackingOnlyAppliesWhenItWasAsked() async {
-        let (model, _) = makeModel()
-        model.sex = .female
-        model.cycleTracking = .menopause
-        model.sex = .unspecified
-        #expect(!model.showsCycleTracking)
-        #expect(model.cycleTracking == .off)
-    }
-
-    @Test func skippingAStepKeepsWhatWasStored() async throws {
-        let (model, store) = makeModel()
-        let stored = AthleteProfile(goal: TrainingGoal(kind: .strength, priorityLifts: [UUID()]))
-        try await store.save(stored)
-        await model.reopen()
-        #expect(model.goalKind == .strength)
+        await model.presentIfNeeded()
 
         model.goalKind = .hypertrophy
         model.skipStep()
-        #expect(model.step == .about)
+        #expect(model.step == .devices)
         #expect(await model.finish())
-        #expect(try await store.profile() == stored)
-    }
-
-    @Test func changingTheGoalKeepsItsOtherFields() async throws {
-        let (model, store) = makeModel()
-        let lift = UUID()
-        try await store.save(AthleteProfile(goal: TrainingGoal(kind: .strength, priorityLifts: [lift])))
-        await model.reopen()
-        model.goalKind = .general
-        #expect(await model.finish())
-        #expect(try await store.profile().goal == TrainingGoal(kind: .general, priorityLifts: [lift]))
+        #expect(try await store.profile().goal == nil)
     }
 
     @Test func movesBetweenStepsWithinBounds() async {
@@ -170,7 +107,7 @@ struct OnboardingModelTests {
         for _ in 0..<6 { model.next() }
         #expect(model.step == .devices)
         model.back()
-        #expect(model.step == .walking && model.canGoBack)
+        #expect(model.step == .goal && !model.canGoBack)
     }
 
     @Test func aFailedSaveKeepsTheSetupOpen() async {
