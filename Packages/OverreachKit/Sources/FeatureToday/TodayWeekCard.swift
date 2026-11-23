@@ -150,7 +150,8 @@ struct TodayWeekCard: View {
         case .nothing: cell.isToday ? .today : .empty
         }
         return WeekDay(
-            id: cell.id.hashValue, initial: cell.label, kind: kind, accessibilityLabel: cell.accessibilityLabel
+            id: cell.id.hashValue, initial: cell.label, kind: kind, accessibilityLabel: cell.accessibilityLabel,
+            marksRunWindow: cell.hasRunWindow
         )
     }
 }

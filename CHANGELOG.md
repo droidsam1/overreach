@@ -7,6 +7,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today offers an optional "Good day for an easy run" (with your dog's name when you have one) under the rest
+  hero on a rest day of your strength rotation that suits a run, with the run/walk example, a "Not today" button
+  that hides it for the day and "Not today? Thursday also works" when another good day is left. The week strip
+  marks those days with a small dot. It never shows on a red light, with symptoms, after a run or session today or
+  right after leg work.
 - Garmin runs now keep the lap count, moving time and the watch's run/walk detection: running, walking and standing
   distance, time, number of segments, the longest continuous running stretch and cadence, from the activity list
   Overreach already downloads. Running pace can be read without the walk breaks.

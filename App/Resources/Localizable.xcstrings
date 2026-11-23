@@ -460,6 +460,23 @@
         }
       }
     },
+    "A leg-heavy workout follows tomorrow, so keep this one short and easy.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mañana toca un entrenamiento exigente de piernas, así que mantén este corto y suave."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mañá toca un adestramento esixente de pernas, así que mantén este curto e suave."
+          }
+        }
+      }
+    },
     "A priority lift": {
       "extractionState": "manual",
       "localizations": {
@@ -6376,6 +6393,57 @@
         }
       }
     },
+    "Good day for an easy run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buen día para un rodaje suave"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bo día para un rodaxe suave"
+          }
+        }
+      }
+    },
+    "Good day for an easy run with your dog": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buen día para un rodaje suave con tu perro"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bo día para un rodaxe suave co teu can"
+          }
+        }
+      }
+    },
+    "Good day for an easy run with {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buen día para un rodaje suave con {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bo día para un rodaxe suave con {1}"
+          }
+        }
+      }
+    },
     "Great": {
       "extractionState": "manual",
       "localizations": {
@@ -10014,6 +10082,23 @@
         }
       }
     },
+    "No leg-heavy workout the day before or after, so your legs are fresh.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay un entrenamiento exigente de piernas el día antes ni el siguiente, así que tus piernas están frescas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai un adestramento esixente de pernas o día antes nin o seguinte, así que as túas pernas están frescas."
+          }
+        }
+      }
+    },
     "No longer stalled": {
       "extractionState": "manual",
       "localizations": {
@@ -10728,6 +10813,40 @@
         }
       }
     },
+    "Not today": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy no"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe non"
+          }
+        }
+      }
+    },
+    "Not today? {1} also works": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Hoy no? El {1} también va bien"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoxe non? O {1} tamén vai ben"
+          }
+        }
+      }
+    },
     "Not worked": {
       "extractionState": "manual",
       "localizations": {
@@ -11030,6 +11149,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Abre os detalles do descanso"
+          }
+        }
+      }
+    },
+    "Opens the details": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre los detalles"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre os detalles"
           }
         }
       }
@@ -20567,6 +20703,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "O teu último descanso de forza rematou o {1}."
+          }
+        }
+      }
+    },
+    "Your last workout worked your legs a little, so keep this one easy.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu último entrenamiento trabajó un poco las piernas, así que mantén este suave."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teu último adestramento traballou un pouco as pernas, así que mantén este suave."
+          }
+        }
+      }
+    },
+    "Your legs are still recovering from a heavy workout.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus piernas aún se recuperan de un entrenamiento exigente."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As túas pernas aínda se recuperan dun adestramento esixente."
           }
         }
       }

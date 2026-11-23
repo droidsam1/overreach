@@ -11,6 +11,7 @@ public struct TodayView: View {
     @State private var savingEnergy: Int?
     @State private var checkInSheet: CheckInModel?
     @State private var showsRun = false
+    @State private var showsRunOffer = false
     @State private var showsWhy = false
     @State private var showsOptions = false
     private let onConnectGarmin: () -> Void
@@ -85,6 +86,7 @@ public struct TodayView: View {
                 VStack(alignment: .leading, spacing: Spacing.large) {
                     header
                     primaryDecision
+                    if let offer = model.runOffer { runOfferLine(offer) }
                     if model.visibleBlocks.contains(.scheduledPlan) {
                         TodayWeekCard(
                             week: model.yourWeek, strength: model.scheduledStrengthToday,
@@ -124,6 +126,9 @@ public struct TodayView: View {
             }
             .navigationDestination(isPresented: $showsWhy) { whyScreen }
             .navigationDestination(isPresented: $showsOptions) { optionsScreen }
+            .navigationDestination(isPresented: $showsRunOffer) {
+                if let offer = model.runOffer { runOfferDetails(offer) }
+            }
             .navigationDestination(isPresented: $showsRun) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.medium) {
@@ -596,6 +601,51 @@ public struct TodayView: View {
                 }
             }
         }
+    }
+
+    /// One secondary line under the rest hero, not a block of its own (ADR-0041).
+    private func runOfferLine(_ offer: RunOffer) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: Spacing.small) { runOfferContent(offer) }
+            VStack(alignment: .leading, spacing: Spacing.small) { runOfferContent(offer) }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder private func runOfferContent(_ offer: RunOffer) -> some View {
+        Button { showsRunOffer = true } label: {
+            Label(offer.summary, systemImage: "figure.run")
+                .font(.subheadline)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        }
+        .accessibilityLabel(offer.accessibilityLabel)
+        .accessibilityHint(Text("Opens the details"))
+        Button(offer.dismissTitle) { model.dismissRunOffer() }
+            .buttonStyle(.bordered)
+            .frame(minHeight: 44)
+    }
+
+    private func runOfferDetails(_ offer: RunOffer) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.medium) {
+                Text(offer.title).font(.headline)
+                if let plan = offer.plan { Text(plan).font(.subheadline) }
+                Text(offer.reason).font(.subheadline)
+                if let explanation = offer.explanation {
+                    Text(explanation).font(.caption).foregroundStyle(.secondary)
+                }
+                if let fallback = offer.fallback { Text(fallback).font(.subheadline) }
+                Button(offer.dismissTitle) {
+                    model.dismissRunOffer()
+                    showsRunOffer = false
+                }
+                .buttonStyle(.bordered)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Spacing.medium)
+        }
+        .navigationTitle("Run details")
     }
 
     @ViewBuilder private func runAdjustmentAnswers(_ adjustment: RunningOption.Adjustment) -> some View {

@@ -47,6 +47,10 @@ public final class TodayModel {
     public private(set) var strengthOption: StrengthOption?
     public private(set) var runningOption: RunningOption?
     private var keptPlannedRunDay: CalendarDay?
+    /// Rest days of the projected strength rotation scored as run windows, from today to the end of the cycle.
+    private var runWindows: [RunWindow] = []
+    private var runProgression: RunWalkProgression.Result?
+    private var dismissedRunOfferDay: CalendarDay?
     private var hasRunningGoal = false
     private var heroTrainingAction: NextAction = .train
     /// A deload proposal (training reinforced by recovery, `deload-recovery-signals`) or the deload week in progress.
@@ -85,6 +89,22 @@ public final class TodayModel {
     }
 
     private var movementAdvice: [MovementNote] = []
+    /// A soft "good day for an easy run" on a rest day with a good window. `nil` when anything holds a run back
+    /// (red light, symptoms, a run or session already done, legs just worked) or the athlete said "Not today".
+    public var runOffer: RunOffer? {
+        guard let today = loadedDay, dismissedRunOfferDay != today, runningOption?.offersEasyRun == true,
+              scheduledRunsToday.isEmpty, scheduledStrengthToday == nil, doneToday == nil else { return nil }
+        return RunOffer.make(.init(
+            windows: runWindows, today: today, routine: movementRoutine, progression: runProgression,
+            calendar: calendar, format: format
+        ))
+    }
+
+    /// "Not today": hides the run offer for the rest of the day. Nothing is saved and nothing is counted.
+    public func dismissRunOffer() {
+        dismissedRunOfferDay = loadedDay
+    }
+
     /// "With Nanoq?" for the latest recent walk nobody has answered yet.
     public var dogWalkQuestion: DogWalkQuestion? {
         guard let now = movementNow else { return nil }
@@ -463,7 +483,8 @@ public final class TodayModel {
             today: .init(
                 strength: scheduledStrengthToday, strengthDetail: detail?.isEmpty == false ? detail : nil,
                 strengthMinutes: usualStrengthMinutes,
-                runs: scheduledRunsToday, adjustedRun: runningOption?.adjustment
+                runs: scheduledRunsToday, adjustedRun: runningOption?.adjustment,
+                runWindowDays: Set(runWindows.lazy.filter { $0.quality != .avoid }.map(\.day))
             ),
             calendar: calendar, format: format
         )
@@ -652,6 +673,8 @@ public final class TodayModel {
         strengthOption = nil
         strengthInputs = nil
         runningOption = nil
+        runWindows = []
+        runProgression = nil
         heroTrainingAction = .train
         recentRunPain = false
         defer {
@@ -833,6 +856,7 @@ public final class TodayModel {
                 && (yesterday...now).contains($0.startedAt.addingTimeInterval($0.durationSeconds))
         }.max { $0.startedAt < $1.startedAt }
         recentRunPain = latestRun?.painDuring == true || latestRun?.painAfter == true
+        runWindows = rotation?.runWindows(from: today, calendar: calendar) ?? []
         scheduledRunsToday = schedule.filter { $0.day == today }.map { ScheduledTrainingRow.run($0, format: format) }
         if keptPlannedRunDay == today { return }
         if let decision = EasyRunAdvisor.advise(
@@ -846,6 +870,7 @@ public final class TodayModel {
                 ? RunWalkProgression.advise(
                     goal: running, runs: runs, outcomes: schedule.compactMap(\.completion), now: now, calendar: calendar
                 ) : nil
+            runProgression = progression
             runningOption = RunningOption(
                 goal: goal, decision: decision, hasRunToday: !scheduledRunsToday.isEmpty,
                 lowerBody: lowerBody, progression: progression, calendar: calendar, format: format
