@@ -29,8 +29,7 @@ struct MarkdownReportRendererTests {
         )
         let report = TrainingReport(generatedAt: start, recentRuns: [split, plain])
 
-        let lines = MarkdownReportRenderer.render(report, calendar: calendar).split(separator: "
-")
+        let lines = MarkdownReportRenderer.render(report, calendar: calendar).split(separator: "\n")
 
         let withSplit = try #require(lines.first { $0.hasPrefix("- 2026-11-16") })
         #expect(withSplit.hasSuffix("; running 3.60 km in 24 min, walking 1.20 km in 15 min, "

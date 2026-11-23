@@ -7,7 +7,7 @@ import Testing
 struct ContextPackRunWalkTests {
     private let calendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "UTC")!
+        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? calendar.timeZone
         return calendar
     }()
     private let now = Date(timeIntervalSince1970: 1_790_000_000)
@@ -20,7 +20,7 @@ struct ContextPackRunWalkTests {
         )
         let object = try #require(JSONSerialization.jsonObject(with: ContextMessage.json(pack)) as? [String: Any])
         let data = try JSONSerialization.data(withJSONObject: object["runs"] ?? [], options: [.sortedKeys])
-        return String(decoding: data, as: UTF8.self)
+        return try #require(String(data: data, encoding: .utf8))
     }
 
     @Test func exportsTheWatchSplitLapsAndRunningPace() throws {
@@ -28,8 +28,8 @@ struct ContextPackRunWalkTests {
             id: "g1", source: .garmin, startedAt: now.addingTimeInterval(-86_400), durationSeconds: 2_400.4,
             distanceMeters: 4_800.2, lapCount: 5, movingDurationSeconds: 2_300.6,
             runWalk: RunWalkSplits(
-                running: .init(distanceMeters: 3_600, durationSeconds: 1_440, segments: 4, longestSegmentMeters: 1_210.4,
-                               averageCadence: 168.4),
+                running: .init(distanceMeters: 3_600, durationSeconds: 1_440, segments: 4,
+                               longestSegmentMeters: 1_210.4, averageCadence: 168.4),
                 walking: .init(distanceMeters: 1_200, durationSeconds: 900, segments: 3, longestSegmentMeters: 450),
                 standing: .init(distanceMeters: 0, durationSeconds: 60, segments: 1)
             )
