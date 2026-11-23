@@ -1,0 +1,35 @@
+name: Today screenshots
+on:
+  push:
+    branches: [codex/screenshots-223]
+jobs:
+  screenshots:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen
+      - run: xcodegen generate
+        working-directory: App
+      - name: Build
+        run: |
+          xcodebuild build -quiet -project App/Overreach.xcodeproj -scheme Overreach \
+            -derivedDataPath build -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
+      - name: Capture
+        run: |
+          device=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; print(next(d["udid"] for ds in reversed(list(json.load(sys.stdin)["devices"].values())) for d in ds if "iPhone" in d["name"] and "Pro Max" in d["name"]))')
+          xcrun simctl boot "$device"
+          xcrun simctl bootstatus "$device" -b
+          xcrun simctl install "$device" build/Build/Products/Debug-iphonesimulator/Overreach.app
+          xcrun simctl status_bar "$device" override --time '9:41' --dataNetwork wifi --wifiMode active --wifiBars 3 --cellularMode active --cellularBars 4 --batteryState unplugged --batteryLevel 100
+          mkdir screenshots
+          for appearance in light dark; do
+            xcrun simctl ui "$device" appearance "$appearance"
+            xcrun simctl launch "$device" io.github.overreach.Overreach
+            sleep 5
+            xcrun simctl io "$device" screenshot "screenshots/today-$appearance.png"
+            xcrun simctl terminate "$device" io.github.overreach.Overreach
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: today-light-and-dark
+          path: screenshots

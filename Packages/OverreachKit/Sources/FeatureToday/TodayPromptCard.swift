@@ -62,3 +62,13 @@ private actor PreviewCheckIns: CheckInRepository {
     func save(_ checkIn: CheckIn) async throws { entries[checkIn.day] = checkIn }
 }
 #endif
+
+#if DEBUG
+public struct TodayScreenshot: View {
+    @State private var model = TodayModel(sources: [PreviewMetricsSource(recentHRV: 43)], checkIns: PreviewCheckIns())
+
+    public init() {}
+
+    public var body: some View { TodayView(model: model) }
+}
+#endif

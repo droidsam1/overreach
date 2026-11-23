@@ -105,6 +105,7 @@ public struct TodayView: View {
                 }
                 .padding(Spacing.medium)
             }
+            .defaultScrollAnchor(.bottom)
             .navigationTitle("Today")
             .toolbar {
                 if settingsDestination != nil {
