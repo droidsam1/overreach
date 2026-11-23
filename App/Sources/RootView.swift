@@ -243,8 +243,10 @@ struct RootView: View {
                 Label("Exercises", systemImage: "figure.strengthtraining.traditional")
             }
             .badge(exercisesModel.needsMappingCount)
-            Button {
-                Task { await onboardingModel.reopen() }
+            NavigationLink {
+                TrainingProfileView(model: container.makeTrainingProfileModel()) {
+                    Task { await todayModel.load() }
+                }
             } label: {
                 Label("Training profile", systemImage: "person.text.rectangle")
             }

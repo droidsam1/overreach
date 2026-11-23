@@ -3146,23 +3146,6 @@
         }
       }
     },
-    "Context for reading recovery, never a fixed rule or a diagnosis. It stays in your own data and backups.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sirve de contexto para interpretar la recuperación; nunca es una regla fija ni un diagnóstico. Se queda en tus datos y tus copias."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Serve de contexto para interpretar a recuperación; nunca é unha regra fixa nin un diagnóstico. Queda nos teus datos e nas túas copias."
-          }
-        }
-      }
-    },
     "Continue": {
       "extractionState": "manual",
       "localizations": {
@@ -4009,6 +3992,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non se puido gardar o teu plan. Inténtao de novo."
+          }
+        }
+      }
+    },
+    "Could not save your profile. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo guardar tu perfil. Inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido gardar o teu perfil. Téntao de novo."
           }
         }
       }
@@ -10945,6 +10945,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Agora non"
+          }
+        }
+      }
+    },
+    "Not provided": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin indicar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen indicar"
           }
         }
       }

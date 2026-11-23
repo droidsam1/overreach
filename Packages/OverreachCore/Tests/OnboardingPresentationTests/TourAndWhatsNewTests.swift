@@ -39,14 +39,6 @@ struct TourAndWhatsNewTests {
         #expect(model.isPresented)
     }
 
-    @Test func reopeningFromSettingsSkipsTheTour() async {
-        let store = TestStore()
-        let model = OnboardingModel(profiles: store, workouts: store, status: store)
-        await model.reopen()
-        #expect(model.tourPage == nil)
-        #expect(model.step == .goal)
-    }
-
     // MARK: What's new
 
     private func notes(_ versions: String...) -> [ReleaseNotes] {

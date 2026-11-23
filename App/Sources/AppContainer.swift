@@ -301,6 +301,10 @@ final class AppContainer {
         OnboardingModel(profiles: profiles, workouts: workouts, status: onboardingStatus)
     }
 
+    func makeTrainingProfileModel() -> TrainingProfileModel {
+        TrainingProfileModel(profiles: profiles)
+    }
+
     func makeTrainingSettingsModel() -> TrainingSettingsModel {
         TrainingSettingsModel(profiles: profiles)
     }

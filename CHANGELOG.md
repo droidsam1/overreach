@@ -206,6 +206,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings → Appearance: light, dark or the same as the iPhone (the default).
 
 ### Fixed
+- Settings opens an editable training profile with a Save button for your goal, personal context, walking routine,
+  dog name and devices.
 - Today's **Recovery** tile switches to the Recovery tab, like History, instead of pushing a copy of it inside Today.
 - Editing a finished session now lets you add, change and clear each exercise's notes.
 - Today asks "With your dog?" after a recent recorded run when your profile includes a dog. Yes and No are saved

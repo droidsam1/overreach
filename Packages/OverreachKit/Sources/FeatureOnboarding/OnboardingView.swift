@@ -6,8 +6,7 @@ import SwiftUI
 // Views only: layout, styling and static copy. Steps and rules come from `OnboardingPresentation` (ADR-0014).
 
 /// Optional first-run setup: an animated tour of the app, then goal and devices, where the person also chooses how to
-/// start. Reopened from Settings it also asks about you and the walking routine. Connecting Apple Health or Garmin
-/// from the devices step is wired by the App (other features' flows).
+/// start. Connecting Apple Health or Garmin from the devices step is wired by the App.
 public struct OnboardingView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Bindable private var model: OnboardingModel
@@ -62,8 +61,6 @@ public struct OnboardingView: View {
                 }
                 switch model.step {
                 case .goal: goalStep
-                case .about: aboutStep
-                case .walking: walkingStep
                 case .devices: devicesStep
                 }
             }
@@ -78,8 +75,6 @@ public struct OnboardingView: View {
     private var title: LocalizedStringKey {
         switch model.step {
         case .goal: "Welcome"
-        case .about: "About you"
-        case .walking: "Walking"
         case .devices: "Your devices"
         }
     }
@@ -133,62 +128,6 @@ public struct OnboardingView: View {
             Text("What are you training for?")
         } footer: {
             Text("Plan advice is judged against this goal. You can change it in Plan.")
-        }
-    }
-
-    @ViewBuilder
-    private var aboutStep: some View {
-        Section {
-            Picker("Sex", selection: $model.sex) {
-                ForEach(model.sexOptions) { option in
-                    Text(option.name).tag(BiologicalSex?.some(option.value))
-                }
-            }
-            .pickerStyle(.inline)
-            .labelsHidden()
-        } header: {
-            Text("Sex")
-        } footer: {
-            Text("Optional. It is only used as training context.")
-        }
-        if model.showsCycleTracking {
-            Section {
-                Picker("Cycle tracking", selection: $model.cycleTracking) {
-                    ForEach(model.cycleOptions) { option in
-                        Text(option.name).tag(option.value)
-                    }
-                }
-                .pickerStyle(.inline)
-                .labelsHidden()
-            } header: {
-                Text("Cycle tracking")
-            } footer: {
-                Text("""
-                    Context for reading recovery, never a fixed rule or a diagnosis. It stays in your own data \
-                    and backups.
-                    """)
-            }
-        }
-    }
-
-    private var walkingStep: some View {
-        Section {
-            Toggle("I walk a dog", isOn: $model.hasDog)
-            if model.hasDog {
-                TextField("Dog's name", text: $model.dogName)
-            }
-            Picker("Usual walks per day", selection: $model.usualWalksPerDay) {
-                Text("Not sure").tag(Int?.none)
-                ForEach(model.walkOptions) { option in
-                    Text(option.name).tag(Int?.some(option.value))
-                }
-            }
-            if model.showsWalkDetails {
-                Toggle("These walks can't be skipped", isOn: $model.walksAreFixed)
-                Toggle("I can jog during them", isOn: $model.canRunDuringWalks)
-            }
-        } footer: {
-            Text("Advice adapts to your walks and never removes the ones you can't skip.")
         }
     }
 
