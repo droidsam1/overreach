@@ -95,6 +95,8 @@ public struct RunningCalendarRow: Identifiable, Hashable, Sendable {
     public let date: String
     public let title: String
     public let status: String?
+    /// The run is planned past the single-session ceiling (ADR-0043); the editor explains it and offers to shorten.
+    public let ceilingWarning: String?
     public var id: UUID { entry.id }
 }
 

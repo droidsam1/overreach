@@ -234,6 +234,33 @@ struct PlanModelTests {
         #expect(model.upcomingRunningEntries.first?.status == "Rescheduled")
     }
 
+    @Test func warnsAboutALongRunPastTheSessionCeilingAndOffersToShortenIt() async throws {
+        let recent = RunActivity(id: "long", source: .garmin, startedAt: now.addingTimeInterval(-5 * 86_400),
+                                 durationSeconds: 3_000, distanceMeters: 10_000)
+        let (model, store) = await model(runSources: [CalendarRunSource(run: recent)])
+        let today = CalendarDay(now, calendar: calendar)
+        let long = PlannedRun(day: today.adding(days: 2, calendar: calendar), purpose: .long, durationMinutes: 80,
+                              distanceMeters: 14_000)
+        let easy = PlannedRun(day: today.adding(days: 1, calendar: calendar), purpose: .easy, distanceMeters: 6_000)
+        var goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 21_100))
+        goal.setRunningSchedule([easy, long])
+        try await store.save(AthleteProfile(goal: goal))
+        await model.load()
+
+        #expect(model.upcomingRunningEntries.map(\.ceilingWarning) == [
+            nil, "More than 10% over your longest recent run",
+        ])
+        let notice = try #require(model.sessionCeilingNotice(for: model.editRunningEntry(long)))
+        #expect(notice.explanation.text.hasPrefix("14 km is more than 10% over your longest run"))
+        #expect(notice.shortenTitle == "Shorten to 11 km")
+        #expect(notice.shortened.distanceKm == 11)
+        #expect(notice.shortened.minutes == 62)
+        #expect(model.sessionCeilingNotice(for: notice.shortened) == nil)
+
+        #expect(await model.saveRunningEntry(notice.shortened))
+        #expect(model.upcomingRunningEntries.allSatisfy { $0.ceilingWarning == nil })
+    }
+
     @Test func requiresAnExplicitLinkAndRejectsASecondLinkToTheMirroredRun() async throws {
         let start = now.addingTimeInterval(-2 * 86_400)
         let run = RunActivity(id: "watch", source: .garmin, startedAt: start, durationSeconds: 1_200, distanceMeters: 3_000)

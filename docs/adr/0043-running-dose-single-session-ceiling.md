@@ -56,8 +56,9 @@ longest segment and cadence. Per-lap values are not in the list.
 - Growth is slower for runners without walk breaks (+10% per session) and faster for run/walk athletes, whose walking
   turns into running inside the same distance.
 - The ceiling reads only recorded runs: a run missing from Health or Garmin lowers it, which errs on the safe side.
-- The study merged runs less than 15 minutes apart into one session; Overreach does not yet (#257).
+- The study merged runs less than 15 minutes apart into one session. Plan's warning for dated runs does too (#257);
+  the run/walk example still reads each run on its own.
 - Today asks about pain after any recorded run for a pain-free goal, so the progression no longer advances through
   unreported pain. Mild pain waits for the morning answer before it counts as tolerated.
 - Per-lap values need FIT decoding or another endpoint (#259). Showing the new markers in History and the AI
-  exchange is #258. Applying the ceiling to planned and imported runs is #257.
+  exchange is #258. Plan warns about dated runs past the ceiling (#257, `single-session-ceiling`).
