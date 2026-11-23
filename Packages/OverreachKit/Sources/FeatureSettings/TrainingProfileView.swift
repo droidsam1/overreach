@@ -33,7 +33,9 @@ public struct TrainingProfileView: View {
         }
         .disabled(model.isSaving)
         .navigationTitle("Training profile")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .navigationBarBackButtonHidden(model.isSaving)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
