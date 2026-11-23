@@ -78,10 +78,10 @@ public struct SessionRotation: Hashable, Sendable {
         var slots = timeline.map(\.slot)
         var pendingNext: Slot?
         for adjustment in adjustments {
-            guard case let .swap(from, to) = adjustment.kind,
+            guard case let .swap(from, target) = adjustment.kind,
                   let index = timeline.firstIndex(where: {
                       CalendarDay($0.session.startedAt, calendar: calendar) == adjustment.day
-                  }), slots[index].id == to else { continue }
+                  }), slots[index].id == target else { continue }
             if index + 1 < slots.count {
                 if slots[index + 1].id == from { slots.swapAt(index, index + 1) }
             } else if let planned = slots.last(where: { $0.id == from }) {

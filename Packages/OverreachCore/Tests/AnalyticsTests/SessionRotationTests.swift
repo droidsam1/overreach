@@ -67,18 +67,18 @@ struct SessionRotationTests {
         #expect(SessionRotation.detect(in: history)?.next.name == "A")
     }
 
-    private func swap(_ history: [StrengthSession], at index: Int, from: String, to: String) -> RotationAdjustment {
+    private func swap(_ history: [StrengthSession], at index: Int, from: String, target: String) -> RotationAdjustment {
         RotationAdjustment(
             day: CalendarDay(history[index].startedAt, calendar: .current),
             kind: .swap(from: SessionRotation.slot(for: sessions([from])[0]).id,
-                        to: SessionRotation.slot(for: sessions([to])[0]).id)
+                        to: SessionRotation.slot(for: sessions([target])[0]).id)
         )
     }
 
     @Test func aRecordedSwapKeepsTheRotationDetected() throws {
         let history = sessions(["A", "B", "C", "D", "A", "C", "B", "D", "A", "B", "C", "D"])
         #expect(SessionRotation.detect(in: history) == nil)
-        let adjustment = swap(history, at: 5, from: "B", to: "C")
+        let adjustment = swap(history, at: 5, from: "B", target: "C")
         let rotation = try #require(SessionRotation.detect(in: history, adjustments: [adjustment]))
         #expect(rotation.order.map(\.name) == ["A", "B", "C", "D"])
         #expect(rotation.next.name == "A")
@@ -92,7 +92,7 @@ struct SessionRotationTests {
 
     @Test func aSwapHalfDoneNamesTheWorkoutThatReallyComesNext() throws {
         let history = sessions(["A", "B", "C", "D", "A", "B", "C", "D", "A", "C"])
-        let adjustment = swap(history, at: 9, from: "B", to: "C")
+        let adjustment = swap(history, at: 9, from: "B", target: "C")
         let rotation = try #require(SessionRotation.detect(in: history, adjustments: [adjustment]))
         #expect(rotation.next.name == "B")
     }

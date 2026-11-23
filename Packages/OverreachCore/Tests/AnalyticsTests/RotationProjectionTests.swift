@@ -147,11 +147,12 @@ struct RotationProjectionTests {
 
     @Test func aRecordedSwapKeepsTheProjectionAndTheOriginalOrderResumes() throws {
         let lifts = fourDay
-        let order = [lifts[0], lifts[1], lifts[2], lifts[3], lifts[0], lifts[2], lifts[1], lifts[3], lifts[0], lifts[1], lifts[2], lifts[3]]
+        let order = [0, 1, 2, 3, 0, 2, 1, 3, 0, 1, 2, 3].map { lifts[$0] }
         let sessions = offsets(order, (0..<12).map { -23 + 2 * $0 })
         #expect(project(sessions) == nil)
         let swap = RotationAdjustment(
-            day: day(-13), kind: .swap(from: lifts[1].routine.uuidString, to: lifts[2].routine.uuidString), reason: .runCarryover
+            day: day(-13), kind: .swap(from: lifts[1].routine.uuidString, to: lifts[2].routine.uuidString),
+            reason: .runCarryover
         )
         let projection = try #require(RotationProjection.project(
             sessions: sessions, exercises: exercises, now: now, calendar: calendar, adjustments: [swap]

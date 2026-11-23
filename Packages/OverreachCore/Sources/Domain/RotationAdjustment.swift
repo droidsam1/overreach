@@ -8,7 +8,7 @@ import Foundation
 public struct RotationAdjustment: Hashable, Codable, Sendable {
     public enum Kind: Hashable, Codable, Sendable {
         /// The session planned for `day` was replaced by `to`; `from` took its place in the following session.
-        case swap(from: String, to: String)
+        case swap(from: String, to: String)  // swiftlint:disable:this identifier_name
         /// The session planned for `day` moved this many days later; the rest of the cycle followed.
         case postpone(days: Int)
     }

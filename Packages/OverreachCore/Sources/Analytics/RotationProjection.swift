@@ -88,8 +88,8 @@ public struct RotationProjection: Hashable, Sendable {
         // A postponement accepted for the next session shifts every projected session.
         let nextPlanned = lastDay.adding(days: cadence, calendar: calendar)
         let shift = adjustments.compactMap { adjustment -> Int? in
-            guard case let .postpone(days) = adjustment.kind, days > 0, adjustment.day == nextPlanned else { return nil }
-            return days
+            guard case let .postpone(days) = adjustment.kind, adjustment.day == nextPlanned else { return nil }
+            return max(days, 0)
         }.first ?? 0
         let upcoming = rotation.order.enumerated().map { index, slot in
             let slot = index == 0 ? rotation.next : slot
