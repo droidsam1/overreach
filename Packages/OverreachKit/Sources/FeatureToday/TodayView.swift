@@ -11,12 +11,10 @@ public struct TodayView: View {
     @State private var savingEnergy: Int?
     @State private var checkInSheet: CheckInModel?
     @State private var showsRun = false
-    @State private var showsRestRecovery = false
     @State private var showsWhy = false
     @State private var showsOptions = false
     private let onConnectGarmin: () -> Void
     private let recoveryHistory: (() -> AnyView)?
-    private var recoveryDestination: (() -> AnyView)?
     private var settingsDestination: (() -> AnyView)?
     private var showsSettings = Binding.constant(false)
     private var settingsBadgeCount = 0
@@ -26,16 +24,19 @@ public struct TodayView: View {
     private let workoutContinuation: TodayModel.WorkoutContinuation?
     private let onOpenTrain: () -> Void
     private let onOpenHistory: () -> Void
+    private let onOpenRecovery: () -> Void
 
     public init(
         model: TodayModel, workoutContinuation: TodayModel.WorkoutContinuation? = nil,
         onOpenTrain: @escaping () -> Void = {}, onOpenHistory: @escaping () -> Void = {},
+        onOpenRecovery: @escaping () -> Void = {},
         onConnectGarmin: @escaping () -> Void = {}
     ) {
         _model = State(initialValue: model)
         self.workoutContinuation = workoutContinuation
         self.onOpenTrain = onOpenTrain
         self.onOpenHistory = onOpenHistory
+        self.onOpenRecovery = onOpenRecovery
         self.onConnectGarmin = onConnectGarmin
         recoveryHistory = nil
     }
@@ -43,6 +44,7 @@ public struct TodayView: View {
     public init<RecoveryHistory: View>(
         model: TodayModel, workoutContinuation: TodayModel.WorkoutContinuation? = nil,
         onOpenTrain: @escaping () -> Void = {}, onOpenHistory: @escaping () -> Void = {},
+        onOpenRecovery: @escaping () -> Void = {},
         onConnectGarmin: @escaping () -> Void = {},
         @ViewBuilder recoveryHistory: @escaping () -> RecoveryHistory
     ) {
@@ -50,18 +52,9 @@ public struct TodayView: View {
         self.workoutContinuation = workoutContinuation
         self.onOpenTrain = onOpenTrain
         self.onOpenHistory = onOpenHistory
+        self.onOpenRecovery = onOpenRecovery
         self.onConnectGarmin = onConnectGarmin
         self.recoveryHistory = { AnyView(recoveryHistory()) }
-    }
-
-    /// Where "View recovery" goes: the readings and recent load that used to sit in Today's metrics. Pushed in
-    /// Today's own stack, so going back returns to the decision.
-    public func recoveryProgress<Destination: View>(
-        @ViewBuilder _ destination: @escaping () -> Destination
-    ) -> TodayView {
-        var copy = self
-        copy.recoveryDestination = { AnyView(destination()) }
-        return copy
     }
 
     public func settingsButton<Destination: View>(
@@ -131,13 +124,6 @@ public struct TodayView: View {
             }
             .navigationDestination(isPresented: $showsWhy) { whyScreen }
             .navigationDestination(isPresented: $showsOptions) { optionsScreen }
-            .navigationDestination(isPresented: $showsRestRecovery) {
-                if let recoveryDestination {
-                    recoveryDestination()
-                } else {
-                    ScrollView { TodayReadinessDetails(model: model).padding(Spacing.medium) }
-                }
-            }
             .navigationDestination(isPresented: $showsRun) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.medium) {
@@ -185,7 +171,7 @@ public struct TodayView: View {
                         LinkTile(title: "Options", symbolName: "arrow.triangle.branch", color: .blue)
                     }
                 case .recovery:
-                    Button { showsRestRecovery = true } label: {
+                    Button(action: onOpenRecovery) {
                         LinkTile(title: "Recovery", symbolName: "heart.text.square", color: .teal)
                     }
                 case .history:

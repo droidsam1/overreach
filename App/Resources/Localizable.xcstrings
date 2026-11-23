@@ -4251,23 +4251,6 @@
         }
       }
     },
-    "Data sources and coverage": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fuentes de datos y cobertura"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fontes de datos e cobertura"
-          }
-        }
-      }
-    },
     "Date": {
       "extractionState": "manual",
       "localizations": {
@@ -12339,23 +12322,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lecturas fóra do intervalo plausible."
-          }
-        }
-      }
-    },
-    "Reasons": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Motivos"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Motivos"
           }
         }
       }

@@ -159,6 +159,15 @@ private struct EntrySection: View {
                 }
             }
             Button("Add set", systemImage: "plus") { model.addSet(to: entry.id) }
+            TextField(
+                "Notes",
+                text: Binding(
+                    get: { model.notesText(of: entry.id) },
+                    set: { model.setNotes($0, of: entry.id) }
+                ),
+                axis: .vertical
+            )
+            .lineLimit(1...4)
         } header: {
             HStack {
                 Text(model.name(of: entry.exerciseID))

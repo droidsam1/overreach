@@ -61,6 +61,16 @@ public final class SessionEditorModel: Identifiable {
         set { draft.notes = newValue.isEmpty ? nil : newValue }
     }
 
+    /// An exercise's notes as editable text; an empty text removes them, like the session's.
+    public func notesText(of entryID: ExerciseEntry.ID) -> String {
+        draft.entries.first { $0.id == entryID }?.notes ?? ""
+    }
+
+    public func setNotes(_ text: String, of entryID: ExerciseEntry.ID) {
+        guard let index = draft.entries.firstIndex(where: { $0.id == entryID }) else { return }
+        draft.entries[index].notes = text.isEmpty ? nil : text
+    }
+
     public func canMoveUp(_ entryID: ExerciseEntry.ID) -> Bool { draft.entries.first?.id != entryID }
     public func canMoveDown(_ entryID: ExerciseEntry.ID) -> Bool { draft.entries.last?.id != entryID }
 

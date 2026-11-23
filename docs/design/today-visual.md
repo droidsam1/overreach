@@ -44,7 +44,8 @@ and "More: sleep, stress, pain…". Other prompts keep their content in the same
 
 ## Link tiles
 
-Grid of 3–4 tiles (Why · Options · Recovery · History): coloured icon at the top, label at the bottom, 70–76 pt high.
+Grid of 3–4 tiles (Why · Options · Recovery · History): coloured icon at the top, label at the bottom, 70–76 pt high. Recovery and History switch to their tab; Why and Options push level-2
+screens inside Today.
 
 ## Why
 

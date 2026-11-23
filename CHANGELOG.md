@@ -222,6 +222,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings → Appearance: light, dark or the same as the iPhone (the default).
 
 ### Fixed
+- Today's **Recovery** tile switches to the Recovery tab, like History, instead of pushing a copy of it inside Today.
+- Editing a finished session now lets you add, change and clear each exercise's notes.
 - The recovery signals behind a deload proposal judge each of the last 7 days against a full 60-day baseline; without
   cycle tracking the oldest days used a shorter one.
 - Current stalls require progression-eligible work in the last 28 days. Today labels stall signals as
