@@ -65,7 +65,7 @@ struct CalendarRows: View {
                 Button { runEditor = model.editRunningEntry(run.entry) } label: {
                     CalendarRowLabel(
                         title: run.title, date: run.date, status: run.status,
-                        symbol: "figure.run", isRest: row.isRest
+                        symbol: "figure.run", isRest: row.isRest, warning: run.ceilingWarning
                     )
                 }
             case let .strength(strength):
@@ -86,6 +86,7 @@ private struct CalendarRowLabel: View {
     let status: String?
     let symbol: String
     let isRest: Bool
+    var warning: String?
 
     var body: some View {
         Label {
@@ -94,6 +95,9 @@ private struct CalendarRowLabel: View {
                 Text(date).font(.footnote).foregroundStyle(.secondary)
                 if isRest { Text("Planned rest").font(.footnote).foregroundStyle(.secondary) }
                 if let status { Text(status).font(.footnote).foregroundStyle(.secondary) }
+                if let warning {
+                    Label(warning, systemImage: "exclamationmark.triangle").font(.footnote).foregroundStyle(.orange)
+                }
             }
         } icon: {
             Image(systemName: isRest ? "bed.double" : symbol)

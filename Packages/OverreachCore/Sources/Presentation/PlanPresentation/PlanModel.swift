@@ -80,6 +80,8 @@ public final class PlanModel {
     private var weeksSinceDeload: Int?
     private var lastRecoveryKind: LastRecovery.Kind?
     private var stalledLifts: [StalledLift] = []
+    /// Recorded runs read for the analysis, for the single-session ceiling of dated runs.
+    private(set) var recentRuns: [RunActivity] = []
     /// Lifts whose next step was applied on this screen; their stall stays until new sessions show progress.
     private var changedLifts: Set<UUID> = []
     public private(set) var isApplyingLiftChange = false
@@ -109,7 +111,7 @@ public final class PlanModel {
     private let exercises: any ExerciseRepository
     private let progression: any ProgressionSettingsRepository
     private let routines: (any RoutineRepository)?
-    private let clock: @Sendable () -> Date
+    let clock: @Sendable () -> Date
     let calendar: Calendar
     private let runSources: [any MetricsSource]
     private let recordedStrength: (any RecordedStrengthSource)?
@@ -425,6 +427,7 @@ public final class PlanModel {
         let routines = (try? await routines?.allRoutines()) ?? []
         let runReading = await SourceReader(sources: runSources).readRuns(from: start, to: now)
         let runs = runReading.activities
+        recentRuns = runs
         let runReadFailed = runReading.failed
         let recordings = (try? await recordedStrength?.strengthActivities(from: start, to: now)) ?? []
         let (analysis, blockProgress) = await Task.detached(priority: .userInitiated) {
@@ -545,8 +548,9 @@ extension PlanModel {
 
     public var upcomingRunningEntries: [RunningCalendarRow] {
         let today = CalendarDay(clock(), calendar: calendar)
+        let warnings = sessionCeilingWarnings
         return (profile.goal?.scheduledRuns ?? []).filter { $0.day >= today }.sorted { $0.day < $1.day }
-            .map { calendarRow(for: $0, isPast: false) }
+            .map { calendarRow(for: $0, isPast: false, exceedsCeiling: warnings[$0.id] != nil) }
     }
 
     public var pastRunningEntries: [RunningCalendarRow] {
@@ -608,7 +612,7 @@ extension PlanModel {
         return (saved.map { [$0] } ?? []) + choices
     }
 
-    private func calendarRow(for entry: PlannedRun, isPast: Bool) -> RunningCalendarRow {
+    private func calendarRow(for entry: PlannedRun, isPast: Bool, exceedsCeiling: Bool = false) -> RunningCalendarRow {
         let style = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).day().month(.abbreviated).year()
         let status: String?
         if entry.completion != nil {
@@ -622,8 +626,10 @@ extension PlanModel {
         } else {
             status = nil
         }
+        let increase = SessionCeiling.Settings().increaseFraction.formatted(.percent)
+        let ceiling = exceedsCeiling ? L10n.format("More than {1} over your longest recent run", increase) : nil
         return RunningCalendarRow(entry: entry, date: entry.day.startDate(in: calendar).formatted(style),
-                                  title: entry.calendarTitle(), status: status)
+                                  title: entry.calendarTitle(), status: status, ceilingWarning: ceiling)
     }
 
     private func updateRunningCalendar(

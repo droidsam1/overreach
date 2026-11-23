@@ -449,6 +449,20 @@ pain-free goal still needs no pain. The wording is pending review with the sympt
 advice: pain that persists belongs with a clinician. Decision record: [ADR-0043](adr/0043-running-dose-single-session-ceiling.md). Reviewed 2026-11-23.
 [Single-session spike cohort](https://doi.org/10.1136/bjsports-2024-109380) · [Graded novice programme trial](https://doi.org/10.1177/0363546507307505) · [Weekly progression cohort](https://www.jospt.org/doi/10.2519/jospt.2014.5164) · [Pain-monitoring model trial](https://doi.org/10.1177/0363546506298279)
 
+### `single-session-ceiling` — limited
+
+Plan warns when a dated run is planned more than 10% longer than the longest session of the 30 days before it, and
+offers to shorten it to that ceiling (rounded down to 100 m). It is a warning, never a block. Source: the Garmin
+cohort of 5,205 runners in `run-walk-progression` (Frandsen et al., BJSM 2025), where single sessions more than 10%
+over the longest run of the previous 30 days had higher overuse-injury rates (adjusted hazard rate ratios 1.52–2.28),
+and week-to-week ratios showed no association. As in that study, runs that start less than 15 minutes after the
+previous one ended count as one session. A run planned only by duration is converted with the pace of the last 30
+days. Runs planned earlier in the calendar count for later days, so a plan that grows by up to 10% per session passes;
+races keep their distance and are not flagged. Without any recorded or planned run in the window there is no ceiling.
+The evidence is observational, with self-reported injuries, and the 10% cut-off was chosen by the authors. Decision
+record: [ADR-0043](adr/0043-running-dose-single-session-ceiling.md). Reviewed 2026-11-23.
+[Single-session spike cohort](https://doi.org/10.1136/bjsports-2024-109380)
+
 ### `easy-strength-example` — heuristic
 
 On an amber day with no strength workout detected today, Today can show a separate light example. The next

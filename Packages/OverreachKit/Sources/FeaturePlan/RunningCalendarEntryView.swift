@@ -31,6 +31,14 @@ struct RunningCalendarEntryView: View {
                         TextField("Planned distance in km (0 if unknown)", value: $draft.distanceKm, format: .number)
                     }
                 }
+                if let notice = model.sessionCeilingNotice(for: draft) {
+                    Section {
+                        Label(notice.explanation.text, systemImage: "exclamationmark.triangle")
+                            .foregroundStyle(.orange)
+                        Text(notice.explanation.evidence).font(.caption).foregroundStyle(.secondary)
+                        Button(notice.shortenTitle) { draft = notice.shortened }
+                    }
+                }
                 if draft.showsWorkoutDetails {
                     prescriptionSection
                 }
