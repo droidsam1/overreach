@@ -25,7 +25,6 @@ jobs:
           device="$SCREENSHOT_DEVICE"
           python3 -c 'import subprocess, sys; subprocess.run(["xcrun", "simctl", "bootstatus", sys.argv[1], "-b"], timeout=100, check=True)' "$device"
           xcrun simctl install "$device" build/Build/Products/Debug-iphonesimulator/Overreach.app
-          xcrun simctl status_bar "$device" override --time '9:41' --dataNetwork wifi --wifiMode active --wifiBars 3 --cellularMode active --cellularBars 4 --batteryState unplugged --batteryLevel 100
           mkdir screenshots
           for appearance in light dark; do
             xcrun simctl ui "$device" appearance "$appearance"
