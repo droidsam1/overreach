@@ -52,7 +52,8 @@ struct RunPainReportTests {
         #expect(goal.runPainReports == [report])
         let decoded = try JSONDecoder().decode(TrainingGoal.self, from: JSONEncoder().encode(goal))
         #expect(decoded.runPainReports == [report])
-        let older = try JSONDecoder().decode(TrainingGoal.self, from: Data(#"{"kind":"hybrid","priorityLifts":[]}"#.utf8))
+        let json = Data(#"{"kind":"hybrid","priorityLifts":[]}"#.utf8)
+        let older = try JSONDecoder().decode(TrainingGoal.self, from: json)
         #expect(older.runPainReports.isEmpty)
     }
 }
