@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today knows your next lifting day without a dated plan: when you repeat the same workouts in a fixed order at a
+  steady rhythm (A, B, C, D on alternate days), the rotation is projected onto the calendar and a leg session
+  tomorrow keeps today's optional run short. Each rest day is also scored as a running window (best, good, avoid)
+  by its leg-heavy neighbours, ready for Today to show. A dated plan still wins.
 - Reorder exercises in a session by touching one for a moment and dragging without lifting your finger: the session
   folds to compact cards, the others slide out of the way with a light tick, the screen scrolls near its edges, and
   letting go unfolds the sets with the moved exercise in view. Move up / Move down stay in the exercise menu and as

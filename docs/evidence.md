@@ -620,7 +620,11 @@ mainly with both in one session, and a hard second session is limited by acute f
 Direct trials of an easy run after leg work are missing, so the rule is a conservative default for an extra,
 unplanned run and never overrides the athlete's own plan. → Implemented defaults (`LowerBodyLoad.Settings`):
 "heavy" is 8 or more lower-body working sets, or any set at RPE 9 or higher; the window is today and yesterday,
-by calendar day; a lower-body exercise is one with a lower-body primary muscle. These are product heuristics.
+by calendar day; a lower-body exercise is one with a lower-body primary muscle. Without dated strength, a rotation
+repeated at a steady gap (`RotationProjection`, at most every 4 days) supplies tomorrow's session; its leg demand
+comes from that workout's last session, where 3 or more lower-body working sets of 5 reps or fewer with load also
+count as heavy. Rest days in the projected cycle are scored as run windows: the day after a heavy leg session is
+*avoid*, the day before one or after a moderate one is *good*, the rest are *best*. These are product heuristics.
 Refs: [Schumann et al. 2022](https://pubmed.ncbi.nlm.nih.gov/34757594/) ·
 [Eddens et al. 2018](https://pubmed.ncbi.nlm.nih.gov/28917030/) ·
 [Doma and Deakin 2013](https://pubmed.ncbi.nlm.nih.gov/23724883/) ·
