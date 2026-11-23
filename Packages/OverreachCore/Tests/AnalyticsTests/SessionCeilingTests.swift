@@ -12,17 +12,19 @@ struct SessionCeilingTests {
     }()
     private let today = CalendarDay(year: 2026, month: 11, day: 20)
 
-    private func run(daysAgo: Int, km: Double, minutes: Double = 50, hour: Double = 8, id: String? = nil) -> RunActivity {
+    private func run(
+        daysAgo: Int, km distance: Double, minutes: Double = 50, hour: Double = 8, id: String? = nil
+    ) -> RunActivity {
         let start = today.adding(days: -daysAgo, calendar: calendar).startDate(in: calendar)
             .addingTimeInterval(hour * 3_600)
         return RunActivity(id: id ?? "\(daysAgo)-\(hour)", source: .garmin, startedAt: start,
-                           durationSeconds: minutes * 60, distanceMeters: km * 1_000)
+                           durationSeconds: minutes * 60, distanceMeters: distance * 1_000)
     }
 
-    private func planned(inDays days: Int, km: Int? = nil, minutes: Int? = nil,
+    private func planned(inDays days: Int, km distance: Int? = nil, minutes: Int? = nil,
                          purpose: PlannedRun.Purpose = .long) -> PlannedRun {
         PlannedRun(day: today.adding(days: days, calendar: calendar), purpose: purpose, durationMinutes: minutes,
-                   distanceMeters: km.map { $0 * 1_000 })
+                   distanceMeters: distance.map { $0 * 1_000 })
     }
 
     private func warnings(_ schedule: [PlannedRun], runs: [RunActivity]) -> [UUID: SessionCeiling.Warning] {

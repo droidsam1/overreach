@@ -13,20 +13,21 @@ public struct SessionCeilingNotice: Hashable, Sendable {
     public let shortened: RunningCalendarDraft
 
     init(_ warning: SessionCeiling.Warning, draft: RunningCalendarDraft, format: Format = .init()) {
-        let km = { (meters: Int) in format.number(Double(meters) / 1_000, maxFractionDigits: 1) }
+        let kilometres = { (meters: Int) in format.number(Double(meters) / 1_000, maxFractionDigits: 1) }
+        let increase = SessionCeiling.Settings().increaseFraction.formatted(.percent.locale(format.locale))
         let text = warning.isEstimated
             ? L10n.format(
-                "At your recent pace this is about {1} km, more than 10% over your longest run of the previous 30 days "
-                    + "({2} km). Single runs past that were linked to more overuse injuries.",
-                km(warning.plannedMeters), km(warning.longestMeters)
+                "At your recent pace this is about {1} km, more than {2} over your longest run of the previous 30 days "
+                    + "({3} km). Single runs past that were linked to more overuse injuries.",
+                kilometres(warning.plannedMeters), increase, kilometres(warning.longestMeters)
             )
             : L10n.format(
-                "{1} km is more than 10% over your longest run of the previous 30 days ({2} km). Single runs past "
+                "{1} km is more than {2} over your longest run of the previous 30 days ({3} km). Single runs past "
                     + "that were linked to more overuse injuries.",
-                km(warning.plannedMeters), km(warning.longestMeters)
+                kilometres(warning.plannedMeters), increase, kilometres(warning.longestMeters)
             )
         explanation = ExplainedLine(text: text, evidence: SessionCeiling.evidence)
-        shortenTitle = L10n.format("Shorten to {1} km", km(warning.ceilingMeters))
+        shortenTitle = L10n.format("Shorten to {1} km", kilometres(warning.ceilingMeters))
         shortened = draft.shortened(to: warning)
     }
 }

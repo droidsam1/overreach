@@ -626,7 +626,8 @@ extension PlanModel {
         } else {
             status = nil
         }
-        let ceiling = exceedsCeiling ? L10n.text("More than 10% over your longest recent run") : nil
+        let increase = SessionCeiling.Settings().increaseFraction.formatted(.percent)
+        let ceiling = exceedsCeiling ? L10n.format("More than {1} over your longest recent run", increase) : nil
         return RunningCalendarRow(entry: entry, date: entry.day.startDate(in: calendar).formatted(style),
                                   title: entry.calendarTitle(), status: status, ceilingWarning: ceiling)
     }
