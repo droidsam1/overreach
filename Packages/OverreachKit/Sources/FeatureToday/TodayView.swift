@@ -105,8 +105,8 @@ public struct TodayView: View {
                 }
                 .padding(Spacing.medium)
             }
-            .defaultScrollAnchor(.bottom)
             .navigationTitle("Today")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if settingsDestination != nil {
                     ToolbarItem(placement: .primaryAction) {

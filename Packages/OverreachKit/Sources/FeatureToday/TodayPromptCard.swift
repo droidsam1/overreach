@@ -42,12 +42,12 @@ struct TodayPromptCard<Content: View>: View {
 
 #if DEBUG
 #Preview("Quick check-in · Light") {
-    TodayView(model: TodayModel(sources: [PreviewMetricsSource(recentHRV: 43)], checkIns: PreviewCheckIns()))
+    TodayView(model: TodayModel(sources: [PreviewMetricsSource(recentHRV: 50)], checkIns: PreviewCheckIns()))
         .preferredColorScheme(.light)
 }
 
 #Preview("Quick check-in · Dark") {
-    TodayView(model: TodayModel(sources: [PreviewMetricsSource(recentHRV: 43)], checkIns: PreviewCheckIns()))
+    TodayView(model: TodayModel(sources: [PreviewMetricsSource(recentHRV: 50)], checkIns: PreviewCheckIns()))
         .preferredColorScheme(.dark)
 }
 
@@ -65,7 +65,7 @@ private actor PreviewCheckIns: CheckInRepository {
 
 #if DEBUG
 public struct TodayScreenshot: View {
-    @State private var model = TodayModel(sources: [PreviewMetricsSource(recentHRV: 43)], checkIns: PreviewCheckIns())
+    @State private var model = TodayModel(sources: [PreviewMetricsSource(recentHRV: 50)], checkIns: PreviewCheckIns())
 
     public init() {}
 
