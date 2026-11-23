@@ -46,6 +46,8 @@ public final class TodayModel {
     public private(set) var scheduledRunsToday: [ScheduledTrainingRow] = []
     public private(set) var strengthOption: StrengthOption?
     public private(set) var runningOption: RunningOption?
+    /// A recorded run to ask about pain, for goals that aim for pain-free running.
+    public private(set) var runPainPrompt: RunPainPrompt?
     private var keptPlannedRunDay: CalendarDay?
     private var hasRunningGoal = false
     private var heroTrainingAction: NextAction = .train
@@ -654,6 +656,7 @@ public final class TodayModel {
         runningOption = nil
         heroTrainingAction = .train
         recentRunPain = false
+        runPainPrompt = nil
         defer {
             if activeLoad == loadID {
                 isLoading = false
@@ -834,6 +837,9 @@ public final class TodayModel {
         }.max { $0.startedAt < $1.startedAt }
         recentRunPain = latestRun?.painDuring == true || latestRun?.painAfter == true
         scheduledRunsToday = schedule.filter { $0.day == today }.map { ScheduledTrainingRow.run($0, format: format) }
+        runPainPrompt = running?.aimsForPainFree == true && !runReadFailed
+            ? RunPainPrompt.next(runs: runs, reports: painReports(of: goal), now: now, calendar: calendar,
+                                 format: format) : nil
         if keptPlannedRunDay == today { return }
         if let decision = EasyRunAdvisor.advise(
             goal: running, targetDay: goal?.targetDate, schedule: schedule, readiness: readiness, metrics: metrics,
@@ -844,13 +850,52 @@ public final class TodayModel {
         ), decision != .plannedRest {
             let progression = running?.aimsForPainFree == true && !runReadFailed
                 ? RunWalkProgression.advise(
-                    goal: running, runs: runs, outcomes: schedule.compactMap(\.completion), now: now, calendar: calendar
+                    goal: running, runs: runs, outcomes: schedule.compactMap(\.completion),
+                    painReports: goal?.runPainReports ?? [], now: now, calendar: calendar
                 ) : nil
             runningOption = RunningOption(
                 goal: goal, decision: decision, hasRunToday: !scheduledRunsToday.isEmpty,
                 lowerBody: lowerBody, progression: progression, calendar: calendar, format: format
             )
         }
+    }
+
+    /// Every answer known for the goal's runs: those stored with planned entries and those stored by run.
+    private func painReports(of goal: TrainingGoal?) -> [RunPainReport] {
+        (goal?.scheduledRuns.compactMap { $0.completion?.painReport } ?? []) + (goal?.runPainReports ?? [])
+    }
+
+    /// Saves the answers for a run Today asked about. A run linked to a planned entry keeps them there; any other
+    /// run stores them by run. Severities are 0–10; `settledByMorning` applies only when there was pain.
+    @discardableResult
+    public func saveRunPain(
+        _ prompt: RunPainPrompt, during: Int?, after: Int?, settledByMorning: Bool?, now: Date = .now
+    ) async -> Bool {
+        guard let profiles, var profile = try? await profiles.profile(), var goal = profile.goal else { return false }
+        var report = prompt.report
+        switch prompt.question {
+        case .severity: report.answer(during: during, after: after, settledByMorning: settledByMorning)
+        case .settled:
+            report.answer(during: report.severityDuring, after: report.severityAfter,
+                          settledByMorning: settledByMorning)
+        }
+        var schedule = goal.scheduledRuns
+        if let index = schedule.firstIndex(where: { $0.completion?.matches(report.asActivity) == true }),
+           var completion = schedule[index].completion {
+            completion.painDuring = report.painDuring
+            completion.painAfter = report.painAfter
+            completion.severityDuring = report.severityDuring
+            completion.severityAfter = report.severityAfter
+            completion.settledByMorning = report.settledByMorning
+            schedule[index] = schedule[index].updatingCompletion(completion)
+            goal.setRunningSchedule(schedule)
+        } else {
+            goal.record(report)
+        }
+        profile.goal = goal
+        guard (try? await profiles.save(profile)) != nil else { return false }
+        await load(now: now)
+        return true
     }
 
     /// Replaces today's planned run with the easy run Today proposed. The entry keeps its identity and dates.

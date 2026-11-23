@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Running: Today asks about pain after any recorded run when your goal is pain-free, with or without a plan: 0–10 during
+  and after, and the next day whether it settled by morning. Mild pain (up to 3/10) that settled no longer holds the
+  run/walk progression; stronger or unsettled pain does, and two holds in a row step back.
 - Garmin runs now keep the lap count, moving time and the watch's run/walk detection: running, walking and standing
   distance, time, number of segments, the longest continuous running stretch and cadence, from the activity list
   Overreach already downloads. Running pace can be read without the walk breaks.
