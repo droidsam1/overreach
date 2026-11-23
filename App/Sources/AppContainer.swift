@@ -165,7 +165,7 @@ final class AppContainer {
             checkIns: checkIns, backup: backup, garmin: garmin, profiles: profiles, workouts: workouts,
             exercises: exercises, recordedStrength: historyRecordedStrength, routines: routines,
             progression: progression, cycle: cycleSource, activityMatchChoices: readActivityMatchChoices,
-            companionAnswers: dogWalkAnswers,
+            companionAnswers: dogWalkAnswers, dogRunAnswers: dogRunAnswers,
             profileQuestions: profileQuestions,
             dismissedRunOfferDay: UserDefaults.standard.data(forKey: Self.dismissedRunOfferDayKey).flatMap {
                 try? JSONDecoder().decode(CalendarDay.self, from: $0)
@@ -204,6 +204,19 @@ final class AppContainer {
         return DogWalkAnswers(answers) { answers in
             if let data = try? JSONEncoder().encode(answers) {
                 UserDefaults.standard.set(data, forKey: AppContainer.dogWalkAnswersKey)
+            }
+        }
+    }()
+
+    private static let dogRunAnswersKey = "history.dogRunAnswers"
+
+    private let dogRunAnswers: DogRunAnswers = {
+        let answers = UserDefaults.standard.data(forKey: AppContainer.dogRunAnswersKey).flatMap {
+            try? JSONDecoder().decode([DogRunAnswers.Key: Bool].self, from: $0)
+        } ?? [:]
+        return DogRunAnswers(answers) { answers in
+            if let data = try? JSONEncoder().encode(answers) {
+                UserDefaults.standard.set(data, forKey: AppContainer.dogRunAnswersKey)
             }
         }
     }()
@@ -251,6 +264,7 @@ final class AppContainer {
             workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
             profiles: profiles, progression: progression, activity: healthSource, runSources: metricsSources,
             recordedStrength: historyRecordedStrength, walkSources: activitySources, companionAnswers: dogWalkAnswers,
+            dogRunAnswers: dogRunAnswers,
             runChoices: choices.runs,
             saveRunChoices: { choices in
                 if let data = try? JSONEncoder().encode(choices) {

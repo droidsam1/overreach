@@ -14162,6 +14162,23 @@
         }
       }
     },
+    "Run on {1}, {2} min": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera del {1}, {2} min"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira do {1}, {2} min"
+          }
+        }
+      }
+    },
     "Run {1} km in {2}": {
       "extractionState": "manual",
       "localizations": {

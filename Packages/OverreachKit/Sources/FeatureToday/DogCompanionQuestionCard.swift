@@ -1,15 +1,15 @@
 import DesignSystem
 import SwiftUI
-import TodayPresentation
 
 /// "With Nanoq?" with one tap to answer. Never blocks anything.
-struct DogWalkQuestionCard: View {
-    let question: DogWalkQuestion
+struct DogCompanionQuestionCard: View {
+    let title: String
+    let detail: String
     let dismiss: () -> Void
     let answer: (Bool) -> Void
 
     var body: some View {
-        TodayPromptCard(title: Text(question.text), detail: Text(question.detail), dismiss: dismiss) {
+        TodayPromptCard(title: Text(title), detail: Text(detail), dismiss: dismiss) {
             HStack(spacing: Spacing.small) {
                 Button("Yes") { answer(true) }
                 Button("No") { answer(false) }
@@ -17,6 +17,6 @@ struct DogWalkQuestionCard: View {
             .buttonStyle(.bordered)
             .controlSize(.large)
         }
-        .accessibilityLabel(question.accessibilityLabel)
+        .accessibilityLabel("\(title) \(detail)")
     }
 }

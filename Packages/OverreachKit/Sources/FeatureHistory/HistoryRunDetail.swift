@@ -74,6 +74,21 @@ struct HistoryRunDetail: View {
                     }
                 }
             }
+            if let companion = history.runCompanion(for: run) {
+                Section {
+                    Menu {
+                        Button("Yes") { history.answerRun(run, withDog: true) }
+                        Button("No") { history.answerRun(run, withDog: false) }
+                    } label: {
+                        LabeledContent {
+                            if let answer = companion.answer { Text(answer) }
+                        } label: {
+                            Label(companion.question, systemImage: "dog")
+                        }
+                        .frame(minHeight: 44)
+                    }
+                }
+            }
             if let match = run.match {
                 Section {
                     Button("Undo run link") {

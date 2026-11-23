@@ -124,6 +124,15 @@ public final class TodayModel {
     }
     private let companionAnswers: DogWalkAnswers
 
+    /// "With Nanoq?" for the newest completed, unanswered run in the last two days.
+    public var dogRunQuestion: DogRunQuestion? {
+        guard let now = movementNow, let routine = questionProfile?.walkingRoutine else { return nil }
+        return DogRunQuestion.next(runs: dogRunCandidates, answers: dogRunAnswers, routine: routine, now: now,
+                                   in: .init(calendar: calendar, format: format))
+    }
+    private let dogRunAnswers: DogRunAnswers
+    private var dogRunCandidates: [RunDeduplication.CombinedRun] = []
+
     /// A profile question that moved out of onboarding (ADR-0041, rule 5), when its answer would change a
     /// recommendation and the field is empty.
     public var profileQuestion: ProfileQuestionCard? {
@@ -307,6 +316,7 @@ public final class TodayModel {
         facts.checkIn = showsCheckIn
         facts.connectHealth = showsConnectHealth
         facts.connectGarmin = showsConnectGarmin
+        facts.dogRun = dogRunQuestion != nil
         facts.dogWalk = dogWalkQuestion != nil
         facts.profileQuestion = profileQuestion != nil
         facts.shownByPrimary = switch nextAction {
@@ -704,6 +714,7 @@ public final class TodayModel {
         dogWalkAnswers: [WalkCompanionAnswer] = [],
         saveDogWalkAnswers: @escaping @MainActor ([WalkCompanionAnswer]) -> Void = { _ in },
         companionAnswers: DogWalkAnswers? = nil,
+        dogRunAnswers: DogRunAnswers = DogRunAnswers(),
         profileQuestions: ProfileQuestionLog = ProfileQuestionLog(),
         dismissedRunOfferDay: CalendarDay? = nil,
         saveDismissedRunOfferDay: @escaping @MainActor (CalendarDay) -> Void = { _ in },
@@ -713,6 +724,7 @@ public final class TodayModel {
         self.activityMatchChoices = activityMatchChoices
         self.profileQuestions = profileQuestions
         self.companionAnswers = companionAnswers ?? DogWalkAnswers(dogWalkAnswers, save: saveDogWalkAnswers)
+        self.dogRunAnswers = dogRunAnswers
         self.dismissedRunOfferDay = dismissedRunOfferDay
         self.saveDismissedRunOfferDay = saveDismissedRunOfferDay
         recordLoader = TrainingRecordLoader(
@@ -747,6 +759,7 @@ public final class TodayModel {
         heroTrainingAction = .train
         recentRunPain = false
         runPainPrompt = nil
+        dogRunCandidates = []
         defer {
             if activeLoad == loadID {
                 isLoading = false
@@ -806,10 +819,14 @@ public final class TodayModel {
     ) {
         let record = snapshot.record
         trainingReadFailed = record.runReadFailed || snapshot.sessionsFailed
+        let choices = activityMatchChoices()
+        let since = range.lowerBound.startDate(in: calendar)
+        let recentRunOriginals = snapshot.runOriginals.filter { $0.startedAt >= since }
+        dogRunCandidates = RunDeduplication.resolve(recentRunOriginals, choices: choices.runs).runs
         recentTrainingDays = RecentTraining(calendar: calendar, format: format).days(
             in: range, through: now, metrics: week, checkIns: record.checkIns,
             runs: snapshot.runOriginals, sessions: record.sessions, recordings: snapshot.strengthOriginals,
-            exercises: record.exercises, choices: activityMatchChoices(),
+            exercises: record.exercises, choices: choices,
             races: (profile?.goal?.scheduledRuns ?? []).compactMap { $0.purpose == .race ? $0.completion : nil }
         )
         let today = range.upperBound
@@ -1338,6 +1355,13 @@ public final class TodayModel {
         guard let question = dogWalkQuestion else { return }
         companionAnswers.answer(question.walk, among: movementWalks, withDog: withDog)
         if pendingPrompt == .dogWalk { dismissPendingPrompt() }
+    }
+
+    public func answerDogRun(_ question: DogRunQuestion, withDog: Bool) {
+        guard let current = dogRunQuestion, current.key == question.key else { return }
+        let wasPending = pendingPrompt == .dogRun
+        dogRunAnswers.record(withDog, for: current.key, linked: current.run.match)
+        if wasPending { dismissPendingPrompt() }
     }
 
     private func has(_ value: (DailyMetrics) -> Double?) -> Bool {

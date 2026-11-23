@@ -35,6 +35,36 @@ struct HistoryModelTests {
         return (model, store)
     }
 
+    @Test func companionAnswerCanBeChangedForBothSourcesOfAnOlderRun() async throws {
+        let start = now.addingTimeInterval(-7 * 86_400)
+        let garmin = RunActivity(id: "g", source: .garmin, startedAt: start, durationSeconds: 1_800,
+                                  distanceMeters: 5_000)
+        let health = RunActivity(id: "h", source: .appleHealth, startedAt: start, durationSeconds: 1_800,
+                                 distanceMeters: 5_000)
+        let store = TestStore()
+        try await store.save(AthleteProfile(walkingRoutine: .init(hasDog: true, dogName: "Nanoq")))
+        var saved: [DogRunAnswers.Key: Bool] = [.init(health): false]
+        let answers = DogRunAnswers(saved) { saved = $0 }
+        let fixedNow = now
+        let model = HistoryModel(
+            workouts: store, exercises: store, routines: store, profiles: store, runSources: [
+                TimelineRuns(kind: .garmin, activities: [garmin]),
+                TimelineRuns(kind: .appleHealth, activities: [health]),
+            ], dogRunAnswers: answers, clock: { fixedNow }
+        )
+        await model.load()
+
+        guard case let .run(run)? = model.rows.first else {
+            Issue.record("Expected the linked run in History")
+            return
+        }
+        #expect(model.runCompanion(for: run)?.question == "With Nanoq?")
+        #expect(model.runCompanion(for: run)?.answer == "No")
+        model.answerRun(run, withDog: true)
+        #expect(model.runCompanion(for: run)?.answer == "Yes")
+        #expect(saved == [DogRunAnswers.Key(garmin): true, DogRunAnswers.Key(health): true])
+    }
+
     @Test func runMatchChoicesUpdateCalendarAndListAndRestoreOnRelaunch() async throws {
         let day = CalendarDay(year: 2026, month: 11, day: 10)
         var calendar = Calendar(identifier: .gregorian)

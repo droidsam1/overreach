@@ -244,6 +244,14 @@ public struct TodayView: View {
             }
         case .confirmBreak:
             if case let .confirmBreak(period)? = model.deloadAdvice?.state { breakPrompt(period) }
+        case .dogRun:
+            if let question = model.dogRunQuestion {
+                DogCompanionQuestionCard(
+                    title: question.text, detail: question.detail, dismiss: model.dismissPendingPrompt
+                ) {
+                    model.answerDogRun(question, withDog: $0)
+                }
+            }
         case .checkIn:
             quickCheckInPrompt
         case .connectHealth:
@@ -262,7 +270,9 @@ public struct TodayView: View {
             }
         case .dogWalk:
             if let question = model.dogWalkQuestion {
-                DogWalkQuestionCard(question: question, dismiss: model.dismissPendingPrompt) {
+                DogCompanionQuestionCard(
+                    title: question.text, detail: question.detail, dismiss: model.dismissPendingPrompt
+                ) {
                     model.answerDogWalk(withDog: $0)
                 }
             }

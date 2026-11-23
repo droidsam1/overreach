@@ -1,6 +1,6 @@
 /// The one secondary prompt Today shows under the hero (ADR-0041, rule 2).
 public enum TodayPrompt: Int, CaseIterable, Comparable, Sendable {
-    case sourceFailure, confirmBreak, checkIn, connectHealth, connectGarmin, dogWalk, profileQuestion
+    case sourceFailure, confirmBreak, dogRun, checkIn, connectHealth, connectGarmin, dogWalk, profileQuestion
 
     public static func < (lhs: Self, rhs: Self) -> Bool { lhs.rawValue < rhs.rawValue }
 
@@ -8,6 +8,7 @@ public enum TodayPrompt: Int, CaseIterable, Comparable, Sendable {
     struct Facts: Equatable {
         var sourceFailure = false
         var confirmBreak = false
+        var dogRun = false
         var checkIn = false
         var connectHealth = false
         var connectGarmin = false
@@ -17,13 +18,12 @@ public enum TodayPrompt: Int, CaseIterable, Comparable, Sendable {
         var shownByPrimary: TodayPrompt?
     }
 
-    /// The first applicable prompt, in the order of the cases: a failed source that changes today's decision, the
-    /// break confirmation, the check-in, connect Apple Health, connect Garmin, then contextual questions (the dog walk,
-    /// then a profile question that was moved out of onboarding). Adding a
-    /// prompt means placing its case here and reviewing the order (ADR-0041).
+    /// A source failure or break confirmation takes precedence over the recent run question, which expires in
+    /// two days. The remaining prompts follow in case order (ADR-0041).
     static func next(_ facts: Facts) -> TodayPrompt? {
         let applicable: [TodayPrompt: Bool] = [
-            .sourceFailure: facts.sourceFailure, .confirmBreak: facts.confirmBreak, .checkIn: facts.checkIn,
+            .sourceFailure: facts.sourceFailure, .confirmBreak: facts.confirmBreak, .dogRun: facts.dogRun,
+            .checkIn: facts.checkIn,
             .connectHealth: facts.connectHealth, .connectGarmin: facts.connectGarmin, .dogWalk: facts.dogWalk,
             .profileQuestion: facts.profileQuestion
         ]
