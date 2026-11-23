@@ -10,7 +10,7 @@ public struct ReorderDrag<ID: Hashable & Sendable>: Equatable, Sendable {
     public let order: [ID]
     public let from: Int
     /// The place the item takes if released now.
-    public let to: Int
+    public let target: Int
     /// Finger position in the reordering space.
     public let fingerY: CGFloat
     /// Vertical room one item takes, to slide the neighbours.
@@ -24,8 +24,8 @@ public struct ReorderDrag<ID: Hashable & Sendable>: Equatable, Sendable {
     /// How far a neighbour slides to make room for the dragged item.
     func shift(of id: ID) -> CGFloat {
         guard let index = order.firstIndex(of: id) else { return 0 }
-        if from < to, index > from, index <= to { return -slot }
-        if to < from, index >= to, index < from { return slot }
+        if from < target, index > from, index <= target { return -slot }
+        if target < from, index >= target, index < from { return slot }
         return 0
     }
 }
@@ -178,10 +178,10 @@ private struct ReorderModifier<ID: Hashable & Sendable>: ViewModifier {
             .map { (id: $0.key.id, frame: $0.value) }
             .sorted { $0.frame.minY < $1.frame.minY }
         guard let from = cards.firstIndex(where: { $0.id == id }) else { return }
-        let to = cards.enumerated().filter { $0.offset != from && $0.element.frame.midY < touch.fingerY }.count
+        let target = cards.enumerated().filter { $0.offset != from && $0.element.frame.midY < touch.fingerY }.count
         let slot = cards.count > 1 ? abs(cards[1].frame.minY - cards[0].frame.minY) : cards[from].frame.height
         let next = ReorderDrag(
-            id: id, order: cards.map(\.id), from: from, to: to, fingerY: touch.fingerY, slot: slot,
+            id: id, order: cards.map(\.id), from: from, target: target, fingerY: touch.fingerY, slot: slot,
             layoutMidY: cards[from].frame.midY
         )
         if next != drag { drag = next }

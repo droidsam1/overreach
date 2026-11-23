@@ -234,7 +234,7 @@ private struct SessionList: View {
                     isReordering = true
                 }
             } onEnd: { dropped in
-                if let dropped { model.moveExercise(dropped.id, toIndex: dropped.to) }
+                if let dropped { model.moveExercise(dropped.id, toIndex: dropped.target) }
                 guard isHoldReordering else { return }
                 isHoldReordering = false
                 isReordering = false
@@ -244,7 +244,7 @@ private struct SessionList: View {
         .animation(.default, value: isReordering)
         // Confirms the long press switched to reordering, and each place passed while dragging.
         .haptic(.modeChanged, trigger: isReordering) { _, isOn in isOn }
-        .haptic(.selected, trigger: drag?.to) { old, new in old != nil && new != nil }
+        .haptic(.selected, trigger: drag?.target) { old, new in old != nil && new != nil }
         .sheet(isPresented: Binding(
             get: { progressionExercise != nil },
             set: { if !$0 { progressionExercise = nil } }
