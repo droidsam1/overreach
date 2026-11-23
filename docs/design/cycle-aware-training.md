@@ -78,7 +78,7 @@ public struct CyclePhaseEstimate: Hashable, Sendable {
 | --- | --- |
 | 0 — Foundation | Domain types above and `CycleSource` protocol. ADR-0009. No behaviour. |
 | 1 — v0.1 | Progression engine takes an optional context parameter so phase 2 does not change signatures. |
-| 2 — v0.2 | `HealthKitSource` implements `CycleSource` (`menstrualFlow` + symptom types; Garmin's cycle endpoint later). Onboarding asks sex and tracking mode. Check-in: "period started today" + symptoms. `CyclePhaseEstimator`. **Phase-aware HRV / resting HR baselines** for the readiness light and deload signals. |
+| 2 — v0.2 | `HealthKitSource` implements `CycleSource` (`menstrualFlow` + symptom types; Garmin's cycle endpoint later). Today asks the tracking mode in context (ADR-0041); Settings → Training profile edits sex and mode. Check-in: "period started today" + symptoms. `CyclePhaseEstimator`. **Phase-aware HRV / resting HR baselines** for the readiness light and deload signals. |
 | 3 — Intelligence | Report includes phase, cycle day and symptoms (opt-in). Symptom-driven autoregulation. Running: luteal phase raises HR at a given pace and heat strain, so HR-based run load is read with that context. Personal per-phase analysis after ≥ 3 cycles. |
 | Later — Nutrition | New `NutritionSource` + `FeatureNutrition` modules. Energy availability first; protein high end of 1.4–2.2 g/kg/day in luteal; carbohydrates matched to training load in every phase. |
 

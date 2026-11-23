@@ -13,6 +13,7 @@ struct TodayPromptTests {
             case .connectHealth: facts.connectHealth = true
             case .connectGarmin: facts.connectGarmin = true
             case .dogWalk: facts.dogWalk = true
+            case .profileQuestion: facts.profileQuestion = true
             }
         }
         facts.shownByPrimary = shownByPrimary
@@ -42,11 +43,11 @@ struct TodayPromptTests {
         }
     }
 
-    @Test("order: source failure, break, check-in, Health, Garmin, dog walk")
+    @Test("order: source failure, break, check-in, Health, Garmin, dog walk, profile question")
     func order() {
         #expect(
             TodayPrompt.allCases
-                == [.sourceFailure, .confirmBreak, .checkIn, .connectHealth, .connectGarmin, .dogWalk]
+                == [.sourceFailure, .confirmBreak, .checkIn, .connectHealth, .connectGarmin, .dogWalk, .profileQuestion]
         )
         #expect(TodayPrompt.next(facts(TodayPrompt.allCases)) == .sourceFailure)
     }

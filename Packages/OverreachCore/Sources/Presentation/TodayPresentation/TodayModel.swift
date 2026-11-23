@@ -119,6 +119,49 @@ public final class TodayModel {
         )
     }
     private let companionAnswers: DogWalkAnswers
+
+    /// A profile question that moved out of onboarding (ADR-0041, rule 5), when its answer would change a
+    /// recommendation and the field is empty.
+    public var profileQuestion: ProfileQuestionCard? {
+        guard let today = loadedDay, let now = movementNow, let profile = questionProfile else { return nil }
+        let since = now.addingTimeInterval(-Double(ProfileQuestion.walkWindowDays) * 86_400)
+        let facts = ProfileQuestion.Facts(
+            profile: profile,
+            hasRecoveryReadings: has { $0.hrvRMSSDMs ?? $0.hrvSDNNMs ?? $0.restingHeartRate },
+            recentWalks: movementWalks.filter { $0.start >= since && $0.start <= now }.count
+        )
+        return ProfileQuestion.next(facts, today: today, log: profileQuestions)?.card
+    }
+
+    /// Saves one answer to the profile and never asks that question again. Returns false if it could not be saved.
+    @discardableResult
+    public func answerProfileQuestion(_ answer: String) async -> Bool {
+        guard let question = profileQuestion?.question, let profiles else { return false }
+        let wasPending = pendingPrompt == .profileQuestion
+        do {
+            let stored = try await profiles.profile()
+            if let updated = question.apply(answer: answer, to: stored) {
+                try await profiles.save(updated)
+                questionProfile = updated
+            }
+        } catch {
+            return false
+        }
+        profileQuestions.answer(question)
+        if wasPending { dismissPendingPrompt() }
+        return true
+    }
+
+    /// "Later": the question comes back tomorrow.
+    public func postponeProfileQuestion() {
+        guard let question = profileQuestion?.question, let today = loadedDay else { return }
+        let wasPending = pendingPrompt == .profileQuestion
+        profileQuestions.postpone(question, on: today)
+        if wasPending { dismissPendingPrompt() }
+    }
+
+    private let profileQuestions: ProfileQuestionLog
+    private var questionProfile: AthleteProfile?
     private let saveDismissedRunOfferDay: @MainActor (CalendarDay) -> Void
     private var movementWalks: [WalkBout] = []
     private var movementRoutine = WalkingRoutine()
@@ -261,6 +304,7 @@ public final class TodayModel {
         facts.connectHealth = showsConnectHealth
         facts.connectGarmin = showsConnectGarmin
         facts.dogWalk = dogWalkQuestion != nil
+        facts.profileQuestion = profileQuestion != nil
         facts.shownByPrimary = switch nextAction {
         case .retry: .sourceFailure
         case .checkIn: .checkIn
@@ -649,12 +693,14 @@ public final class TodayModel {
         dogWalkAnswers: [WalkCompanionAnswer] = [],
         saveDogWalkAnswers: @escaping @MainActor ([WalkCompanionAnswer]) -> Void = { _ in },
         companionAnswers: DogWalkAnswers? = nil,
+        profileQuestions: ProfileQuestionLog = ProfileQuestionLog(),
         dismissedRunOfferDay: CalendarDay? = nil,
         saveDismissedRunOfferDay: @escaping @MainActor (CalendarDay) -> Void = { _ in },
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
         self.activityMatchChoices = activityMatchChoices
+        self.profileQuestions = profileQuestions
         self.companionAnswers = companionAnswers ?? DogWalkAnswers(dogWalkAnswers, save: saveDogWalkAnswers)
         self.dismissedRunOfferDay = dismissedRunOfferDay
         self.saveDismissedRunOfferDay = saveDismissedRunOfferDay
@@ -728,6 +774,7 @@ public final class TodayModel {
         checkIn = snapshot.checkIn
         isGarminConnected = garminConnected
         wearsGarmin = profile?.wearables.contains(.garmin) ?? false
+        questionProfile = profile
         readiness = assessment.readiness
         deloadAdvice = workouts == nil ? nil : assessment.deload.map {
             DeloadAdvice.make($0, exercises: snapshot.record.exercises, calendar: calendar, format: format)

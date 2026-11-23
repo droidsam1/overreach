@@ -55,7 +55,7 @@ Today · Train · History · Trends · Exercises · Plan · Assistant · Setting
    progression engine: next-session targets, stall detection with suggestions, deload proposals from training
    signals (see `docs/design/progression-engine.md`).
 2. Recovery (v0.2) — Health + Garmin sync, check-in, Today, traffic light; deloads also weigh HRV, resting HR,
-   sleep, stress and sickness; onboarding asks sex, cycle tracking and walking routine;
+   sleep, stress and sickness; Today asks the cycle and walking-routine questions in context (ADR-0041);
    steps/walks with baselines and walking load; cycle phase estimate and
    phase-aware HRV/resting-HR baselines (see `docs/design/cycle-aware-training.md`).
 3. Intelligence — plan, load/progression, recommendations, shareable report, Trends; walking recommendations;

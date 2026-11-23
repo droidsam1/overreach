@@ -20,7 +20,8 @@ path from data to the screen.
 5. `FeatureToday` only renders: `TodayView` lays out the blocks and its `primaryAction` switch maps each `NextAction`
    to a button. `TodayHero` draws the card (ring, badge, `heroTitle`, `heroReason`, `signals`) around that button, or
    `TodayDoneSummary` once `doneToday` is set; `TodayHeroPlaceholder` while loading. `TodayWeekCard` draws `yourWeek`,
-   `TodayPromptCard` the `pendingPrompt`, and the link tiles open `TodayWhyView` (`why`), Other options, Recovery
+   `TodayPromptCard` the `pendingPrompt` (the last one, `profileQuestion`, asks the cycle or dog question once when it
+would change a recommendation, and "Later" brings it back tomorrow), and the link tiles open `TodayWhyView` (`why`), Other options, Recovery
    and History.
 
 A new hero state is a `NextAction` case, its title in `NextAction.title`, its place in `baseAction` or

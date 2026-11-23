@@ -25,7 +25,7 @@ lower the loads", "late follicular → push PRs"). The research does not support
 1. The cycle is **context**, never a fixed rule. No load, volume or rest change is made from the calendar
    alone.
 2. Profile: `sex` (female / male / unspecified) and `cycleTracking` (off / natural cycle / hormonal
-   contraception / peri- or post-menopause). Both optional; asked in onboarding, editable in Settings.
+   contraception / peri- or post-menopause). Both optional; the cycle question is asked in context on Today (ADR-0041, rule 5), editable in Settings.
 3. Cycle data is read from Apple Health (`menstrualFlow` and symptom types, written by the Health app's
    Cycle Tracking, Flo, Clue…) through a `CycleSource` protocol, plus a manual "period started today"
    entry in the daily check-in. We do not build a cycle tracker. Garmin's Women's Health API is

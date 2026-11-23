@@ -166,6 +166,7 @@ final class AppContainer {
             exercises: exercises, recordedStrength: historyRecordedStrength, routines: routines,
             progression: progression, cycle: cycleSource, activityMatchChoices: readActivityMatchChoices,
             companionAnswers: dogWalkAnswers,
+            profileQuestions: profileQuestions,
             dismissedRunOfferDay: UserDefaults.standard.data(forKey: Self.dismissedRunOfferDayKey).flatMap {
                 try? JSONDecoder().decode(CalendarDay.self, from: $0)
             },
@@ -179,6 +180,20 @@ final class AppContainer {
 
     /// Last day the run offer got "Not today" (#264). Per device, not in backups, reports or the profile.
     private static let dismissedRunOfferDayKey = "today.runOffer.dismissedDay"
+
+    private static let profileQuestionsKey = "today.profileQuestions"
+
+    /// Which profile questions Today already asked or put off (ADR-0041). Per device, not in backups.
+    private let profileQuestions: ProfileQuestionLog = {
+        let state = UserDefaults.standard.data(forKey: AppContainer.profileQuestionsKey).flatMap {
+            try? JSONDecoder().decode(ProfileQuestionLog.State.self, from: $0)
+        } ?? ProfileQuestionLog.State()
+        return ProfileQuestionLog(state) { state in
+            if let data = try? JSONEncoder().encode(state) {
+                UserDefaults.standard.set(data, forKey: AppContainer.profileQuestionsKey)
+            }
+        }
+    }()
 
     private static let dogWalkAnswersKey = "today.dogWalkAnswers"
 

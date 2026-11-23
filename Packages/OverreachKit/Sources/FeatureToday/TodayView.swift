@@ -266,6 +266,13 @@ public struct TodayView: View {
                     model.answerDogWalk(withDog: $0)
                 }
             }
+        case .profileQuestion:
+            if let card = model.profileQuestion {
+                ProfileQuestionPrompt(
+                    card: card, answer: { answer in Task { await model.answerProfileQuestion(answer) } },
+                    later: model.postponeProfileQuestion
+                )
+            }
         }
     }
 

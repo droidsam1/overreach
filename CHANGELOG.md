@@ -221,6 +221,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   stalls or the working weight.
 
 ### Changed
+- First-run setup asks two things: your goal and your devices, where you also choose how to start (train, import from
+  Strong or restore a backup). The sex, cycle and walking questions moved to Today, shown one at a time only when
+  the answer would change a recommendation (a cycle question when recovery readings exist and you never answered
+  it, a dog question once Health shows walks) and never asked twice; "Later" brings it back tomorrow. Settings →
+  Training profile still edits everything.
 - The run/walk example for a pain-free goal now keeps the whole session, walking included, within 10% of your
   longest run in the last 30 days, the single-session spike linked to overuse injury in a 5,200-runner cohort. Progress
   lengthens the continuous running stretch (from the watch's run/walk detection when available) and uses your own

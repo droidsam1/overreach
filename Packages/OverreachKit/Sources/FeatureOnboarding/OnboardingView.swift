@@ -5,8 +5,9 @@ import SwiftUI
 
 // Views only: layout, styling and static copy. Steps and rules come from `OnboardingPresentation` (ADR-0014).
 
-/// Optional first-run setup: an animated tour of the app, then goal, about you, walking routine, devices and how to
-/// start. Connecting Apple Health or Garmin from the devices step is wired by the App (other features' flows).
+/// Optional first-run setup: an animated tour of the app, then goal and devices, where the person also chooses how to
+/// start. Reopened from Settings it also asks about you and the walking routine. Connecting Apple Health or Garmin
+/// from the devices step is wired by the App (other features' flows).
 public struct OnboardingView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Bindable private var model: OnboardingModel
@@ -64,7 +65,6 @@ public struct OnboardingView: View {
                 case .about: aboutStep
                 case .walking: walkingStep
                 case .devices: devicesStep
-                case .start: startStep
                 }
             }
             .scrollContentBackground(.hidden)
@@ -81,7 +81,6 @@ public struct OnboardingView: View {
         case .about: "About you"
         case .walking: "Walking"
         case .devices: "Your devices"
-        case .start: "Get started"
         }
     }
 
@@ -109,10 +108,8 @@ public struct OnboardingView: View {
         VStack(spacing: Spacing.small) {
             Text(model.progressText).font(.caption).foregroundStyle(.secondary)
             if model.canSkipStep {
-                Button("Continue") {
-                    if model.continueTapped(isGarminConnected: isGarminConnected) { onConnectGarmin() }
-                }
-                .buttonStyle(BrandButtonStyle())
+                Button("Continue") { model.next() }
+                    .buttonStyle(BrandButtonStyle())
             }
         }
         .padding(Spacing.medium)
@@ -250,6 +247,7 @@ public struct OnboardingView: View {
         }
         .animation(reduceMotion ? nil : .spring(duration: 0.4), value: model.offersGarminSetup)
         .animation(reduceMotion ? nil : .spring(duration: 0.4), value: isGarminConnected)
+        startSection
     }
 
     private func card(_ wearable: Wearable) -> some View {
@@ -289,7 +287,7 @@ public struct OnboardingView: View {
         }
     }
 
-    private var startStep: some View {
+    private var startSection: some View {
         Section {
             Button("Restore from a backup", systemImage: "arrow.counterclockwise.icloud") { finish(.restoreBackup) }
             Button("Import from Strong", systemImage: "square.and.arrow.down") { finish(.importHistory) }
