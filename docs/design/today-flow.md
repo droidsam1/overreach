@@ -8,6 +8,9 @@ path from data to the screen.
 2. `loadRunningPlan` asks `EasyRunAdvisor.advise` (`Analytics`) for a decision about an extra or planned run and wraps
    it in a `RunningOption`. Rules that hold a run back, such as a run already done today or lower-body work
    (`LowerBodyLoad`), live in `advise`, not in the view.
+   On a rest day of the projected strength rotation (`RotationProjection.runWindows`), `TodayModel.runOffer` adds one
+   secondary line under the hero ("Good day for an easy run"). It needs `RunningOption.offersEasyRun`, so every
+   guardrail of `advise` applies, and it never adds a block (ADR-0041). "Not today" hides it for the day.
 3. `trainingAction` turns the scheduled strength, scheduled runs, `RunningOption` and what is already done today
    into `heroTrainingAction`. Training already done today ends the recommendation unless the plan has another dated
    session.

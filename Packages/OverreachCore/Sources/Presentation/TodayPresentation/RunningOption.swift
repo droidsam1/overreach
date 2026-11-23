@@ -137,6 +137,18 @@ public struct RunningOption: Hashable, Sendable {
     private static func applying(_ progression: RunWalkProgression.Result?, to option: Self, format: Format) -> Self {
         guard let progression, progression.phase != .goalReached, !progression.blocks.isEmpty else { return option }
         let line = progressionLine(progression.blocks, format: format)
+        return Self(
+            goal: option.goal, advice: L10n.format("If you want to run today, try {1}.", line), plan: option.plan,
+            context: option.context, evidence: RunWalkProgression.evidence,
+            source: "https://doi.org/10.1136/bjsports-2024-109380",
+            explanation: progressionExplanation(progression, format: format), adjustment: option.adjustment,
+            isOptional: option.isOptional,
+            offersEasyRun: option.offersEasyRun, suggestedMinutes: nil
+        )
+    }
+
+    /// Why this step, the 10% cap and the reminder that distances, not pace, set the effort.
+    static func progressionExplanation(_ progression: RunWalkProgression.Result, format: Format) -> String {
         let settings = RunWalkProgression.Settings()
         let reason = switch progression.phase {
         case .start: L10n.text("No recent run to build on, so this starts gently.")
@@ -150,18 +162,12 @@ public struct RunningOption: Hashable, Sendable {
         case .stepBack: L10n.text("You reported pain after two runs in a row, so this goes back one step.")
         case .goalReached: ""
         }
-        return Self(
-            goal: option.goal, advice: L10n.format("If you want to run today, try {1}.", line), plan: option.plan,
-            context: option.context, evidence: RunWalkProgression.evidence,
-            source: "https://doi.org/10.1136/bjsports-2024-109380",
-            explanation: [reason, L10n.format(
-                "The whole session stays within {1} of your longest run in the last {2} days, walking included.",
-                settings.sessionIncreaseFraction.formatted(.percent.locale(format.locale)), String(settings.historyDays)
-            ), L10n.text(
-                "Distances, not pace, set the effort. Stop and walk if you notice pain. A coaching estimate."
-            )].joined(separator: " "), adjustment: option.adjustment, isOptional: option.isOptional,
-            offersEasyRun: option.offersEasyRun, suggestedMinutes: nil
-        )
+        return [reason, L10n.format(
+            "The whole session stays within {1} of your longest run in the last {2} days, walking included.",
+            settings.sessionIncreaseFraction.formatted(.percent.locale(format.locale)), String(settings.historyDays)
+        ), L10n.text(
+            "Distances, not pace, set the effort. Stop and walk if you notice pain. A coaching estimate."
+        )].joined(separator: " ")
     }
 
     private static func exampleAdvice(minutes: Int, next: PlannedRun?, isToday: Bool, reduction: Bool) -> String {

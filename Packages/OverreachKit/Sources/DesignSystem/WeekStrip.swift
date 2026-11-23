@@ -47,11 +47,16 @@ public struct WeekDay: Identifiable, Sendable {
     public let initial: String
     public let kind: WeekDayKind
     public let accessibilityLabel: String
+    /// A small dot under the circle: a day that suits an easy run. It adds no block and no new circle kind.
+    public let marksRunWindow: Bool
 
-    public init(id: Int, initial: String, kind: WeekDayKind, accessibilityLabel: String) {
+    public init(
+        id: Int, initial: String, kind: WeekDayKind, accessibilityLabel: String, marksRunWindow: Bool = false
+    ) {
         self.id = id
         self.initial = initial
         self.kind = kind
+        self.marksRunWindow = marksRunWindow
         self.accessibilityLabel = accessibilityLabel
     }
 }
@@ -87,6 +92,10 @@ private struct DayCell: View {
             circle
                 .frame(maxWidth: min(diameter, 60), maxHeight: min(diameter, 60))
                 .aspectRatio(1, contentMode: .fit)
+            Circle()
+                .fill(day.marksRunWindow ? WeekDayKind.runColor : Color.clear)
+                .frame(width: 5, height: 5)
+                .accessibilityHidden(true)
         }
         .frame(maxWidth: .infinity, minHeight: 44)
         .accessibilityElement(children: .ignore)

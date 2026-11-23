@@ -24,6 +24,8 @@ public struct TodayWeek: Hashable, Sendable {
         public let label: String
         public let kind: DayKind
         public let isToday: Bool
+        /// A small dot: a rest day of the strength rotation that suits an easy run. Nothing is planned for it.
+        public let hasRunWindow: Bool
         public let accessibilityLabel: String
     }
 
@@ -62,6 +64,7 @@ extension TodayWeek {
         var strengthMinutes: Int?
         var runs: [ScheduledTrainingRow] = []
         var adjustedRun: RunningOption.Adjustment?
+        var runWindowDays: Set<CalendarDay> = []
     }
 
     static func make(_ progress: WeekProgress?, today: Today, calendar: Calendar, format: Format) -> Self? {
@@ -70,9 +73,12 @@ extension TodayWeek {
         let days = progress.days.map { day in
             let label = day.day.startDate(in: calendar).formatted(style.weekday(.narrow))
             let full = day.day.startDate(in: calendar).formatted(style.weekday(.wide))
+            // A window is for days with nothing planned or done; it never hides what the plan says.
+            let window = today.runWindowDays.contains(day.day) && day.done == .nothing && !day.isPlanned
+            let windowNote = window ? ". " + L10n.text("Good day for an easy run") : ""
             return DayCell(
-                id: day.day, label: label, kind: kind(of: day), isToday: day.isToday,
-                accessibilityLabel: accessibility(full, day)
+                id: day.day, label: label, kind: kind(of: day), isToday: day.isToday, hasRunWindow: window,
+                accessibilityLabel: accessibility(full, day) + windowNote
             )
         }
         let planned = progress.sessionsPlanned
