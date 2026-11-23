@@ -719,7 +719,10 @@ public final class TodayModel {
         loadRunningPlan(
             goal: goal, today: today, now: now, runs: record.runs,
             runningBreak: runningBreak, runReadFailed: record.runReadFailed,
-            lowerBody: training.lowerBody
+            lowerBody: training.lowerBody,
+            rotation: snapshot.sessionsFailed ? nil : RotationProjection.project(
+                sessions: snapshot.allSessions, exercises: record.exercises, now: now, calendar: calendar
+            )
         )
         loadWorkoutContext(today: today, profile: profile, record: record)
         updateDeloadSession()
@@ -819,7 +822,8 @@ public final class TodayModel {
 
     private func loadRunningPlan(
         goal: TrainingGoal?, today: CalendarDay, now: Date, runs: [RunActivity],
-        runningBreak: DetectedDeload?, runReadFailed: Bool, lowerBody: LowerBodyLoad.Level
+        runningBreak: DetectedDeload?, runReadFailed: Bool, lowerBody: LowerBodyLoad.Level,
+        rotation: RotationProjection?
     ) {
         let running = goal?.running
         let schedule = goal?.scheduledRuns.filter { !$0.isPostponed } ?? []
@@ -836,7 +840,7 @@ public final class TodayModel {
             runs: runReadFailed ? [] : runs, now: now, calendar: calendar,
             runningBreak: runReadFailed ? nil : runningBreak, strength: goal?.scheduledStrength ?? [],
             priority: goal?.effectivePriority ?? .balanced, allowEffortOnly: !runReadFailed,
-            lowerBody: lowerBody
+            lowerBody: lowerBody, rotation: rotation
         ), decision != .plannedRest {
             runningOption = RunningOption(
                 goal: goal, decision: decision, hasRunToday: !scheduledRunsToday.isEmpty,

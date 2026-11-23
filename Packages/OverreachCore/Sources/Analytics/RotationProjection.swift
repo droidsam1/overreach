@@ -26,33 +26,6 @@ public struct RotationProjection: Hashable, Sendable {
         }
     }
 
-    public struct RunWindow: Hashable, Sendable {
-        public enum Quality: Hashable, Sendable {
-            case best
-            case ok
-            case avoid
-        }
-
-        /// The neighbour that decided the quality.
-        public enum Reason: Hashable, Sendable {
-            case afterHeavyLower(SessionRotation.Slot)
-            case beforeHeavyLower(SessionRotation.Slot)
-            case afterModerateLower(SessionRotation.Slot)
-            /// No leg-heavy workout on the day before or after.
-            case awayFromLowerBody
-        }
-
-        public let day: CalendarDay
-        public let quality: Quality
-        public let reason: Reason
-
-        public init(day: CalendarDay, quality: Quality, reason: Reason) {
-            self.day = day
-            self.quality = quality
-            self.reason = reason
-        }
-    }
-
     public struct Settings: Sendable {
         public var lowerBody = LowerBodyLoad.Settings()
         /// A lower-body working set of this many reps or fewer counts as a heavy, low-rep set.
@@ -85,10 +58,12 @@ public struct RotationProjection: Hashable, Sendable {
         guard let rotation = SessionRotation.detect(in: done) else { return nil }
         let timeline = SessionRotation.timeline(done)
         let days = timeline.map { CalendarDay($0.session.startedAt, calendar: calendar) }
-        // Every gap over the cycles that proved the rotation must match.
-        let needed = rotation.order.count * SessionRotation.requiredCycles
-        guard days.count > needed else { return nil }
-        let gaps = zip(days.suffix(needed + 1), days.suffix(needed)).map { $1.days(until: $0, calendar: calendar) }
+        // Every gap between the sessions that proved the rotation must match.
+        let proving = Array(days.suffix(rotation.order.count * SessionRotation.requiredCycles))
+        guard proving.count >= 2 else { return nil }
+        let gaps = zip(proving, proving.dropFirst()).map {
+            calendar.dateComponents([.day], from: $0.startDate(in: calendar), to: $1.startDate(in: calendar)).day ?? 0
+        }
         guard let cadence = gaps.first, (1...settings.longestCadenceDays).contains(cadence),
               gaps.allSatisfy({ $0 == cadence }), let latest = timeline.last else { return nil }
 
@@ -119,15 +94,11 @@ public struct RotationProjection: Hashable, Sendable {
     /// Rest days from `today` through the end of the projected cycle, each scored as a window for a run. The
     /// session after the cycle is the first one again (day 9 of an 8-day cycle is A).
     public func runWindows(from today: CalendarDay, calendar: Calendar = .current) -> [RunWindow] {
-        guard let end = upcoming.last?.day else { return [] }
-        let wrapped = upcoming.first.map {
-            Session(day: end.adding(days: cadenceDays, calendar: calendar), slot: $0.slot, demand: $0.demand)
-        }
-        let sessions = [last] + upcoming + (wrapped.map { [$0] } ?? [])
-        let first = max(today, last.day.adding(days: 1, calendar: calendar))
-        guard first < end else { return [] }
+        guard let first = upcoming.first, let final = upcoming.last else { return [] }
+        let end = final.day.adding(days: cadenceDays, calendar: calendar)
+        let sessions = [last] + upcoming + [Session(day: end, slot: first.slot, demand: first.demand)]
+        var day = max(today, last.day.adding(days: 1, calendar: calendar))
         var windows: [RunWindow] = []
-        var day = first
         while day < end {
             defer { day = day.adding(days: 1, calendar: calendar) }
             guard !sessions.contains(where: { $0.day == day }) else { continue }
@@ -143,10 +114,10 @@ public struct RotationProjection: Hashable, Sendable {
             return RunWindow(day: day, quality: .avoid, reason: .afterHeavyLower(before.slot))
         }
         if let after, after.demand == .heavy {
-            return RunWindow(day: day, quality: .ok, reason: .beforeHeavyLower(after.slot))
+            return RunWindow(day: day, quality: .good, reason: .beforeHeavyLower(after.slot))
         }
         if let before, before.demand == .moderate {
-            return RunWindow(day: day, quality: .ok, reason: .afterModerateLower(before.slot))
+            return RunWindow(day: day, quality: .good, reason: .afterModerateLower(before.slot))
         }
         return RunWindow(day: day, quality: .best, reason: .awayFromLowerBody)
     }
@@ -161,5 +132,34 @@ public struct RotationProjection: Hashable, Sendable {
             || sets.contains { ($0.rpe ?? 0) >= settings.lowerBody.heavyRPE }
             || lowRep.count >= settings.lowRepSets
         return heavy ? .heavy : .moderate
+    }
+}
+
+/// A rest day of the projected rotation, scored as a day for a run.
+public struct RunWindow: Hashable, Sendable {
+    public enum Quality: Hashable, Sendable {
+        case best
+        /// Fine, but a leg-heavy session sits on one side.
+        case good
+        case avoid
+    }
+
+    /// The neighbour that decided the quality.
+    public enum Reason: Hashable, Sendable {
+        case afterHeavyLower(SessionRotation.Slot)
+        case beforeHeavyLower(SessionRotation.Slot)
+        case afterModerateLower(SessionRotation.Slot)
+        /// No leg-heavy workout on the day before or after.
+        case awayFromLowerBody
+    }
+
+    public let day: CalendarDay
+    public let quality: Quality
+    public let reason: Reason
+
+    public init(day: CalendarDay, quality: Quality, reason: Reason) {
+        self.day = day
+        self.quality = quality
+        self.reason = reason
     }
 }

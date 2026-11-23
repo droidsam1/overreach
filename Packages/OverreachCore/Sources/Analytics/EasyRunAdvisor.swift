@@ -35,7 +35,7 @@ public enum EasyRunAdvisor {
         metrics: DailyMetrics?, runs: [RunActivity], now: Date, calendar: Calendar = .current,
         runningBreak: DetectedDeload? = nil, strength: [PlannedStrength] = [],
         priority: DisciplinePriority = .balanced, allowEffortOnly: Bool = true, lowerBody: LowerBodyLoad.Level = .none,
-        settings: Settings = .init()
+        rotation: RotationProjection? = nil, settings: Settings = .init()
     ) -> Decision? {
         guard readiness.level == .green || readiness.level == .amber,
               !readiness.reasons.contains(where: \.advisesSkippingTraining) else { return nil }
@@ -52,7 +52,11 @@ public enum EasyRunAdvisor {
         let next = due.first ?? pending.min { $0.day < $1.day }
         let scheduledToday = !due.isEmpty
         let liftingToday = strength.contains { $0.day == today && $0.routineID != nil }
-        let liftingTomorrow = strength.contains { $0.day == tomorrow && $0.routineID != nil }
+        // A dated plan wins; without one, the projected rotation says whether the legs work tomorrow.
+        let datedStrength = strength.contains { $0.day >= today && $0.routineID != nil }
+        let liftingTomorrow = datedStrength
+            ? strength.contains { $0.day == tomorrow && $0.routineID != nil }
+            : rotation?.session(on: tomorrow).map { $0.demand != .none } ?? false
         guard hasBiometricSupport(readiness, metrics: metrics, today: today, calendar: calendar) else { return nil }
 
         let start = today.adding(days: -(historyDays - 1), calendar: calendar).startDate(in: calendar)
