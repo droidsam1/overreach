@@ -15,8 +15,6 @@ public struct DogWalkQuestion: Hashable, Sendable {
     /// When and how long, so the athlete knows which walk is meant.
     public let detail: String
 
-    public var accessibilityLabel: String { "\(text) \(detail)" }
-
     struct Context {
         let calendar: Calendar
         let format: Format

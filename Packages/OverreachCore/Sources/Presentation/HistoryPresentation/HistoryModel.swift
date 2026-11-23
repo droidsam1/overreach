@@ -114,6 +114,7 @@ public final class HistoryModel {
     private let recordedStrength: (any RecordedStrengthSource)?
     private let walkSources: [any ActivitySource]
     private let companionAnswers: DogWalkAnswers
+    private let dogRunAnswers: DogRunAnswers
     private var walkingRoutine = WalkingRoutine()
     private var walks: [WalkBout] = []
     private var walkLines: [HistoryWalk] = []
@@ -151,6 +152,7 @@ public final class HistoryModel {
         recordedStrength: (any RecordedStrengthSource)? = nil,
         walkSources: [any ActivitySource] = [],
         companionAnswers: DogWalkAnswers? = nil,
+        dogRunAnswers: DogRunAnswers = DogRunAnswers(),
         calendar: Calendar = .current,
         format: Format = Format(),
         runChoices: [RunMatchPair: RunMatchChoice] = [:],
@@ -169,6 +171,7 @@ public final class HistoryModel {
         self.recordedStrength = recordedStrength
         self.walkSources = walkSources
         self.companionAnswers = companionAnswers ?? DogWalkAnswers()
+        self.dogRunAnswers = dogRunAnswers
         self.runSources = runSources
         self.format = format
         self.clock = clock
@@ -265,6 +268,19 @@ public final class HistoryModel {
     public func answerWalk(_ id: WalkKey, withDog: Bool) {
         guard walkingRoutine.hasDog, let row = walkLines.first(where: { $0.id == id }) else { return }
         companionAnswers.answer(row.walk, among: walks, withDog: withDog)
+    }
+
+    public func runCompanion(for run: HistoryRunActivity) -> HistoryRunCompanion? {
+        guard walkingRoutine.hasDog else { return nil }
+        let answer = dogRunAnswers.answer(for: run.companionKey, linked: run.match)
+        return HistoryRunCompanion(question: DogWalkAnswers.question(for: walkingRoutine), answer: answer.map {
+            $0 ? L10n.text("Yes") : L10n.text("No")
+        })
+    }
+
+    public func answerRun(_ run: HistoryRunActivity, withDog: Bool) {
+        guard walkingRoutine.hasDog else { return }
+        dogRunAnswers.record(withDog, for: run.companionKey, linked: run.match)
     }
 
     private func resolveRuns() {

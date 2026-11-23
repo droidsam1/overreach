@@ -5,6 +5,7 @@ import TrainingServices
 
 /// Display values for a run in the timeline, calendar and activity detail.
 public struct HistoryRunActivity: Identifiable, Hashable, Sendable {
+    let companionKey: DogRunAnswers.Key
     public let id: String
     public let title: String
     public let startedAt: Date
@@ -26,6 +27,7 @@ public struct HistoryRunActivity: Identifiable, Hashable, Sendable {
     }
 
     init(_ run: RunActivity, sources: [DataSourceKind], match: RunMatchPair? = nil, format: Format) {
+        companionKey = .init(run)
         self.match = match
         id = "\(run.source.rawValue):\(run.id)"
         title = run.name ?? L10n.text("Run")
@@ -48,6 +50,11 @@ public struct HistoryRunActivity: Identifiable, Hashable, Sendable {
         let rest = format.minutesAndSeconds(seconds % 3_600)
         return "\(hours):\(rest.count < 5 ? "0" : "")\(rest)"
     }
+}
+
+public struct HistoryRunCompanion: Sendable {
+    public let question: String
+    public let answer: String?
 }
 
 extension HistoryMetric {

@@ -9,6 +9,7 @@ struct TodayPromptTests {
             switch prompt {
             case .sourceFailure: facts.sourceFailure = true
             case .confirmBreak: facts.confirmBreak = true
+            case .dogRun: facts.dogRun = true
             case .checkIn: facts.checkIn = true
             case .connectHealth: facts.connectHealth = true
             case .connectGarmin: facts.connectGarmin = true
@@ -43,11 +44,12 @@ struct TodayPromptTests {
         }
     }
 
-    @Test("order: source failure, break, check-in, Health, Garmin, dog walk, profile question")
+    @Test("order: source failure, break, dog run, check-in, Health, Garmin, dog walk, profile question")
     func order() {
         #expect(
             TodayPrompt.allCases
-                == [.sourceFailure, .confirmBreak, .checkIn, .connectHealth, .connectGarmin, .dogWalk, .profileQuestion]
+                == [.sourceFailure, .confirmBreak, .dogRun, .checkIn, .connectHealth, .connectGarmin, .dogWalk,
+                    .profileQuestion]
         )
         #expect(TodayPrompt.next(facts(TodayPrompt.allCases)) == .sourceFailure)
     }
