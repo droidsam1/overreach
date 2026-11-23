@@ -14,6 +14,7 @@ public struct TodayView: View {
     @State private var showsRunOffer = false
     @State private var showsWhy = false
     @State private var showsOptions = false
+    @State private var painPrompt: RunPainPrompt?
     private let onConnectGarmin: () -> Void
     private let recoveryHistory: (() -> AnyView)?
     private var settingsDestination: (() -> AnyView)?
@@ -96,6 +97,7 @@ public struct TodayView: View {
                     if let prompt = model.pendingPrompt {
                         pendingPrompt(prompt)
                     }
+                    if let prompt = model.runPainPrompt { runPainCard(prompt) }
                     if !model.links.isEmpty { linkTiles }
                 }
                 .padding(Spacing.medium)
@@ -142,6 +144,7 @@ public struct TodayView: View {
                 }
                 .navigationTitle("Run details")
             }
+            .sheet(item: $painPrompt) { prompt in RunPainSheet(model: model, prompt: prompt) }
             .sheet(item: $checkInSheet) { sheet in
                 CheckInView(model: sheet) { Task { await model.load() } }
             }
@@ -568,6 +571,18 @@ public struct TodayView: View {
                     .font(.footnote)
             }
         }
+    }
+
+    private func runPainCard(_ prompt: RunPainPrompt) -> some View {
+        Button { painPrompt = prompt } label: {
+            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                Text(prompt.title).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
+                Text(prompt.summary).font(.footnote).foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .combine)
+        }
+        .buttonStyle(.plain)
     }
 
     private func easyRun(_ option: RunningOption) -> some View {

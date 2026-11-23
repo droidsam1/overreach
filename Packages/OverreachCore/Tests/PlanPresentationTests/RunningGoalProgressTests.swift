@@ -49,6 +49,19 @@ struct RunningGoalProgressTests {
         #expect(model.runningGoalProgress?.rows.first?.meetsGoal == false)
     }
 
+    @Test func savesSeverityAndNextMorningStatusWithTheLinkedRun() async throws {
+        let goal = RunningGoal(distanceMeters: 5_000, aimsForPainFree: true)
+        let (model, store) = try await model(entries: [linkedRun()], goal: goal)
+        let row = try #require(model.runningGoalProgress?.rows.first)
+        #expect(await model.saveRunningPain(row, severityDuring: 2, severityAfter: 3, settledByMorning: true))
+        let saved = try #require(try await store.profile().goal?.scheduledRuns.first?.completion)
+        #expect(saved.severityDuring == 2 && saved.severityAfter == 3 && saved.settledByMorning == true)
+        #expect(saved.painDuring == true && saved.painAfter == true)
+        #expect(saved.painReport.isTolerated())
+        #expect(model.runningGoalProgress?.rows.first?.painStatus == "Pain up to 3/10, settled by morning")
+        #expect(model.runningGoalProgress?.rows.first?.meetsGoal == false)
+    }
+
     @Test func aLongerRunWithOnlyATotalTimeDoesNotSupplyAnUnobservedSplit() throws {
         let goal = RunningGoal(distanceMeters: 5_000, targetSeconds: 900)
         let long = try #require(linkedRun(distance: 8_000, duration: 1_600).completion)

@@ -496,6 +496,12 @@ extension PlanModel {
     }
 
     public func saveRunningPain(_ row: RunningGoalResultRow, during: Bool?, after: Bool?) async -> Bool {
+        await saveRunningPain(row, during: during, after: after, report: nil)
+    }
+
+    private func saveRunningPain(
+        _ row: RunningGoalResultRow, during: Bool?, after: Bool?, report: RunPainReport?
+    ) async -> Bool {
         guard showsRunningCalendar, !isSavingProfile else { return false }
         isSavingProfile = true
         defer { isSavingProfile = false }
@@ -511,6 +517,10 @@ extension PlanModel {
             }
             result.painDuring = during
             result.painAfter = after
+            // Yes/no answers have no severity: drop an older one so it never contradicts them.
+            result.severityDuring = report?.severityDuring
+            result.severityAfter = report?.severityAfter
+            result.settledByMorning = report?.settledByMorning
             schedule[index] = schedule[index].updatingCompletion(result)
             goal.setRunningSchedule(schedule)
             updated.goal = goal
@@ -522,6 +532,15 @@ extension PlanModel {
             errorMessage = L10n.text("Could not save your plan. Try again.")
             return false
         }
+    }
+
+    /// Saves 0–10 pain for the run and whether it settled by the next morning (#256).
+    public func saveRunningPain(
+        _ row: RunningGoalResultRow, severityDuring: Int?, severityAfter: Int?, settledByMorning: Bool?
+    ) async -> Bool {
+        var report = row.result.painReport
+        report.answer(during: severityDuring, after: severityAfter, settledByMorning: settledByMorning)
+        return await saveRunningPain(row, during: report.painDuring, after: report.painAfter, report: report)
     }
 
     public var upcomingRunningEntries: [RunningCalendarRow] {

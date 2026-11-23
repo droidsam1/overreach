@@ -103,6 +103,23 @@
         }
       }
     },
+    "0 is no pain and 10 is the worst you can imagine. Not medical advice.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0 es sin dolor y 10 es el peor que puedas imaginar. No es consejo médico."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0 é sen dor e 10 é a peor que poidas imaxinar. Non é consello médico."
+          }
+        }
+      }
+    },
     "0 reps left": {
       "extractionState": "manual",
       "localizations": {
@@ -6376,6 +6393,23 @@
         }
       }
     },
+    "Gone by the next morning": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desaparecido a la mañana siguiente"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desaparecida á mañá seguinte"
+          }
+        }
+      }
+    },
     "Good": {
       "extractionState": "manual",
       "localizations": {
@@ -6831,6 +6865,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Que tal foi? Sono, enerxía, calquera cousa que queiras lembrar."
+          }
+        }
+      }
+    },
+    "How did your last run feel?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Qué tal fue tu última carrera?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Que tal foi a túa última carreira?"
           }
         }
       }
@@ -11438,6 +11489,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dor rexistrada"
+          }
+        }
+      }
+    },
+    "Pain up to {1}/10, not settled by morning": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dolor de hasta {1}/10, no remitió por la mañana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dor de ata {1}/10, non remitiu pola mañá"
+          }
+        }
+      }
+    },
+    "Pain up to {1}/10, settled by morning": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dolor de hasta {1}/10, remitió por la mañana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dor de ata {1}/10, remitiu pola mañá"
           }
         }
       }
@@ -19309,6 +19394,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quecemento: {1} series de poucas repeticións, de lixeiro a preto do peso de hoxe, para comezar as series de traballo preparado pero fresco. Non contan para o teu progreso. ({2})"
+          }
+        }
+      }
+    },
+    "Was the pain gone this morning?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Se fue el dolor esta mañana?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foise a dor esta mañá?"
           }
         }
       }

@@ -435,13 +435,18 @@ injury types. The cohort is observational, with self-reported injuries; the 10% 
 continuous running segment without reported pain: Garmin's run/walk detection (`RWD_RUN`) when the watch provides it,
 otherwise the whole run. After a run without reported pain it grows by 0.25 km and repeats with the athlete's own
 typical walk break (Garmin `RWD_WALK`, 0.1 to 0.5 km, 0.25 km by default) until the ceiling. A new runner begins with
-0.5 km of running, a 0.5 km walk and 0.5 km of running. Pain during or after the last run, or no run for 14 days,
-repeats the last pain-free session. Pain after two runs in a row shortens the stretch by 0.25 km and the session to
-90% of the longest pain-free run. A confirmed run that meets the goal ends the progression. The stretch step, walk
-lengths, the 14-day gap and the step back are conservative product defaults, not research findings. The app records
-pain as yes or no; clinical pain-monitoring models accept mild pain (up to 5/10) that settles by the next morning, so
-treating any reported pain as a hold is the more cautious choice. Not medical advice: pain that persists belongs with
-a clinician. Decision record: [ADR-0043](adr/0043-running-dose-single-session-ceiling.md). Reviewed 2026-11-23.
+0.5 km of running, a 0.5 km walk and 0.5 km of running. A run holds the progression, repeating the last tolerated
+session, when its pain was above 3/10 (a configurable product default), did not settle by the next morning, or was
+not yet confirmed as settled; two holds in a row shorten the stretch by 0.25 km and the session to 90% of the longest
+tolerated run. Pain up to the threshold that settled by morning does not hold. Older yes/no answers keep the cautious
+reading: any pain holds. A confirmed run that meets the goal ends the progression. The stretch step, walk lengths,
+the 14-day gap, the 3/10 threshold and the step back are conservative product defaults, not research findings.
+Pain-monitoring models accept mild pain (up to 5/10) that settles by the next morning in Achilles tendinopathy
+rehabilitation; Overreach uses the lower 3/10 because it is not tied to one injury. Pain is asked after any recorded
+run when the goal aims for pain-free running, with or without a plan: 0–10 during and after, and the next day
+whether it settled. The answer is stored by run (activity id and source). The goal-met rule is unchanged: a
+pain-free goal still needs no pain. The wording is pending review with the symptom-wording task. Not medical
+advice: pain that persists belongs with a clinician. Decision record: [ADR-0043](adr/0043-running-dose-single-session-ceiling.md). Reviewed 2026-11-23.
 [Single-session spike cohort](https://doi.org/10.1136/bjsports-2024-109380) · [Graded novice programme trial](https://doi.org/10.1177/0363546507307505) · [Weekly progression cohort](https://www.jospt.org/doi/10.2519/jospt.2014.5164) · [Pain-monitoring model trial](https://doi.org/10.1177/0363546506298279)
 
 ### `easy-strength-example` — heuristic

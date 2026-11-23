@@ -28,6 +28,8 @@ public enum RunWalkProgression {
         /// A step back shortens the session to this share of the longest pain-free run.
         public var stepBackFraction = 0.9
         public var roundingMeters = 100
+        /// Pain up to this severity (0–10) that settled by the next morning does not hold the progression.
+        public var toleratedPainSeverity = RunPainReport.defaultToleratedSeverity
 
         public init() {}
     }
@@ -46,11 +48,12 @@ public enum RunWalkProgression {
     public enum Phase: Hashable, Sendable {
         /// No usable run yet: begin with short running blocks.
         case start
-        /// The last run had no reported pain: one small step.
+        /// The last run had no pain, or only mild pain that settled by morning: one small step.
         case progress
-        /// Pain after the last run, or a missed fortnight: repeat the last pain-free session.
+        /// Pain above the threshold or not settled after the last run, or a missed fortnight: repeat the last
+        /// tolerated session.
         case hold(afterGap: Bool)
-        /// Pain after two runs in a row: go back one step.
+        /// Two holds in a row: go back one step.
         case stepBack
         case goalReached
     }
@@ -73,11 +76,11 @@ public enum RunWalkProgression {
         }
     }
 
-    /// `outcomes` are the confirmed runs of the goal with the athlete's pain answers; a run without an answer is not
-    /// treated as painful. Returns nil without a distance goal.
+    /// `outcomes` are the confirmed runs of the goal and `painReports` the answers for runs without a planned entry;
+    /// a run without an answer is not treated as painful. Returns nil without a distance goal.
     public static func advise(
-        goal: RunningGoal?, runs: [RunActivity], outcomes: [PlannedRunCompletion], now: Date,
-        calendar: Calendar = .current, settings: Settings = .init()
+        goal: RunningGoal?, runs: [RunActivity], outcomes: [PlannedRunCompletion], painReports: [RunPainReport] = [],
+        now: Date, calendar: Calendar = .current, settings: Settings = .init()
     ) -> Result? {
         guard let goal, goal.distanceMeters > 0 else { return nil }
         if outcomes.contains(where: goal.isMet(by:)) {
@@ -90,8 +93,9 @@ public enum RunWalkProgression {
             run.startedAt <= now && run.startedAt >= start && run.distanceMeters.isFinite && run.distanceMeters > 0
                 && run.durationSeconds.isFinite && run.durationSeconds > 0
         }).sorted { $0.startedAt < $1.startedAt }
+        let reports = outcomes.map(\.painReport) + painReports
         let painful = { (run: RunActivity) -> Bool in
-            outcomes.contains { $0.matches(run) && ($0.painDuring == true || $0.painAfter == true) }
+            reports.contains { $0.matches(run) && !$0.isTolerated(threshold: settings.toleratedPainSeverity) }
         }
         let painFree = history.filter { !painful($0) }
         let unit = settings.roundingMeters
