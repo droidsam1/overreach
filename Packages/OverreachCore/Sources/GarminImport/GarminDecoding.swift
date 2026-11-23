@@ -136,9 +136,31 @@ public enum GarminDecoding {
                 anaerobicTrainingEffect: nonNegative(item["anaerobicTrainingEffect"]),
                 totalSets: nonNegative(item["totalSets"]).map { Int($0) },
                 totalReps: nonNegative(item["totalReps"]).map { Int($0) },
-                steps: nonNegative(item["steps"]).map { Int($0) }
+                steps: nonNegative(item["steps"]).map { Int($0) },
+                lapCount: positive(item["lapCount"]).map { Int($0) },
+                movingDurationSeconds: positive(item["movingDuration"]),
+                runWalk: runWalk(item["splitSummaries"])
             )
         }
+    }
+
+    /// Garmin's run/walk detection in the activity summary: `RWD_RUN`, `RWD_WALK` and `RWD_STAND` split summaries.
+    /// Interval splits (`INTERVAL_*`) describe workout steps and are ignored.
+    public static func runWalk(_ value: Any?) -> RunWalkSplits? {
+        guard let summaries = value as? [[String: Any]] else { return nil }
+        func part(_ type: String) -> RunWalkSplits.Part? {
+            guard let item = summaries.first(where: { $0["splitType"] as? String == type }),
+                  let distance = nonNegative(item["distance"]), let duration = nonNegative(item["duration"]),
+                  distance > 0 || duration > 0 else { return nil }
+            return RunWalkSplits.Part(
+                distanceMeters: distance, durationSeconds: duration,
+                segments: positive(item["noOfSplits"]).map { Int($0) } ?? 1,
+                longestSegmentMeters: positive(item["maxDistanceWithPrecision"]) ?? positive(item["maxDistance"]),
+                averageCadence: positive(item["avgStepFrequency"])
+            )
+        }
+        let splits = RunWalkSplits(running: part("RWD_RUN"), walking: part("RWD_WALK"), standing: part("RWD_STAND"))
+        return splits.running == nil && splits.walking == nil ? nil : splits
     }
 
     // MARK: Helpers

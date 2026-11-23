@@ -23,6 +23,12 @@ public struct RunActivity: Identifiable, Hashable, Codable, Sendable {
     public var trainingLoad: Double?
     public var aerobicTrainingEffect: Double?
     public var anaerobicTrainingEffect: Double?
+    /// Laps the watch recorded (manual or auto laps).
+    public var lapCount: Int?
+    /// Time in motion, without pauses and stops.
+    public var movingDurationSeconds: Double?
+    /// Running, walking and standing parts as the watch detected them.
+    public var runWalk: RunWalkSplits?
 
     public init(
         id: String,
@@ -37,7 +43,10 @@ public struct RunActivity: Identifiable, Hashable, Codable, Sendable {
         averageCadence: Double? = nil,
         trainingLoad: Double? = nil,
         aerobicTrainingEffect: Double? = nil,
-        anaerobicTrainingEffect: Double? = nil
+        anaerobicTrainingEffect: Double? = nil,
+        lapCount: Int? = nil,
+        movingDurationSeconds: Double? = nil,
+        runWalk: RunWalkSplits? = nil
     ) {
         self.id = id
         self.source = source
@@ -52,10 +61,23 @@ public struct RunActivity: Identifiable, Hashable, Codable, Sendable {
         self.trainingLoad = trainingLoad
         self.aerobicTrainingEffect = aerobicTrainingEffect
         self.anaerobicTrainingEffect = anaerobicTrainingEffect
+        self.lapCount = lapCount
+        self.movingDurationSeconds = movingDurationSeconds
+        self.runWalk = runWalk
     }
 
     /// Average pace in seconds per kilometre, if distance is known.
     public var paceSecondsPerKm: Double? {
         distanceMeters > 0 ? durationSeconds / (distanceMeters / 1000) : nil
+    }
+
+    /// Pace of the running segments only, when the watch separated running from walking.
+    public var runningPaceSecondsPerKm: Double? { runWalk?.running?.paceSecondsPerKm }
+
+    /// The longest continuous running stretch: the watch's longest running segment, or the whole run when the
+    /// source does not split it.
+    public var longestContinuousRunMeters: Double {
+        guard let runWalk else { return distanceMeters.isFinite ? max(0, distanceMeters) : 0 }
+        return runWalk.running?.longestSegmentMeters ?? runWalk.running?.distanceMeters ?? 0
     }
 }

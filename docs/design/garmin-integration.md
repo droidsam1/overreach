@@ -367,7 +367,7 @@ removes its own copy once the watch's workout arrives (ADR-0023).
 | 3 | Done (#65, #66): `GarminSetupModel` + `GarminSetupView` (three steps), Settings → Garmin, the devices step of the first-run setup, the Today card, an expiry notification a week before, translations. | SettingsPresentation, Feature* |
 | 4 | Done: Garmin HRV feeds `ReadinessRules`; every HRV value carries its statistic (`HRVMetric`) and baselines only compare nights of one kind (ADR-0024, `hrv-metrics`). | Domain, Analytics, `docs/evidence.md` |
 | 5 | Partly done: Garmin runs are deduplicated against Health copies in the AI report and the History calendar, which shows their training load and training effect when available. Strength is paired by `StrengthActivityMatching` and Health writes are deduplicated (ADR-0023). History shows watch metrics on matched strength sessions and lists watch-only workouts. Next: walks (`ActivitySource`) and our own acute/chronic load from per-activity load (evidence first). | Core + Kit |
-| 6 | FIT decoding (laps, HR, power) for run load and the AI report. | OverreachCore |
+| 6 | Partly done: runs keep the lap count, moving time and Garmin's run/walk detection (`splitSummaries` `RWD_RUN`, `RWD_WALK`, `RWD_STAND`: distance, time, segments, longest segment, cadence) from the activity list, with no extra request (`RunWalkSplits`). Next: per-lap values (FIT decoding or the per-activity splits endpoint) for run load and the AI report. | OverreachCore |
 | 7 | Women's health → `CycleSource` (ADR-0009). | Core + Kit |
 
 Steps 1–4 are the shippable unit for phase 2 (v0.2). `ReleaseNotes.all` gets an entry when step 3 lands.

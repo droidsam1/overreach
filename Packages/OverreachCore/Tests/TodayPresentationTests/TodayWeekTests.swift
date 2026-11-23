@@ -561,7 +561,7 @@ struct TodayWeekTests {
         await model.load(now: now)
 
         #expect(model.runningOption?.advice
-            == "If you want to run today, try 2 km easy · walk 0.5 km · 0.5 km easy.")
+            == "If you want to run today, try 2.2 km easy.")
         #expect(model.runningOption?.evidence == EvidenceLevel.heuristic.displayName)
     }
 }

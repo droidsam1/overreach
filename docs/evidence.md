@@ -419,18 +419,30 @@ individual changes but does not validate these specific wearable or dosing cutof
 ### `run-walk-progression` — heuristic
 
 For a pain-free running goal, Today can show a small run/walk example in distance blocks, for example
-"2 km easy · walk 0.5 km · 0.5 km easy". Pace is never the target, because outdoor runs have stops and pace changes.
-The start is the longest run of the last 28 days with no reported pain, using total distance because lap data is not
-always available. A new runner begins with 0.5 km of running, a 0.5 km walk and 0.5 km of running.
+"3 × (1.25 km easy · walk 0.25 km) · 0.3 km easy". Pace is never the target, because outdoor runs have stops and pace
+changes.
 
-After a run with no reported pain the example adds one step of 0.5 km, at most a quarter of that distance and at least
-0.25 km, after a walk break that shortens once the start passes half of the goal distance. Reaching the goal distance
-removes the walk. Pain during or after the last run, or no run for 14 days, repeats the last pain-free distance. Pain
-after two runs in a row goes back one step. A confirmed run that meets the goal ends the progression. The step sizes,
-the quarter cap and the 14-day gap are conservative product defaults, not research findings. Gradual increases and
-run/walk intervals are common return-to-running practice, but these doses are not validated. Not medical advice: pain
-that persists belongs with a clinician. Reviewed 2026-11-23.
-[Talk-test study](https://pubmed.ncbi.nlm.nih.gov/18277826/)
+**Session ceiling (cohort evidence).** The whole session, walking included, stays within 10% of the longest run of
+the last 30 days and never passes the goal distance. In a Garmin cohort of 5,205 runners followed for 18 months,
+single sessions more than 10% longer than the longest run of the previous 30 days had higher overuse-injury rates
+(adjusted hazard rate ratios 1.64 for 10–30%, 1.52 for 30–100% and 2.28 for more than 100%). Week-to-week ratios
+showed no association and the acute:chronic workload ratio showed an inverse one, so Overreach does not cap weekly
+volume. Older evidence agrees that weekly rules are weak: the 10% weekly rule did not reduce injuries in a randomized
+trial of 532 novices (20.8% vs 20.3%), and a novice cohort linked only increases above 30% over two weeks to some
+injury types. The cohort is observational, with self-reported injuries; the 10% cut-off was chosen by its authors.
+
+**Inside the ceiling (heuristic).** Progress turns walking into running. The running stretch starts from the longest
+continuous running segment without reported pain: Garmin's run/walk detection (`RWD_RUN`) when the watch provides it,
+otherwise the whole run. After a run without reported pain it grows by 0.25 km and repeats with the athlete's own
+typical walk break (Garmin `RWD_WALK`, 0.1 to 0.5 km, 0.25 km by default) until the ceiling. A new runner begins with
+0.5 km of running, a 0.5 km walk and 0.5 km of running. Pain during or after the last run, or no run for 14 days,
+repeats the last pain-free session. Pain after two runs in a row shortens the stretch by 0.25 km and the session to
+90% of the longest pain-free run. A confirmed run that meets the goal ends the progression. The stretch step, walk
+lengths, the 14-day gap and the step back are conservative product defaults, not research findings. The app records
+pain as yes or no; clinical pain-monitoring models accept mild pain (up to 5/10) that settles by the next morning, so
+treating any reported pain as a hold is the more cautious choice. Not medical advice: pain that persists belongs with
+a clinician. Decision record: [ADR-0043](adr/0043-running-dose-single-session-ceiling.md). Reviewed 2026-11-23.
+[Single-session spike cohort](https://doi.org/10.1136/bjsports-2024-109380) · [Graded novice programme trial](https://doi.org/10.1177/0363546507307505) · [Weekly progression cohort](https://www.jospt.org/doi/10.2519/jospt.2014.5164) · [Pain-monitoring model trial](https://doi.org/10.1177/0363546506298279)
 
 ### `easy-strength-example` — heuristic
 

@@ -91,6 +91,33 @@ struct GarminDecodingTests {
         #expect(decoded.records.filter(\.isStrength).count == 9)
     }
 
+    @Test func runsKeepLapsAndTheWatchsRunWalkSplit() throws {
+        let activities = try GarminDecoding.activities(from: fixture("activities")).records
+        let run = try #require(GarminMapping.runs(activities).last)
+        #expect(run.lapCount == 7)
+        #expect(run.movingDurationSeconds == 1_592.799)
+        let splits = try #require(run.runWalk)
+        #expect(splits.running?.segments == 3)
+        #expect(splits.running?.distanceMeters == 3_101.056)
+        #expect(splits.running?.longestSegmentMeters == 1_803.382)
+        #expect(splits.walking?.segments == 5)
+        #expect(splits.walking?.distanceMeters == 869.899)
+        #expect(splits.standing?.segments == 3)
+        #expect(run.longestContinuousRunMeters == 1_803.382)
+        #expect(abs((run.runningPaceSecondsPerKm ?? 0) - 302.1) < 0.1)
+        #expect(abs((splits.walkingShare ?? 0) - 0.219) < 0.001)
+        // Strength sessions have interval splits only: no run/walk split.
+        #expect(activities.filter(\.isStrength).allSatisfy { $0.runWalk == nil })
+    }
+
+    @Test func runWalkSplitIgnoresIntervalSplitsAndIsAbsentWithoutDetection() {
+        #expect(GarminDecoding.runWalk([["splitType": "INTERVAL_ACTIVE", "distance": 4_000, "duration": 1_500]]) == nil)
+        #expect(GarminDecoding.runWalk(nil) == nil)
+        let walkOnly = GarminDecoding.runWalk([["splitType": "RWD_WALK", "distance": 800, "duration": 600]])
+        #expect(walkOnly?.walking?.segments == 1)
+        #expect(walkOnly?.running == nil)
+    }
+
     @Test func noDataIsEmptyNotAnError() throws {
         #expect(try GarminDecoding.hrvNights(from: Data()).records.isEmpty)
         #expect(try GarminDecoding.sleeps(from: Data("  \n".utf8)).records.isEmpty)

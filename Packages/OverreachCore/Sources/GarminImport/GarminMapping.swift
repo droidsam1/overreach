@@ -85,7 +85,10 @@ public enum GarminMapping {
                 averageCadence: activity.averageRunningCadence,
                 trainingLoad: activity.trainingLoad,
                 aerobicTrainingEffect: activity.aerobicTrainingEffect,
-                anaerobicTrainingEffect: activity.anaerobicTrainingEffect
+                anaerobicTrainingEffect: activity.anaerobicTrainingEffect,
+                lapCount: activity.lapCount,
+                movingDurationSeconds: activity.movingDurationSeconds,
+                runWalk: activity.runWalk
             )
         }
         .sorted { ($0.startedAt, $0.id) < ($1.startedAt, $1.id) }
