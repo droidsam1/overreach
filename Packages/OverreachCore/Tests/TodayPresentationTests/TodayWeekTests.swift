@@ -547,4 +547,21 @@ struct TodayWeekTests {
         #expect(model.runningOption?.advice == "Try 30 min at a conversational pace in place of the planned session.")
         #expect(try await store.profile().goal == goal)
     }
+
+    @Test func aPainFreeGoalShowsTheRunWalkExampleInOneLine() async throws {
+        let store = TestStore()
+        let goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000, aimsForPainFree: true))
+        try await store.save(AthleteProfile(goal: goal))
+        let source = WeekSource(days: [day(0, sleepHours: 5, hrv: nil, steps: nil)], activities: [RunActivity(
+            id: "past-run", source: .appleHealth, startedAt: now.addingTimeInterval(-2 * 86_400),
+            durationSeconds: 900, distanceMeters: 2_000
+        )])
+        let model = TodayModel(sources: [source], profiles: store, calendar: calendar)
+
+        await model.load(now: now)
+
+        #expect(model.runningOption?.advice
+            == "If you want to run today, try 2 km easy · walk 0.5 km · 0.5 km easy.")
+        #expect(model.runningOption?.evidence == EvidenceLevel.heuristic.displayName)
+    }
 }

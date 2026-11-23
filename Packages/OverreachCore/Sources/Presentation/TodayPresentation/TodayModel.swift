@@ -842,9 +842,13 @@ public final class TodayModel {
             priority: goal?.effectivePriority ?? .balanced, allowEffortOnly: !runReadFailed,
             lowerBody: lowerBody, rotation: rotation
         ), decision != .plannedRest {
+            let progression = running?.aimsForPainFree == true && !runReadFailed
+                ? RunWalkProgression.advise(
+                    goal: running, runs: runs, outcomes: schedule.compactMap(\.completion), now: now, calendar: calendar
+                ) : nil
             runningOption = RunningOption(
                 goal: goal, decision: decision, hasRunToday: !scheduledRunsToday.isEmpty,
-                lowerBody: lowerBody, calendar: calendar, format: format
+                lowerBody: lowerBody, progression: progression, calendar: calendar, format: format
             )
         }
     }
