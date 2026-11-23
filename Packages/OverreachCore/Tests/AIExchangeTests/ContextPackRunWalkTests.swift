@@ -12,15 +12,14 @@ struct ContextPackRunWalkTests {
     }()
     private let now = Date(timeIntervalSince1970: 1_790_000_000)
 
-    private func runsJSON(_ runs: [RunActivity]) throws -> String {
+    private func runsJSON(_ runs: [RunActivity]) throws -> NSArray {
         let today = CalendarDay(now, calendar: calendar)
         let pack = ContextPackBuilder.build(
             ContextInput(runs: runs), period: today.adding(days: -27, calendar: calendar)...today, now: now,
             calendar: calendar
         )
         let object = try #require(JSONSerialization.jsonObject(with: ContextMessage.json(pack)) as? [String: Any])
-        let data = try JSONSerialization.data(withJSONObject: object["runs"] ?? [], options: [.sortedKeys])
-        return try #require(String(data: data, encoding: .utf8))
+        return try #require(object["runs"] as? NSArray)
     }
 
     @Test func exportsTheWatchSplitLapsAndRunningPace() throws {
@@ -43,7 +42,10 @@ struct ContextPackRunWalkTests {
             "segments":1},"walking":{"distanceMeters":1200,"durationSeconds":900,"longestSegmentMeters":450,\
             "segments":3}},"runningPaceSecondsPerKm":400,"source":"garmin","startedAt":"2026-09-20T14:13:20Z"}]
             """
-        #expect(try runsJSON([run]) == fixture)
+        let expected = try #require(
+            JSONSerialization.jsonObject(with: Data(fixture.utf8)) as? NSArray
+        )
+        #expect(try runsJSON([run]) == expected)
     }
 
     @Test func leavesTheNewFieldsOutWhenTheSourceHasNoSplit() throws {
@@ -51,10 +53,10 @@ struct ContextPackRunWalkTests {
             id: "h1", source: .appleHealth, startedAt: now.addingTimeInterval(-86_400), durationSeconds: 1_800,
             distanceMeters: 5_000
         )
-        let json = try runsJSON([run])
+        let json = try #require(try runsJSON([run]).firstObject as? [String: Any])
         for key in ["runWalk", "lapCount", "movingDurationSeconds", "runningPaceSecondsPerKm",
                     "longestContinuousRunMeters"] {
-            #expect(!json.contains(key))
+            #expect(json[key] == nil)
         }
     }
 
