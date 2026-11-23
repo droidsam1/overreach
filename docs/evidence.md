@@ -677,6 +677,38 @@ Refs: [Schumann et al. 2022](https://pubmed.ncbi.nlm.nih.gov/34757594/) ·
 [Doma and Deakin 2013](https://pubmed.ncbi.nlm.nih.gov/23724883/) ·
 [Sex and training-status analysis](https://pmc.ncbi.nlm.nih.gov/articles/PMC10933151/). Reviewed 2026-11-22.
 
+### `run-before-strength-carryover` — limited
+
+How much a recorded run carries over into the next lift. Aerobic work before strength lowers strength moderately,
+most after more than 30 min or moderate-to-high intensity and little after short easy work (Markov et al. 2022,
+meta-analysis, trained men, mostly same-session). Leg-press volume was lower 4 and 8 h after aerobic work and back at
+24 h, for intervals and continuous work alike (Sporer and Wenger 2003, cycling). Unaccustomed and downhill running
+cause muscle damage with strength back after about 48 h; regular runners are protected by the repeated-bout effect.
+Running may interfere more than cycling at the fibre level (Lundberg et al. 2022). → Planned defaults
+(`RunCarryover.Settings`, #269): *notable* when anaerobic training effect ≥ 2.0 or aerobic ≥ 4.0, more than 60 min or
+110 % of the longest run of 30 days, elevation gain ≥ 15 m/km, no run in the previous 14 days, less than 24 h to the
+next lift, check-in soreness ≥ 3/5, or a pain report that holds (ADR-0043); otherwise *light*. The thresholds are
+heuristics. Refs: [Markov et al. 2022](https://doi.org/10.1007/s40279-021-01615-6) ·
+[Sporer and Wenger 2003](https://pubmed.ncbi.nlm.nih.gov/14636098/) ·
+[Lundberg et al. 2022](https://doi.org/10.1007/s40279-022-01688-x) ·
+[Downhill running recovery](https://doi.org/10.1038/s41598-020-76008-2). Reviewed 2026-11-23.
+
+### `rotation-reorder-after-run` — heuristic
+
+Whether to keep, swap, postpone or cap the next leg-heavy session after a recorded run (ADR-0044). Supporting
+findings: weekly volume matters more than the day a muscle is trained (`frequency-volume-equated`); choosing the
+day's session by readiness gave equal or better leg strength than a fixed order (McNamara and Stearne 2010, small
+trial); autoregulated loads match or beat fixed loads for maximal strength (Zhang et al. 2021, meta-analysis); heavy
+leg strength work leaves residual fatigue for one to several days (Doma et al. 2017, review); HRV-guided resistance
+training did not beat fixed recovery in a trial (Bittencourt et al. 2024, older women). No trial tests swapping
+sessions after an extra run. → Planned defaults (#271): light carry-over and green readiness keep the plan; otherwise
+swap with the next slot without heavy leg demand when every slot stays in the cycle and heavy-leg sessions stay
+≥ 48 h apart, then postpone one day, then keep with no load increase and top sets at RPE 8. Refs:
+[McNamara and Stearne 2010](https://lida.sport-iat.de/ta/Record/4019534?lng=en) ·
+[Zhang et al. 2021](https://doi.org/10.3389/fphys.2021.651112) ·
+[Doma et al. 2017](https://researchonline.jcu.edu.au/51391/) ·
+[Bittencourt et al. 2024](https://doi.org/10.3389/fphys.2024.1472702). Reviewed 2026-11-23.
+
 ### `hybrid-race-taper` — limited
 
 For an athlete with established running exposure, reducing running volume before a priority race
