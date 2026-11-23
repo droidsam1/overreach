@@ -102,9 +102,12 @@ public final class TodayModel {
         ))
     }
 
-    /// "Not today": hides the run offer for the rest of the day. Nothing is saved and nothing is counted.
+    /// "Not today": hides the run offer for the rest of the day, also after a relaunch. Only the day is kept, on
+    /// the device; nothing is counted.
     public func dismissRunOffer() {
-        dismissedRunOfferDay = loadedDay
+        guard let day = loadedDay else { return }
+        dismissedRunOfferDay = day
+        saveDismissedRunOfferDay(day)
     }
 
     /// "With Nanoq?" for the latest recent walk nobody has answered yet.
@@ -116,6 +119,7 @@ public final class TodayModel {
         )
     }
     private let companionAnswers: DogWalkAnswers
+    private let saveDismissedRunOfferDay: @MainActor (CalendarDay) -> Void
     private var movementWalks: [WalkBout] = []
     private var movementRoutine = WalkingRoutine()
     private var movementNow: Date?
@@ -632,6 +636,8 @@ public final class TodayModel {
     /// - Parameter checkIns: today's check-in adds how the user feels (and "sick") to the readiness light.
     /// - Parameter cycle: menstrual flow from Apple Health, read only for a natural cycle (ADR-0009).
     /// - Parameter activity: walks from Apple Health or Garmin (ADR-0010). Steps come from `sources`.
+    /// - Parameter dismissedRunOfferDay: the last day the athlete said "Not today" to the run offer, kept on the
+    ///   device (not in backups, reports or the profile); `saveDismissedRunOfferDay` stores a new one.
     public init(
         sources: [any MetricsSource], activity: [any ActivitySource] = [], checkIns: (any CheckInRepository)? = nil,
         backup: (any BackupService)? = nil,
@@ -643,11 +649,15 @@ public final class TodayModel {
         dogWalkAnswers: [WalkCompanionAnswer] = [],
         saveDogWalkAnswers: @escaping @MainActor ([WalkCompanionAnswer]) -> Void = { _ in },
         companionAnswers: DogWalkAnswers? = nil,
+        dismissedRunOfferDay: CalendarDay? = nil,
+        saveDismissedRunOfferDay: @escaping @MainActor (CalendarDay) -> Void = { _ in },
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
         self.activityMatchChoices = activityMatchChoices
         self.companionAnswers = companionAnswers ?? DogWalkAnswers(dogWalkAnswers, save: saveDogWalkAnswers)
+        self.dismissedRunOfferDay = dismissedRunOfferDay
+        self.saveDismissedRunOfferDay = saveDismissedRunOfferDay
         recordLoader = TrainingRecordLoader(
             sources: sources, activity: activity, checkIns: checkIns, workouts: workouts, exercises: exercises,
             recordedStrength: recordedStrength, routines: routines, progression: progression, cycle: cycle

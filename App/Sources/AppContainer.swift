@@ -165,9 +165,20 @@ final class AppContainer {
             checkIns: checkIns, backup: backup, garmin: garmin, profiles: profiles, workouts: workouts,
             exercises: exercises, recordedStrength: historyRecordedStrength, routines: routines,
             progression: progression, cycle: cycleSource, activityMatchChoices: readActivityMatchChoices,
-            companionAnswers: dogWalkAnswers
+            companionAnswers: dogWalkAnswers,
+            dismissedRunOfferDay: UserDefaults.standard.data(forKey: Self.dismissedRunOfferDayKey).flatMap {
+                try? JSONDecoder().decode(CalendarDay.self, from: $0)
+            },
+            saveDismissedRunOfferDay: { day in
+                if let data = try? JSONEncoder().encode(day) {
+                    UserDefaults.standard.set(data, forKey: Self.dismissedRunOfferDayKey)
+                }
+            }
         )
     }
+
+    /// Last day the run offer got "Not today" (#264). Per device, not in backups, reports or the profile.
+    private static let dismissedRunOfferDayKey = "today.runOffer.dismissedDay"
 
     private static let dogWalkAnswersKey = "today.dogWalkAnswers"
 

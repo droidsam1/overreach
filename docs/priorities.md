@@ -24,9 +24,7 @@ and the logger come before review tools, and work that only a person with an iPh
    a pain-free goal, with severity and next-morning status, so the run/walk progression
    ([ADR-0043](adr/0043-running-dose-single-session-ceiling.md)) stops reading unreported pain as none.
 4. **Per-lap Garmin values** — [#259](https://github.com/droidsam1/overreach/issues/259).
-5. **Run offer follow-ups** — [#264](https://github.com/droidsam1/overreach/issues/264) (keep "Not today" across
-   relaunches), then [#265](https://github.com/droidsam1/overreach/issues/265) (learn usual run slots). Both touch
-   Today: never in parallel.
+5. **Run offer follow-up** — [#265](https://github.com/droidsam1/overreach/issues/265) (learn usual run slots).
 
 ## Needs a person or an iPhone
 

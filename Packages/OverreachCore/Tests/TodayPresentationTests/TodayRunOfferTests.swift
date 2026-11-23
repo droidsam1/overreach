@@ -103,6 +103,51 @@ struct TodayRunOfferTests {
         #expect(model.runOffer == nil)
     }
 
+    @Test func notTodaySurvivesARelaunchTheSameDayButNotTheNextDay() async throws {
+        let store = TestStore(exercises: [squat, bench], sessions: rotation(lastDaysAgo: 1))
+        try await store.save(AthleteProfile())
+        var saved: CalendarDay?
+        func launch(at date: Date) async -> TodayModel {
+            let model = TodayModel(
+                sources: [RunOfferSource(day: CalendarDay(date, calendar: calendar), sleepHours: 5,
+                                         runs: [run(daysAgo: 4)])],
+                profiles: store, workouts: store, exercises: store,
+                dismissedRunOfferDay: saved, saveDismissedRunOfferDay: { saved = $0 },
+                calendar: calendar, format: format
+            )
+            await model.load(now: date)
+            return model
+        }
+        let first = await launch(at: now)
+        #expect(first.runOffer != nil)
+        first.dismissRunOffer()
+        #expect(saved == today)
+        let relaunched = await launch(at: now.addingTimeInterval(3_600))
+        #expect(relaunched.runOffer == nil)
+        // Tomorrow the old answer no longer applies; the offer depends only on that day's window.
+        let tomorrow = now.addingTimeInterval(86_400)
+        let nextDay = await launch(at: tomorrow)
+        let fresh = TodayModel(
+            sources: [RunOfferSource(day: CalendarDay(tomorrow, calendar: calendar), sleepHours: 5,
+                                     runs: [run(daysAgo: 4)])],
+            profiles: store, workouts: store, exercises: store, calendar: calendar, format: format
+        )
+        await fresh.load(now: tomorrow)
+        #expect((nextDay.runOffer == nil) == (fresh.runOffer == nil))
+    }
+
+    @Test func aDismissalFromAnEarlierDayDoesNotHideTodaysOffer() async throws {
+        let store = TestStore(exercises: [squat, bench], sessions: rotation(lastDaysAgo: 1))
+        try await store.save(AthleteProfile())
+        let model = TodayModel(
+            sources: [RunOfferSource(day: today, sleepHours: 5, runs: [run(daysAgo: 4)])],
+            profiles: store, workouts: store, exercises: store,
+            dismissedRunOfferDay: today.adding(days: -1, calendar: calendar), calendar: calendar, format: format
+        )
+        await model.load(now: now)
+        #expect(model.runOffer != nil)
+    }
+
     @Test func aRunLoggedTodayHidesTheOffer() async throws {
         let model = try await model(runs: [run(daysAgo: 0, minutes: 20).movedBack(hours: 3)])
         #expect(model.runOffer == nil)
