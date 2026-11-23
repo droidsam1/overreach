@@ -837,7 +837,8 @@ public final class TodayModel {
             runningBreak: runningBreak, runReadFailed: record.runReadFailed,
             lowerBody: training.lowerBody,
             rotation: snapshot.sessionsFailed ? nil : RotationProjection.project(
-                sessions: snapshot.allSessions, exercises: record.exercises, now: now, calendar: calendar
+                sessions: snapshot.allSessions, exercises: record.exercises, now: now, calendar: calendar,
+                adjustments: profile?.rotationAdjustments ?? []
             )
         )
         loadWorkoutContext(today: today, profile: profile, record: record)
@@ -1169,7 +1170,9 @@ public final class TodayModel {
         if chosenWorkout?.day != today { chosenWorkout = nil }
         recentWorkouts = WorkoutContext(
             sessions: recent, catalog: record.exercises, settings: record.settings,
-            rotation: SessionRotation.detect(in: recent),
+            rotation: SessionRotation.detect(
+                in: recent, adjustments: profile?.rotationAdjustments ?? [], calendar: calendar
+            ),
             planned: routine.map { SessionRotation.Slot(id: $0.id.uuidString, name: $0.name) },
             recent: SessionRotation.recentWorkouts(in: recent)
         )

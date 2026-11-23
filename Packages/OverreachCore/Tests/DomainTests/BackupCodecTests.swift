@@ -67,4 +67,29 @@ struct BackupCodecTests {
         #expect(name.hasPrefix("Overreach-backup-2026-"))
         #expect(name.hasSuffix(".json"))
     }
+
+    @Test func rotationAdjustmentsRoundTripAndOldProfilesHaveNone() throws {
+        var document = sampleDocument()
+        #expect(document.profile.rotationAdjustments.isEmpty)
+        document.profile.record(RotationAdjustment(
+            day: CalendarDay(year: 2026, month: 11, day: 18), kind: .swap(from: "b", to: "c"), reason: .runCarryover
+        ))
+        document.profile.record(RotationAdjustment(
+            day: CalendarDay(year: 2026, month: 11, day: 20), kind: .postpone(days: 1)
+        ))
+        let decoded = try BackupCodec.decode(BackupCodec.encode(document))
+        #expect(decoded == document)
+        #expect(decoded.profile.rotationAdjustments.count == 2)
+
+        let withoutField = Data(#"{"formatVersion": 1, "createdAt": 0, "profile": {"cycleTracking": "off"}}"#.utf8)
+        #expect(try BackupCodec.decode(withoutField).profile.rotationAdjustments.isEmpty)
+    }
+
+    @Test func recordingTheSameAdjustmentTwiceKeepsOne() {
+        var profile = AthleteProfile()
+        let adjustment = RotationAdjustment(day: CalendarDay(year: 2026, month: 11, day: 18), kind: .postpone(days: 1))
+        profile.record(adjustment)
+        profile.record(adjustment)
+        #expect(profile.rotationAdjustments == [adjustment])
+    }
 }

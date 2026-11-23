@@ -50,19 +50,31 @@ public struct RotationProjection: Hashable, Sendable {
     /// - Parameters:
     ///   - sessions: Logged strength sessions, in any order.
     ///   - exercises: The catalog, for telling lower-body exercises apart.
+    ///   - adjustments: Swaps and postponements the athlete accepted (ADR-0044). A recorded postponement shifts the
+    ///     projection instead of breaking it; after a swapped pair the original order resumes. Without a record, any
+    ///     change of order or rhythm drops the projection as before.
     public static func project(
         sessions: [StrengthSession], exercises: [Exercise], now: Date, calendar: Calendar = .current,
-        settings: Settings = .init()
+        adjustments: [RotationAdjustment] = [], settings: Settings = .init()
     ) -> RotationProjection? {
         let done = sessions.filter { $0.startedAt <= now }
-        guard let rotation = SessionRotation.detect(in: done) else { return nil }
+        guard let rotation = SessionRotation.detect(in: done, adjustments: adjustments, calendar: calendar)
+        else { return nil }
         let timeline = SessionRotation.timeline(done)
         let days = timeline.map { CalendarDay($0.session.startedAt, calendar: calendar) }
         // Every gap between the sessions that proved the rotation must match.
         let proving = Array(days.suffix(rotation.order.count * SessionRotation.requiredCycles))
         guard proving.count >= 2 else { return nil }
-        let gaps = zip(proving, proving.dropFirst()).map {
-            calendar.dateComponents([.day], from: $0.startDate(in: calendar), to: $1.startDate(in: calendar)).day ?? 0
+        let postponements = adjustments.compactMap { adjustment -> (actual: CalendarDay, days: Int)? in
+            guard case let .postpone(days) = adjustment.kind, days > 0 else { return nil }
+            return (adjustment.day.adding(days: days, calendar: calendar), days)
+        }
+        // A recorded postponement is not a break in the rhythm: the session it moved ran that many days late.
+        let gaps = zip(proving, proving.dropFirst()).map { earlier, later in
+            let raw = calendar.dateComponents(
+                [.day], from: earlier.startDate(in: calendar), to: later.startDate(in: calendar)
+            ).day ?? 0
+            return raw - (postponements.first { $0.actual == later }?.days ?? 0)
         }
         guard let cadence = gaps.first, (1...settings.longestCadenceDays).contains(cadence),
               gaps.allSatisfy({ $0 == cadence }), let latest = timeline.last else { return nil }
@@ -73,9 +85,16 @@ public struct RotationProjection: Hashable, Sendable {
                 ?? .none
         }
         let lastDay = days[days.count - 1]
+        // A postponement accepted for the next session shifts every projected session.
+        let nextPlanned = lastDay.adding(days: cadence, calendar: calendar)
+        let shift = adjustments.compactMap { adjustment -> Int? in
+            guard case let .postpone(days) = adjustment.kind, adjustment.day == nextPlanned else { return nil }
+            return max(days, 0)
+        }.first ?? 0
         let upcoming = rotation.order.enumerated().map { index, slot in
-            Session(day: lastDay.adding(days: cadence * (index + 1), calendar: calendar), slot: slot,
-                    demand: demand(slot))
+            let slot = index == 0 ? rotation.next : slot
+            return Session(day: lastDay.adding(days: cadence * (index + 1) + shift, calendar: calendar), slot: slot,
+                           demand: demand(slot))
         }
         // A missed session breaks the rhythm: do not guess where it went.
         let today = CalendarDay(now, calendar: calendar)
