@@ -19,7 +19,7 @@ struct OnboardingModelTests {
         await model.presentIfNeeded()
         #expect(model.isPresented)
         #expect(model.step == .goal)
-        #expect(model.progressText == "Step 1 of 5")
+        #expect(model.progressText == "Step 1 of 2")
 
         await model.skipSetup()
         #expect(!model.isPresented)
@@ -45,9 +45,39 @@ struct OnboardingModelTests {
         #expect(!model.isPresented)
     }
 
-    @Test func savesTheAnswers() async throws {
+    @Test func theFirstRunAsksOnlyTheGoalAndTheDevices() async throws {
         let (model, store) = makeModel()
         await model.presentIfNeeded()
+        #expect(model.steps == [.goal, .devices])
+        #expect(model.canSkipStep && !model.isLastStep)
+
+        model.goalKind = .hybrid
+        model.next()
+        #expect(model.step == .devices)
+        #expect(model.progressText == "Step 2 of 2")
+        #expect(model.isLastStep && !model.canSkipStep)
+        #expect(model.usesOnlyPhone && !model.offersGarminSetup)
+        model.toggle(.garmin)
+        model.toggle(.appleWatch)
+        #expect(model.offersGarminSetup && model.isSelected(.appleWatch))
+        model.next()
+        #expect(model.step == .devices)
+
+        #expect(await model.finish())
+        #expect(!model.isPresented)
+        let profile = try await store.profile()
+        #expect(profile.goal?.kind == .hybrid)
+        #expect(profile.wearables == [.garmin, .appleWatch])
+        // Nothing else was asked: those questions wait for Today.
+        #expect(profile.sex == nil && profile.cycleTracking == .off)
+        #expect(profile.walkingRoutine == WalkingRoutine())
+    }
+
+    @Test func theTrainingProfileKeepsEveryQuestionEditable() async throws {
+        let (model, store) = makeModel()
+        await model.reopen()
+        #expect(model.steps == [.goal, .about, .walking, .devices])
+        #expect(model.progressText == "Step 1 of 4")
 
         model.goalKind = .hybrid
         model.next()
@@ -62,23 +92,14 @@ struct OnboardingModelTests {
         model.walksAreFixed = true
         #expect(model.showsWalkDetails)
         model.next()
-        #expect(model.step == .devices)
-        #expect(model.usesOnlyPhone && !model.offersGarminSetup)
-        model.toggle(.garmin)
-        model.toggle(.appleWatch)
-        #expect(model.offersGarminSetup && model.isSelected(.appleWatch))
-        model.next()
-        #expect(model.step == .start && !model.canSkipStep)
+        #expect(model.step == .devices && model.isLastStep)
 
         #expect(await model.finish())
-        #expect(!model.isPresented)
         let profile = try await store.profile()
-        #expect(profile.goal?.kind == .hybrid)
         #expect(profile.sex == .female && profile.cycleTracking == .naturalCycle)
         #expect(profile.walkingRoutine.hasDog && profile.walkingRoutine.usualWalksPerDay == 3)
         #expect(profile.walkingRoutine.walksAreFixed)
         #expect(profile.walkingRoutine.dogName == "Nanoq")
-        #expect(profile.wearables == [.garmin, .appleWatch])
     }
 
     @Test func onlyThePhoneClearsTheWatches() async throws {
@@ -96,15 +117,14 @@ struct OnboardingModelTests {
         #expect(try await store.profile().wearables.isEmpty)
     }
 
-    @Test func skippingTheDevicesStepKeepsTheStoredWatches() async throws {
+    @Test func finishingTheLastStepKeepsTheStoredWatches() async throws {
         let (model, store) = makeModel()
         try await store.save(AthleteProfile(wearables: [.appleWatch]))
         await model.reopen()
-        for _ in 0..<3 { model.next() }
+        model.next()
+        model.next()
+        model.next()
         #expect(model.step == .devices)
-        model.toggle(.garmin)
-        model.skipStep()
-        #expect(model.step == .start)
         #expect(await model.finish())
         #expect(try await store.profile().wearables == [.appleWatch])
     }
@@ -148,9 +168,9 @@ struct OnboardingModelTests {
         model.back()
         #expect(model.step == .goal)
         for _ in 0..<6 { model.next() }
-        #expect(model.step == .start)
+        #expect(model.step == .devices)
         model.back()
-        #expect(model.step == .devices && model.canGoBack)
+        #expect(model.step == .walking && model.canGoBack)
     }
 
     @Test func aFailedSaveKeepsTheSetupOpen() async {
@@ -163,30 +183,5 @@ struct OnboardingModelTests {
         #expect(model.isPresented)
         #expect(model.errorMessage == "Could not save your answers. Try again or skip the setup.")
         #expect(await !store.isOnboardingCompleted())
-    }
-
-    @Test func pickingGarminOpensItsSetupOnceOnContinue() async {
-        let (model, _) = makeModel()
-        await model.reopen()
-        for _ in 0..<3 { model.next() }
-        model.toggle(.garmin)
-
-        #expect(model.continueTapped(isGarminConnected: false))  // opens the Garmin setup
-        #expect(model.step == .devices)
-        #expect(!model.continueTapped(isGarminConnected: false))  // skipped it: moves on
-        #expect(model.step == .start)
-    }
-
-    @Test func withoutGarminOrAlreadyConnectedContinueMovesOn() async {
-        let (model, _) = makeModel()
-        await model.reopen()
-        for _ in 0..<3 { model.next() }
-        #expect(!model.continueTapped(isGarminConnected: false))
-        #expect(model.step == .start)
-
-        model.back()
-        model.toggle(.garmin)
-        #expect(!model.continueTapped(isGarminConnected: true))
-        #expect(model.step == .start)
     }
 }

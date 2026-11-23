@@ -10,9 +10,12 @@ public enum OnboardingDestination: Hashable, Sendable {
     case restoreBackup
 }
 
-/// Optional first-run setup (issue #18): a short visual tour of what the app does, then the basic data. Every
-/// page and step can be skipped, and the data steps can be reopened from Settings (without the tour). It is only
-/// offered on a device with no training data, so it never interrupts an existing user or a restore.
+/// Optional first-run setup (issue #18): a short visual tour of what the app does, then the two questions the first
+/// recommendation needs: the goal and the devices (ADR-0041, rule 5). The devices step ends with how to start (train,
+/// import history, restore a backup). Every page and step can be skipped. Other profile questions are asked later on
+/// Today, when their answer would change a recommendation. Settings → Training profile reopens the setup with every
+/// step (without the tour). It is only offered on a device with no training data, so it never interrupts an existing
+/// user or a restore.
 ///
 /// To extend it, add a `TourPage` to show a feature or a `Step` to ask for data; the order is the order of the cases.
 /// The devices step asks which watches the person uses; connecting Apple Health or Garmin from there is wired by the
@@ -21,7 +24,7 @@ public enum OnboardingDestination: Hashable, Sendable {
 @Observable
 public final class OnboardingModel {
     public enum Step: Int, CaseIterable, Hashable, Sendable {
-        case goal, about, walking, devices, start
+        case goal, about, walking, devices
     }
 
     /// The tour shown before the data steps on a first launch.
@@ -31,6 +34,8 @@ public final class OnboardingModel {
 
     public var isPresented = false
     public private(set) var step: Step = .goal
+    /// The first run asks only the goal and the devices; reopened from Settings it asks every step.
+    public private(set) var isFirstRun = false
     /// The tour page on screen; `nil` once the tour is over or skipped (the data steps show).
     public private(set) var tourPage: TourPage?
     public private(set) var errorMessage: String?
@@ -50,8 +55,6 @@ public final class OnboardingModel {
     public var canRunDuringWalks = false
     /// Devices picked on the devices step. Empty: only the iPhone.
     public private(set) var wearables: Set<Wearable> = []
-    /// The Garmin setup was already offered in this run, so "Continue" no longer opens it.
-    private var hasOfferedGarmin = false
 
     public let goalOptions: [Option<TrainingGoal.Kind>] = TrainingGoal.Kind.allCases.map {
         Option(value: $0, name: $0.displayName)
@@ -81,19 +84,24 @@ public final class OnboardingModel {
 
     // MARK: Screen state
 
-    /// "Step 1 of 4"
+    /// The steps of this run, in order: the goal and the devices on the first run, all of them from Settings.
+    public var steps: [Step] { isFirstRun ? [.goal, .devices] : Step.allCases }
+
+    /// "Step 1 of 2"
     public var progressText: String {
-        L10n.format("Step {1} of {2}", step.rawValue + 1, Step.allCases.count)
+        L10n.format("Step {1} of {2}", stepIndex + 1, steps.count)
     }
 
-    public var canGoBack: Bool { step != .goal }
+    public var canGoBack: Bool { stepIndex > 0 }
 
     /// Position of the tour page, for the page dots.
     public var tourIndex: Int { tourPage?.rawValue ?? TourPage.allCases.count }
     public var tourCount: Int { TourPage.allCases.count }
     public var isLastTourPage: Bool { tourPage == TourPage.allCases.last }
     public var canGoBackInTour: Bool { (tourPage?.rawValue ?? 0) > 0 }
-    public var canSkipStep: Bool { step != .start }
+    /// The last step ends with the ways to start instead of "Continue".
+    public var isLastStep: Bool { step == steps.last }
+    public var canSkipStep: Bool { !isLastStep }
     public var showsCycleTracking: Bool { sex == .female }
     public var showsWalkDetails: Bool { hasDog || (usualWalksPerDay ?? 0) > 0 }
 
@@ -118,7 +126,7 @@ public final class OnboardingModel {
                 await status.markOnboardingCompleted()
                 return
             }
-            open(with: stored)
+            open(with: stored, isFirstRun: true)
             tourPage = TourPage.allCases.first
         } catch {
             // The app works without the setup: it is offered again next time.
@@ -160,28 +168,19 @@ public final class OnboardingModel {
         }
     }
 
-    /// "Continue". On the devices step with Garmin picked and not connected yet, the first tap asks to open the
-    /// Garmin setup (returns true) instead of moving on; after it, or once connected, it moves on as usual.
-    public func continueTapped(isGarminConnected: Bool) -> Bool {
-        if step == .devices, offersGarminSetup, !isGarminConnected, !hasOfferedGarmin {
-            hasOfferedGarmin = true
-            return true
-        }
-        next()
-        return false
-    }
-
     /// "Only my iPhone": no watch.
     public func chooseOnlyPhone() {
         wearables = []
     }
 
     public func next() {
-        step = Step(rawValue: step.rawValue + 1) ?? step
+        guard stepIndex + 1 < steps.count else { return }
+        step = steps[stepIndex + 1]
     }
 
     public func back() {
-        step = Step(rawValue: step.rawValue - 1) ?? step
+        guard stepIndex > 0 else { return }
+        step = steps[stepIndex - 1]
     }
 
     /// Leaves this step's stored answers as they were and moves on.
@@ -195,8 +194,6 @@ public final class OnboardingModel {
         case .walking:
             applyWalking(profile.walkingRoutine)
         case .devices:
-            wearables = profile.wearables
-        case .start:
             return
         }
         next()
@@ -228,6 +225,8 @@ public final class OnboardingModel {
 
     // MARK: Helpers
 
+    private var stepIndex: Int { steps.firstIndex(of: step) ?? 0 }
+
     private var answeredProfile: AthleteProfile {
         var updated = profile
         if let goalKind {
@@ -247,7 +246,8 @@ public final class OnboardingModel {
         return updated
     }
 
-    private func open(with stored: AthleteProfile) {
+    private func open(with stored: AthleteProfile, isFirstRun: Bool = false) {
+        self.isFirstRun = isFirstRun
         profile = stored
         goalKind = stored.goal?.kind
         sex = stored.sex

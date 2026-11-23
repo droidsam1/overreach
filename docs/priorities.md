@@ -13,10 +13,8 @@ and the logger come before review tools, and work that only a person with an iPh
 ## Ready to implement
 
 1. **Minimal UI with progressive disclosure** — [#179](https://github.com/droidsam1/overreach/issues/179)
-   ([ADR-0041](adr/0041-minimal-ui-progressive-disclosure.md)), one task at a time in this order:
-   [#184](https://github.com/droidsam1/overreach/issues/184) (two-step onboarding),
-   [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data, on top of the visual hero). #184 and #185
-   touch Today: never in parallel. [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements) shipped
+   ([ADR-0041](adr/0041-minimal-ui-progressive-disclosure.md)), next task:
+   [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data, on top of the visual hero). [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements) shipped
    lift records and set feedback; a running-goal milestone waits for a goal-progress event to attach it to.
 2. **Rotation after a recorded run** — [#268](https://github.com/droidsam1/overreach/issues/268)
    ([ADR-0044](adr/0044-rotation-after-a-recorded-run.md)), one task at a time in this order:
