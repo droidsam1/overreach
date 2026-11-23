@@ -289,6 +289,36 @@ struct HistoryModelTests {
         #expect(!model.showsEmptyState)
     }
 
+    @Test func runDetailShowsTheWatchRunWalkSplitOnlyWhenPresent() async throws {
+        let split = RunActivity(
+            id: "split", source: .garmin, startedAt: now.addingTimeInterval(-7_200), durationSeconds: 2_400,
+            distanceMeters: 4_800, lapCount: 5, movingDurationSeconds: 2_330,
+            runWalk: RunWalkSplits(
+                running: .init(distanceMeters: 3_600, durationSeconds: 1_440, segments: 4, longestSegmentMeters: 1_250),
+                walking: .init(distanceMeters: 1_200, durationSeconds: 900, segments: 3)
+            )
+        )
+        let plain = RunActivity(
+            id: "plain", source: .appleHealth, startedAt: now.addingTimeInterval(-90_000), durationSeconds: 1_800,
+            distanceMeters: 5_000
+        )
+        let (model, _) = await model([], runSources: [
+            TimelineRuns(kind: .garmin, activities: [split]), TimelineRuns(kind: .appleHealth, activities: [plain]),
+        ])
+        let runs = model.rows.compactMap { row -> HistoryRunActivity? in
+            if case let .run(run) = row { run } else { nil }
+        }
+        try #require(runs.count == 2)
+
+        #expect(runs[0].movementMetrics.map(\.label) == [
+            "Running", "Walking", "Longest continuous run", "Running pace", "Moving time", "Laps",
+        ])
+        #expect(runs[0].movementMetrics.map(\.value) == [
+            "3.6 km · 24:00", "1.2 km · 15:00", "1.25 km", "6:40 /km", "38:50", "5",
+        ])
+        #expect(runs[1].movementMetrics.isEmpty)
+    }
+
     @Test func detailDescribesSetsAndEstimatesOneRepMaxForWorkingSets() async throws {
         let squatSession = session("Lower", daysAgo: 1, sets: [
             WorkoutSet(kind: .warmup, weightKg: 60, reps: 5),

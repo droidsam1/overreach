@@ -11,6 +11,33 @@ struct MarkdownReportRendererTests {
         return calendar
     }
 
+    @Test func runsListTheWatchSplitOnlyWhenPresent() throws {
+        let calendar = try utcCalendar()
+        let day = CalendarDay(year: 2026, month: 11, day: 16)
+        let start = day.startDate(in: calendar).addingTimeInterval(3_600)
+        let split = RunActivity(
+            id: "g", source: .garmin, startedAt: start, durationSeconds: 2_400, distanceMeters: 4_800, lapCount: 5,
+            movingDurationSeconds: 2_330,
+            runWalk: RunWalkSplits(
+                running: .init(distanceMeters: 3_600, durationSeconds: 1_440, segments: 4, longestSegmentMeters: 1_250),
+                walking: .init(distanceMeters: 1_200, durationSeconds: 900, segments: 3)
+            )
+        )
+        let plain = RunActivity(
+            id: "h", source: .appleHealth, startedAt: start.addingTimeInterval(-86_400), durationSeconds: 1_800,
+            distanceMeters: 5_000
+        )
+        let report = TrainingReport(generatedAt: start, recentRuns: [split, plain])
+
+        let lines = MarkdownReportRenderer.render(report, calendar: calendar).split(separator: "\n")
+
+        let withSplit = try #require(lines.first { $0.hasPrefix("- 2026-11-16") })
+        #expect(withSplit.hasSuffix("; running 3.60 km in 24 min, walking 1.20 km in 15 min, "
+            + "longest continuous run 1.25 km, running pace 6:40 /km, moving 39 min, 5 laps"))
+        let withoutSplit = try #require(lines.first { $0.hasPrefix("- 2026-11-15") })
+        #expect(withoutSplit.hasSuffix("load –"))
+    }
+
     @Test func rendersSectionsAndQuestion() throws {
         let calendar = try utcCalendar()
         let day = CalendarDay(year: 2026, month: 11, day: 16)

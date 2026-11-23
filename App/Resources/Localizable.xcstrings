@@ -7991,6 +7991,23 @@
         }
       }
     },
+    "Laps": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vueltas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voltas"
+          }
+        }
+      }
+    },
     "Last 12 weeks": {
       "extractionState": "manual",
       "localizations": {
@@ -8926,6 +8943,23 @@
         }
       }
     },
+    "Longest continuous run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tramo corriendo más largo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tramo correndo máis longo"
+          }
+        }
+      }
+    },
     "Low": {
       "extractionState": "manual",
       "localizations": {
@@ -9466,6 +9500,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Subir"
+          }
+        }
+      }
+    },
+    "Moving time": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiempo en movimiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo en movemento"
           }
         }
       }
@@ -14111,6 +14162,23 @@
         }
       }
     },
+    "Running and walking": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correr y caminar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correr e camiñar"
+          }
+        }
+      }
+    },
     "Running day": {
       "extractionState": "manual",
       "localizations": {
@@ -14192,6 +14260,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Progreso do obxectivo de carreira"
+          }
+        }
+      }
+    },
+    "Running pace": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ritmo corriendo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ritmo correndo"
           }
         }
       }

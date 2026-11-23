@@ -124,9 +124,31 @@ public enum MarkdownReportRenderer {
                 + "\(format(run.durationSeconds / 60, decimals: 0)) min, "
                 + "pace \(formatPace(run.paceSecondsPerKm)), "
                 + "avg HR \(format(run.averageHeartRate, decimals: 0)) bpm, "
-                + "load \(format(run.trainingLoad, decimals: 0))")
+                + "load \(format(run.trainingLoad, decimals: 0))"
+                + movement(run))
         }
         return lines
+    }
+
+    /// The watch's run/walk split, laps and moving time, only for what the source recorded (ADR-0043).
+    private static func movement(_ run: RunActivity) -> String {
+        var parts: [String] = []
+        let part = { (name: String, part: RunWalkSplits.Part?) in
+            guard let part, part.distanceMeters > 0 else { return }
+            parts.append("\(name) \(format(part.distanceMeters / 1000, decimals: 2)) km in "
+                + "\(format(part.durationSeconds / 60, decimals: 0)) min")
+        }
+        part("running", run.runWalk?.running)
+        part("walking", run.runWalk?.walking)
+        if run.runWalk != nil, run.longestContinuousRunMeters > 0 {
+            parts.append("longest continuous run \(format(run.longestContinuousRunMeters / 1000, decimals: 2)) km")
+        }
+        if let pace = run.runningPaceSecondsPerKm { parts.append("running pace \(formatPace(pace))") }
+        if let moving = run.movingDurationSeconds, moving.isFinite, moving > 0 {
+            parts.append("moving \(format(moving / 60, decimals: 0)) min")
+        }
+        if let laps = run.lapCount, laps > 0 { parts.append("\(laps) laps") }
+        return parts.isEmpty ? "" : "; " + parts.joined(separator: ", ")
     }
 
     private static func checkIns(_ report: TrainingReport) -> [String] {

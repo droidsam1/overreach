@@ -18,6 +18,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Plan warns when a dated run is planned more than 10% longer than your longest run of the previous 30 days, the
   single-session spike linked to overuse injuries, and offers to shorten it to that distance. Runs less than 15
   minutes apart count as one, and a run planned by time is converted with your recent pace. It never blocks saving.
+- History's run detail shows the watch's split when it has one: running and walking distance and time, the longest
+  continuous running stretch, running-only pace, moving time and laps. The context pack (`runs[].runWalk` and
+  related optional fields) and the Markdown report share the same values.
 
 - Garmin runs now keep the lap count, moving time and the watch's run/walk detection: running, walking and standing
   distance, time, number of segments, the longest continuous running stretch and cadence, from the activity list
