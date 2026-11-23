@@ -112,6 +112,7 @@ struct RootView: View {
                 TodayView(
                     model: todayModel, workoutContinuation: workoutContinuation,
                     onOpenTrain: openWorkout, onOpenHistory: { selectedTab = .history },
+                    onOpenRecovery: { selectedTab = .recovery },
                     onConnectGarmin: { garminModel.start() },
                     recoveryHistory: { PlanProgressView(model: planModel) }
                 )
@@ -128,9 +129,6 @@ struct RootView: View {
                     badgeCount: exercisesModel.needsMappingCount + backupModel.badgeCount + garminModel.badgeCount
                 ) {
                     settings
-                }
-                .recoveryProgress {
-                    TrendsView(model: recoveryModel, section: .recovery, onConnectGarmin: { garminModel.start() })
                 }
             }
             Tab("Train", systemImage: "dumbbell", value: AppTab.train) {

@@ -496,6 +496,25 @@ struct SessionEditorScreenStateTests {
         #expect(editor.draft.notes == nil)
     }
 
+    @Test func exerciseNotesAreEditableAndEmptyMapsToNil() async throws {
+        let editor = editor()
+        let first = editor.draft.entries[0].id
+        #expect(editor.notesText(of: first) == "")
+        #expect(!editor.hasChanges)
+
+        editor.setNotes("Belt on", of: first)
+        #expect(editor.notesText(of: first) == "Belt on")
+        #expect(editor.draft.entries[1].notes == nil)
+        #expect(editor.hasChanges)
+        #expect(editor.draft.cleanedForSaving().entries[0].notes == "Belt on")
+
+        let saved = try #require(await editor.save())
+        #expect(saved.entries[0].notes == "Belt on")
+
+        editor.setNotes("", of: first)
+        #expect(editor.draft.entries[0].notes == nil)
+    }
+
     @Test func endTimeDefaultsToOneHourAfterStart() {
         let editor = editor()
         editor.addEndTime()
