@@ -458,27 +458,6 @@ public struct TodayView: View {
         )
     }
 
-    @ViewBuilder private var warnings: some View {
-        if let note = model.trainingReadNote {
-            Label(note, systemImage: "exclamationmark.triangle")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-        }
-        if model.showsSourceWarning {
-            VStack(alignment: .leading, spacing: Spacing.small) {
-                Label("Some sources could not be updated.", systemImage: "exclamationmark.triangle")
-                if let detail = model.sourceWarningDetail {
-                    Text(detail).textSelection(.enabled)
-                }
-            }
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-        }
-        if primary != .retry, model.showsSourceWarning || model.trainingReadNote != nil {
-            retryLoad(prominent: false)
-        }
-    }
-
     /// A deload proposal with its reasons and the plan, or the deload week in progress.
     private func deload(_ advice: DeloadAdvice, primaryTitle: String? = nil) -> some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
@@ -512,12 +491,11 @@ public struct TodayView: View {
                 Text(period.details.reason)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                HStack {
-                    Button("Yes, it was rest") { Task { await model.reviewBreak(accepted: true) } }
-                        .buttonStyle(.bordered)
-                    Button("No") { Task { await model.reviewBreak(accepted: false) } }
-                        .buttonStyle(.bordered)
+                ViewThatFits(in: .horizontal) {
+                    HStack { breakAnswers }
+                    VStack(alignment: .leading, spacing: Spacing.small) { breakAnswers }
                 }
+                .buttonStyle(.bordered)
             }
         }
         .padding(primaryTitle == nil ? Spacing.medium : 0)
@@ -610,12 +588,12 @@ public struct TodayView: View {
             Text(option.advice).font(.subheadline)
             if let context = option.context { Text(context).font(.caption).foregroundStyle(.secondary) }
             if let adjustment = option.adjustment {
-                HStack {
-                    Button(adjustment.applyTitle) { Task { await model.applyRunningAdjustment() } }
-                        .buttonStyle(.bordered)
-                    Button(adjustment.keepTitle) { model.keepPlannedRun() }
-                        .buttonStyle(.bordered)
+                // Side by side, stacked when the titles no longer fit (accessibility text sizes).
+                ViewThatFits(in: .horizontal) {
+                    HStack { runAdjustmentAnswers(adjustment) }
+                    VStack(alignment: .leading, spacing: Spacing.small) { runAdjustmentAnswers(adjustment) }
                 }
+                .buttonStyle(.bordered)
                 .padding(.vertical, Spacing.xSmall)
                 if let day = adjustment.moveDay, let title = adjustment.moveTitle, let onReviewRunMove {
                     Button(title) { onReviewRunMove(adjustment.original, day) }
@@ -632,6 +610,11 @@ public struct TodayView: View {
                 }
             }
         }
+    }
+
+    @ViewBuilder private func runAdjustmentAnswers(_ adjustment: RunningOption.Adjustment) -> some View {
+        Button(adjustment.applyTitle) { Task { await model.applyRunningAdjustment() } }
+        Button(adjustment.keepTitle) { model.keepPlannedRun() }
     }
 
     private func scheduledRow(_ row: ScheduledTrainingRow, symbol: String) -> some View {

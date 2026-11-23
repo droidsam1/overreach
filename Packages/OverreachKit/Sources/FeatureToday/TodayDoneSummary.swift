@@ -8,6 +8,8 @@ struct TodayDoneSummary: View {
     let done: TodayDone
     let tone: StatusTone
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.medium) {
             ForEach(done.sessions) { session in
@@ -28,18 +30,25 @@ struct TodayDoneSummary: View {
     @ViewBuilder private func totals(_ session: TodayDone.Session) -> some View {
         let values = Self.totals(session)
         if !values.isEmpty {
-            HStack(spacing: Spacing.small) {
-                ForEach(values, id: \.value) { total in
-                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                        Text(total.label).font(.caption).foregroundStyle(.secondary)
-                        Text(verbatim: total.value).font(.title3.weight(.heavy)).minimumScaleFactor(0.7)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(Spacing.small + Spacing.xSmall)
-                    .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.card))
-                    .accessibilityElement(children: .combine)
-                }
+            // Side by side; stacked at accessibility text sizes so labels and values are not cut.
+            if typeSize.isAccessibilitySize {
+                VStack(spacing: Spacing.small) { totalTiles(values) }
+            } else {
+                HStack(spacing: Spacing.small) { totalTiles(values) }
             }
+        }
+    }
+
+    private func totalTiles(_ values: [Total]) -> some View {
+        ForEach(Array(values.enumerated()), id: \.offset) { _, total in
+            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                Text(total.label).font(.caption).foregroundStyle(.secondary)
+                Text(verbatim: total.value).font(.title3.weight(.heavy)).minimumScaleFactor(0.7)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Spacing.small + Spacing.xSmall)
+            .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.card))
+            .accessibilityElement(children: .combine)
         }
     }
 
@@ -47,7 +56,7 @@ struct TodayDoneSummary: View {
         Label {
             Text(verbatim: record).font(.subheadline)
         } icon: {
-            Image(systemName: "trophy.fill").foregroundStyle(tone.accent)
+            Image(systemName: "trophy.fill").foregroundStyle(tone.accent).accessibilityHidden(true)
         }
         .padding(Spacing.small + Spacing.xSmall)
         .frame(maxWidth: .infinity, alignment: .leading)

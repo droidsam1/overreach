@@ -13,7 +13,11 @@ path from data to the screen.
    session.
 4. `nextAction` (`baseAction`) orders the hero by urgency: safety advice, check-in, red light, deload proposal,
    then `heroTrainingAction`. `heroTitle` and `heroReason` are the texts for that action.
-5. `FeatureToday/TodayView.swift` only renders: its `primaryAction` switch maps each `NextAction` to a button.
+5. `FeatureToday` only renders: `TodayView` lays out the blocks and its `primaryAction` switch maps each `NextAction`
+   to a button. `TodayHero` draws the card (ring, badge, `heroTitle`, `heroReason`, `signals`) around that button, or
+   `TodayDoneSummary` once `doneToday` is set; `TodayHeroPlaceholder` while loading. `TodayWeekCard` draws `yourWeek`,
+   `TodayPromptCard` the `pendingPrompt`, and the link tiles open `TodayWhyView` (`why`), Other options, Recovery
+   and History.
 
 A new hero state is a `NextAction` case, its title in `NextAction.title`, its place in `baseAction` or
 `trainingAction`, and one case in the view's switch. Tests in `Tests/TodayPresentationTests` build a `TodayModel` with

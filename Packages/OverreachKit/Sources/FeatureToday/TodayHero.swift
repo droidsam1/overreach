@@ -41,6 +41,7 @@ struct TodayHero<Action: View>: View {
     let openWhy: () -> Void
     @ViewBuilder let action: Action
 
+    @Environment(\.dynamicTypeSize) private var typeSize
     @AppStorage(HeroMetrics.celebratedDayKey) private var celebratedDay = ""
     @State private var celebrates = false
 
@@ -80,8 +81,15 @@ struct TodayHero<Action: View>: View {
         celebrates = true
     }
 
+    /// Ring beside the verdict; at accessibility text sizes the ring sits above it so the verdict keeps the width.
+    private var summaryLayout: AnyLayout {
+        typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: Spacing.medium))
+            : AnyLayout(HStackLayout(alignment: .top, spacing: Spacing.medium))
+    }
+
     private var summary: some View {
-        HStack(alignment: .top, spacing: Spacing.medium) {
+        summaryLayout {
             ReadinessRing(tone: tone, accessibilityLabel: done?.title ?? model.readinessTitle)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: Spacing.small) {
@@ -102,6 +110,7 @@ struct TodayHero<Action: View>: View {
                         .accessibilitySortPriority(2)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityElement(children: .contain)
         }
     }

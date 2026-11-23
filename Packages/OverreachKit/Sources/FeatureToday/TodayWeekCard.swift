@@ -1,5 +1,6 @@
 import DesignSystem
 import Domain
+import PresentationKit
 import SwiftUI
 import TodayPresentation
 
@@ -11,6 +12,8 @@ struct TodayWeekCard: View {
     let runs: [ScheduledTrainingRow]
     let openStrength: () -> Void
     let openRun: () -> Void
+
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.medium) {
@@ -90,23 +93,38 @@ struct TodayWeekCard: View {
                     .frame(width: 44, height: 44)
                     .background(color.opacity(0.15), in: .rect(cornerRadius: Radius.card))
                     .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 2) {
-                    if let originalTitle {
-                        Text(verbatim: originalTitle).font(.caption).foregroundStyle(.secondary).strikethrough()
+                // At accessibility text sizes the tag moves under the text, which keeps the width.
+                if typeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        sessionText(title: title, detail: detail, originalTitle: originalTitle)
+                        tagLabel(tag, color: color)
                     }
-                    Text(verbatim: title).font(.headline)
-                    if let detail {
-                        Text(verbatim: detail).font(.footnote).foregroundStyle(.secondary)
-                    }
+                    Spacer(minLength: 0)
+                } else {
+                    sessionText(title: title, detail: detail, originalTitle: originalTitle)
+                    Spacer(minLength: Spacing.small)
+                    tagLabel(tag, color: color)
                 }
-                Spacer(minLength: Spacing.small)
-                tagLabel(tag, color: color)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
+    }
+
+    /// VoiceOver cannot hear the strikethrough, so the replaced session is read as "Planned: …".
+    private func sessionText(title: String, detail: String?, originalTitle: String?) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            if let originalTitle {
+                Text(verbatim: originalTitle).font(.caption).foregroundStyle(.secondary).strikethrough()
+                    .accessibilityLabel(L10n.format("Planned: {1}", originalTitle))
+            }
+            Text(verbatim: title).font(.headline)
+            if let detail {
+                Text(verbatim: detail).font(.footnote).foregroundStyle(.secondary)
+            }
+        }
     }
 
     @ViewBuilder private func tagLabel(_ tag: TodayWeek.SessionTag, color: Color) -> some View {

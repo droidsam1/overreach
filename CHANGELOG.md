@@ -7,6 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today is drawn as cards (ADR-0042): a hero with the readiness ring, verdict, one reason, up to three recovery
+  signals with their trend and one action; Your week with the seven days and progress; one prompt with a one-tap
+  check-in; and tiles for **Why · Options · Recovery · History**. **Why** shows what weighs, a chart or gauge per
+  reason and its evidence. After training the hero shows the session totals and records. At the largest text sizes
+  the cards stack instead of cutting text, every colour comes with a symbol or word, VoiceOver reads a replaced run
+  as "Planned: …", and the ring does not animate with Reduce Motion.
 - The Assistant context now says what you already trained today (`today.training`: strength, run and leg load), and
   Plan no longer suggests today for a new run once training or tired legs hold an unplanned one back. Today, the
   Assistant and Plan read one shared answer.
