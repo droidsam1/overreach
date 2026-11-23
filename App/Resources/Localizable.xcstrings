@@ -4778,6 +4778,23 @@
         }
       }
     },
+    "Distances, not pace, set the effort. Stop and walk if you notice pain. A coaching estimate.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las distancias, no el ritmo, marcan el esfuerzo. Si notas dolor, para y camina. Es una estimación de entrenamiento."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As distancias, non o ritmo, marcan o esforzo. Se notas dor, para e camiña. É unha estimación de adestramento."
+          }
+        }
+      }
+    },
     "Do new symptoms make you feel too unwell to train today?": {
       "extractionState": "manual",
       "localizations": {
@@ -7005,6 +7022,23 @@
         }
       }
     },
+    "If you want to run today, try {1}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si quieres correr hoy, prueba {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se queres correr hoxe, proba {1}."
+          }
+        }
+      }
+    },
     "Ignored as implausible: {1} readings": {
       "extractionState": "manual",
       "localizations": {
@@ -7409,6 +7443,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vai despois dos datos. Podes cambiala ou escribir a túa no chat."
+          }
+        }
+      }
+    },
+    "It has been a while since your last run, so this repeats a pain-free distance.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hace tiempo de tu última carrera, así que se repite una distancia sin dolor."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hai tempo da túa última carreira, así que se repite unha distancia sen dor."
           }
         }
       }
@@ -10248,6 +10299,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non hai lecturas recentes."
+          }
+        }
+      }
+    },
+    "No recent run to build on, so this starts gently.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay una carrera reciente de la que partir, así que se empieza con suavidad."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai unha carreira recente da que partir, así que se comeza con suavidade."
           }
         }
       }
@@ -19959,6 +20027,40 @@
         }
       }
     },
+    "You reported pain after two runs in a row, so this goes back one step.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indicaste dolor tras dos carreras seguidas, así que se retrocede un paso."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indicaches dor tras dúas carreiras seguidas, así que se retrocede un paso."
+          }
+        }
+      }
+    },
+    "You reported pain after your last run, so this repeats a pain-free distance.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indicaste dolor tras tu última carrera, así que se repite una distancia sin dolor."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indicaches dor tras a túa última carreira, así que se repite unha distancia sen dor."
+          }
+        }
+      }
+    },
     "You reported symptoms that make you feel too unwell to train.": {
       "extractionState": "manual",
       "localizations": {
@@ -20414,6 +20516,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "O teu último descanso"
+          }
+        }
+      }
+    },
+    "Your last run had no reported pain, so this adds one small step.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu última carrera no tuvo dolor indicado, así que se añade un pequeño paso."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa última carreira non tivo dor indicada, así que se engade un pequeno paso."
           }
         }
       }
@@ -20928,6 +21047,23 @@
         }
       }
     },
+    "walk {1} km": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "camina {1} km"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "camiña {1} km"
+          }
+        }
+      }
+    },
     "{1} ({2})": {
       "extractionState": "manual",
       "localizations": {
@@ -21179,6 +21315,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} está configurado para {2}, pero adéstrase como {3}. Axusta as súas repeticións e carga, ou o seu enfoque."
+          }
+        }
+      }
+    },
+    "{1} km easy": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} km suaves"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} km suaves"
           }
         }
       }

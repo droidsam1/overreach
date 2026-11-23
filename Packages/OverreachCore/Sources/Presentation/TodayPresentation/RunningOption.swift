@@ -46,7 +46,8 @@ public struct RunningOption: Hashable, Sendable {
 
     init(
         goal trainingGoal: TrainingGoal?, decision: EasyRunAdvisor.Decision, hasRunToday: Bool,
-        lowerBody: LowerBodyLoad.Level = .none, calendar: Calendar, format: Format
+        lowerBody: LowerBodyLoad.Level = .none, progression: RunWalkProgression.Result? = nil,
+        calendar: Calendar, format: Format
     ) {
         let goal = trainingGoal?.running
         let title = goal?.displayName(format: format) ?? L10n.text("Running")
@@ -63,6 +64,7 @@ public struct RunningOption: Hashable, Sendable {
                 context: Self.painFreeContext(L10n.text("Choose a duration you are used to."), goal: goal),
                 isOptional: true, offersEasyRun: true
             )
+            self = Self.applying(progression, to: self, format: format)
         case .nearEvent:
             self.init(goal: title, advice: L10n.text(
                 "Your race or target date is today or tomorrow. Leave the extra run for another day."
@@ -105,7 +107,47 @@ public struct RunningOption: Hashable, Sendable {
                                                calendar: calendar, format: format),
                 isOptional: !isToday, offersEasyRun: true, suggestedMinutes: minutes
             )
+            if !isToday || next == nil {
+                self = Self.applying(progression, to: self, format: format)
+            }
         }
+    }
+
+    /// One line of distance blocks, for example "2 km easy · walk 0.5 km · 0.5 km easy".
+    static func progressionLine(_ blocks: [RunWalkProgression.Block], format: Format) -> String {
+        blocks.map { block in
+            let distance = format.number(Double(block.meters) / 1_000, maxFractionDigits: 2)
+            switch block {
+            case .run: return L10n.format("{1} km easy", distance)
+            case .walk: return L10n.format("walk {1} km", distance)
+            }
+        }.joined(separator: " · ")
+    }
+
+    /// Replaces the single duration with the run/walk example. The level 2 text says why this step.
+    private static func applying(_ progression: RunWalkProgression.Result?, to option: Self, format: Format) -> Self {
+        guard let progression, progression.phase != .goalReached, !progression.blocks.isEmpty else { return option }
+        let line = progressionLine(progression.blocks, format: format)
+        let reason = switch progression.phase {
+        case .start: L10n.text("No recent run to build on, so this starts gently.")
+        case .progress: L10n.text("Your last run had no reported pain, so this adds one small step.")
+        case .hold(let afterGap):
+            if afterGap {
+                L10n.text("It has been a while since your last run, so this repeats a pain-free distance.")
+            } else {
+                L10n.text("You reported pain after your last run, so this repeats a pain-free distance.")
+            }
+        case .stepBack: L10n.text("You reported pain after two runs in a row, so this goes back one step.")
+        case .goalReached: ""
+        }
+        return Self(
+            goal: option.goal, advice: L10n.format("If you want to run today, try {1}.", line), plan: option.plan,
+            context: option.context, evidence: RunWalkProgression.evidence, source: nil,
+            explanation: reason + " " + L10n.text(
+                "Distances, not pace, set the effort. Stop and walk if you notice pain. A coaching estimate."
+            ), adjustment: option.adjustment, isOptional: option.isOptional, offersEasyRun: option.offersEasyRun,
+            suggestedMinutes: nil
+        )
     }
 
     private static func exampleAdvice(minutes: Int, next: PlannedRun?, isToday: Bool, reduction: Bool) -> String {

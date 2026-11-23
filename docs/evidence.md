@@ -416,6 +416,22 @@ product defaults. Talk-test studies support the intensity cue. HRV-guided endura
 individual changes but does not validate these specific wearable or dosing cutoffs. Reviewed 2026-11-20.
 [Talk-test study](https://pubmed.ncbi.nlm.nih.gov/18277826/) · [Individual endurance training trial](https://pubmed.ncbi.nlm.nih.gov/26909534/) · [Single-session running exposure cohort](https://bjsm.bmj.com/content/59/17/1203)
 
+### `run-walk-progression` — heuristic
+
+For a pain-free running goal, Today can show a small run/walk example in distance blocks, for example
+"2 km easy · walk 0.5 km · 0.5 km easy". Pace is never the target, because outdoor runs have stops and pace changes.
+The start is the longest run of the last 28 days with no reported pain, using total distance because lap data is not
+always available. A new runner begins with 0.5 km of running, a 0.5 km walk and 0.5 km of running.
+
+After a run with no reported pain the example adds one step of 0.5 km, at most a quarter of that distance and at least
+0.25 km, after a walk break that shortens once the start passes half of the goal distance. Reaching the goal distance
+removes the walk. Pain during or after the last run, or no run for 14 days, repeats the last pain-free distance. Pain
+after two runs in a row goes back one step. A confirmed run that meets the goal ends the progression. The step sizes,
+the quarter cap and the 14-day gap are conservative product defaults, not research findings. Gradual increases and
+run/walk intervals are common return-to-running practice, but these doses are not validated. Not medical advice: pain
+that persists belongs with a clinician. Reviewed 2026-11-23.
+[Talk-test study](https://pubmed.ncbi.nlm.nih.gov/18277826/)
+
 ### `easy-strength-example` — heuristic
 
 On an amber day with no strength workout detected today, Today can show a separate light example. The next
