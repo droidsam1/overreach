@@ -105,6 +105,28 @@ struct WorkoutModelTests {
         model.moveExercise(ids[2], by: -1)  // already first: no change
         #expect(model.exercises.map(\.id) == [ids[2], ids[0], ids[1]])
     }
+
+    @Test func anExerciseDroppedAtAPositionEndsThere() async {
+        let squat = Exercise(name: "Squat", primaryMuscles: [.quadriceps], equipment: .barbell)
+        let row = Exercise(name: "Row", primaryMuscles: [.back], equipment: .barbell)
+        let store = TestStore(exercises: [bench, squat, row])
+        let fixedNow = now
+        let model = WorkoutModel(workouts: store, exercises: store, progression: store, clock: { fixedNow })
+        model.start()
+        for exercise in [bench, squat, row] { await model.add(exercise) }
+        model.exercises[0].sets[0].weightKg = 42
+        let ids = model.exercises.map(\.id)
+
+        model.moveExercise(ids[0], toIndex: 2)
+        #expect(model.exercises.map(\.id) == [ids[1], ids[2], ids[0]])
+        #expect(model.exercises[2].sets[0].weightKg == 42)
+        model.moveExercise(ids[0], toIndex: 0)
+        #expect(model.exercises.map(\.id) == [ids[0], ids[1], ids[2]])
+        model.moveExercise(ids[1], toIndex: 1)  // already there
+        model.moveExercise(ids[1], toIndex: 7)  // outside the session
+        #expect(model.exercises.map(\.id) == [ids[0], ids[1], ids[2]])
+        #expect(model.exercises[0].collapsedSummary == "Sets: \(model.exercises[0].workingSets.count)")
+    }
 }
 
 @MainActor

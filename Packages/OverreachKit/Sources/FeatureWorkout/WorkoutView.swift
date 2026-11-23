@@ -210,18 +210,41 @@ private struct SessionList: View {
     @Binding var isPickingExercise: Bool
     @Binding var isReordering: Bool
     @State private var progressionExercise: DraftExercise.ID?
+    @State private var drag: ReorderDrag<DraftExercise.ID>?
+    /// Whether the cards were opened by holding an exercise, so letting go closes them again.
+    @State private var isHoldReordering = false
 
     var body: some View {
-        Group {
-            if isReordering {
-                ExerciseOrderList(model: model)
-            } else {
+        ScrollViewReader { proxy in
+            // The sets stay on screen under the cards: the finger that held an exercise keeps dragging.
+            ZStack {
                 exerciseList
+                    .scrollDisabled(isReordering)
+                if isReordering {
+                    ReorderCardList(items: model.exercises, drag: drag) { exercise in
+                        ExerciseOrderCard(model: model, exercise: exercise)
+                    }
+                    .background(.background)
+                    .transition(.opacity)
+                }
+            }
+            .reordersOnLongPress(isCollapsed: isReordering, drag: $drag) { _ in
+                if !isReordering {
+                    isHoldReordering = true
+                    isReordering = true
+                }
+            } onEnd: { dropped in
+                if let dropped { model.moveExercise(dropped.id, toIndex: dropped.target) }
+                guard isHoldReordering else { return }
+                isHoldReordering = false
+                isReordering = false
+                if let dropped { proxy.scrollTo(dropped.id, anchor: .top) }
             }
         }
         .animation(.default, value: isReordering)
-        // Confirms the long press switched to reordering.
+        // Confirms the long press switched to reordering, and each place passed while dragging.
         .haptic(.modeChanged, trigger: isReordering) { _, isOn in isOn }
+        .haptic(.selected, trigger: drag?.target) { old, new in old != nil && new != nil }
         .sheet(isPresented: Binding(
             get: { progressionExercise != nil },
             set: { if !$0 { progressionExercise = nil } }
@@ -296,11 +319,13 @@ private struct SessionList: View {
                         .lineLimit(1...4)
                 } header: {
                     HStack {
-                        // Long-pressing the name collapses the session to names to drag (as the session menu does).
+                        // Holding the name and dragging reorders (`reordersOnLongPress`); the menu moves it too.
                         Text(exercise.name)
                             .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                             .contentShape(Rectangle())
-                            .onLongPressGesture { if model.exercises.count > 1 { isReordering = true } }
+                            .reorderHandle(exercise.id)
+                            .id(exercise.id)
+                            .accessibilityHint("Touch and hold, then drag, to reorder")
                             .accessibilityAction(named: "Reorder exercises") {
                                 if model.exercises.count > 1 { isReordering = true }
                             }
@@ -354,25 +379,28 @@ private struct SessionList: View {
     }
 }
 
-/// The session collapsed to exercise names, so any exercise can be dragged anywhere without scrolling past sets.
-/// "Done" in the toolbar returns to the sets.
-private struct ExerciseOrderList: View {
+/// An exercise reduced to its name and size, so any exercise can be dragged anywhere without scrolling past sets.
+/// VoiceOver moves it with actions, as the exercise menu does.
+private struct ExerciseOrderCard: View {
     let model: WorkoutModel
+    let exercise: DraftExercise
 
     var body: some View {
-        List {
-            Section {
-                ForEach(model.exercises) { exercise in
-                    Text(exercise.name)
-                }
-                .onMove { model.moveExercises(from: $0, to: $1) }
-            } header: {
-                Text("Reorder exercises")
-            } footer: {
-                Text("Drag the exercises into the order you want. Sets and values move with them.")
+        HStack {
+            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                Text(exercise.name).font(.headline)
+                Text(exercise.collapsedSummary)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
+            Spacer()
+            Image(systemName: "line.3.horizontal")
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
         }
-        .alwaysEditing()
+        .accessibilityElement(children: .combine)
+        .accessibilityAction(named: "Move up") { model.moveExercise(exercise.id, by: -1) }
+        .accessibilityAction(named: "Move down") { model.moveExercise(exercise.id, by: 1) }
     }
 }
 
@@ -515,16 +543,6 @@ extension View {
     fileprivate func inlineTitle(_ isInline: Bool) -> some View {
         #if os(iOS)
         navigationBarTitleDisplayMode(isInline ? .inline : .automatic)
-        #else
-        self
-        #endif
-    }
-
-    /// Shows a list's drag handles without an Edit button.
-    @ViewBuilder
-    fileprivate func alwaysEditing() -> some View {
-        #if os(iOS)
-        environment(\.editMode, .constant(.active))
         #else
         self
         #endif
