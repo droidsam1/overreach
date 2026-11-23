@@ -29,6 +29,8 @@ public final class RecoveryProgressModel {
     /// Whether a Garmin account is connected (ADR-0022).
     public private(set) var isGarminConnected = false
     private var wearsGarmin = false
+    private var hasGoal = false
+    private var sessionsOfMostTrainedLift = 0
 
     private let recordLoader: TrainingRecordLoader
     private let garmin: (any GarminAccount)?
@@ -75,7 +77,30 @@ public final class RecoveryProgressModel {
     public var showsConnectGarmin: Bool {
         garmin != nil && !isGarminConnected && hasLoaded && (wearsGarmin || hasNoReadings)
     }
-    public var showsRecentLoad: Bool { !loadRows.isEmpty }
+    /// The Recovery row needs at least one reading (ADR-0041, rule 6).
+    public var showsRecovery: Bool {
+        SectionAvailability.recovery(readings: readings.filter(\.isAvailable).count)
+    }
+    /// Recent load needs something logged to compare: a session, a run or everyday movement.
+    public var showsRecentLoad: Bool { SectionAvailability.recentLoad(rows: loadRows.count) }
+    /// Progress needs a goal or a lift trained in two sessions.
+    public var showsProgress: Bool {
+        SectionAvailability.progress(hasGoal: hasGoal, sessionsOfMostTrainedLift: sessionsOfMostTrainedLift)
+    }
+    /// The trend charts of a detail appear only when one of them has points.
+    public var showsRecoveryTrends: Bool {
+        SectionAvailability.charts(withData: recoveryCharts.filter(\.hasData).count)
+    }
+    public var showsLoadTrends: Bool {
+        SectionAvailability.charts(withData: weeklyCharts.filter(\.hasData).count)
+    }
+    /// The one line shown instead of the sections while none has data.
+    public var unlockHint: String? {
+        guard hasLoaded else { return nil }
+        return SectionAvailability.unlockHint(
+            recovery: showsRecovery, recentLoad: showsRecentLoad, progress: showsProgress
+        )
+    }
 
     /// One line for the section row.
     public var recoverySummary: String {
@@ -118,6 +143,10 @@ public final class RecoveryProgressModel {
             today: today, history: record.metrics, checkIn: snapshot.checkIn, profile: profile, cycle: record.cycle,
             settings: readinessSettings, calendar: calendar
         )
+        hasGoal = profile?.goal != nil
+        sessionsOfMostTrainedLift = Dictionary(
+            record.sessions.flatMap { Set($0.entries.map(\.exerciseID)) }.map { ($0, 1) }, uniquingKeysWith: +
+        ).values.max() ?? 0
         readings = RecoveryReadings(calendar: calendar, format: format)
             .readings(readiness: readiness, history: record.metrics, today: today)
         loadRows = RecentLoad(calendar: calendar, format: format).rows(record: record, today: today)

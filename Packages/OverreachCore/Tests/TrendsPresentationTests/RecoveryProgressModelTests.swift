@@ -191,3 +191,40 @@ struct RecoveryProgressModelTests {
         #expect(model.recentLoadSummary == "No training in the last weeks")
     }
 }
+
+@MainActor
+@Suite("Recovery & Progress: sections by data")
+struct RecoveryProgressSectionsTests {
+    private let now = Date(timeIntervalSince1970: 1_790_000_000)
+    private let calendar = Calendar(identifier: .gregorian)
+
+    @Test func withNoDataNoSectionShowsAndOneLineSaysWhatUnlocksThem() async {
+        let model = RecoveryProgressModel(sources: [DaysSource()], calendar: calendar)
+        #expect(model.unlockHint == nil)
+        await model.load(now: now)
+        #expect(!model.showsRecovery && !model.showsRecentLoad && !model.showsProgress)
+        #expect(!model.showsRecoveryTrends && !model.showsLoadTrends)
+        #expect(model.unlockHint != nil)
+    }
+
+    @Test func readingsUnlockRecoveryAndItsCharts() async {
+        var metrics = DailyMetrics(day: CalendarDay(now, calendar: calendar), sources: [.appleHealth])
+        metrics.sleepSeconds = 7 * 3_600
+        let model = RecoveryProgressModel(sources: [DaysSource(days: [metrics])], calendar: calendar)
+        await model.load(now: now)
+        #expect(model.showsRecovery && model.showsRecoveryTrends)
+        #expect(!model.showsRecentLoad && !model.showsLoadTrends)
+        #expect(model.unlockHint == nil)
+    }
+
+    @Test func aRunUnlocksRecentLoad() async {
+        let run = RunActivity(
+            id: "r", source: .appleHealth, startedAt: now.addingTimeInterval(-86_400), durationSeconds: 1_800,
+            distanceMeters: 5_000
+        )
+        let model = RecoveryProgressModel(sources: [DaysSource(runs: [run])], calendar: calendar)
+        await model.load(now: now)
+        #expect(model.showsRecentLoad && model.showsLoadTrends)
+        #expect(!model.showsRecovery)
+    }
+}
