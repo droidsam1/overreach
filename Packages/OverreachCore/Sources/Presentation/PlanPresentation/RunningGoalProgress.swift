@@ -29,7 +29,11 @@ public struct RunningGoalProgress: Hashable, Sendable {
             let time = elapsed.isFinite && elapsed > 0 && elapsed < 7 * 86_400
                 ? " · " + format.minutesAndSeconds(Int(elapsed.rounded(.up))) : ""
             let pain: String
-            if result.painDuring == true || result.painAfter == true {
+            if let worst = result.painReport.worstSeverity, worst > 0 {
+                pain = result.settledByMorning == true
+                    ? L10n.format("Pain up to {1}/10, settled by morning", worst)
+                    : L10n.format("Pain up to {1}/10, not settled by morning", worst)
+            } else if result.painDuring == true || result.painAfter == true {
                 pain = L10n.text("Pain reported")
             } else if result.painDuring == false && result.painAfter == false {
                 pain = L10n.text("Pain-free during and after")

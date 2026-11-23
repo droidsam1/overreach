@@ -1,3 +1,4 @@
+import Domain
 import PlanPresentation
 import SwiftUI
 
@@ -45,15 +46,18 @@ struct RunningGoalProgressView: View {
 private struct RunningPainView: View {
     let model: PlanModel
     let row: RunningGoalResultRow
-    @State private var during: Bool?
-    @State private var after: Bool?
+    @State private var during: Int?
+    @State private var after: Int?
+    @State private var settled: Bool?
     @Environment(\.dismiss) private var dismiss
 
     init(model: PlanModel, row: RunningGoalResultRow) {
         self.model = model
         self.row = row
-        _during = State(initialValue: row.result.painDuring)
-        _after = State(initialValue: row.result.painAfter)
+        let result = row.result
+        _during = State(initialValue: result.severityDuring ?? result.painDuring.map { $0 ? nil : 0 } ?? nil)
+        _after = State(initialValue: result.severityAfter ?? result.painAfter.map { $0 ? nil : 0 } ?? nil)
+        _settled = State(initialValue: result.settledByMorning)
     }
 
     var body: some View {
@@ -63,10 +67,19 @@ private struct RunningPainView: View {
                     Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
                 }
                 Section {
-                    Picker("Pain during the run", selection: $during) { painAnswers }
-                    Picker("Pain after the run", selection: $after) { painAnswers }
+                    Picker("Pain during the run", selection: $during) { severityAnswers }
+                    Picker("Pain after the run", selection: $after) { severityAnswers }
+                    if (during ?? 0) > 0 || (after ?? 0) > 0 {
+                        Picker("Gone by the next morning", selection: $settled) {
+                            Text("Not sure").tag(nil as Bool?)
+                            Text("No").tag(Optional(false))
+                            Text("Yes").tag(Optional(true))
+                        }
+                    }
                 } header: {
                     Text(row.date + " · " + row.summary)
+                } footer: {
+                    Text("0 is no pain and 10 is the worst you can imagine. Not medical advice.")
                 }
             }
             .navigationTitle("Pain report")
@@ -74,7 +87,11 @@ private struct RunningPainView: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        Task { if await model.saveRunningPain(row, during: during, after: after) { dismiss() } }
+                        Task {
+                            let saved = await model.saveRunningPain(
+                                row, severityDuring: during, severityAfter: after, settledByMorning: settled)
+                            if saved { dismiss() }
+                        }
                     }
                     .disabled(model.isSavingRunningPain)
                 }
@@ -82,11 +99,10 @@ private struct RunningPainView: View {
         }
     }
 
-    private var painAnswers: some View {
+    private var severityAnswers: some View {
         Group {
-            Text("Not sure").tag(nil as Bool?)
-            Text("No").tag(Optional(false))
-            Text("Yes").tag(Optional(true))
+            Text("Not sure").tag(nil as Int?)
+            ForEach(RunPainReport.scale, id: \.self) { Text(verbatim: "\($0)/10").tag(Optional($0)) }
         }
     }
 }

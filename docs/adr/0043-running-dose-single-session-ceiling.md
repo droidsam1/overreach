@@ -19,7 +19,7 @@ Two questions needed an answer: how much a session may grow, and over what perio
   an inverse one. The 10% weekly rule did not reduce injuries in a randomized trial of 532 novices (Buist 2008:
   20.8% vs 20.3%). A 2014 novice cohort linked only increases above 30% over two weeks to some injury types.
 - **Pain.** Clinical pain-monitoring models tolerate mild pain (up to 5/10) that settles by the next morning
-  (Silbernagel 2007). Overreach records pain as yes or no, and only on runs linked to a plan.
+  (Silbernagel 2007). Overreach recorded pain as yes or no, and only on runs linked to a plan, until #256.
 
 All of it is observational or from small trials; no study validates a specific run/walk dose.
 
@@ -38,8 +38,11 @@ longest segment and cadence. Per-lap values are not in the list.
    reported pain by 0.25 km and repeats it with the athlete's own typical walk break until the ceiling. Pain after the
    last run or no run for 14 days repeats the last pain-free session; pain twice in a row steps back. These doses are
    product defaults labelled as heuristic in the UI and the register, never as research findings.
-4. **Any reported pain holds.** With yes/no answers only, the cautious reading wins. Severity and next-morning
-   status come with #256.
+4. **Pain holds above a threshold or when it does not settle.** Any run, planned or not, can carry a 0–10 pain
+   answer for during and after, and whether it settled by the next morning (#256, `RunPainReport`, stored by run).
+   Pain up to 3/10 (configurable) that settled by morning does not hold; more, unsettled or not yet confirmed does.
+   Two holds in a row step back. Yes/no answers from before keep the cautious reading: any pain holds. Silbernagel
+   tolerates up to 5/10; 3/10 is the more cautious product default because it is not tied to one injury.
 5. **The watch's run/walk split is a domain value.** `RunActivity` gains `runWalk` (`RunWalkSplits`: running,
    walking and standing parts), `lapCount` and `movingDurationSeconds`, with derived `runningPaceSecondsPerKm` and
    `longestContinuousRunMeters`. `GarminImport` decodes them from the activity list with no extra request. They are
@@ -54,6 +57,7 @@ longest segment and cadence. Per-lap values are not in the list.
   turns into running inside the same distance.
 - The ceiling reads only recorded runs: a run missing from Health or Garmin lowers it, which errs on the safe side.
 - The study merged runs less than 15 minutes apart into one session; Overreach does not yet (#257).
-- Pain without a plan is not recorded, so the progression can advance through unreported pain until #256.
+- Today asks about pain after any recorded run for a pain-free goal, so the progression no longer advances through
+  unreported pain. Mild pain waits for the morning answer before it counts as tolerated.
 - Per-lap values need FIT decoding or another endpoint (#259). Showing the new markers in History and the AI
   exchange is #258. Applying the ceiling to planned and imported runs is #257.

@@ -44,6 +44,17 @@ public struct TrainingGoal: Hashable, Codable, Sendable {
     public var nextRun: PlannedRun?
     public private(set) var runningSchedule: [PlannedRun]?
     private var strengthSchedule: [PlannedStrength]?
+    private var painReports: [RunPainReport]?
+
+    /// Pain answers for recorded runs that have no planned entry (#256). Older backups have none.
+    public var runPainReports: [RunPainReport] { painReports ?? [] }
+
+    /// Replaces the report of the same run, or adds it. Keeps the newest `RunPainReport.keptCount`.
+    public mutating func record(_ report: RunPainReport) {
+        var reports = runPainReports.filter { !$0.matches(report) } + [report]
+        reports.sort { $0.startedAt < $1.startedAt }
+        painReports = Array(reports.suffix(RunPainReport.keptCount))
+    }
 
     public var scheduledStrength: [PlannedStrength] { strengthSchedule ?? [] }
 

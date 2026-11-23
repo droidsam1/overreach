@@ -131,6 +131,11 @@ public struct PlannedRunCompletion: Hashable, Codable, Sendable {
     public let distanceMeters: Double?
     public var painDuring: Bool?
     public var painAfter: Bool?
+    /// Worst pain during and after the run, 0–10 (#256). Absent on runs answered with yes or no only.
+    public var severityDuring: Int?
+    public var severityAfter: Int?
+    /// Whether the pain was gone by the next morning. Absent until the athlete answers.
+    public var settledByMorning: Bool?
 
     public init(_ activity: RunActivity) {
         activityID = activity.id
@@ -145,6 +150,18 @@ public struct PlannedRunCompletion: Hashable, Codable, Sendable {
         let reference = RunActivity(id: activityID, source: source, startedAt: startedAt,
                                     durationSeconds: durationSeconds, distanceMeters: 0)
         return RunDeduplication.isSameRun(reference, activity)
+    }
+
+    /// The pain answers of this run, in the shape shared with runs that have no planned entry.
+    public var painReport: RunPainReport {
+        var report = RunPainReport(activityID: activityID, source: source, startedAt: startedAt,
+                                   durationSeconds: durationSeconds)
+        report.painDuring = painDuring
+        report.painAfter = painAfter
+        report.severityDuring = severityDuring
+        report.severityAfter = severityAfter
+        report.settledByMorning = settledByMorning
+        return report
     }
 
     public func matches(_ other: PlannedRunCompletion) -> Bool {

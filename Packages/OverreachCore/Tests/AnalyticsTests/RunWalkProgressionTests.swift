@@ -24,6 +24,19 @@ struct RunWalkProgressionTests {
         return completion
     }
 
+    private func report(
+        _ run: RunActivity, during: Int, after: Int, settled: Bool? = nil
+    ) -> RunPainReport {
+        var report = RunPainReport(run)
+        report.answer(during: during, after: after, settledByMorning: settled)
+        return report
+    }
+
+    private func advise(_ runs: [RunActivity], reports: [RunPainReport]) -> RunWalkProgression.Result? {
+        RunWalkProgression.advise(goal: goal, runs: runs, outcomes: [], painReports: reports, now: now,
+                                  calendar: calendar)
+    }
+
     private func advise(_ runs: [RunActivity], _ outcomes: [PlannedRunCompletion] = []) -> RunWalkProgression.Result? {
         RunWalkProgression.advise(goal: goal, runs: runs, outcomes: outcomes, now: now, calendar: calendar)
     }
@@ -77,6 +90,56 @@ struct RunWalkProgressionTests {
                                    outcome(runs[2], pain: true)])
         #expect(result?.phase == .stepBack)
         #expect(result?.blocks == [.run(meters: 1_750)])
+    }
+
+    @Test func painReportedWithoutAPlanHoldsTheProgression() {
+        let runs = [run(daysAgo: 4, distanceKm: 2, id: "a"), run(daysAgo: 1, distanceKm: 2.5, id: "b")]
+        let result = advise(runs, reports: [report(runs[0], during: 0, after: 0),
+                                            report(runs[1], during: 6, after: 6, settled: true)])
+        #expect(result?.phase == .hold(afterGap: false))
+        #expect(result?.blocks == [.run(meters: 2_000)])
+    }
+
+    @Test func mildPainThatSettledByMorningStillProgresses() {
+        let runs = [run(daysAgo: 4, distanceKm: 2, id: "a"), run(daysAgo: 1, distanceKm: 2.5, id: "b")]
+        let result = advise(runs, reports: [report(runs[0], during: 0, after: 0),
+                                            report(runs[1], during: 3, after: 2, settled: true)])
+        #expect(result?.phase == .progress)
+        #expect(result?.blocks == [.run(meters: 2_700)])
+    }
+
+    @Test func mildPainThatDidNotSettleHolds() {
+        let runs = [run(daysAgo: 4, distanceKm: 2, id: "a"), run(daysAgo: 1, distanceKm: 2.5, id: "b")]
+        for settled in [false, nil] as [Bool?] {
+            let result = advise(runs, reports: [report(runs[1], during: 2, after: 3, settled: settled)])
+            #expect(result?.phase == .hold(afterGap: false))
+        }
+    }
+
+    @Test func theThresholdIsConfigurable() {
+        let runs = [run(daysAgo: 4, distanceKm: 2, id: "a"), run(daysAgo: 1, distanceKm: 2, id: "b")]
+        var settings = RunWalkProgression.Settings()
+        settings.toleratedPainSeverity = 5
+        let mild = report(runs[1], during: 4, after: 5, settled: true)
+        let result = RunWalkProgression.advise(goal: goal, runs: runs, outcomes: [], painReports: [mild], now: now,
+                                               calendar: calendar, settings: settings)
+        #expect(result?.phase == .progress)
+        #expect(advise(runs, reports: [mild])?.phase == .hold(afterGap: false))
+    }
+
+    @Test func twoHoldsInARowStepBack() {
+        let runs = [run(daysAgo: 7, distanceKm: 2, id: "a"), run(daysAgo: 4, distanceKm: 2.5, id: "b"),
+                    run(daysAgo: 1, distanceKm: 2.5, id: "c")]
+        let result = advise(runs, reports: [report(runs[0], during: 0, after: 0),
+                                            report(runs[1], during: 2, after: 2, settled: false),
+                                            report(runs[2], during: 7, after: 8, settled: true)])
+        #expect(result?.phase == .stepBack)
+        #expect(result?.blocks == [.run(meters: 1_750)])
+    }
+
+    @Test func olderYesNoAnswersStillHold() {
+        let runs = [run(daysAgo: 4, distanceKm: 2, id: "a"), run(daysAgo: 1, distanceKm: 2, id: "b")]
+        #expect(advise(runs, [outcome(runs[1], pain: true)])?.phase == .hold(afterGap: false))
     }
 
     @Test func aThreeWeekGapHoldsInsteadOfProgressing() {
