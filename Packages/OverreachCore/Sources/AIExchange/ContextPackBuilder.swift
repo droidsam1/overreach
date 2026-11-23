@@ -305,8 +305,23 @@ public enum ContextPackBuilder {
             elevationGainMeters: rounded(run.elevationGainMeters),
             trainingLoad: rounded(run.trainingLoad),
             aerobicTrainingEffect: rounded(run.aerobicTrainingEffect),
-            anaerobicTrainingEffect: rounded(run.anaerobicTrainingEffect)
+            anaerobicTrainingEffect: rounded(run.anaerobicTrainingEffect),
+            movingDurationSeconds: rounded(run.movingDurationSeconds, places: 0),
+            lapCount: run.lapCount,
+            runningPaceSecondsPerKm: rounded(run.runningPaceSecondsPerKm, places: 0),
+            longestContinuousRunMeters: run.runWalk.map { _ in rounded(run.longestContinuousRunMeters, places: 0) },
+            runWalk: run.runWalk.map { split in
+                ContextPack.RunWalk(running: split.running.map(part), walking: split.walking.map(part),
+                                    standing: split.standing.map(part))
+            }
         )
+    }
+
+    private static func part(_ part: RunWalkSplits.Part) -> ContextPack.RunWalkPart {
+        .init(distanceMeters: rounded(part.distanceMeters, places: 0),
+              durationSeconds: rounded(part.durationSeconds, places: 0), segments: part.segments,
+              longestSegmentMeters: rounded(part.longestSegmentMeters, places: 0),
+              averageCadence: rounded(part.averageCadence, places: 0))
     }
 
     // MARK: - Helpers
