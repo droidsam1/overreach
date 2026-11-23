@@ -83,8 +83,10 @@ private struct DayCell: View {
             Text(verbatim: day.initial)
                 .font(.caption.weight(kind == .today ? .heavy : .regular))
                 .foregroundStyle(kind == .today ? Color.primary : Color.secondary)
+            // Shrinks to the cell's width so seven days still fit at accessibility text sizes.
             circle
-                .frame(width: min(diameter, 60), height: min(diameter, 60))
+                .frame(maxWidth: min(diameter, 60), maxHeight: min(diameter, 60))
+                .aspectRatio(1, contentMode: .fit)
         }
         .frame(maxWidth: .infinity, minHeight: 44)
         .accessibilityElement(children: .ignore)
@@ -119,6 +121,10 @@ private struct DayCell: View {
 
 #Preview("Week, dark") {
     WeekStrip(days: previewDays).padding().preferredColorScheme(.dark)
+}
+
+#Preview("Accessibility size") {
+    WeekStrip(days: previewDays).padding().environment(\.dynamicTypeSize, .accessibility3)
 }
 
 private let previewDays: [WeekDay] = [

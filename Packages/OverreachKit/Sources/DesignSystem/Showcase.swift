@@ -152,3 +152,111 @@ public struct ChoiceCard: View {
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }
+
+#if DEBUG
+#Preview("Visual Today · Light") {
+    VisualTodayGallery().preferredColorScheme(.light)
+}
+
+#Preview("Visual Today · Dark") {
+    VisualTodayGallery().preferredColorScheme(.dark)
+}
+
+#Preview("Visual Today · AX3 text, dark") {
+    VisualTodayGallery()
+        .environment(\.dynamicTypeSize, .accessibility3)
+        .preferredColorScheme(.dark)
+}
+
+/// Every Visual Today component (ADR-0042) in one place, to check light, dark, large text, VoiceOver labels and
+/// Reduce Motion together. Sample values only; each component also has its own previews.
+struct VisualTodayGallery: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.large) {
+                section("Readiness ring and badge") {
+                    HStack(spacing: Spacing.medium) {
+                        ForEach(StatusTone.allCases, id: \.self) { tone in
+                            ReadinessRing(tone: tone, fraction: 0.8, size: 44, accessibilityLabel: "Readiness")
+                        }
+                    }
+                    StatusBadge(title: "Amber · Train lighter", tone: .caution)
+                }
+                section("Signal tiles and trends") {
+                    SignalTileRow {
+                        SignalTile(
+                            title: "HRV", value: "34", unit: "ms", status: "↓ Below usual", tone: .caution,
+                            emphasized: true, accessibilityLabel: "HRV, 34 milliseconds, below your usual range",
+                            action: {},
+                            accessory: {
+                                SignalTrendChart(values: [50, 52, 49, 41, 38, 36, 34], band: 46...56, tone: .caution)
+                            }
+                        )
+                        SignalTile(
+                            title: "Sleep", value: "7.2", unit: "h", status: "In range",
+                            accessibilityLabel: "Sleep, 7.2 hours, in range", action: {},
+                            accessory: {
+                                SignalTrendChart(values: [7, 7.5, nil, 6.8, 7.2], band: 6.5...8, style: .bars)
+                            }
+                        )
+                    }
+                    SignalTrendChart(
+                        values: [50, 52, 49, 41, 38, 36, 34], band: 46...56, tone: .caution, size: .full,
+                        startLabel: "14 d", endLabel: "Today", summary: "HRV falling below your usual range"
+                    )
+                    RangeGauge(
+                        value: 1.6, scale: 0...2, usual: 0.8...1.3, tone: .critical, accessibilityLabel: "Load 1.6"
+                    )
+                }
+                section("Your week") {
+                    WeekStrip(days: galleryDays)
+                    ProgressBar(
+                        segments: [
+                            .init(fraction: 0.33, color: WeekDayKind.strengthColor),
+                            .init(fraction: 0.17, color: WeekDayKind.runColor),
+                        ],
+                        accessibilityLabel: "This week", accessibilityValue: "3 of 6"
+                    )
+                }
+                section("Check-in and links") {
+                    AnswerScale(options: galleryAnswers, selectedID: "4") { _ in }
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.small), count: 2)) {
+                        Button {} label: { LinkTile(title: "Why", symbolName: "questionmark.circle", color: .orange) }
+                        Button {} label: {
+                            LinkTile(title: "Recovery", symbolName: "heart.text.square", color: .teal)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(Spacing.medium)
+        }
+    }
+
+    private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            Text(verbatim: title).font(.headline).accessibilityAddTraits(.isHeader)
+            content()
+        }
+    }
+}
+
+private let galleryDays: [WeekDay] = [
+    .init(id: 0, initial: "M", kind: .strengthDone, accessibilityLabel: "Monday: strength done"),
+    .init(id: 1, initial: "T", kind: .runDone, accessibilityLabel: "Tuesday: run done"),
+    .init(id: 2, initial: "W", kind: .restLogged, accessibilityLabel: "Wednesday: rest logged"),
+    .init(id: 3, initial: "T", kind: .today, accessibilityLabel: "Thursday: today"),
+    .init(id: 4, initial: "F", kind: .plannedStrength, accessibilityLabel: "Friday: strength planned"),
+    .init(id: 5, initial: "S", kind: .plannedRun, accessibilityLabel: "Saturday: run planned"),
+    .init(id: 6, initial: "S", kind: .empty, accessibilityLabel: "Sunday: nothing planned"),
+]
+
+private let galleryAnswers = [
+    AnswerOption(id: "1", symbolName: "cloud.bolt", label: "Awful"),
+    AnswerOption(id: "2", symbolName: "cloud.rain", label: "Low"),
+    AnswerOption(id: "3", symbolName: "minus.circle", label: "Okay"),
+    AnswerOption(id: "4", symbolName: "sun.min", label: "Good"),
+    AnswerOption(id: "5", symbolName: "sun.max", label: "Great"),
+]
+
+#endif

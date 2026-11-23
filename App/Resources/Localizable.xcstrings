@@ -11629,6 +11629,23 @@
         }
       }
     },
+    "Planned: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planificado: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planificado: {1}"
+          }
+        }
+      }
+    },
     "Plus Body Battery, stress, SpO2 and respiration.": {
       "extractionState": "manual",
       "localizations": {

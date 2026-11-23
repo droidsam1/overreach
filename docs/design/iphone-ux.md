@@ -21,7 +21,7 @@ recommendations explainable and its advanced controls easy to find.
 
 | Flow | Default view | Details and exceptions |
 | --- | --- | --- |
-| **Today** | Put **Resume workout** first when a session can be resumed. Otherwise lead with the next useful action and a short reason. | Put evidence, history and metric sources behind descriptive labels. With sparse data, show what is available and how to connect a source. When a source fails, keep available data visible and explain how to retry. |
+| **Today** | One hero card: readiness ring, verdict, one reason, up to three signal tiles and one button named by its verb. Put **Resume workout** in that button when a session can be resumed. Below it: Your week, at most one prompt and the link tiles. | **Why** holds evidence, trends and sources; tapping a signal tile opens it. With sparse data, hide the tiles without data and offer to connect a source in the prompt. When a source fails, keep available data visible and offer **Try again** in the prompt. |
 | **Active logger** | Keep the current exercise, actionable set, last result and today’s target together. Keep completion and the compact countdown reachable with the keyboard open. | Keep notes, help and focus easy to find. Explain missing history in place. If training is interrupted, preserve the draft and offer to resume. Offer the full report after confirming the save. |
 | **History** | Make activity type, date and key result easy to scan. Show active filters. Provide a direct route to an exercise’s last logged result. | Open metrics and provenance in the activity detail. Distinguish an empty history from an empty filtered result. Give the filtered state a clear reset. |
 
@@ -54,8 +54,13 @@ See [Priorities](../priorities.md) for the implementation order.
 - **One hero, one verb.** Every Today state except loading has a verdict, one leading reason and one prominent button
   that names the outcome.
 - **One pending prompt.** At most one secondary prompt on Today, chosen by a pure priority rule.
-- **Two levels.** Level 1: hero, today's plan, pending prompt, link row (**Why · Recovery · History**). Level 2: a
-  pushed screen with evidence, guidance, alternatives and metrics. Today shows at most four blocks.
+- **Two levels.** Level 1: hero card, Your week, pending prompt, link tiles (**Why · Options · Recovery · History**).
+  Level 2: a pushed screen with evidence, guidance, alternatives and metrics. Today shows at most four blocks.
+- **Colour never stands alone.** Every tone has a symbol (✓ – ✕ ?) and a word in the badge or status line; week days
+  have a symbol and a spoken label. Rings, charts and bars are hidden from VoiceOver or read as one sentence.
+- **Large text stacks, never truncates.** At accessibility sizes the ring moves above the verdict, signal and total
+  tiles stack, link tiles use two columns and button pairs stack. Animations (ring fill) are skipped with Reduce
+  Motion. Check new cards in the `VisualTodayGallery` previews of `DesignSystem/Showcase.swift`.
 - **Ask in context.** Onboarding asks goal and devices. Other questions arrive when their answer changes a
   recommendation.
 - **Show what the data supports.** A section appears when it has meaningful data; otherwise one line says what
