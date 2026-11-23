@@ -1735,6 +1735,23 @@
         }
       }
     },
+    "At your recent pace this is about {1} km, more than 10% over your longest run of the previous 30 days ({2} km). Single runs past that were linked to more overuse injuries.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A tu ritmo reciente son unos {1} km, más de un 10% por encima de tu carrera más larga de los 30 días anteriores ({2} km). Las carreras sueltas por encima de eso se asociaron con más lesiones por sobrecarga."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ao teu ritmo recente son uns {1} km, máis dun 10% por riba da túa carreira máis longa dos 30 días anteriores ({2} km). As carreiras soltas por riba diso asociáronse con máis lesións por sobrecarga."
+          }
+        }
+      }
+    },
     "Auto": {
       "extractionState": "manual",
       "localizations": {
@@ -9266,6 +9283,23 @@
         }
       }
     },
+    "More than 10% over your longest recent run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más de un 10% por encima de tu carrera reciente más larga"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis dun 10% por riba da túa carreira recente máis longa"
+          }
+        }
+      }
+    },
     "More: sleep, stress, pain…": {
       "extractionState": "manual",
       "localizations": {
@@ -14974,6 +15008,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pouco sono: {1} h."
+          }
+        }
+      }
+    },
+    "Shorten to {1} km": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acortar a {1} km"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acurtar a {1} km"
           }
         }
       }
@@ -21451,6 +21502,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} km suaves"
+          }
+        }
+      }
+    },
+    "{1} km is more than 10% over your longest run of the previous 30 days ({2} km). Single runs past that were linked to more overuse injuries.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} km es más de un 10% por encima de tu carrera más larga de los 30 días anteriores ({2} km). Las carreras sueltas por encima de eso se asociaron con más lesiones por sobrecarga."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} km é máis dun 10% por riba da túa carreira máis longa dos 30 días anteriores ({2} km). As carreiras soltas por riba diso asociáronse con máis lesións por sobrecarga."
           }
         }
       }
