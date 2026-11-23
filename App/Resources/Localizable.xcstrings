@@ -17188,6 +17188,23 @@
         }
       }
     },
+    "The whole session stays within 10% of your longest run in the last 30 days, walking included.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La sesión completa, incluido lo que camines, no supera en más de un 10 % tu carrera más larga de los últimos 30 días."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A sesión completa, incluído o que camiñes, non supera en máis dun 10 % a túa carreira máis longa dos últimos 30 días."
+          }
+        }
+      }
+    },
     "There is already a strength entry on this date.": {
       "extractionState": "manual",
       "localizations": {

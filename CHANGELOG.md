@@ -7,54 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
-- Today knows your next lifting day without a dated plan: when you repeat the same workouts in a fixed order at a
-  steady rhythm (A, B, C, D on alternate days), the rotation is projected onto the calendar and a leg session
-  tomorrow keeps today's optional run short. Each rest day is also scored as a running window (best, good, avoid)
-  by its leg-heavy neighbours, ready for Today to show. A dated plan still wins.
-- For a pain-free running goal, Today shows a small run/walk example in distance blocks (for example "2 km easy ·
-  walk 0.5 km · 0.5 km easy"). It starts from your longest recent run without reported pain, adds one small step after
-  a run without pain, repeats after pain or a missed fortnight and goes back a step after pain twice in a row. A
-  heuristic, not a research finding.
-- Reorder exercises in a session by touching one for a moment and dragging without lifting your finger: the session
-  folds to compact cards, the others slide out of the way with a light tick, the screen scrolls near its edges, and
-  letting go unfolds the sets with the moved exercise in view. Move up / Move down stay in the exercise menu and as
-  VoiceOver actions, and Reduce Motion drops the sliding.
-- Today is drawn as cards (ADR-0042): a hero with the readiness ring, verdict, one reason, up to three recovery
-  signals with their trend and one action; Your week with the seven days and progress; one prompt with a one-tap
-  check-in; and tiles for **Why · Options · Recovery · History**. **Why** shows what weighs, a chart or gauge per
-  reason and its evidence. After training the hero shows the session totals and records. At the largest text sizes
-  the cards stack instead of cutting text, every colour comes with a symbol or word, VoiceOver reads a replaced run
-  as "Planned: …", and the ring does not animate with Reduce Motion.
-- The Assistant context now says what you already trained today (`today.training`: strength, run and leg load), and
-  Plan no longer suggests today for a new run once training or tired legs hold an unplanned one back. Today, the
-  Assistant and Plan read one shared answer.
-- Today no longer offers an unplanned run after lower-body strength: with leg work today, or a heavy leg session
-  yesterday (8 or more working sets, or a set at RPE 9), it says to leave the run for another day and why. A run that
-  is in your plan stays, kept short, and a running priority is not changed. The rule is a heuristic from concurrent
-  training research, not a recovery clock.
-- After you train, Today says so ("You've trained today. Recovery is part of the plan.") instead of recommending
-  another session. A lift or a run finished today, from the logger, Apple Health or Garmin, ends the
-  recommendation unless the plan has another dated session for the day; **Log another workout** stays one tap away.
-- When the advice is to rest, Today's action is **Rest today**: it logs the day as a deliberate rest and
-  confirms with "Rest logged. Recovery is training too.", tomorrow's plan when there is one, and an undo.
-  History marks the day with a small moon, not as an activity. There is no streak to break.
-- Today ends with one row of links: **Why · Other options · Recovery · History**. Reasons, evidence, guidance,
-  the deload details and everyday movement moved to **Why this recommendation?**; the optional run and easy
-  strength session moved to **Other options**. A test keeps Today to four blocks.
-- Under the verdict Today shows at most one question or notice at a time: a failed source, the break
-  confirmation, the check-in, connecting Apple Health or Garmin, or the dog walk, in that order. Answering one
-  shows the next on the next refresh. Connecting a source stays in Settings.
-- Today leads with the readiness verdict, its main reason and one action. Start a strength routine, open the
-  run instructions or view Recovery on a rest day. Further reasons are under “Why this recommendation?”.
-- Today shows confirmed dog walks separately, with their time, recorded distance and progress against your usual
-  daily walks. Easy-walk advice refers to your dog by name when you have entered one.
-- The report after finishing a workout leads with every real record of the session, not only the first: a new best
-  estimated 1RM, more reps than ever at a load and, new, the most volume ever for a lift in one session. Equal is
-  not a record and a lift's first session has nothing to beat. Completing a set now animates its checkmark (not
-  with Reduce Motion), and all haptics go through one helper so a setting can turn them off.
-- Plan opens with your real progress: "This week: 3 of 4 sessions" (planned strength sessions and runs against
-  the ones done) and "Block: week 2 of 5" while a declared block runs, each with a bar. Only linked runs count as
-  done, rest days and postponed runs are not counted as missed, and without a plan nothing is shown.
+- Garmin runs now keep the lap count, moving time and the watch's run/walk detection: running, walking and standing
+  distance, time, number of segments, the longest continuous running stretch and cadence, from the activity list
+  Overreach already downloads. Running pace can be read without the walk breaks.
 
 - The exercise picker in Train and in the routine editor can create an exercise search does not find. The typed
   name is kept, equipment comes from the name ("barra", "mancuernas"…) and muscles from the most similar exercise,
@@ -251,6 +206,58 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   stalls or the working weight.
 
 ### Changed
+- The run/walk example for a pain-free goal now keeps the whole session, walking included, within 10% of your
+  longest run in the last 30 days, the single-session spike linked to overuse injury in a 5,200-runner cohort. Progress
+  lengthens the continuous running stretch (from the watch's run/walk detection when available) and uses your own
+  typical walk break. There is no weekly cap: weekly ratios showed no link to injury in that study.
+- Today knows your next lifting day without a dated plan: when you repeat the same workouts in a fixed order at a
+  steady rhythm (A, B, C, D on alternate days), the rotation is projected onto the calendar and a leg session
+  tomorrow keeps today's optional run short. Each rest day is also scored as a running window (best, good, avoid)
+  by its leg-heavy neighbours, ready for Today to show. A dated plan still wins.
+- For a pain-free running goal, Today shows a small run/walk example in distance blocks (for example "2 km easy ·
+  walk 0.5 km · 0.5 km easy"). It starts from your longest recent run without reported pain, adds one small step after
+  a run without pain, repeats after pain or a missed fortnight and goes back a step after pain twice in a row. A
+  heuristic, not a research finding.
+- Reorder exercises in a session by touching one for a moment and dragging without lifting your finger: the session
+  folds to compact cards, the others slide out of the way with a light tick, the screen scrolls near its edges, and
+  letting go unfolds the sets with the moved exercise in view. Move up / Move down stay in the exercise menu and as
+  VoiceOver actions, and Reduce Motion drops the sliding.
+- Today is drawn as cards (ADR-0042): a hero with the readiness ring, verdict, one reason, up to three recovery
+  signals with their trend and one action; Your week with the seven days and progress; one prompt with a one-tap
+  check-in; and tiles for **Why · Options · Recovery · History**. **Why** shows what weighs, a chart or gauge per
+  reason and its evidence. After training the hero shows the session totals and records. At the largest text sizes
+  the cards stack instead of cutting text, every colour comes with a symbol or word, VoiceOver reads a replaced run
+  as "Planned: …", and the ring does not animate with Reduce Motion.
+- The Assistant context now says what you already trained today (`today.training`: strength, run and leg load), and
+  Plan no longer suggests today for a new run once training or tired legs hold an unplanned one back. Today, the
+  Assistant and Plan read one shared answer.
+- Today no longer offers an unplanned run after lower-body strength: with leg work today, or a heavy leg session
+  yesterday (8 or more working sets, or a set at RPE 9), it says to leave the run for another day and why. A run that
+  is in your plan stays, kept short, and a running priority is not changed. The rule is a heuristic from concurrent
+  training research, not a recovery clock.
+- After you train, Today says so ("You've trained today. Recovery is part of the plan.") instead of recommending
+  another session. A lift or a run finished today, from the logger, Apple Health or Garmin, ends the
+  recommendation unless the plan has another dated session for the day; **Log another workout** stays one tap away.
+- When the advice is to rest, Today's action is **Rest today**: it logs the day as a deliberate rest and
+  confirms with "Rest logged. Recovery is training too.", tomorrow's plan when there is one, and an undo.
+  History marks the day with a small moon, not as an activity. There is no streak to break.
+- Today ends with one row of links: **Why · Other options · Recovery · History**. Reasons, evidence, guidance,
+  the deload details and everyday movement moved to **Why this recommendation?**; the optional run and easy
+  strength session moved to **Other options**. A test keeps Today to four blocks.
+- Under the verdict Today shows at most one question or notice at a time: a failed source, the break
+  confirmation, the check-in, connecting Apple Health or Garmin, or the dog walk, in that order. Answering one
+  shows the next on the next refresh. Connecting a source stays in Settings.
+- Today leads with the readiness verdict, its main reason and one action. Start a strength routine, open the
+  run instructions or view Recovery on a rest day. Further reasons are under “Why this recommendation?”.
+- Today shows confirmed dog walks separately, with their time, recorded distance and progress against your usual
+  daily walks. Easy-walk advice refers to your dog by name when you have entered one.
+- The report after finishing a workout leads with every real record of the session, not only the first: a new best
+  estimated 1RM, more reps than ever at a load and, new, the most volume ever for a lift in one session. Equal is
+  not a record and a lift's first session has nothing to beat. Completing a set now animates its checkmark (not
+  with Reduce Motion), and all haptics go through one helper so a setting can turn them off.
+- Plan opens with your real progress: "This week: 3 of 4 sessions" (planned strength sessions and runs against
+  the ones done) and "Block: week 2 of 5" while a declared block runs, each with a bar. Only linked runs count as
+  done, rest days and postponed runs are not counted as missed, and without a plan nothing is shown.
 - Today puts the next action first and shows planned training before the detailed recovery explanation.
 - The workout logger leads with the first exercise and its sets. "How to log sets" and the session focus moved to
   the session options menu, and the optional warm-up advice now follows the first exercise. Each exercise shows

@@ -113,15 +113,24 @@ public struct RunningOption: Hashable, Sendable {
         }
     }
 
-    /// One line of distance blocks, for example "2 km easy · walk 0.5 km · 0.5 km easy".
+    /// One line of distance blocks, for example "2 km easy · walk 0.5 km · 0.5 km easy". Longer sessions repeat the
+    /// same pair: "3 × (1.2 km easy · walk 0.3 km) · 0.4 km easy".
     static func progressionLine(_ blocks: [RunWalkProgression.Block], format: Format) -> String {
-        blocks.map { block in
+        func text(_ block: RunWalkProgression.Block) -> String {
             let distance = format.number(Double(block.meters) / 1_000, maxFractionDigits: 2)
-            switch block {
-            case .run: return L10n.format("{1} km easy", distance)
-            case .walk: return L10n.format("walk {1} km", distance)
+            return switch block {
+            case .run: L10n.format("{1} km easy", distance)
+            case .walk: L10n.format("walk {1} km", distance)
             }
-        }.joined(separator: " · ")
+        }
+        guard blocks.count > 3 else { return blocks.map(text).joined(separator: " · ") }
+        let pair = Array(blocks.prefix(2))
+        var repeats = 0
+        while blocks.count >= (repeats + 1) * 2,
+              Array(blocks[(repeats * 2)..<(repeats * 2 + 2)]) == pair { repeats += 1 }
+        let tail = blocks.dropFirst(repeats * 2).map(text)
+        let head = "\(repeats) × (" + pair.map(text).joined(separator: " · ") + ")"
+        return ([head] + tail).joined(separator: " · ")
     }
 
     /// Replaces the single duration with the run/walk example. The level 2 text says why this step.
@@ -142,10 +151,13 @@ public struct RunningOption: Hashable, Sendable {
         }
         return Self(
             goal: option.goal, advice: L10n.format("If you want to run today, try {1}.", line), plan: option.plan,
-            context: option.context, evidence: RunWalkProgression.evidence, source: nil,
-            explanation: reason + " " + L10n.text(
+            context: option.context, evidence: RunWalkProgression.evidence,
+            source: "https://doi.org/10.1136/bjsports-2024-109380",
+            explanation: [reason, L10n.text(
+                "The whole session stays within 10% of your longest run in the last 30 days, walking included."
+            ), L10n.text(
                 "Distances, not pace, set the effort. Stop and walk if you notice pain. A coaching estimate."
-            ), adjustment: option.adjustment, isOptional: option.isOptional, offersEasyRun: option.offersEasyRun,
+            )].joined(separator: " "), adjustment: option.adjustment, isOptional: option.isOptional, offersEasyRun: option.offersEasyRun,
             suggestedMinutes: nil
         )
     }
