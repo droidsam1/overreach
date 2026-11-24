@@ -13125,6 +13125,23 @@
         }
       }
     },
+    "Recent recorded runs": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreras registradas recientes"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreiras rexistradas recentes"
+          }
+        }
+      }
+    },
     "Recent running exposure is unknown.": {
       "extractionState": "manual",
       "localizations": {
@@ -14464,6 +14481,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carreira"
+          }
+        }
+      }
+    },
+    "Run completed · no strength recorded": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera completada · sin fuerza registrada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira completada · sen forza rexistrada"
           }
         }
       }
@@ -16980,6 +17014,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Primeiro forza"
+          }
+        }
+      }
+    },
+    "Strength order: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orden de las sesiones de fuerza: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orde das sesións de forza: {1}"
           }
         }
       }

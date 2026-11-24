@@ -1136,7 +1136,8 @@ public final class TodayModel {
         }
         if case .postpone = suggestion.action, profiles == nil { return }
         rotationDecision = TodayRotationDecision(
-            suggestion: suggestion, carryover: carryover, next: next, partner: partner, run: run,
+            suggestion: suggestion, carryover: carryover, next: next, partner: partner, upcoming: rotation.upcoming,
+            run: run,
             previousLegs: previous, readiness: readiness.level, now: now, calendar: calendar, format: format
         )
     }

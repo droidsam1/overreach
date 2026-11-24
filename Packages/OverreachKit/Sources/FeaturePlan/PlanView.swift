@@ -110,7 +110,10 @@ public struct PlanView<Assistant: View, Progress: View>: View {
     /// The next dated sessions, each opening its editor to move or change it, and the whole calendar.
     private var scheduleSection: some View {
         Section {
-            if model.nextSessionRows.isEmpty {
+            if let rotation = model.pendingRotationSummary {
+                Label(rotation, systemImage: "repeat")
+            }
+            if model.nextSessionRows.isEmpty, model.pendingRotationSummary == nil {
                 Text("No dated sessions. Today follows your usual rotation until you schedule one.")
                     .foregroundStyle(.secondary)
             }

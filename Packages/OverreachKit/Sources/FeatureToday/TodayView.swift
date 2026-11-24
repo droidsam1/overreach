@@ -655,6 +655,7 @@ public struct TodayView: View {
     private func rotationOfferLine(_ offer: TodayRotationOffer) -> some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
             Text(offer.title).font(.subheadline)
+            Text(offer.orderPreview).font(.footnote).foregroundStyle(.secondary)
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: Spacing.medium) { rotationOfferActions(offer) }
                 VStack(alignment: .leading, spacing: Spacing.small) { rotationOfferActions(offer) }
