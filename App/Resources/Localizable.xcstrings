@@ -10048,6 +10048,23 @@
         }
       }
     },
+    "New: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nuevo: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novo: {1}"
+          }
+        }
+      }
+    },
     "Next": {
       "extractionState": "manual",
       "localizations": {

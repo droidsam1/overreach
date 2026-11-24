@@ -166,7 +166,7 @@ final class AppContainer {
             exercises: exercises, recordedStrength: historyRecordedStrength, routines: routines,
             progression: progression, cycle: cycleSource, activityMatchChoices: readActivityMatchChoices,
             companionAnswers: dogWalkAnswers, dogRunAnswers: dogRunAnswers,
-            profileQuestions: profileQuestions,
+            profileQuestions: profileQuestions, sectionHints: sectionHints,
             dismissedRunOfferDay: UserDefaults.standard.data(forKey: Self.dismissedRunOfferDayKey).flatMap {
                 try? JSONDecoder().decode(CalendarDay.self, from: $0)
             },
@@ -205,6 +205,17 @@ final class AppContainer {
         }
     }()
 
+    private static let sectionHintsKey = "sectionHints"
+
+    private let sectionHints: SectionHints = {
+        let defaults = UserDefaults.standard
+        let key = AppContainer.sectionHintsKey
+        let state = defaults.data(forKey: key).flatMap { try? JSONDecoder().decode(SectionHints.State.self, from: $0) }
+        return SectionHints(state ?? SectionHints.State()) { state in
+            if let data = try? JSONEncoder().encode(state) { defaults.set(data, forKey: key) }
+        }
+    }()
+
     private static let dogWalkAnswersKey = "today.dogWalkAnswers"
 
     private let dogWalkAnswers: DogWalkAnswers = {
@@ -235,7 +246,7 @@ final class AppContainer {
         RecoveryProgressModel(
             sources: metricsSources, activity: activitySources, checkIns: checkIns, garmin: garmin,
             profiles: profiles, workouts: workouts, exercises: exercises, recordedStrength: recordedStrength,
-            routines: routines, progression: progression, cycle: cycleSource
+            routines: routines, progression: progression, cycle: cycleSource, sectionHints: sectionHints
         )
     }
 

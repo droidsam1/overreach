@@ -34,6 +34,25 @@ public final class RecoveryProgressModel {
     private var hasGoal = false
     private var sessionsOfMostTrainedLift = 0
 
+    public private(set) var newSectionHints: [String] = []
+    private let sectionHints: SectionHints
+
+    public var sectionHintCandidates: [SectionHints.Section]? {
+        guard hasLoaded, !isLoading, !showsFailure, trainingReadNote == nil else { return nil }
+        var available: [SectionHints.Section] = []
+        if showsRecovery { available.append(.recovery) }
+        if showsRecentLoad { available.append(.recentLoad) }
+        if showsProgress { available.append(.progress) }
+        return available
+    }
+
+    public func updateSectionHints(includesProgress: Bool) {
+        guard let candidates = sectionHintCandidates else { return }
+        let visible = includesProgress ? candidates : candidates.filter { $0 != .progress }
+        let hints = sectionHints.update(visible, on: .recoveryProgress)
+        if !hints.isEmpty { newSectionHints = hints }
+    }
+
     private let recordLoader: TrainingRecordLoader
     private let garmin: (any GarminAccount)?
     private let profiles: (any ProfileRepository)?
@@ -59,7 +78,7 @@ public final class RecoveryProgressModel {
         recordedStrength: (any RecordedStrengthSource)? = nil, routines: (any RoutineRepository)? = nil,
         progression: (any ProgressionSettingsRepository)? = nil, cycle: (any CycleSource)? = nil,
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
-        format: Format = Format()
+        format: Format = Format(), sectionHints: SectionHints = SectionHints()
     ) {
         recordLoader = TrainingRecordLoader(
             sources: sources, activity: activity, checkIns: checkIns, workouts: workouts, exercises: exercises,
@@ -70,6 +89,7 @@ public final class RecoveryProgressModel {
         self.readinessSettings = readinessSettings
         self.calendar = calendar
         self.format = format
+        self.sectionHints = sectionHints
     }
 
     // MARK: Screen state
@@ -118,6 +138,7 @@ public final class RecoveryProgressModel {
         let loadID = UUID()
         activeLoad = loadID
         isLoading = true
+        newSectionHints = []
         defer {
             if activeLoad == loadID {
                 isLoading = false

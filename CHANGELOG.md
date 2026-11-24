@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today and Recovery & Progress show a one-time hint when a new section becomes available.
 - The plan follow-up in Train uses today's recovery assessment, the one Today shows. When a session of the running block is due, an amber light proposes keeping it easy, a red light a recovery day, and warning signs, illness or pain skipping it, naming the signals and their evidence. The proposal is for today only: the stored plan, schedule and weekly targets stay as entered. Green or unavailable readings, a session already done and no running block propose nothing.
 - Garmin runs of the last 14 days keep each lap's distance, time, pace, heart rate, cadence and elevation (`RunLap`), fetched from the activity's splits after the activity list: at most 5 more requests per sync, kept in the cache and never asked twice. A Garmin that does not serve the splits leaves the laps empty and the sync unaffected.
 - Today suggests a swap or postponement after a recorded run. Accepting saves the change, and a swap starts the

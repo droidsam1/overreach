@@ -36,14 +36,26 @@ public struct TrendsView<Progress: View>: View {
             case nil: sections
             }
         }
-        .task { await model.load() }
-        .refreshable { await model.load() }
+        .task { await reload() }
+        .refreshable { await reload() }
+    }
+
+    private func reload() async {
+        await model.load()
+        if section == nil { updateSectionHints() }
+    }
+
+    private func updateSectionHints() {
+        model.updateSectionHints(includesProgress: Progress.self != EmptyView.self)
     }
 
     private var sections: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.large) {
                 SourceStatus(model: model, onConnectGarmin: onConnectGarmin)
+                ForEach(model.newSectionHints, id: \.self) { hint in
+                    Text(hint).font(.subheadline).foregroundStyle(.secondary)
+                }
                 if model.showsRecovery {
                     NavigationLink(destination: RecoveryDetail(model: model, onConnectGarmin: onConnectGarmin)) {
                         SectionRow(
@@ -66,6 +78,7 @@ public struct TrendsView<Progress: View>: View {
             .buttonStyle(.plain)
             .padding(Spacing.medium)
         }
+        .onChange(of: model.sectionHintCandidates) { updateSectionHints() }
         .navigationTitle("Recovery & Progress")
         .navigationBarTitleDisplayModeInline()
     }
