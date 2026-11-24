@@ -1803,6 +1803,23 @@
         }
       }
     },
+    "As usual": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Como siempre"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coma sempre"
+          }
+        }
+      }
+    },
     "Ask AI": {
       "extractionState": "manual",
       "localizations": {
@@ -6937,6 +6954,23 @@
         }
       }
     },
+    "Heavy, but I can move normally": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pesadas, pero me muevo bien"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pesadas, pero móvome ben"
+          }
+        }
+      }
+    },
     "Help me plan my next training block.": {
       "extractionState": "manual",
       "localizations": {
@@ -7124,6 +7158,23 @@
         }
       }
     },
+    "How do your legs feel during the warm-up?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Cómo responden las piernas al calentar?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Como responden as pernas ao quentar?"
+          }
+        }
+      }
+    },
     "How to log sets": {
       "extractionState": "manual",
       "localizations": {
@@ -7239,6 +7290,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Podo trotar durante eles"
+          }
+        }
+      }
+    },
+    "I haven't warmed up yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no he calentado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda non quentei"
           }
         }
       }
@@ -7953,6 +8021,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Manter a carreira planificada"
+          }
+        }
+      }
+    },
+    "Keep today's lift lighter.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haz más suave la sesión de fuerza de hoy."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fai máis suave a sesión de forza de hoxe."
           }
         }
       }
@@ -8735,6 +8820,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Deixa as series ao fallo e os intentos de récord persoal para cando te sintas máis estable."
+          }
+        }
+      }
+    },
+    "Leave the leg session pending today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deja pendiente la sesión de pierna de hoy."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deixa pendente a sesión de pernas de hoxe."
           }
         }
       }
@@ -9857,6 +9959,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Músculos tomados de {1}. Cámbiaos se o teu é distinto."
+          }
+        }
+      }
+    },
+    "My movement is limited": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El movimiento está limitado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O movemento está limitado"
           }
         }
       }
@@ -21047,6 +21166,23 @@
         }
       }
     },
+    "You ran recently and your next lift works your legs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corriste hace poco y la siguiente sesión de fuerza trabaja las piernas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corriches hai pouco e a seguinte sesión de forza traballa as pernas."
+          }
+        }
+      }
+    },
     "You reported pain after two runs in a row, so this goes back one step.": {
       "extractionState": "manual",
       "localizations": {
@@ -21604,6 +21740,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "As túas pernas aínda se recuperan dun adestramento esixente."
+          }
+        }
+      }
+    },
+    "Your legs feel heavy but you can move normally.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notas las piernas pesadas, pero te puedes mover bien."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notas as pernas pesadas, pero podes moverte ben."
+          }
+        }
+      }
+    },
+    "Your movement was limited during warm-up.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El movimiento estuvo limitado durante el calentamiento."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O movemento estivo limitado durante o quecemento."
           }
         }
       }

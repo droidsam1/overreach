@@ -17,6 +17,7 @@ struct TodayRotationDecision {
     let partner: RotationProjection.Session?
     let upcoming: [RotationProjection.Session]
     let run: RunActivity
+    let legResponse: CheckIn.LegResponse?
     let previousLegs: RotationProjection.Session?
     let readiness: ReadinessLevel
     let now: Date
@@ -40,7 +41,7 @@ struct TodayRotationDecision {
                                    weekday(suggestion.day.adding(days: days, calendar: calendar))),
                 acceptTitle: L10n.text("Postpone session"), orderPreview: orderPreview(upcoming.map(\.slot.name))
             )
-        case .keep, .keepCapped:
+        case .keep, .keepCapped, .holdLegWork:
             return nil
         }
     }
@@ -57,6 +58,8 @@ struct TodayRotationDecision {
         case let .keepCapped(maxRPE):
             outcome = L10n.format("Keep {1} at the previous load and cap the targets at RPE {2}.",
                                   next.slot.name, format.number(maxRPE))
+        case .holdLegWork:
+            outcome = L10n.text("Leave the leg session pending today.")
         case .swap, .postpone:
             outcome = offer?.title ?? ""
         }
@@ -70,12 +73,21 @@ struct TodayRotationDecision {
                         format.number(hours, maxFractionDigits: 1)),
             L10n.format("Elevation: {1}", elevation ?? unknown)
         ]
+        if let legResponseReason { details.append(legResponseReason) }
         if carryover.exposureUnknown { details.append(L10n.text("Recent running exposure is unknown.")) }
         details.append(contentsOf: [
             L10n.format("Previous leg session: {1}", previous),
             L10n.format("Readiness: {1} · {2}", readiness.displayName, suggestion.evidence.level.displayName)
         ])
         return details
+    }
+
+    var legResponseReason: String? {
+        switch legResponse {
+        case .heavy: L10n.text("Your legs feel heavy but you can move normally.")
+        case .limited: L10n.text("Your movement was limited during warm-up.")
+        case .normal, .notWarmedUp, .skipped, nil: nil
+        }
     }
 
     private var effort: String? {

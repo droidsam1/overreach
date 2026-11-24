@@ -55,6 +55,7 @@ public final class TodayModel {
     private var dismissedRunOfferDay: CalendarDay?
     private var hasRunningGoal = false
     private var rotationDecision: TodayRotationDecision?
+    private var legResponseRelevant = false
     private var rotationSwapRoutine: Routine?
     private var nameBasedRotationRoutine: UUID?
     private var dismissedRotationDay: CalendarDay?
@@ -145,7 +146,7 @@ public final class TodayModel {
     private var rotationCanBeShown: Bool {
         guard !isLoading else { return false }
         if case .startStrength = nextAction { return true }
-        return false
+        return nextAction == .rest && !restLoggedToday && holdsLegWork
     }
 
     public func dismissRotation() {
@@ -321,6 +322,10 @@ public final class TodayModel {
         switch nextAction {
         case .restLogged: L10n.text("Rest logged. Recovery is training too.")
         case .trainedToday: L10n.text("You've trained today. Recovery is part of the plan.")
+        case .checkIn where shouldAskLegResponse: CheckInModel.warmupQuestion
+        case .rest where holdsLegWork: L10n.text("Leave the leg session pending today.")
+        case let .startStrength(routine) where checkIn?.legResponse == .heavy && rotationRPECap(for: routine) != nil:
+            L10n.text("Keep today's lift lighter.")
         default: readinessAdvice
         }
     }
@@ -339,6 +344,8 @@ public final class TodayModel {
             let titles = tomorrowSessions.map { [$0.title, $0.detail].compactMap { $0 }.joined(separator: " · ") }
             return L10n.format("Tomorrow: {1}", titles.joined(separator: " · "))
         }
+        if shouldAskLegResponse { return L10n.text("You ran recently and your next lift works your legs.") }
+        if rotationCanBeShown, let reason = rotationDecision?.legResponseReason { return reason }
         return readinessSummary ?? readiness.reasons.first.map { text(for: $0) }
             ?? L10n.text("No recovery signals call for reducing training today.")
     }
@@ -374,6 +381,8 @@ public final class TodayModel {
         if showsCheckIn, suggestedContextQuestion != nil { return .checkIn }
         if readinessLevel == .red { return .rest }
         if case .proposed = deloadAdvice?.state { return .deload }
+        if shouldAskLegResponse { return .checkIn }
+        if holdsLegWork { return .rest }
         if readinessLevel == .amber { return heroTrainingAction }
         if showsSourceWarning, readinessLevel == .unknown { return .retry }
         if showsConnectGarmin, !showsMetrics { return .connectGarmin }
@@ -596,7 +605,21 @@ public final class TodayModel {
     public var showsCheckIn: Bool { checkIns != nil }
     public var checkInButtonTitle: String {
         if let title = CheckInModel.title(for: suggestedContextQuestion) { return title }
+        if shouldAskLegResponse { return CheckInModel.warmupQuestion }
         return checkIn == nil ? L10n.text("How do you feel today?") : L10n.text("Edit today's check-in")
+    }
+
+    public var shouldAskLegResponse: Bool {
+        showsCheckIn && !isLoading && legResponseRelevant && !restLoggedToday
+            && checkIn?.legResponse == nil && suggestedContextQuestion == nil
+            && (readinessLevel == .green || readinessLevel == .amber)
+            && !readiness.reasons.contains(where: \.advisesSkippingTraining)
+    }
+
+    private var holdsLegWork: Bool {
+        legResponseRelevant && checkIn?.legResponse == .limited
+            && !readiness.reasons.contains(where: \.advisesSkippingTraining)
+            && readinessLevel != .red
     }
 
     private var suggestedContextQuestion: CheckIn.Context.Question? {
@@ -679,7 +702,8 @@ public final class TodayModel {
         let today = CalendarDay(now, calendar: calendar)
         return CheckInModel(
             day: today, existing: checkIn?.day == today ? checkIn : nil, checkIns: checkIns, backup: backup,
-            contextQuestion: loadedDay == today ? suggestedContextQuestion : nil
+            contextQuestion: loadedDay == today ? suggestedContextQuestion : nil,
+            asksAboutLegResponse: loadedDay == today && shouldAskLegResponse
         )
     }
 
@@ -866,6 +890,7 @@ public final class TodayModel {
         runProgression = nil
         heroTrainingAction = .train
         rotationDecision = nil
+        legResponseRelevant = false
         rotationSwapRoutine = nil
         nameBasedRotationRoutine = nil
         rotationSaveError = nil
@@ -1106,13 +1131,16 @@ public final class TodayModel {
         profile: AthleteProfile?, now: Date
     ) {
         let today = CalendarDay(now, calendar: calendar)
-        guard let rotation, let next = rotation.upcoming.first, next.day == today, next.demand == .heavy,
+        guard case .startStrength = heroTrainingAction,
+              let rotation, let next = rotation.upcoming.first, next.day == today, next.demand != .none,
               let run = runs.filter({
                   let end = $0.startedAt.addingTimeInterval($0.durationSeconds)
                   return $0.durationSeconds.isFinite && $0.durationSeconds > 0 && end <= now
                       && end.timeIntervalSince(now) >= -RunCarryover.recentWindow
                       && $0.startedAt >= rotation.last.day.startDate(in: calendar)
               }).max(by: { $0.startedAt < $1.startedAt }) else { return }
+        legResponseRelevant = true
+        let legResponse = checkIn?.legResponse
         let previous = RotationProjection.previousLegSession(
             before: run.startedAt, sessions: record.sessions, exercises: record.exercises, calendar: calendar
         )
@@ -1125,7 +1153,7 @@ public final class TodayModel {
         guard let suggestion = RotationAdjustment.suggest(
             projection: rotation, carryover: carryover.level, readiness: readiness.level,
             previousLegSession: previous, runDay: CalendarDay(run.startedAt, calendar: calendar),
-            recorded: profile?.rotationAdjustments ?? [], calendar: calendar
+            recorded: profile?.rotationAdjustments ?? [], legResponse: legResponse, calendar: calendar
         ) else { return }
 
         var partner: RotationProjection.Session?
@@ -1137,7 +1165,7 @@ public final class TodayModel {
         if case .postpone = suggestion.action, profiles == nil { return }
         rotationDecision = TodayRotationDecision(
             suggestion: suggestion, carryover: carryover, next: next, partner: partner, upcoming: rotation.upcoming,
-            run: run,
+            run: run, legResponse: legResponse,
             previousLegs: previous, readiness: readiness.level, now: now, calendar: calendar, format: format
         )
     }

@@ -6,7 +6,7 @@ import Testing
 import TodayPresentation
 
 /// Check-ins kept in memory; `failing` makes saves throw.
-private actor CheckInStore: CheckInRepository {
+actor CheckInStore: CheckInRepository {
     struct Failure: Error {}
     private(set) var byDay: [CalendarDay: CheckIn] = [:]
     private let failing: Bool
@@ -104,6 +104,23 @@ struct CheckInModelTests {
         #expect(await store.byDay[today] == CheckIn(day: today, energy: 2, soreness: 3, note: "Slept badly"))
         #expect(await backup.backUps == 1)
         #expect(model.errorMessage == nil)
+    }
+
+    @Test func warmupAnswerCanBeEditedAndSurvivesBackup() async throws {
+        let store = CheckInStore()
+        let model = CheckInModel(day: today, existing: nil, checkIns: store, asksAboutLegResponse: true)
+        #expect(model.legResponseOptions.map(\.value) == [.normal, .heavy, .limited, .notWarmedUp, .skipped])
+        model.legResponse = .notWarmedUp
+        #expect(await model.save())
+        let saved = try #require(await store.byDay[today])
+        let backup = BackupDocument(createdAt: now, checkIns: [saved])
+        let restored = try #require(BackupCodec.decode(BackupCodec.encode(backup)).checkIns.first)
+        let edit = CheckInModel(day: today, existing: restored, checkIns: store)
+        #expect(edit.legResponseQuestionTitle == model.legResponseQuestionTitle)
+        #expect(edit.legResponse == .notWarmedUp)
+        edit.legResponse = .heavy
+        #expect(await edit.save())
+        #expect(await store.byDay[today]?.legResponse == .heavy)
     }
 
     @Test func editingStartsFromTodaysCheckInAndNeedsAChange() {

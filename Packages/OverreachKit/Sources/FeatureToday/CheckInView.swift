@@ -36,6 +36,22 @@ struct CheckInView: View {
                     Text("Mark sick if you have a fever or feel ill today.")
                 }
 
+                if let question = model.legResponseQuestionTitle {
+                    Section {
+                        Picker(selection: $model.legResponse) {
+                            ForEach(model.legResponseOptions) { option in
+                                Text(option.name).tag(Optional(option.value))
+                            }
+                        } label: {
+                            Text(question)
+                        }
+                        .pickerStyle(.inline)
+                        .labelsHidden()
+                    } header: {
+                        Text(question)
+                    }
+                }
+
                 Section("Energy") {
                     Picker("Energy", selection: $model.energy) {
                         ForEach(model.energyOptions) { option in

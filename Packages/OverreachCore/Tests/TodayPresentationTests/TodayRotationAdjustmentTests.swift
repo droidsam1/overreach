@@ -44,6 +44,7 @@ struct TodayRotationAdjustmentTests {
     private func load(
         _ store: TestStore, at date: Date? = nil, hard: Bool = true,
         hoursSinceStart: Double = 30, hasEarlierRun: Bool = true, dismissed: CalendarDay? = nil,
+        checkIns: (any CheckInRepository)? = nil,
         saveDismissal: @escaping @MainActor (CalendarDay) -> Void = { _ in }
     ) async -> TodayModel {
         let date = date ?? now
@@ -59,12 +60,65 @@ struct TodayRotationAdjustmentTests {
         let runs = hasEarlierRun ? [earlier, run] : [run]
         let model = TodayModel(
             sources: [RotationRunSource(day: CalendarDay(date, calendar: calendar), runs: runs)],
-            profiles: store, workouts: store, exercises: store, routines: store,
+            checkIns: checkIns, profiles: store, workouts: store, exercises: store, routines: store,
             dismissedRotationDay: dismissed, saveDismissedRotationDay: saveDismissal,
             calendar: calendar, format: Format(locale: Locale(identifier: "en_US"))
         )
         await model.load(now: date)
         return model
+    }
+
+    @Test func heavyButFunctionalLegsKeepAWithAnEffortCap() async throws {
+        let (store, routines) = history()
+        let answers = CheckInStore()
+        let model = await load(store, hard: false, checkIns: answers)
+
+        #expect(model.shouldAskLegResponse)
+        #expect(model.nextAction == .checkIn)
+        let sheet = try #require(model.makeCheckInModel(now: now))
+        #expect(sheet.legResponseQuestionTitle == model.heroTitle)
+        sheet.legResponse = .heavy
+        #expect(await sheet.save())
+        await model.load(now: now)
+
+        #expect(!model.shouldAskLegResponse)
+        #expect(model.nextAction == .startStrength(routines[0]))
+        #expect(model.rotationRPECap(for: routines[0]) == 8)
+        #expect(model.heroReason == "Your legs feel heavy but you can move normally.")
+    }
+
+    @Test func limitedMovementOffersTorsoWithoutStartingTheOriginalLegSession() async {
+        let (store, routines) = history()
+        let answers = CheckInStore([CheckIn(day: today, legResponse: .limited)])
+        let model = await load(store, hard: false, checkIns: answers)
+
+        #expect(model.nextAction == .rest)
+        #expect(model.rotationOffer?.title.contains("do C today, A on") == true)
+        #expect(await model.acceptRotation() == routines[2])
+        #expect(model.nextAction == .startStrength(routines[2]))
+    }
+
+    @Test func torsoAndWarningSignsDoNotAskAboutWarmup() async {
+        let (torsoStore, routines) = history(torsoFirst: true)
+        let torso = await load(torsoStore, checkIns: CheckInStore())
+        #expect(!torso.shouldAskLegResponse)
+        #expect(torso.nextAction == .startStrength(routines[0]))
+
+        let (legStore, _) = history()
+        let warning = CheckIn(day: today, exerciseWarningSigns: true, legResponse: .heavy)
+        let legs = await load(legStore, checkIns: CheckInStore([warning]))
+        #expect(!legs.shouldAskLegResponse)
+        #expect(legs.nextAction == .rest)
+        #expect(legs.rotationOffer == nil)
+    }
+
+    @Test(arguments: [CheckIn.LegResponse.skipped, .notWarmedUp])
+    func unansweredWarmupKeepsTheUnderlyingDecision(response: CheckIn.LegResponse) async {
+        let (store, routines) = history()
+        let model = await load(store, hard: false, checkIns: CheckInStore([CheckIn(day: today, legResponse: response)]))
+        #expect(!model.shouldAskLegResponse)
+        #expect(model.nextAction == .startStrength(routines[0]))
+        #expect(model.rotationRPECap(for: routines[0]) == nil)
     }
 
     @Test func aLightRunKeepsThePlanAndExplainsItOnlyInWhy() async {
