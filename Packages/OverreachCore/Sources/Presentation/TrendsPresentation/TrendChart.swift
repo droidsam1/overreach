@@ -10,8 +10,6 @@ public enum TrendRange: Int, CaseIterable, Identifiable, Sendable {
 
     public var id: Int { rawValue }
     public var days: Int { rawValue }
-    /// Whole weeks in the interval: weekly totals cover these, ending today.
-    var weeks: Int { rawValue / 7 }
     public var title: String { L10n.format("{1} days", String(rawValue)) }
 }
 
@@ -38,10 +36,13 @@ public struct TrendChart: Identifiable, Hashable, Sendable {
     public let style: Style
     public let title: String
     public let unit: String
-    /// "Last 30 days" or "Last 12 weeks".
+    /// "Last 30 days".
     public let interval: String
     /// Lines: runs of consecutive days, so a day without a reading is a visible break. Bars: one run of weeks.
     public let segments: [[TrendPoint]]
+    /// The full date interval, including days before the first or after the last available reading.
+    public let dateDomain: ClosedRange<Date>?
+    public let partialWeekLabel: String?
     /// A personal reference band, only when a source supplies one for this series.
     public let band: ClosedRange<Double>?
     public let bandLabel: String?
@@ -67,36 +68,41 @@ struct TrendCharts {
     let settings: ReadinessRules.Settings
 
     func recovery(
-        range: TrendRange, today: CalendarDay, metrics: [DailyMetrics], hrvSeries: HRVSeriesID?
+        range: TrendRange, today: CalendarDay, metrics: [DailyMetrics], rawMetrics: [DailyMetrics],
+        hrvSeries: HRVSeriesID?
     ) -> [TrendChart] {
         let days = (0..<range.days).map { today.adding(days: $0 - range.days + 1, calendar: calendar) }
         let byDay = Dictionary(metrics.map { ($0.day, $0) }, uniquingKeysWith: { $1 })
         var charts: [TrendChart] = []
         if let hrvSeries {
+            let metric = hrvSeries.metric
             let plausible = settings.plausibleHRVMs
-            let usable = { (value: Double?) -> Double? in value.flatMap { plausible.contains($0) ? $0 : nil } }
-            let label = L10n.format("HRV ({1})", hrvSeries.metric.seriesLabel)
-            let values = days.map { (day: CalendarDay) -> Double? in
-                guard let entry = byDay[day], entry.hrvWindow(hrvSeries.metric) == hrvSeries.window else { return nil }
-                return usable(entry.hrv(hrvSeries.metric))
+            let matching = rawMetrics.filter { entry in
+                entry.sources.contains(metric.source) && entry.hrvWindow(metric) == hrvSeries.window
+                    && entry.hrv(metric).map(plausible.contains) == true
             }
+            let hrvByDay = Dictionary(matching.map { ($0.day, $0) }, uniquingKeysWith: { $1 })
+            let values = days.map { hrvByDay[$0]?.hrv(metric) }
+            let label = hrvSeries.window == .daytime
+                ? L10n.format("Daytime HRV ({1})", metric.seriesLabel)
+                : L10n.format("HRV ({1})", metric.seriesLabel)
             charts.append(line(
                 Spec(kind: .hrv, title: label, unit: "ms", digits: 0), range: range, days: days, values: values,
-                band: hrvBand(hrvSeries, byDay: byDay, days: days)
+                band: hrvBand(hrvSeries, entry: days.reversed().lazy.compactMap { hrvByDay[$0] }.first)
             ))
         }
         let heartRate = settings.plausibleRestingHeartRate
         charts.append(line(
             Spec(kind: .restingHeartRate, title: L10n.text("Resting HR"), unit: "bpm", digits: 0),
             range: range, days: days,
-            values: comparable(days, byDay, source: \.restingHeartRateSource) {
+            values: comparable(days, byDay, source: \.restingHeartRateOrigin) {
                 $0.restingHeartRate.flatMap { heartRate.contains($0) ? $0 : nil }
             }
         ))
         let maxSleep = settings.maximumSleepHours
         charts.append(line(
             Spec(kind: .sleep, title: L10n.text("Sleep"), unit: "h", digits: 1), range: range, days: days,
-            values: comparable(days, byDay, source: \.sleepSource) {
+            values: comparable(days, byDay, source: \.sleepOrigin) {
                 $0.sleepSeconds.flatMap { $0 > 0 && $0 / 3_600 <= maxSleep ? $0 / 3_600 : nil }
             }
         ))
@@ -104,13 +110,13 @@ struct TrendCharts {
     }
 
     func weekly(range: TrendRange, today: CalendarDay, record: TrainingRecord) -> [TrendChart] {
-        let weeks = range.weeks
+        let weeks = (range.days + 6) / 7
+        let first = today.adding(days: 1 - range.days, calendar: calendar)
+        let end = today.startDate(in: calendar)
         func week(of date: Date) -> Int? {
             let day = CalendarDay(date, calendar: calendar)
-            let first = today.adding(days: -(weeks * 7 - 1), calendar: calendar)
             guard (first...today).contains(day) else { return nil }
-            let start = day.startDate(in: calendar), end = today.startDate(in: calendar)
-            let back = calendar.dateComponents([.day], from: start, to: end).day ?? 0
+            let back = calendar.dateComponents([.day], from: day.startDate(in: calendar), to: end).day ?? 0
             return weeks - 1 - back / 7
         }
         var sets = [Double](repeating: 0, count: weeks)
@@ -120,7 +126,7 @@ struct TrendCharts {
         }
         let setsSpec = Spec(kind: .strengthVolume, title: L10n.text("Strength sets per week"),
                             unit: L10n.text("sets"), digits: 0)
-        var charts = [bars(setsSpec, today: today, values: sets, hasHistory: !record.sessions.isEmpty)]
+        var charts = [bars(setsSpec, range: range, today: today, values: sets)]
         if !record.runReadFailed {
             var distances = [Double](repeating: 0, count: weeks)
             for run in record.runs where run.distanceMeters.isFinite {
@@ -128,7 +134,7 @@ struct TrendCharts {
             }
             let runSpec = Spec(kind: .runningDistance, title: L10n.text("Running distance per week"),
                                unit: "km", digits: 1)
-            charts.append(bars(runSpec, today: today, values: distances, hasHistory: !record.runs.isEmpty))
+            charts.append(bars(runSpec, range: range, today: today, values: distances))
         }
         return charts
     }
@@ -150,17 +156,17 @@ struct TrendCharts {
         return days.map { day in
             guard let metrics = byDay[day], let number = value(metrics) else { return nil }
             let origin = metrics[keyPath: source]
-            return origin == nil || origin == latest ? number : nil
+            return origin == latest ? number : nil
         }
     }
 
     /// Garmin's own usual range, only for the RMSSD series it describes and when it reports one.
-    private func hrvBand(
-        _ series: HRVSeriesID, byDay: [CalendarDay: DailyMetrics], days: [CalendarDay]
-    ) -> ClosedRange<Double>? {
+    private func hrvBand(_ series: HRVSeriesID, entry: DailyMetrics?) -> ClosedRange<Double>? {
         guard series.metric == .rmssd,
-              let entry = days.reversed().compactMap({ byDay[$0] }).first(where: { $0.hrv(.rmssd) != nil }),
-              let low = entry.hrvBaselineLowMs, let high = entry.hrvBaselineHighMs, low < high else { return nil }
+              let low = entry?.hrvBaselineLowMs, let high = entry?.hrvBaselineHighMs,
+              settings.plausibleHRVMs.contains(low), settings.plausibleHRVMs.contains(high), low < high else {
+            return nil
+        }
         return low...high
     }
 
@@ -195,35 +201,48 @@ struct TrendCharts {
         } else {
             summary = L10n.format("{1}: no readings in the last {2} days.", title, String(range.days))
         }
+        let domain = days.first.flatMap { first in
+            days.last.map { first.startDate(in: calendar)...$0.startDate(in: calendar) }
+        }
         return TrendChart(
-            kind: kind, style: .line, title: title, unit: unit, interval: interval, segments: segments, band: band,
+            kind: kind, style: .line, title: title, unit: unit, interval: interval, segments: segments,
+            dateDomain: domain, partialWeekLabel: nil, band: band,
             bandLabel: band.map { _ in L10n.text("Garmin's usual range") }, summary: summary
         )
     }
 
     // MARK: Bars
 
-    private func bars(_ spec: Spec, today: CalendarDay, values: [Double], hasHistory: Bool) -> TrendChart {
+    private func bars(_ spec: Spec, range: TrendRange, today: CalendarDay, values: [Double]) -> TrendChart {
         let (kind, title, unit, digits) = (spec.kind, spec.title, spec.unit, spec.digits)
         let weeks = values.count
+        let partialDays = range.days % 7
         let points = values.enumerated().map { index, value in
-            let start = today.adding(days: -(weeks - index) * 7 + 1, calendar: calendar)
+            let offset = max(1 - range.days, 1 - (weeks - index) * 7)
+            let start = today.adding(days: offset, calendar: calendar)
             return TrendPoint(day: start.startDate(in: calendar), value: value, label: dayText(start))
         }
         let amount = { (value: Double) in format.number(value, maxFractionDigits: digits) + " " + unit }
-        let total = values.reduce(0, +)
+        let interval = L10n.format("Last {1} days", String(range.days))
+        let fullWeeks = values.dropFirst(partialDays == 0 ? 0 : 1)
+        let hasHistory = values.contains { $0 > 0 }
+        let partialWeekLabel = hasHistory && partialDays > 0 ? L10n.format(
+            "First bar covers {1} days: {2}.", String(partialDays), amount(values[0])
+        ) : nil
         let summary: String
-        if total > 0 {
+        if hasHistory {
             summary = L10n.format(
-                "{1}, last {2} weeks: {3} in the latest week, {4} on average, most {5}.", title, String(weeks),
-                amount(values.last ?? 0), amount(total / Double(weeks)), amount(values.max() ?? 0)
+                "{1}, last {2} days: {3} in the latest week, {4} on average per full week, most {5} in a full week.",
+                title, String(range.days), amount(fullWeeks.last ?? 0),
+                amount(fullWeeks.reduce(0, +) / Double(fullWeeks.count)), amount(fullWeeks.max() ?? 0)
             )
         } else {
-            summary = L10n.format("{1}: nothing recorded in the last {2} weeks.", title, String(weeks))
+            summary = L10n.format("{1}: nothing recorded in the last {2} days.", title, String(range.days))
         }
         return TrendChart(
-            kind: kind, style: .bars, title: title, unit: unit, interval: L10n.format("Last {1} weeks", String(weeks)),
-            segments: hasHistory || total > 0 ? [points] : [], band: nil, bandLabel: nil, summary: summary
+            kind: kind, style: .bars, title: title, unit: unit, interval: interval,
+            segments: hasHistory ? [points] : [], dateDomain: nil, partialWeekLabel: partialWeekLabel,
+            band: nil, bandLabel: nil, summary: summary
         )
     }
 

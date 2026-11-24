@@ -4489,6 +4489,23 @@
         }
       }
     },
+    "Daytime HRV ({1})": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC diurna ({1})"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VFC diúrna ({1})"
+          }
+        }
+      }
+    },
     "Declaring a block tells the app a run of similar sessions is intentional.": {
       "extractionState": "manual",
       "localizations": {
@@ -6049,6 +6066,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aquí aparecen os adestramentos rematados e as carreiras das fontes conectadas."
+          }
+        }
+      }
+    },
+    "First bar covers {1} days: {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La primera barra abarca {1} días: {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A primeira barra abrangue {1} días: {2}."
           }
         }
       }
@@ -8616,23 +8650,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Últimos {1} días"
-          }
-        }
-      }
-    },
-    "Last {1} weeks": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Últimas {1} semanas"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Últimas {1} semanas"
           }
         }
       }
@@ -23121,19 +23138,19 @@
         }
       }
     },
-    "{1}, last {2} weeks: {3} in the latest week, {4} on average, most {5}.": {
+    "{1}, last {2} days: {3} in the latest week, {4} on average per full week, most {5} in a full week.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "{1}, últimas {2} semanas: {3} la última semana, {4} de media, máximo {5}."
+            "value": "{1}, últimos {2} días: {3} en la última semana, {4} de media por semana completa, máximo de {5} en una semana completa."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "{1}, últimas {2} semanas: {3} a última semana, {4} de media, máximo {5}."
+            "value": "{1}, últimos {2} días: {3} na última semana, {4} de media por semana completa, máximo de {5} nunha semana completa."
           }
         }
       }
@@ -23206,19 +23223,19 @@
         }
       }
     },
-    "{1}: nothing recorded in the last {2} weeks.": {
+    "{1}: nothing recorded in the last {2} days.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "{1}: nada registrado en las últimas {2} semanas."
+            "value": "{1}: sin registros en los últimos {2} días."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "{1}: nada rexistrado nas últimas {2} semanas."
+            "value": "{1}: sen rexistros nos últimos {2} días."
           }
         }
       }

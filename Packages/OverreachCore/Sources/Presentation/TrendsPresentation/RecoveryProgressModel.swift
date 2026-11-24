@@ -21,6 +21,8 @@ public final class RecoveryProgressModel {
     public private(set) var trendRange = TrendRange.days30
     public private(set) var recoveryCharts: [TrendChart] = []
     public private(set) var weeklyCharts: [TrendChart] = []
+    public private(set) var showsRecoveryTrends = false
+    public private(set) var showsLoadTrends = false
     public private(set) var isLoading = false
     public private(set) var hasLoaded = false
     /// "Apple Health: <system message>" for each source that failed in the last load. Available data stays visible.
@@ -45,6 +47,7 @@ public final class RecoveryProgressModel {
     private struct TrendInputs {
         let today: CalendarDay
         let metrics: [DailyMetrics]
+        let rawMetrics: [DailyMetrics]
         let hrvSeries: HRVSeriesID?
         let record: TrainingRecord
     }
@@ -79,20 +82,13 @@ public final class RecoveryProgressModel {
     }
     /// The Recovery row needs at least one reading (ADR-0041, rule 6).
     public var showsRecovery: Bool {
-        SectionAvailability.recovery(readings: readings.filter(\.isAvailable).count)
+        showsRecoveryTrends || SectionAvailability.recovery(readings: readings.filter(\.isAvailable).count)
     }
     /// Recent load needs something logged to compare: a session, a run or everyday movement.
-    public var showsRecentLoad: Bool { SectionAvailability.recentLoad(rows: loadRows.count) }
+    public var showsRecentLoad: Bool { showsLoadTrends || SectionAvailability.recentLoad(rows: loadRows.count) }
     /// Progress needs a goal or a lift trained in two sessions.
     public var showsProgress: Bool {
         SectionAvailability.progress(hasGoal: hasGoal, sessionsOfMostTrainedLift: sessionsOfMostTrainedLift)
-    }
-    /// The trend charts of a detail appear only when one of them has points.
-    public var showsRecoveryTrends: Bool {
-        SectionAvailability.charts(withData: recoveryCharts.filter(\.hasData).count)
-    }
-    public var showsLoadTrends: Bool {
-        SectionAvailability.charts(withData: weeklyCharts.filter(\.hasData).count)
     }
     /// The one line shown instead of the sections while none has data.
     public var unlockHint: String? {
@@ -152,7 +148,22 @@ public final class RecoveryProgressModel {
         loadRows = RecentLoad(calendar: calendar, format: format).rows(record: record, today: today)
         var hrvSeries: HRVSeriesID?
         if case let .hrv(series?)? = readiness.hrvInput?.input { hrvSeries = series }
-        trendInputs = TrendInputs(today: today, metrics: snapshot.metrics.value, hrvSeries: hrvSeries, record: record)
+        if hrvSeries == nil {
+            hrvSeries = snapshot.metricsBySource.reversed().lazy.compactMap { entry in
+                HRVSeriesID.all.first {
+                    entry.sources.contains($0.metric.source) && entry.hrvWindow($0.metric) == $0.window
+                        && entry.hrv($0.metric).map(self.readinessSettings.plausibleHRVMs.contains) == true
+                }
+            }.first
+        }
+        let inputs = TrendInputs(
+            today: today, metrics: snapshot.metrics.value, rawMetrics: snapshot.metricsBySource,
+            hrvSeries: hrvSeries, record: record
+        )
+        trendInputs = inputs
+        let longestCharts = makeCharts(.days90, inputs: inputs)
+        showsRecoveryTrends = longestCharts.recovery.contains(where: \.hasData)
+        showsLoadTrends = longestCharts.weekly.contains(where: \.hasData)
         rebuildCharts()
         failureLines = snapshot.metrics.failures.map { "\($0.source.displayName): \($0.reason)" }
         trainingReadNote = record.runReadFailed || snapshot.sessionsFailed
@@ -170,10 +181,21 @@ public final class RecoveryProgressModel {
 
     private func rebuildCharts() {
         guard let inputs = trendInputs else { return }
+        let charts = makeCharts(trendRange, inputs: inputs)
+        recoveryCharts = charts.recovery
+        weeklyCharts = charts.weekly
+    }
+
+    private func makeCharts(
+        _ range: TrendRange, inputs: TrendInputs
+    ) -> (recovery: [TrendChart], weekly: [TrendChart]) {
         let charts = TrendCharts(calendar: calendar, format: format, settings: readinessSettings)
-        recoveryCharts = charts.recovery(
-            range: trendRange, today: inputs.today, metrics: inputs.metrics, hrvSeries: inputs.hrvSeries
+        return (
+            charts.recovery(
+                range: range, today: inputs.today, metrics: inputs.metrics, rawMetrics: inputs.rawMetrics,
+                hrvSeries: inputs.hrvSeries
+            ),
+            charts.weekly(range: range, today: inputs.today, record: inputs.record)
         )
-        weeklyCharts = charts.weekly(range: trendRange, today: inputs.today, record: inputs.record)
     }
 }
