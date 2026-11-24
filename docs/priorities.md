@@ -44,7 +44,8 @@ Agents can prepare these but not finish them.
   observations.
 - Clinical review of symptom wording —
   [hybrid backlog task 3](design/readiness-and-hybrid-planning.md#3-ask-a-question-that-changes-the-decision).
-- Finish the UI consistency epic [#247](https://github.com/droidsam1/overreach/issues/247): before screenshots of every screen in light and
-  dark (needs a Mac and simulator) and owner approval of the Train and Plan layouts on the design canvas.
-  The audit is in [ui-consistency-audit.md](design/ui-consistency-audit.md).
+- Close the UI consistency epic [#247](https://github.com/droidsam1/overreach/issues/247) once its issues are done:
+  before screenshots (light and dark) need a Mac and simulator and are deferred, they do not block the issues; the
+  owner approves the Train and Plan layouts on the design canvas. The audit is in
+  [ui-consistency-audit.md](design/ui-consistency-audit.md).
 - Release v0.1.0 and the beta guide — [#22](https://github.com/droidsam1/overreach/issues/22).

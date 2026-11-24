@@ -101,7 +101,7 @@ Epic: [#247](https://github.com/droidsam1/overreach/issues/247). Order is the or
 ## Not covered
 
 - Before screenshots (light/dark) of every screen, using the check in [iPhone UX guide](iphone-ux.md): need a Mac
-  with a simulator.
+  with a simulator. Deferred: no simulator is available, and the child issues do not wait for them.
 - Contrast of each screen, VoiceOver order and real Dynamic Type results: the findings above come from the code.
 - Copy in Spanish and Galician was not reviewed.
 - Mock-ups for the bigger changes (Train start, Plan) go on the design canvas before implementation.
