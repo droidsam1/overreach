@@ -102,6 +102,9 @@ public struct TodayView: View {
                         pendingPrompt(prompt)
                     }
                     if let prompt = model.runPainPrompt { runPainCard(prompt) }
+                    ForEach(model.newSectionHints, id: \.self) { hint in
+                        Text(hint).font(.subheadline).foregroundStyle(.secondary)
+                    }
                     if !model.links.isEmpty { linkTiles }
                 }
                 .padding(Spacing.medium)
@@ -152,8 +155,9 @@ public struct TodayView: View {
             .sheet(item: $checkInSheet) { sheet in
                 CheckInView(model: sheet) { Task { await model.load() } }
             }
-            .task { await model.load() }
-            .refreshable { await model.load() }
+            .onChange(of: model.sectionHintCandidates) { model.updateSectionHints() }
+            .task { await reload() }
+            .refreshable { await reload() }
         }
     }
 
@@ -163,6 +167,11 @@ public struct TodayView: View {
             .font(.title3.weight(.semibold))
             .foregroundStyle(.secondary)
             .accessibilityAddTraits(.isHeader)
+    }
+
+    private func reload() async {
+        await model.load()
+        model.updateSectionHints()
     }
 
     private var linkTiles: some View {

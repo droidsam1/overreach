@@ -113,6 +113,7 @@ struct RecoveryProgressModelTests {
         let garmin = DaysSource(kind: .garmin, fails: true)
         let model = RecoveryProgressModel(sources: [garmin, health], calendar: calendar)
         await model.load(now: now)
+        #expect(model.sectionHintCandidates == nil)
 
         #expect(model.showsFailure)
         #expect(model.failureLines == ["Garmin: Offline"])

@@ -431,6 +431,26 @@ public final class TodayModel {
     /// History appear when there is data behind them; with none, there are no links.
     public enum Link: Equatable, Sendable { case why, otherOptions, recovery, history }
 
+    public private(set) var newSectionHints: [String] = []
+    private let sectionHints: SectionHints
+
+    public var sectionHintCandidates: [SectionHints.Section]? {
+        guard loadedDay != nil, !isLoading, !showsSourceWarning, !trainingReadFailed else { return nil }
+        return links.compactMap {
+            switch $0 {
+            case .recovery: .recovery
+            case .history: .history
+            case .why, .otherOptions: nil
+            }
+        }
+    }
+
+    public func updateSectionHints() {
+        guard let candidates = sectionHintCandidates else { return }
+        let hints = sectionHints.update(candidates, on: .today)
+        if !hints.isEmpty { newSectionHints = hints }
+    }
+
     public var links: [Link] {
         guard showsReadinessCard else { return [] }
         let showsRecovery = SectionAvailability.recovery(readings: recoveryReadingCount)
@@ -797,7 +817,7 @@ public final class TodayModel {
         saveDogWalkAnswers: @escaping @MainActor ([WalkCompanionAnswer]) -> Void = { _ in },
         companionAnswers: DogWalkAnswers? = nil,
         dogRunAnswers: DogRunAnswers = DogRunAnswers(),
-        profileQuestions: ProfileQuestionLog = ProfileQuestionLog(),
+        profileQuestions: ProfileQuestionLog = ProfileQuestionLog(), sectionHints: SectionHints = SectionHints(),
         dismissedRunOfferDay: CalendarDay? = nil,
         saveDismissedRunOfferDay: @escaping @MainActor (CalendarDay) -> Void = { _ in },
         dismissedRotationDay: CalendarDay? = nil,
@@ -807,6 +827,7 @@ public final class TodayModel {
     ) {
         self.activityMatchChoices = activityMatchChoices
         self.profileQuestions = profileQuestions
+        self.sectionHints = sectionHints
         self.companionAnswers = companionAnswers ?? DogWalkAnswers(dogWalkAnswers, save: saveDogWalkAnswers)
         self.dogRunAnswers = dogRunAnswers
         self.dismissedRunOfferDay = dismissedRunOfferDay
@@ -833,6 +854,7 @@ public final class TodayModel {
         activeLoad = loadID
         activeLoadCount += 1
         isLoading = true
+        newSectionHints = []
         scheduledStrengthToday = nil
         scheduledRunsToday = []
         weekProgress = nil
