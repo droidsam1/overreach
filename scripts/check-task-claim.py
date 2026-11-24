@@ -43,11 +43,17 @@ def task_key(body):
     return target.strip().lower()
 
 
-def gh(path):
-    output = subprocess.run(["gh", "api", path], cwd=ROOT, capture_output=True, text=True)
+def gh(path, *, paginate=False):
+    command = ["gh", "api", path]
+    if paginate:
+        command += ["--paginate", "--slurp"]
+    output = subprocess.run(command, cwd=ROOT, capture_output=True, encoding="utf-8")
     if output.returncode != 0:
         raise RuntimeError(output.stderr.strip() or f"gh api {path} failed")
-    return json.loads(output.stdout)
+    response = json.loads(output.stdout)
+    if paginate:
+        return [entry for page in response for entry in page]
+    return response
 
 
 def repository():
@@ -71,7 +77,7 @@ def conflicts(owner, repo, pull, key, since):
     """Claims of the same task: (older open PRs and PRs merged after `since`, newer open PRs)."""
     number = pull["number"]
     blocking, later = [], []
-    for other in gh(f"repos/{owner}/{repo}/pulls?state=open&per_page=100"):
+    for other in gh(f"repos/{owner}/{repo}/pulls?state=open&per_page=100", paginate=True):
         if other["number"] != number and task_key(other.get("body")) == key:
             older = claim_order(other) < claim_order(pull)
             (blocking if older else later).append(f"#{other['number']} (open) {other['title']}")

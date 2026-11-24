@@ -81,16 +81,16 @@ Stored data and Localization cost the most rework when missed. iPhone flows and 
 
 Several agents work at once, each in its own branch or worktree.
 
-- Claim before reading code: `python3 scripts/claim-task.py --next` picks the first free task in
-  [Priorities](docs/priorities.md), opens its draft PR from a fresh `origin/main` and prints `CLAIMED <task> #<PR>
-  <branch>`. Pass a link instead of `--next` for a task the user names, `--none "<reason>"` for other user requests.
+- **Next task.** In a fresh checkout of `origin/main`, use `python3 scripts/claim-task.py --next --dry-run` to find
+  the next issue in [Priorities](docs/priorities.md). To implement it, run `--next` without `--dry-run` before
+  reading code. It opens a draft PR and prints `CLAIMED <task> #<PR> <branch>`. Pass a task link for a named
+  task or `--none "<reason>"` for work outside the backlog.
   The oldest claim keeps a task: when `scripts/check-task-claim.py` (in `check-local.py` and CI) says another PR
   claimed it first, close yours and run `--next`. When resuming a feature after a merge, check the previous PR.
   Where `claim-task.py` cannot open the PR (a cloud session without a working `gh`), open a draft PR with the
   GitHub tool whose body starts with `Task: <link>`.
-- Planning or researching work for later: an umbrella issue plus one issue per task, an ADR when it decides
-  architecture, and each task linked from [Priorities](docs/priorities.md). A plan that lives only in a document
-  cannot be claimed.
+- **Planning work.** Open one issue per task and use GitHub dependencies for blockers. Add ready issues to
+  [Priorities](docs/priorities.md), an umbrella for a group of tasks and an ADR for architectural decisions.
 - A PR's branch belongs to the session that opened it. To update or merge someone else's PR, ask that session or the
   user; work on your own branch instead.
 - ADR numbers: take the highest number on `origin/main` plus one, and re-check after rebasing.
@@ -114,7 +114,7 @@ raw logs.
 python3 scripts/check-local.py [--base origin/<branch>] [--fix-eol]   # local check
 python3 scripts/ci-failures.py [PR | run id | URL]     # errors of failed CI jobs, by job (default: HEAD's runs)
 python3 scripts/check-repo.py                          # repository rules (ADRs, evidence keys, priorities, skills)
-python3 scripts/claim-task.py --next [--dry-run]       # claim the first free task: branch + draft PR, race-safe
+python3 scripts/claim-task.py --next [--dry-run]       # claim the next task or explain the choice without a PR
 python3 scripts/check-task-claim.py                    # no older PR claims this branch's task
 python3 scripts/check-localization.py [--fix]          # translations; --fix rewrites catalogs in canonical form
 python3 scripts/add-strings.py --template | <file> | --prune   # missing keys as JSON; add es+gl; drop unused

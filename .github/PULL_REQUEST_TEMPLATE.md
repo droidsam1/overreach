@@ -1,4 +1,4 @@
-Task: <!-- link to the task anchor in docs/priorities.md or a design doc, or the issue (#94); "none — <reason>" for work outside the backlog -->
+Task: <!-- issue link (#94), design-doc task link, or "none — <reason>" for work outside the backlog -->
 
 ## What and why
 
@@ -16,7 +16,7 @@ Task: <!-- link to the task anchor in docs/priorities.md or a design doc, or the
 - [ ] Missing data handled gracefully (all metrics optional)
 - [ ] User-facing strings localizable; Dynamic Type and VoiceOver checked
 - [ ] `CHANGELOG.md` updated if user-visible
-- [ ] If this PR completes a backlog delivery, its status and next open task are current at the roadmap entry point
+- [ ] If this PR completes a queued task, it closes the issue, updates the queue and links an issue for any remaining work
 - [ ] Recommendation/evaluation rules researched and recorded in `docs/evidence.md` (ADR-0012)
 - [ ] ADR added if this is an architectural decision
 - [ ] No personal data, real exports or secrets included

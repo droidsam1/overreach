@@ -53,6 +53,13 @@ No trial tests "swap B and C after an extra run". The ladder below is a heuristi
 5. **Suggest, never apply.** Today shows one secondary line with Accept / Keep plan and a "why" that names the run,
    the hours since, the previous leg session, readiness and the evidence level.
 
+## Implementation
+
+The rotation work in [#268](https://github.com/droidsam1/overreach/issues/268) shipped as run carry-over (#269),
+recorded swaps and postponements (#270), the decision ladder (#271), the Today flow (#272), recorded descent (#274),
+and History and AI context (#273). The [partial historical replay](../evidence-readiness-and-hybrid.md#partial-replay-of-rotation-adjustments)
+needs eligible rotations to measure how often each outcome fires and matched workouts to compare performance.
+
 ## Consequences
 
 - The athlete's habit of postponing becomes a choice with reasons; after an easy run the usual answer is keep.
@@ -60,6 +67,4 @@ No trial tests "swap B and C after an extra run". The ladder below is a heuristi
 - Adjustments live in `AthleteProfile.rotationAdjustments` (device and backup; absent in older backups). A swap is
   matched by the two workouts on the day it was planned; a postponement by the days it moved the session.
 - Apple Health runs lack training effect: intensity counts as unknown and the explanation says so.
-- Descent is a better eccentric marker than gain; until #274 the rule uses gain.
-- Proposed until replay on real histories (#273) checks how often each outcome fires and whether adjusted sessions
-  performed better. Tasks: umbrella #268, #269–#274.
+- Descent is a better eccentric marker than gain. Use recorded descent when available.

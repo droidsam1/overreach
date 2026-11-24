@@ -55,6 +55,13 @@ Links are in the [UX guide's research section](../design/iphone-ux.md#progressiv
 
 Tasks: [#179](https://github.com/droidsam1/overreach/issues/179) and its sub-issues #180–#187.
 
+## Implementation
+
+The sub-issues shipped, including sections that appear when data becomes available
+([#185](https://github.com/droidsam1/overreach/issues/185)) and set feedback and strength achievements
+([#191](https://github.com/droidsam1/overreach/pull/191)). Running-goal celebration needs an event that marks goal
+progress. Device timing and accessibility checks are tracked in [#21](https://github.com/droidsam1/overreach/issues/21).
+
 ## Consequences
 
 - Today becomes testable for density: the set of visible blocks is computed in `TodayPresentation`.
@@ -63,5 +70,4 @@ Tasks: [#179](https://github.com/droidsam1/overreach/issues/179) and its sub-iss
   prompt is added.
 - Moving profile questions out of onboarding means early recommendations run with defaults; rules must already
   handle missing profile fields (they do, as all metrics are optional).
-- Whether these changes reduce time and wrong turns is measured on a device in
-  [#21](https://github.com/droidsam1/overreach/issues/21) with the guide's before/after check.
+- Use the guide's before/after check to measure time and wrong turns on a device.
