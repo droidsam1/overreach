@@ -108,9 +108,19 @@ public final class TodayModel {
         guard let today = loadedDay, dismissedRunOfferDay != today, runningOption?.offersEasyRun == true,
               scheduledRunsToday.isEmpty, scheduledStrengthToday == nil, doneToday == nil else { return nil }
         return RunOffer.make(.init(
-            windows: runWindows, today: today, routine: movementRoutine, progression: runProgression,
-            calendar: calendar, format: format
+            windows: runWindows, today: today, routine: movementRoutine, companionSlots: runCompanionSlots,
+            progression: runProgression, calendar: calendar, format: format
         ))
+    }
+
+    private var runCompanionSlots: RunCompanionSlots? {
+        guard movementRoutine.hasDog else { return nil }
+        let answers: [(day: CalendarDay, withDog: Bool)] = dogRunCandidates.compactMap { run in
+            let activity = run.activity
+            guard let answer = dogRunAnswers.answer(for: .init(activity), linked: run.match) else { return nil }
+            return (CalendarDay(activity.startedAt, calendar: calendar), answer)
+        }
+        return RunCompanionSlots(answers: answers, calendar: calendar)
     }
 
     /// "Not today": hides the run offer for the rest of the day, also after a relaunch. Only the day is kept, on
@@ -901,9 +911,13 @@ public final class TodayModel {
         let record = snapshot.record
         trainingReadFailed = record.runReadFailed || snapshot.sessionsFailed
         let choices = activityMatchChoices()
-        let since = range.lowerBound.startDate(in: calendar)
-        let recentRunOriginals = snapshot.runOriginals.filter { $0.startedAt >= since }
-        dogRunCandidates = RunDeduplication.resolve(recentRunOriginals, choices: choices.runs).runs
+        let companionStart = range.upperBound.adding(days: 1 - RunCompanionSlots.lookbackDays, calendar: calendar)
+        let since = companionStart.startDate(in: calendar)
+        let companionRuns = snapshot.runOriginals.filter {
+            $0.startedAt >= since && $0.durationSeconds.isFinite && $0.durationSeconds > 0
+                && $0.startedAt.addingTimeInterval($0.durationSeconds) <= now
+        }
+        dogRunCandidates = RunDeduplication.resolve(companionRuns, choices: choices.runs).runs
         recentTrainingDays = RecentTraining(calendar: calendar, format: format).days(
             in: range, through: now, metrics: week, checkIns: record.checkIns,
             runs: snapshot.runOriginals, sessions: record.sessions, recordings: snapshot.strengthOriginals,

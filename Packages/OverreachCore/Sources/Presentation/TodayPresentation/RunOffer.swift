@@ -27,6 +27,7 @@ public struct RunOffer: Hashable, Sendable {
         let windows: [RunWindow]
         let today: CalendarDay
         let routine: WalkingRoutine
+        let companionSlots: RunCompanionSlots?
         let progression: RunWalkProgression.Result?
         let calendar: Calendar
         let format: Format
@@ -39,13 +40,15 @@ public struct RunOffer: Hashable, Sendable {
         let style = Date.FormatStyle(
             locale: facts.format.locale, calendar: facts.calendar, timeZone: facts.calendar.timeZone
         )
-        let fallback = usable.first { $0.day > facts.today }.map {
+        let future = usable.filter { $0.day > facts.today }
+        let preferred = future.first { facts.companionSlots?.prefersDog(on: $0.day, calendar: facts.calendar) == true }
+        let fallback = (preferred ?? future.first).map {
             let weekday = $0.day.startDate(in: facts.calendar).formatted(style.weekday(.wide))
             return L10n.format("Not today? {1} also works", weekday)
         }
         let progression = facts.progression.flatMap { $0.phase == .goalReached || $0.blocks.isEmpty ? nil : $0 }
         return RunOffer(
-            title: title(routine: facts.routine),
+            title: title(facts),
             plan: progression.map { RunningOption.progressionLine($0.blocks, format: facts.format) },
             reason: reason(window.reason),
             explanation: progression.map { RunningOption.progressionExplanation($0, format: facts.format) },
@@ -53,8 +56,13 @@ public struct RunOffer: Hashable, Sendable {
         )
     }
 
-    private static func title(routine: WalkingRoutine) -> String {
+    private static func title(_ facts: Facts) -> String {
+        let routine = facts.routine
         guard routine.hasDog else { return L10n.text("Good day for an easy run") }
+        if let slots = facts.companionSlots, slots.hasLearnedSlots,
+           !slots.prefersDog(on: facts.today, calendar: facts.calendar) {
+            return L10n.text("Good day for an easy run")
+        }
         let name = routine.dogName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return name.isEmpty
             ? L10n.text("Good day for an easy run with your dog")

@@ -27,7 +27,6 @@ and the logger come before review tools, and work that only a person with an iPh
    [#273](https://github.com/droidsam1/overreach/issues/273) (replay and AI context, once #271 is done),
    [#274](https://github.com/droidsam1/overreach/issues/274) (elevation loss, done).
 3. **Per-lap Garmin values** — [#259](https://github.com/droidsam1/overreach/issues/259).
-4. **Run offer follow-up** — [#265](https://github.com/droidsam1/overreach/issues/265) (learn usual run slots).
 
 ## Needs a person or an iPhone
 

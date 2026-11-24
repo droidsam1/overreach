@@ -108,6 +108,12 @@ confirmed dog walks in the last 28 days; a slot whose last 5 answers are all "No
 learned apart once weekends have 10 answers of their own. Implemented in `DogWalkSuggestion`. Product heuristics to
 keep the question rare once learned; none is a clinical rule. Reviewed 2026-11-22.
 
+### `dog-run-slots` — heuristic
+Three agreeing days in the last 28 calendar days, with more Yes than No answers or vice versa, establish a usual
+weekday for running with or without the dog. Count a day once and omit it if its answers conflict. Companion
+history changes the optional run offer's wording and favors a suitable fallback day with a confirmed dog-run
+pattern. The strength rotation and readiness rules still determine which days suit an easy run.
+
 ### `first-progression` — heuristic
 Repeat the first session as a starting point. Progressive overload for long-term adaptation can come from
 load or reps. Plotkin et al. compared both in trained lifters over eight weeks and found broadly similar
