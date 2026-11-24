@@ -24,6 +24,13 @@ struct TodayWhyView<Extra: View>: View {
                 if !why.weights.isEmpty { weighing(why) }
                 ForEach(why.cards) { card in reasonCard(card) }
                 if !why.normal.isEmpty { normalSignals(why) }
+                if !model.rotationExplanation.isEmpty {
+                    VStack(alignment: .leading, spacing: Spacing.small) {
+                        ForEach(model.rotationExplanation, id: \.self) { Text($0).font(.subheadline) }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .whyCard()
+                }
                 extra
                 if !why.rows.isEmpty { rows(why) }
             }

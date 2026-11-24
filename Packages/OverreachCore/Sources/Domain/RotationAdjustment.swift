@@ -23,13 +23,16 @@ public struct RotationAdjustment: Hashable, Codable, Sendable {
     public var day: CalendarDay
     public var kind: Kind
     public var reason: Reason?
+    /// The projected day the heavy session trades places with. Older swaps used the next slot.
+    public var swapDay: CalendarDay?
 
     /// Adjustments kept per profile; older ones no longer match any recent history.
     public static let keptCount = 30
 
-    public init(day: CalendarDay, kind: Kind, reason: Reason? = nil) {
+    public init(day: CalendarDay, kind: Kind, reason: Reason? = nil, swapDay: CalendarDay? = nil) {
         self.day = day
         self.kind = kind
         self.reason = reason
+        self.swapDay = swapDay
     }
 }

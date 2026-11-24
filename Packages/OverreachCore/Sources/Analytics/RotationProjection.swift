@@ -141,6 +141,21 @@ public struct RotationProjection: Hashable, Sendable {
         return RunWindow(day: day, quality: .best, reason: .awayFromLowerBody)
     }
 
+    /// Most recent leg work before the run, including a lighter session in a mixed rotation.
+    public static func previousLegSession(
+        before date: Date, sessions: [StrengthSession], exercises: [Exercise], calendar: Calendar
+    ) -> Session? {
+        let lower = Set(exercises.lazy.filter { $0.primaryMuscles.contains { $0.region == .lower } }.map(\.id))
+        for session in sessions.sorted(by: { $0.startedAt > $1.startedAt }) where session.isCompleted(through: date) {
+            let demand = classify(session, lower: lower, settings: .init())
+            if demand != .none {
+                return Session(day: CalendarDay(session.startedAt, calendar: calendar),
+                               slot: SessionRotation.slot(for: session), demand: demand)
+            }
+        }
+        return nil
+    }
+
     static func classify(_ session: StrengthSession, lower: Set<UUID>, settings: Settings) -> Demand {
         let sets = session.entries.filter { lower.contains($0.exerciseID) }.flatMap(\.sets).filter(\.isWorking)
         guard !sets.isEmpty else { return .none }

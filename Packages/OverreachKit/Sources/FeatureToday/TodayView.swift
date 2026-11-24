@@ -20,7 +20,7 @@ public struct TodayView: View {
     private var settingsDestination: (() -> AnyView)?
     private var showsSettings = Binding.constant(false)
     private var settingsBadgeCount = 0
-    private var onStartStrength: ((Routine) -> Void)?
+    private var onStartStrength: ((Routine, Double?, Bool) -> Void)?
     private var onReviewRunMove: ((PlannedRun, CalendarDay) -> Void)?
 
     private let workoutContinuation: TodayModel.WorkoutContinuation?
@@ -69,7 +69,7 @@ public struct TodayView: View {
         return copy
     }
 
-    public func startStrength(_ action: @escaping (Routine) -> Void) -> TodayView {
+    public func startStrength(_ action: @escaping (Routine, Double?, Bool) -> Void) -> TodayView {
         var copy = self
         copy.onStartStrength = action
         return copy
@@ -87,14 +87,18 @@ public struct TodayView: View {
                 VStack(alignment: .leading, spacing: Spacing.large) {
                     header
                     primaryDecision
-                    if let offer = model.runOffer { runOfferLine(offer) }
+                    if let offer = rotationOffer {
+                        rotationOfferLine(offer)
+                    } else if let offer = model.runOffer {
+                        runOfferLine(offer)
+                    }
                     if model.visibleBlocks.contains(.scheduledPlan) {
                         TodayWeekCard(
                             week: model.yourWeek, strength: model.scheduledStrengthToday,
                             runs: model.scheduledRunsToday, openStrength: onOpenTrain, openRun: { showsRun = true }
                         )
                     }
-                    if let prompt = model.pendingPrompt {
+                    if rotationOffer == nil, let prompt = model.pendingPrompt {
                         pendingPrompt(prompt)
                     }
                     if let prompt = model.runPainPrompt { runPainCard(prompt) }
@@ -432,7 +436,7 @@ public struct TodayView: View {
 
     private func startRecommendedStrength(_ routine: Routine) {
         if let onStartStrength {
-            onStartStrength(routine)
+            onStartStrength(routine, model.rotationRPECap(for: routine), model.startsFromRotationHistory(routine))
         } else {
             onOpenTrain()
         }
@@ -633,6 +637,34 @@ public struct TodayView: View {
                 }
             }
         }
+    }
+
+    private var rotationOffer: TodayRotationOffer? {
+        workoutContinuation == nil ? model.rotationOffer : nil
+    }
+
+    private func rotationOfferLine(_ offer: TodayRotationOffer) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            Text(offer.title).font(.subheadline)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: Spacing.medium) { rotationOfferActions(offer) }
+                VStack(alignment: .leading, spacing: Spacing.small) { rotationOfferActions(offer) }
+            }
+            if let error = model.rotationSaveError {
+                Text(error).font(.footnote).foregroundStyle(StatusTone.critical.accent)
+            }
+        }
+    }
+
+    @ViewBuilder private func rotationOfferActions(_ offer: TodayRotationOffer) -> some View {
+        Button(offer.acceptTitle) {
+            Task {
+                if let routine = await model.acceptRotation() { startRecommendedStrength(routine) }
+            }
+        }
+        .disabled(model.isAcceptingRotation)
+        Button(offer.dismissTitle) { model.dismissRotation() }
+            .disabled(model.isAcceptingRotation)
     }
 
     /// One secondary line under the rest hero, not a block of its own (ADR-0041).

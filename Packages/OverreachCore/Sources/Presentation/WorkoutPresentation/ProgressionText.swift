@@ -118,6 +118,11 @@ extension ProgressionReason {
             )
         case .noLoadIncrementAvailable:
             return L10n.text("To keep progressing, add external load or switch to a harder variation.")
+        case let .rotationEffortCap(maximumRPE):
+            return L10n.format(
+                "After your run: no load increase and {1} at most.",
+                context.effortScale.text(rpe: maximumRPE, format: format)
+            )
         case let .deloadWeek(sets, reduction, maximumRPE):
             return L10n.format(
                 "Deload week: {1} working sets, about {2} less load and {3} at most, to shed fatigue.",

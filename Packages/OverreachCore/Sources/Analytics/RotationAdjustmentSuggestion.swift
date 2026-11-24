@@ -89,7 +89,10 @@ extension RotationAdjustment {
             return suggestion(.swap(heavy: next.slot, lighter: lighter), reasons)
         }
         let alreadyPostponed = recorded.contains {
-            if case .postpone = $0.kind { $0.day == next.day } else { false }
+            guard case let .postpone(days) = $0.kind else { return false }
+            let originalDay = projection.last.day.adding(days: projection.cadenceDays, calendar: calendar)
+            let shiftedDay = $0.day.adding(days: days, calendar: calendar)
+            return $0.day == next.day || ($0.day == originalDay && shiftedDay == next.day)
         }
         if !alreadyPostponed, postponementKeepsHeavyGap(projection, settings: settings, calendar: calendar) {
             return suggestion(.postpone(days: settings.postponeDays), reasons)

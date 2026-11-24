@@ -15,6 +15,8 @@ struct WorkoutDraft: Codable {
     let effortScale: EffortScale
     let exercises: [DraftExercise]
     let rest: RestTimerDraft?
+    var rotationRPECap: Double?
+    var startsFromRotationHistory: Bool?
 }
 
 struct RestTimerDraft: Codable {

@@ -51,7 +51,10 @@ public struct SessionRotation: Hashable, Sendable {
             }
             // A single workout repeated needs three sessions in a row; longer rotations need two full cycles.
             let needed = length == 1 ? 2 : length * (requiredCycles - 1)
-            if repeated >= needed { return SessionRotation(order: cycle, swappedNext: planned.pendingNext) }
+            if repeated >= needed {
+                let swap = planned.pendingSwap
+                return SessionRotation(order: cycle, swappedNext: swap?.target == cycle[0].id ? swap?.heavy : nil)
+            }
         }
         return nil
     }
@@ -74,22 +77,36 @@ public struct SessionRotation: Hashable, Sendable {
     /// not happened yet reads as the planned workout, and `pendingNext` names the one that really comes next.
     static func plannedSlots(
         _ timeline: [(slot: Slot, session: StrengthSession)], adjustments: [RotationAdjustment], calendar: Calendar
-    ) -> (slots: [Slot], pendingNext: Slot?) {
+    ) -> (slots: [Slot], pendingSwap: (target: String, heavy: Slot)?) {
         var slots = timeline.map(\.slot)
-        var pendingNext: Slot?
+        var pendingSwap: (target: String, heavy: Slot)?
         for adjustment in adjustments {
             guard case let .swap(from, target) = adjustment.kind,
                   let index = timeline.firstIndex(where: {
                       CalendarDay($0.session.startedAt, calendar: calendar) == adjustment.day
                   }), slots[index].id == target else { continue }
-            if index + 1 < slots.count {
-                if slots[index + 1].id == from { slots.swapAt(index, index + 1) }
+            let destination = adjustment.swapDay.flatMap { day in
+                timeline.indices.dropFirst(index + 1).first {
+                    CalendarDay(timeline[$0].session.startedAt, calendar: calendar) == day
+                }
+            } ?? (adjustment.swapDay == nil && index + 1 < slots.count ? index + 1 : nil)
+            if let destination {
+                if slots[destination].id == from { slots.swapAt(index, destination) }
             } else if let planned = slots.last(where: { $0.id == from }) {
-                pendingNext = planned
                 slots[index] = planned
+                if let day = adjustment.swapDay {
+                    let lastDay = CalendarDay(timeline[timeline.count - 1].session.startedAt, calendar: calendar)
+                    guard lastDay < day else {
+                        slots[index] = timeline[index].slot
+                        continue
+                    }
+                    pendingSwap = (target, planned)
+                } else {
+                    pendingSwap = (target, planned)
+                }
             }
         }
-        return (slots, pendingNext)
+        return (slots, pendingSwap)
     }
 
     private static func slots(_ sessions: [StrengthSession]) -> [Slot] {
