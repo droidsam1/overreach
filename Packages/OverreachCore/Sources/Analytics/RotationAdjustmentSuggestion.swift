@@ -27,6 +27,8 @@ extension RotationAdjustment {
         case postpone(days: Int)
         /// Same exercises and sets, no load increase, top sets stop at `maxRPE`.
         case keepCapped(maxRPE: Double)
+        /// The athlete reported limited movement and neither calendar change fits.
+        case holdLegWork
     }
 
     /// What to do with the next session, and why.
@@ -50,7 +52,7 @@ extension RotationAdjustment {
                 RotationAdjustment(day: day, kind: .swap(from: heavy.id, to: lighter.id), reason: reasons.first)
             case let .postpone(days):
                 RotationAdjustment(day: day, kind: .postpone(days: days), reason: reasons.first)
-            case .keep, .keepCapped:
+            case .keep, .keepCapped, .holdLegWork:
                 nil
             }
         }
@@ -66,18 +68,25 @@ extension RotationAdjustment {
     public static func suggest(
         projection: RotationProjection?, carryover: RunCarryover.Level, readiness: ReadinessLevel,
         previousLegSession: RotationProjection.Session?, runDay: CalendarDay,
-        recorded: [RotationAdjustment] = [], calendar: Calendar = .current, settings: Settings = .init()
+        recorded: [RotationAdjustment] = [], legResponse: CheckIn.LegResponse? = nil,
+        calendar: Calendar = .current, settings: Settings = .init()
     ) -> Suggestion? {
-        guard let projection, let next = projection.upcoming.first, next.demand == .heavy,
-              readiness != .red, carryover != .unknown else { return nil }
+        let reportsHeavy = legResponse == .heavy
+        let reportsLimited = legResponse == .limited
+        guard let projection, let next = projection.upcoming.first, readiness != .red, carryover != .unknown,
+              next.demand == .heavy || (next.demand == .moderate && (reportsHeavy || reportsLimited))
+        else { return nil }
 
         func suggestion(_ action: SuggestedAction, _ reasons: [Reason] = []) -> Suggestion {
             Suggestion(day: next.day, action: action, reasons: reasons, evidence: evidence)
         }
-        if carryover == .light, readiness == .green { return suggestion(.keep) }
+        if carryover == .light, readiness == .green, !reportsLimited {
+            return reportsHeavy ? suggestion(.keepCapped(maxRPE: settings.cappedRPE), [.runCarryover])
+                : suggestion(.keep)
+        }
 
         var reasons: [Reason] = []
-        if carryover == .notable { reasons.append(.runCarryover) }
+        if carryover == .notable || reportsLimited || reportsHeavy { reasons.append(.runCarryover) }
         if readiness == .amber { reasons.append(.readiness) }
         if let previous = previousLegSession, previous.demand == .heavy,
            (0...settings.heavyBeforeRunDays).contains(days(from: previous.day, to: runDay, calendar: calendar)) {
@@ -85,7 +94,9 @@ extension RotationAdjustment {
         }
         guard !reasons.isEmpty else { return suggestion(.keep) }
 
-        if let lighter = swapPartner(in: projection, settings: settings, calendar: calendar) {
+        if let lighter = swapPartner(
+            in: projection, avoidLegWork: reportsLimited, settings: settings, calendar: calendar
+        ) {
             return suggestion(.swap(heavy: next.slot, lighter: lighter), reasons)
         }
         let alreadyPostponed = recorded.contains {
@@ -97,16 +108,18 @@ extension RotationAdjustment {
         if !alreadyPostponed, postponementKeepsHeavyGap(projection, settings: settings, calendar: calendar) {
             return suggestion(.postpone(days: settings.postponeDays), reasons)
         }
-        return suggestion(.keepCapped(maxRPE: settings.cappedRPE), reasons)
+        return reportsLimited ? suggestion(.holdLegWork, reasons)
+            : suggestion(.keepCapped(maxRPE: settings.cappedRPE), reasons)
     }
 
     /// The first later slot without leg demand, else with moderate demand, that the heavy slot can trade places with:
     /// every slot stays in the cycle and no two heavy-leg sessions end up closer than the minimum gap.
     private static func swapPartner(
-        in projection: RotationProjection, settings: Settings, calendar: Calendar
+        in projection: RotationProjection, avoidLegWork: Bool, settings: Settings, calendar: Calendar
     ) -> SessionRotation.Slot? {
         let upcoming = projection.upcoming
-        for demand in [RotationProjection.Demand.none, .moderate] {
+        let demands: [RotationProjection.Demand] = avoidLegWork ? [.none] : [.none, .moderate]
+        for demand in demands {
             for index in upcoming.indices.dropFirst() where upcoming[index].demand == demand {
                 // Slots trade places, days stay where they are.
                 var sessions = upcoming

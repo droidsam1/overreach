@@ -41,13 +41,18 @@ No trial tests "swap B and C after an extra run". The ladder below is a heuristi
    by soreness or pain that holds. The reference windows for relative distance and an unaccustomed run must have
    known coverage. *Light* otherwise; *unknown* without duration. A gap under 24 h is timing context. Thresholds
    are configurable heuristics.
-2. **Only a leg-heavy next session is reconsidered.** An upper-body or light slot needs nothing.
+2. **Today asks about the warm-up when the next rotation slot works the legs.** A heavy slot uses the full decision
+   ladder. A moderate slot can change after a report of heavy legs or limited movement. A torso slot needs no
+   question. Symptom and readiness checks take precedence. Skipping and not having warmed up leave the original
+   recommendation in place and the answer can be edited during the day.
 3. **Decision ladder (`RotationAdjustment.suggest`).** Red readiness, illness and symptoms keep their own rules first.
    Then: light carry-over and green readiness → **keep**. Notable
    carry-over, amber readiness, or a heavy leg session ≤ 48 h before the run → **swap** the heavy slot with the next
    lighter one when every slot stays in the cycle and the heavy slot keeps ≥ 48 h to the following heavy-leg session;
    else **postpone one day** when the cycle absorbs it; else **keep capped** (no load increase, top sets at RPE 8, not
    counted for stalls). Swapping comes before postponing because it keeps weekly frequency and volume.
+   After an otherwise easy run with green readiness, heavy legs that move normally favor the effort cap.
+   Limited movement favors a torso swap or postponement, or leaves the leg slot pending if neither is available.
 4. **Accepted adjustments are recorded.** A swap or postponement is stored (`RotationAdjustment`, optional backup
    field) and rotation detection tolerates it, so Today keeps the projection. Manual per-day choices stay unstored
    (ADR-0033).

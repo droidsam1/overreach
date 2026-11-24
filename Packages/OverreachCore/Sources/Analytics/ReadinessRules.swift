@@ -151,7 +151,7 @@ public enum ReadinessRules {
         var evaluated = signals.evaluated
         if let checkIn {
             evaluated = evaluated || checkIn.energy != nil || checkIn.soreness != nil
-                || (checkIn.context == nil && checkIn.exerciseWarningSigns == nil)
+                || (checkIn.context == nil && checkIn.exerciseWarningSigns == nil && checkIn.legResponse == nil)
             if let energy = checkIn.energy, energy <= settings.lowEnergy {
                 reasons.append(.lowEnergy(score: energy))
             }

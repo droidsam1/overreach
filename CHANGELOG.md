@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today asks how the legs respond to a warm-up after a recent run when the next rotation slot works the legs.
+  The answer can keep the session lighter, offer torso or leave the leg session pending.
 - Plan shows the pending strength routine and recent recorded runs in the hybrid calendar, marking run days
   without logged strength. Today previews the resulting rotation before a swap or postponement is accepted.
 - Today and Recovery & Progress show a one-time hint when a new section becomes available.

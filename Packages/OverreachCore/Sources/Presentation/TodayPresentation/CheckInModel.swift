@@ -16,24 +16,29 @@ public final class CheckInModel: Identifiable {
     public var soreness: Int?
     public var note: String
     public var contextAnswer: CheckIn.Context.Answer?
+    public var legResponse: CheckIn.LegResponse?
     public private(set) var isSaving = false
     public private(set) var errorMessage: String?
 
     public let day: CalendarDay
     private let original: CheckIn?
     private let contextQuestion: CheckIn.Context.Question?
+    private let asksAboutLegResponse: Bool
     private let checkIns: any CheckInRepository
     private let backup: (any BackupService)?
     private let clock: @Sendable () -> Date
 
     public init(
         day: CalendarDay, existing: CheckIn?, checkIns: any CheckInRepository, backup: (any BackupService)? = nil,
-        contextQuestion: CheckIn.Context.Question? = nil, clock: @escaping @Sendable () -> Date = { Date() }
+        contextQuestion: CheckIn.Context.Question? = nil, asksAboutLegResponse: Bool = false,
+        clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.day = day
         self.original = existing
         self.contextQuestion = existing?.context?.question ?? contextQuestion
         self.contextAnswer = existing?.context?.answer
+        self.asksAboutLegResponse = asksAboutLegResponse || existing?.legResponse != nil
+        self.legResponse = existing?.legResponse
         self.isSick = existing?.isSick ?? false
         self.hasExerciseWarningSigns = existing?.exerciseWarningSigns ?? false
         self.energy = existing?.energy
@@ -62,6 +67,22 @@ public final class CheckInModel: Identifiable {
             Option(value: .no, name: contextQuestion == .symptoms
                 ? L10n.text("No symptoms affecting training") : L10n.text("No")),
             Option(value: .unsure, name: L10n.text("Not sure")),
+            Option(value: .skipped, name: L10n.text("Skip for today")),
+        ]
+    }
+
+    static var warmupQuestion: String { L10n.text("How do your legs feel during the warm-up?") }
+
+    public var legResponseQuestionTitle: String? {
+        asksAboutLegResponse ? Self.warmupQuestion : nil
+    }
+
+    public var legResponseOptions: [Option<CheckIn.LegResponse>] {
+        [
+            Option(value: .normal, name: L10n.text("As usual")),
+            Option(value: .heavy, name: L10n.text("Heavy, but I can move normally")),
+            Option(value: .limited, name: L10n.text("My movement is limited")),
+            Option(value: .notWarmedUp, name: L10n.text("I haven't warmed up yet")),
             Option(value: .skipped, name: L10n.text("Skip for today")),
         ]
     }
@@ -101,7 +122,7 @@ public final class CheckInModel: Identifiable {
         }
         return CheckIn(
             day: day, isSick: isSick, energy: energy, soreness: soreness, note: trimmed.isEmpty ? nil : trimmed,
-            context: context, exerciseWarningSigns: warningSigns
+            context: context, exerciseWarningSigns: warningSigns, legResponse: legResponse
         )
     }
 
@@ -110,7 +131,7 @@ public final class CheckInModel: Identifiable {
         guard !isSaving else { return false }
         if let original { return draft != original }
         return isSick || hasExerciseWarningSigns || energy != nil || soreness != nil
-            || draft.note != nil || draft.context != nil
+            || draft.note != nil || draft.context != nil || legResponse != nil
     }
 
     /// Saves and returns `true`; on failure keeps the sheet open with `errorMessage`.
