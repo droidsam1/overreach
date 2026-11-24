@@ -165,7 +165,7 @@ public final class TodayModel {
         defer { isAcceptingRotation = false }
         let routine = rotationSwapRoutine
         adjustment.swapDay = decision.partner?.day
-        adjustment.carryover = decision.carryover
+        adjustment.carryover = decision.carryover.level
         if case .postpone = adjustment.kind {
             adjustment.postponedSlotID = decision.next.slot.id
         }
@@ -188,7 +188,7 @@ public final class TodayModel {
     public func rotationCap(for routine: Routine) -> RotationAdjustment.Outcome? {
         guard rotationCanBeShown, heroTrainingAction == .startStrength(routine), let rotationDecision,
               case let .keepCapped(maxRPE) = rotationDecision.suggestion.action else { return nil }
-        return .init(action: .capped, carryover: rotationDecision.carryover,
+        return .init(action: .capped, carryover: rotationDecision.carryover.level,
                      reason: rotationDecision.suggestion.reasons.first, maximumRPE: maxRPE)
     }
 
@@ -1118,12 +1118,12 @@ public final class TodayModel {
         )
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         let tag = goal?.scheduledRuns.first { $0.completion?.matches(run) == true }?.purpose
-        let carryover = RunCarryover.assess(
+        let carryover = RunCarryover.assessment(
             run: run, recentRuns: runs, checkIn: checkIn, nextSessionStart: now,
             painReport: painReports(of: goal).last { $0.matches(run) }, tag: tag
         )
         guard let suggestion = RotationAdjustment.suggest(
-            projection: rotation, carryover: carryover, readiness: readiness.level,
+            projection: rotation, carryover: carryover.level, readiness: readiness.level,
             previousLegSession: previous, runDay: CalendarDay(run.startedAt, calendar: calendar),
             recorded: profile?.rotationAdjustments ?? [], calendar: calendar
         ) else { return }

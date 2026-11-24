@@ -19,9 +19,12 @@ struct TodayRotationAdjustmentTests {
     private let squat = Exercise(name: "Squat", primaryMuscles: [.quadriceps], equipment: .barbell)
     private let bench = Exercise(name: "Bench", primaryMuscles: [.chest], equipment: .barbell)
 
-    private func history(allHeavy: Bool = false, templates: Bool = true) -> (TestStore, [Routine]) {
+    private func history(
+        allHeavy: Bool = false, templates: Bool = true, torsoFirst: Bool = false
+    ) -> (TestStore, [Routine]) {
         let routines = ["A", "B", "C", "D"].enumerated().map { index, name in
-            Routine(name: name, exerciseIDs: [allHeavy || index < 2 ? squat.id : bench.id])
+            let heavy = allHeavy || (torsoFirst ? index == 1 : index < 2)
+            return Routine(name: name, exerciseIDs: [heavy ? squat.id : bench.id])
         }
         let cycle = routines + routines
         let sessions = cycle.enumerated().map { index, routine in
@@ -39,21 +42,23 @@ struct TodayRotationAdjustmentTests {
     }
 
     private func load(
-        _ store: TestStore, at date: Date? = nil, hard: Bool = true, dismissed: CalendarDay? = nil,
+        _ store: TestStore, at date: Date? = nil, hard: Bool = true,
+        hoursSinceStart: Double = 30, hasEarlierRun: Bool = true, dismissed: CalendarDay? = nil,
         saveDismissal: @escaping @MainActor (CalendarDay) -> Void = { _ in }
     ) async -> TodayModel {
         let date = date ?? now
         let run = RunActivity(
             id: "recent", source: .garmin, name: "Park run",
-            startedAt: now.addingTimeInterval(-30 * 3_600), durationSeconds: 1_800,
+            startedAt: now.addingTimeInterval(-hoursSinceStart * 3_600), durationSeconds: 1_800,
             distanceMeters: 4_000, elevationLossMeters: 25, aerobicTrainingEffect: hard ? 4.2 : 2
         )
         let earlier = RunActivity(
             id: "earlier", source: .garmin, startedAt: now.addingTimeInterval(-7 * 86_400),
             durationSeconds: 1_800, distanceMeters: 4_000
         )
+        let runs = hasEarlierRun ? [earlier, run] : [run]
         let model = TodayModel(
-            sources: [RotationRunSource(day: CalendarDay(date, calendar: calendar), runs: [earlier, run])],
+            sources: [RotationRunSource(day: CalendarDay(date, calendar: calendar), runs: runs)],
             profiles: store, workouts: store, exercises: store, routines: store,
             dismissedRotationDay: dismissed, saveDismissedRotationDay: saveDismissal,
             calendar: calendar, format: Format(locale: Locale(identifier: "en_US"))
@@ -72,6 +77,26 @@ struct TodayRotationAdjustmentTests {
         #expect(model.rotationExplanation.contains("Elevation: 25 m descent"))
         #expect(model.rotationExplanation.contains { $0.hasPrefix("Previous leg session: B") })
         #expect(model.rotationExplanation.contains("Readiness: Green · coaching heuristic"))
+    }
+
+    @Test func aCloseRunWithUnknownExposureDoesNotMoveTheLegSession() async {
+        let (store, routines) = history()
+        let model = await load(store, hard: false, hoursSinceStart: 20, hasEarlierRun: false)
+        #expect(model.nextAction == .startStrength(routines[0]))
+        #expect(model.rotationOffer == nil)
+        #expect(model.rotationExplanation.contains("Recent running exposure is unknown."))
+        #expect(model.rotationExplanation.contains { $0.contains("19.5 hours ago") })
+    }
+
+    @Test func aCloseHardRunReconsidersLegWorkAndPreservesTorso() async {
+        let (legs, _) = history()
+        let legsModel = await load(legs, hoursSinceStart: 20)
+        #expect(legsModel.rotationOffer != nil)
+
+        let (torso, routines) = history(torsoFirst: true)
+        let torsoModel = await load(torso, hoursSinceStart: 20)
+        #expect(torsoModel.nextAction == .startStrength(routines[0]))
+        #expect(torsoModel.rotationOffer == nil)
     }
 
     @Test func acceptingASwapStartsTheLighterRoutineAndRecordsItsOriginalDay() async throws {

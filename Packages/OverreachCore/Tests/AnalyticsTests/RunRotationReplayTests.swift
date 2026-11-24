@@ -42,7 +42,7 @@ struct RunRotationReplayTests {
         #expect(SessionRotation.detect(in: sessions, calendar: calendar) == nil)
     }
 
-    @Test func stableCadenceSeparatesLowerBodyAndTorsoEvenWithTheSameTimeSinceRunning() throws {
+    @Test func stableCadenceKeepsTheLegSessionWhenTimingIsTheOnlySignal() throws {
         let day = CalendarDay(year: 2000, month: 6, day: 20)
         let now = day.startDate(in: calendar).addingTimeInterval(12 * 3_600)
         let run = RunActivity(
@@ -57,6 +57,7 @@ struct RunRotationReplayTests {
             run: run, recentRuns: [earlier], checkIn: nil, nextSessionStart: now
         )
         #expect(assessment.reasons == [.close])
+        #expect(assessment.level == .light)
         let lastDay = day.adding(days: -2, calendar: calendar)
         let plans = ["CDABCDAB", "DABCDABC"].map {
             let sessions = history(
@@ -79,8 +80,8 @@ struct RunRotationReplayTests {
                 recorded: [], calendar: calendar
             )
         }
-        #expect(suggestion(legPlan)?.action == .swap(heavy: legSlot, lighter: torsoSlot))
-        #expect(suggestion(legPlan)?.reasons == [.runCarryover])
+        #expect(suggestion(legPlan)?.action == .keep)
+        #expect(suggestion(legPlan)?.reasons.isEmpty == true)
         #expect(suggestion(torsoPlan) == nil)
     }
 }

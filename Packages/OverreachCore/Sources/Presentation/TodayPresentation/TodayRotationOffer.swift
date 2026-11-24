@@ -12,7 +12,7 @@ public struct TodayRotationOffer: Hashable, Sendable {
 
 struct TodayRotationDecision {
     let suggestion: RotationAdjustment.Suggestion
-    let carryover: RunCarryover.Level
+    let carryover: RunCarryover.Assessment
     let next: RotationProjection.Session
     let partner: RotationProjection.Session?
     let upcoming: [RotationProjection.Session]
@@ -63,15 +63,19 @@ struct TodayRotationDecision {
         let unknown = L10n.text("Unknown")
         let hours = now.timeIntervalSince(run.startedAt.addingTimeInterval(run.durationSeconds)) / 3_600
         let previous = previousLegs.map { L10n.format("{1} on {2}", $0.slot.name, weekday($0.day)) } ?? unknown
-        return [
+        var details = [
             outcome,
             L10n.format("Run: {1} · {2} · {3} · {4} hours ago", run.name ?? L10n.text("Run"),
                         SessionReport.durationText(run.durationSeconds) ?? unknown, effort ?? unknown,
                         format.number(hours, maxFractionDigits: 1)),
-            L10n.format("Elevation: {1}", elevation ?? unknown),
+            L10n.format("Elevation: {1}", elevation ?? unknown)
+        ]
+        if carryover.exposureUnknown { details.append(L10n.text("Recent running exposure is unknown.")) }
+        details.append(contentsOf: [
             L10n.format("Previous leg session: {1}", previous),
             L10n.format("Readiness: {1} · {2}", readiness.displayName, suggestion.evidence.level.displayName)
-        ]
+        ])
+        return details
     }
 
     private var effort: String? {

@@ -13142,6 +13142,23 @@
         }
       }
     },
+    "Recent running exposure is unknown.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No sabemos cuánto has corrido últimamente."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non sabemos canto corriches ultimamente."
+          }
+        }
+      }
+    },
     "Recorded run": {
       "extractionState": "manual",
       "localizations": {

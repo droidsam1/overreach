@@ -25,10 +25,13 @@ struct RunCarryoverTests {
 
     private func assessment(
         _ run: RunActivity, recent runs: [RunActivity]? = nil, checkIn: CheckIn? = nil, next: Date? = nil,
-        pain: RunPainReport? = nil, tag: PlannedRun.Purpose? = nil, settings: RunCarryover.Settings = .init()
+        pain: RunPainReport? = nil, tag: PlannedRun.Purpose? = nil, completeHistory: Bool = true,
+        settings: RunCarryover.Settings = .init()
     ) -> RunCarryover.Assessment {
         RunCarryover.assessment(run: run, recentRuns: runs ?? [recent()], checkIn: checkIn,
-                                nextSessionStart: next ?? lift, painReport: pain, tag: tag, settings: settings)
+                                nextSessionStart: next ?? lift, painReport: pain, tag: tag,
+                                historyCoveredSince: completeHistory ? start.addingTimeInterval(-30 * 86_400) : nil,
+                                settings: settings)
     }
 
     @Test func anEasyUsualRunWithTimeBeforeTheLiftIsLight() {
@@ -79,6 +82,16 @@ struct RunCarryoverTests {
         #expect(assessment(easy(), recent: [recent(daysBefore: 13)]).level == .light)
     }
 
+    @Test func incompleteHistoryDoesNotEstablishAFamiliarDistanceOrTrainingGap() {
+        let missing = assessment(easy(), recent: [], completeHistory: false)
+        #expect(missing.level == .light)
+        #expect(missing.exposureUnknown)
+
+        let partial = assessment(easy(kilometers: 10), completeHistory: false)
+        #expect(partial.level == .light)
+        #expect(!partial.exposureUnknown)
+    }
+
     @Test func theRunItselfAndItsCopyAreNotPriorRuns() {
         let run = easy()
         let copy = RunActivity(id: "other-source", source: .appleHealth, startedAt: start.addingTimeInterval(30),
@@ -88,7 +101,10 @@ struct RunCarryoverTests {
 
     @Test func lessThanTwentyFourHoursBeforeTheLiftIsClose() {
         let end = start.addingTimeInterval(40 * 60)
-        #expect(assessment(easy(), next: end.addingTimeInterval(23.9 * 3_600)).reasons == [.close])
+        let close = assessment(easy(), next: end.addingTimeInterval(23.9 * 3_600))
+        #expect(close.reasons == [.close])
+        #expect(close.level == .light)
+        #expect(assessment(easy(), next: start).reasons.isEmpty)
         #expect(assessment(easy(), next: end.addingTimeInterval(24 * 3_600)).level == .light)
     }
 
