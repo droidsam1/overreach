@@ -45,14 +45,14 @@ struct TodayRunOfferTests {
 
     private func model(
         lastDaysAgo: Int = 1, routine: WalkingRoutine = WalkingRoutine(), runs: [RunActivity]? = nil,
-        sleepHours: Double = 5, checkIn: CheckInRepository? = nil
+        sleepHours: Double = 5, checkIn: CheckInRepository? = nil, answers: DogRunAnswers = DogRunAnswers()
     ) async throws -> TodayModel {
         let store = TestStore(exercises: [squat, bench], sessions: rotation(lastDaysAgo: lastDaysAgo))
         try await store.save(AthleteProfile(walkingRoutine: routine))
         let source = RunOfferSource(day: today, sleepHours: sleepHours, runs: runs ?? [run(daysAgo: 4)])
         let model = TodayModel(
             sources: [source], checkIns: checkIn, profiles: store, workouts: store, exercises: store,
-            calendar: calendar, format: format
+            dogRunAnswers: answers, calendar: calendar, format: format
         )
         await model.load(now: now)
         return model
@@ -75,6 +75,30 @@ struct TodayRunOfferTests {
         #expect(unnamed.runOffer?.title == "Good day for an easy run with your dog")
         let noDog = try await model(routine: WalkingRoutine(hasDog: false, dogName: "Luna"))
         #expect(noDog.runOffer?.title == "Good day for an easy run")
+    }
+
+    @Test func confirmedDogRunsPreferALaterUsualWeekday() async throws {
+        let runs = [3, 10, 17].map { run(daysAgo: $0) }
+        let answers = DogRunAnswers(Dictionary(uniqueKeysWithValues: runs.map { (.init($0), true) }))
+        let routine = WalkingRoutine(hasDog: true, dogName: "Luna")
+        let baseline = try await model(routine: routine, runs: runs)
+        let learned = try await model(routine: routine, runs: runs, answers: answers)
+        let weekday = today.adding(days: 4, calendar: calendar).startDate(in: calendar)
+        let weekdayStyle = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
+        let fallback = "Not today? \(weekday.formatted(weekdayStyle.weekday(.wide))) also works"
+        #expect(baseline.runOffer?.fallback != fallback)
+        #expect(learned.runOffer?.fallback == fallback)
+        #expect(learned.runOffer?.title == "Good day for an easy run")
+    }
+
+    @Test(arguments: [true, false])
+    func theOfferUsesTheConfirmedCompanionHistoryForToday(withDog: Bool) async throws {
+        let runs = [7, 14, 21].map { run(daysAgo: $0) }
+        let answers = DogRunAnswers(Dictionary(uniqueKeysWithValues: runs.map { (.init($0), withDog) }))
+        let routine = WalkingRoutine(hasDog: true, dogName: "Luna")
+        let learned = try await model(routine: routine, runs: runs, answers: answers)
+        let title = withDog ? "Good day for an easy run with Luna" : "Good day for an easy run"
+        #expect(learned.runOffer?.title == title)
     }
 
     @Test func aWindowTomorrowOnlyOffersNothingToday() async throws {
