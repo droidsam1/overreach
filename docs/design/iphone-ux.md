@@ -38,6 +38,9 @@ Use the existing Trends destination for Recovery & Progress. Start with one row 
 (Recovery, Recent load, Progress) and a short summary. **Recovery** in Today's link row and **View progress**
 from Plan open the relevant section directly. When moving content, ship its new route in the same
 change. Use shared training results so today's explanation and the supporting readings agree.
+The Recovery and Recent load details include 30- and 90-day trends ([#127](https://github.com/droidsam1/overreach/issues/127)).
+Keep missing days visible, compare one HRV source and protocol at a time, and label the shorter first bucket
+in weekly totals. Provide a text summary for VoiceOver and use the device review to check large text.
 The [tab trial](https://github.com/droidsam1/overreach/issues/150) gives Recovery a tab and moves Settings
 to the Today toolbar. Compare standalone recovery lookup and Settings discovery in the
 [device review](https://github.com/droidsam1/overreach/issues/21) before deciding whether to keep the layout.

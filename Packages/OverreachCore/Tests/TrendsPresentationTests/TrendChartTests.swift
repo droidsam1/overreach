@@ -64,10 +64,13 @@ struct TrendChartTests {
     }
 
     @Test func aDayWithoutAReadingIsAVisibleGap() async throws {
-        let days = [0, 1, 2, 5, 6].map { offset in day(-offset) { $0.restingHeartRate = 52 } }
+        let days = [1, 2, 5, 6, 7].map { offset in day(-offset) { $0.restingHeartRate = 52 } }
         let chart = try #require(await model(days: days).recoveryCharts.first { $0.kind == .restingHeartRate })
-        #expect(chart.segments.map(\.count) == [2, 3])
+        #expect(chart.segments.map(\.count) == [3, 2])
         #expect(chart.summary.contains("5 of 30 days have a reading"))
+        let today = CalendarDay(now, calendar: calendar)
+        #expect(chart.dateDomain?.lowerBound == today.adding(days: -29, calendar: calendar).startDate(in: calendar))
+        #expect(chart.dateDomain?.upperBound == today.startDate(in: calendar))
     }
 
     @Test func withoutReadingsTheSummarySaysSoAndThereIsNothingToPlot() async throws {
@@ -93,28 +96,81 @@ struct TrendChartTests {
         #expect(plain.band == nil)
     }
 
+    @Test func referenceBoundsFromAnotherSourceAreNotUsed() async throws {
+        let garmin = day(0) {
+            $0.sources = [.garmin]
+            $0.hrvRMSSDMs = 48
+        }
+        let apple = day(0) {
+            $0.hrvSDNNMs = 52
+            $0.hrvBaselineLowMs = 40
+            $0.hrvBaselineHighMs = 60
+        }
+        let chart = try #require(await model(days: [garmin, apple]).recoveryCharts.first { $0.kind == .hrv })
+        #expect(chart.segments.flatMap { $0 }.map(\.value) == [48])
+        #expect(chart.band == nil)
+    }
+
+    @Test func aSourceChangeLeavesARecoveryGap() async throws {
+        let days = [
+            day(-2) { $0.restingHeartRate = 60 },
+            day(-1) { $0.sources = [.garmin]; $0.restingHeartRate = 58 },
+            day(0) { $0.restingHeartRate = 57 },
+        ]
+        let chart = try #require(await model(days: days).recoveryCharts.first { $0.kind == .restingHeartRate })
+        #expect(chart.segments.map { $0.map(\.value) } == [[60], [57]])
+    }
+
+    @Test func daytimeHRVDoesNotFillAnOvernightGap() async throws {
+        let days = (0..<30).map { offset in
+            day(-offset) {
+                $0.hrvSDNNMs = offset == 1 ? 95 : 48
+                $0.hrvSDNNWindow = offset == 1 ? .daytime : .sleep
+            }
+        }
+        let chart = try #require(await model(days: days).recoveryCharts.first { $0.kind == .hrv })
+        #expect(chart.segments.map(\.count) == [28, 1])
+        #expect(chart.segments.flatMap { $0 }.allSatisfy { $0.value == 48 })
+    }
+
+    @Test func olderReadingsKeepTheIntervalPickerAvailable() async throws {
+        let model = await model(days: [day(-65) { $0.hrvSDNNMs = 48 }])
+        #expect(model.showsRecoveryTrends)
+        #expect(model.showsRecovery)
+        #expect(!model.recoveryCharts.contains { $0.hasData })
+        model.selectTrendRange(.days90)
+        let chart = try #require(model.recoveryCharts.first { $0.kind == .hrv })
+        #expect(chart.segments.flatMap { $0 }.map(\.value) == [48])
+    }
+
     @Test func weeklyRunningDistanceAgreesWithRecentLoad() async throws {
-        let run = { (offset: Int, id: String) in
+        let run = { (offset: Int, id: String, source: DataSourceKind) in
             RunActivity(
-                id: id, source: .appleHealth,
+                id: id, source: source,
                 startedAt: now.addingTimeInterval(Double(offset) * 86_400 - 3_600), durationSeconds: 1_800,
                 distanceMeters: 5_000
             )
         }
-        let model = await model(runs: [run(-1, "a"), run(-3, "b"), run(-10, "c"), run(-24, "d")])
+        let model = await model(runs: [
+            run(-1, "a", .appleHealth), run(-1, "mirror", .garmin), run(-3, "b", .appleHealth),
+            run(-10, "c", .appleHealth), run(-24, "d", .appleHealth), run(-29, "e", .appleHealth),
+            run(-89, "f", .appleHealth),
+        ])
 
         #expect(model.loadRows.first { $0.kind == .running }?.value == "2 runs · 10 km")
         let chart = try #require(model.weeklyCharts.first { $0.kind == .runningDistance })
-        #expect(chart.unit == "km" && chart.interval == "Last 4 weeks")
-        #expect(chart.segments.first?.map(\.value) == [5, 0, 5, 10])
+        #expect(chart.unit == "km" && chart.interval == "Last 30 days")
+        #expect(chart.segments.first?.map(\.value) == [5, 5, 0, 5, 10])
+        #expect(chart.partialWeekLabel == "First bar covers 2 days: 5 km.")
         model.selectTrendRange(.days90)
         let longer = try #require(model.weeklyCharts.first { $0.kind == .runningDistance })
-        #expect(longer.segments.first?.count == 12 && longer.segments.first?.last?.value == 10)
+        #expect(longer.segments.first?.count == 13 && longer.segments.first?.last?.value == 10)
+        #expect(longer.partialWeekLabel == "First bar covers 6 days: 5 km.")
     }
 
     @Test func aSparseHistoryHasNoWeeklyBarsToDraw() async throws {
         let model = await model()
         #expect(model.weeklyCharts.allSatisfy { !$0.hasData })
-        #expect(model.weeklyCharts.first?.summary == "Strength sets per week: nothing recorded in the last 4 weeks.")
+        #expect(model.weeklyCharts.first?.summary == "Strength sets per week: nothing recorded in the last 30 days.")
     }
 }
