@@ -12,10 +12,9 @@ hybrid athlete. The device and external review steps below have their own accept
 
 ## Ready to implement
 
-1. [#292](https://github.com/droidsam1/overreach/issues/292) — Use the daily recovery assessment in imported-plan follow-up.
-2. [#247](https://github.com/droidsam1/overreach/issues/247) — Audit screens for consistency with Today.
-3. [#127](https://github.com/droidsam1/overreach/issues/127) — Add 30- and 90-day trends to Recovery & Progress.
-4. [#279](https://github.com/droidsam1/overreach/issues/279) — Add a one-time hint when a section first appears.
+1. [#247](https://github.com/droidsam1/overreach/issues/247) — Audit screens for consistency with Today.
+2. [#127](https://github.com/droidsam1/overreach/issues/127) — Add 30- and 90-day trends to Recovery & Progress.
+3. [#279](https://github.com/droidsam1/overreach/issues/279) — Add a one-time hint when a section first appears.
 
 ## Needs a person or an iPhone
 

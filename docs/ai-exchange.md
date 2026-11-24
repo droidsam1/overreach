@@ -156,6 +156,11 @@ on `startDate` (`YYYY-MM-DD`), or on the day of the import.
 - **Follow-up.** Train shows this week's planned and completed sessions, and proposes changes (ADR-0019,
   `docs/evidence.md`): rest while ill, ease back in after a break of 14 days or more, and after two weeks below
   two thirds of the planned sessions, fewer sessions a week and a longer block. The user accepts or ignores each.
+  When a session of the running block is due today and not done, the follow-up also reads today's recovery
+  assessment, the same one Today shows (ADR-0035): an amber light proposes an easy session, a red one a recovery day
+  (a walk or a very easy session, light if lifting), and warning signs, illness or pain skipping it. The proposal
+  names the signals and their evidence, is for today only and changes nothing in the stored plan. A green or unknown
+  light, missing readings, a finished session or no running block add nothing. An illness keeps its own advice alone.
 
 ### JSON Schema
 

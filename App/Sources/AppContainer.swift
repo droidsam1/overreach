@@ -247,9 +247,15 @@ final class AppContainer {
     }
 
     func makeRoutinesModel() -> RoutinesModel {
-        RoutinesModel(
+        // The plan follow-up reads the same recovery assessment as Today (ADR-0035).
+        let readiness = DailyReadinessProvider.make(
+            sources: metricsSources, activity: activitySources, checkIns: checkIns, workouts: workouts,
+            exercises: exercises, recordedStrength: historyRecordedStrength, routines: routines,
+            progression: progression, cycle: cycleSource
+        )
+        return RoutinesModel(
             routines: routines, exercises: exercises, backup: backup, profiles: profiles, workouts: workouts,
-            checkIns: checkIns
+            checkIns: checkIns, readiness: readiness
         )
     }
 

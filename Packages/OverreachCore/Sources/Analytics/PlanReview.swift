@@ -27,8 +27,43 @@ public struct PlanWeek: Hashable, Sendable {
     public let isCurrent: Bool
 }
 
+/// What today's recovery assessment asks of a planned strength session. The same rule as Today's hero
+/// (`ReadinessRules`, ADR-0035): warning signs, illness or pain skip it, a red light makes it a recovery day, an amber
+/// one makes it lighter. Green and unknown ask nothing.
+public enum DailyRecoveryAction: Hashable, Sendable {
+    /// Symptoms or pain say no training at all today.
+    case skip
+    /// A red light: a recovery day, and if lifting, light (RPE 6 or less).
+    case recoveryDay
+    /// An amber light: keep the session easy.
+    case easier
+
+    public init?(_ readiness: Readiness) {
+        if readiness.reasons.contains(where: \.advisesSkippingTraining) {
+            self = .skip
+        } else {
+            switch readiness.level {
+            case .red: self = .recoveryDay
+            case .amber: self = .easier
+            case .green, .unknown: return nil
+            }
+        }
+    }
+
+    /// The evidence of the signal that decided it: reported symptoms, or the recovery light's HRV and sleep rules.
+    public var evidence: EvidenceReference {
+        switch self {
+        case .skip: ReadinessEvidence.reportedSymptoms
+        case .recoveryDay, .easier: ReadinessEvidence.hrv
+        }
+    }
+}
+
 /// A change the follow-up proposes. Proposals only: the user decides (ADR-0013).
 public enum PlanAdjustment: Hashable, Sendable {
+    /// Today's recovery assessment asks for less than the planned session: it is a proposal for today only and
+    /// leaves the stored plan as entered.
+    case adaptToday(DailyRecoveryAction)
     /// A recent check-in says the athlete is ill: rest until symptoms ease, then return gradually.
     case restWhileIll
     /// No strength session for `daysOff` days: keep the plan and ease back in.
@@ -40,6 +75,7 @@ public enum PlanAdjustment: Hashable, Sendable {
 
     public var evidence: EvidenceReference {
         switch self {
+        case let .adaptToday(action): action.evidence
         case .restWhileIll: PlanEvidence.illness
         case .easeBackIn: PlanEvidence.retraining
         case .fewerSessions: PlanEvidence.frequency
@@ -51,7 +87,7 @@ public enum PlanAdjustment: Hashable, Sendable {
     public var changesThePlan: Bool {
         switch self {
         case .fewerSessions, .extendBlock: true
-        case .restWhileIll, .easeBackIn: false
+        case .restWhileIll, .easeBackIn, .adaptToday: false
         }
     }
 }
@@ -78,9 +114,13 @@ public enum PlanReviewer {
     public static let lookbackWeeks = 2
     public static let maxExtensionWeeks = 4
 
+    /// - Parameters:
+    ///   - readiness: today's assessment, the one Today shows. Without it (unavailable readings, nothing read) the
+    ///     recovery signal adds no proposal.
+    ///   - sessionDue: whether a session of the block is planned for today and not done yet.
     public static func review(
         blocks: [TrainingBlock], sessions: [StrengthSession], checkIns: [CheckIn] = [], today: CalendarDay,
-        calendar: Calendar = .current
+        readiness: Readiness? = nil, sessionDue: Bool = false, calendar: Calendar = .current
     ) -> PlanReview? {
         guard let block = PlanSchedule.runningBlock(blocks, today: today, calendar: calendar) else { return nil }
         let weeks = weeklyCounts(block, sessions: sessions, today: today, current: true, calendar: calendar)
@@ -88,7 +128,11 @@ public enum PlanReviewer {
         let isIll = checkIns.contains { $0.isSick && $0.day >= yesterday && $0.day <= today }
         let lastDay = sessions.map { CalendarDay($0.startedAt, calendar: calendar) }.filter { $0 <= today }.max()
         let daysOff = lastDay.map { days(from: $0, to: today, calendar: calendar) }
-        let adjustments = self.adjustments(block: block, weeks: weeks, daysOff: daysOff, isIll: isIll)
+        var adjustments = self.adjustments(block: block, weeks: weeks, daysOff: daysOff, isIll: isIll)
+        // An illness already says rest; any other recovery action comes first, for today's session.
+        if sessionDue, adjustments != [.restWhileIll], let action = readiness.flatMap(DailyRecoveryAction.init) {
+            adjustments.insert(.adaptToday(action), at: 0)
+        }
         return PlanReview(block: block, weeks: weeks, adjustments: adjustments)
     }
 
@@ -160,7 +204,7 @@ public enum PlanReviewer {
                 }
                 return changed
             }
-        case .restWhileIll, .easeBackIn:
+        case .restWhileIll, .easeBackIn, .adaptToday:
             return blocks
         }
     }
