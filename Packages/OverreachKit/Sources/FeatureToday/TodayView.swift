@@ -87,8 +87,16 @@ public struct TodayView: View {
                 VStack(alignment: .leading, spacing: Spacing.large) {
                     header
                     primaryDecision
+                        .onAppear {
+                            if let kind = heroFeedbackKind { model.recordRotationFeedbackShown(kind) }
+                        }
+                        .onChange(of: heroFeedbackKind) { _, kind in
+                            if let kind { model.recordRotationFeedbackShown(kind) }
+                        }
                     if let offer = rotationOffer {
                         rotationOfferLine(offer)
+                            .onAppear { model.recordRotationFeedbackShown(offer.kind) }
+                            .onChange(of: offer.kind) { _, kind in model.recordRotationFeedbackShown(kind) }
                     } else if let offer = model.runOffer {
                         runOfferLine(offer)
                     }
@@ -153,7 +161,10 @@ public struct TodayView: View {
             }
             .sheet(item: $painPrompt) { prompt in RunPainSheet(model: model, prompt: prompt) }
             .sheet(item: $checkInSheet) { sheet in
-                CheckInView(model: sheet) { Task { await model.load() } }
+                CheckInView(model: sheet) {
+                    model.recordWarmUpQuestionSaved(sheet)
+                    Task { await model.load() }
+                }
             }
             .onChange(of: model.sectionHintCandidates) { model.updateSectionHints() }
             .task { await reload() }
@@ -382,6 +393,10 @@ public struct TodayView: View {
         model.nextAction(continuing: workoutContinuation)
     }
 
+    private var heroFeedbackKind: RotationFeedback.Kind? {
+        workoutContinuation == nil ? model.heroRotationFeedbackKind : nil
+    }
+
     @ViewBuilder private var primaryDecision: some View {
         if let title = model.primaryActionTitle(continuing: workoutContinuation), model.doneToday != nil {
             VStack(alignment: .leading, spacing: Spacing.medium) {
@@ -445,6 +460,7 @@ public struct TodayView: View {
 
     private func startRecommendedStrength(_ routine: Routine) {
         if let onStartStrength {
+            model.recordRotationCapStarted()
             onStartStrength(routine, model.rotationCap(for: routine), model.startsFromRotationHistory(routine))
         } else {
             onOpenTrain()

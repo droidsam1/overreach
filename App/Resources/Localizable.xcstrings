@@ -766,6 +766,23 @@
         }
       }
     },
+    "Accepted": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aceptada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aceptada"
+          }
+        }
+      }
+    },
     "Activity by day": {
       "extractionState": "manual",
       "localizations": {
@@ -1667,6 +1684,23 @@
         }
       }
     },
+    "Answered": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Respondida"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Respondida"
+          }
+        }
+      }
+    },
     "Anything worth remembering": {
       "extractionState": "manual",
       "localizations": {
@@ -2449,6 +2483,23 @@
         }
       }
     },
+    "Changed during the session": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambié algo durante la sesión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiei algo durante a sesión"
+          }
+        }
+      }
+    },
     "Changed. Give it three sessions before judging it.": {
       "extractionState": "manual",
       "localizations": {
@@ -3040,6 +3091,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Completado"
+          }
+        }
+      }
+    },
+    "Completed as chosen": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completé la sesión que elegí"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completei a sesión que escollín"
           }
         }
       }
@@ -4740,6 +4808,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Descargas cando as precisas"
+          }
+        }
+      }
+    },
+    "Did not train": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No entrené"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non adestrei"
           }
         }
       }
@@ -7107,6 +7192,23 @@
         }
       }
     },
+    "How did training go?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Cómo fue el entrenamiento?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Como foi o adestramento?"
+          }
+        }
+      }
+    },
     "How did your last run feel?": {
       "extractionState": "manual",
       "localizations": {
@@ -8242,6 +8344,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fai {1} suave hoxe."
+          }
+        }
+      }
+    },
+    "Kept plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantuve el plan"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantiven o plan"
           }
         }
       }
@@ -13312,6 +13431,23 @@
         }
       }
     },
+    "Records stay on this device. Turning this off clears them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los registros se quedan en este dispositivo. Si desactivas la opción, se borran."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os rexistros quedan neste dispositivo. Se desactivas a opción, bórranse."
+          }
+        }
+      }
+    },
     "Recovery": {
       "extractionState": "manual",
       "localizations": {
@@ -14396,6 +14532,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Revisa as miñas rutinas e dime que cambiarías."
+          }
+        }
+      }
+    },
+    "Review rotation suggestions": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar sugerencias de rotación"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar suxestións da rotación"
           }
         }
       }
@@ -16147,6 +16300,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Omite {1} hoxe e volve valorar como te sentes."
+          }
+        }
+      }
+    },
+    "Skipped": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitida"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitida"
           }
         }
       }
@@ -19449,6 +19619,23 @@
         }
       }
     },
+    "Unnecessary": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Innecesaria"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Innecesaria"
+          }
+        }
+      }
+    },
     "Until %@": {
       "extractionState": "manual",
       "localizations": {
@@ -19751,6 +19938,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Só se usa para avisarte antes de que caduque a chave."
+          }
+        }
+      }
+    },
+    "Useful": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Útil"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Útil"
           }
         }
       }
@@ -20163,6 +20367,23 @@
         }
       }
     },
+    "Warm-up question": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pregunta sobre el calentamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pregunta sobre o quecemento"
+          }
+        }
+      }
+    },
     "Warm-up set %lld": {
       "extractionState": "manual",
       "localizations": {
@@ -20278,6 +20499,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Foi un período de descanso?"
+          }
+        }
+      }
+    },
+    "Was this useful?": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Te resultó útil?"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resultouche útil?"
           }
         }
       }

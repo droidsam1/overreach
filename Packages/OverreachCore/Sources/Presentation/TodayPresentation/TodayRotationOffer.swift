@@ -4,6 +4,7 @@ import Foundation
 import PresentationKit
 
 public struct TodayRotationOffer: Hashable, Sendable {
+    public let kind: RotationFeedback.Kind
     public let title: String
     public let acceptTitle: String
     public let orderPreview: String
@@ -31,13 +32,13 @@ struct TodayRotationDecision {
             var reordered = upcoming.map(\.slot.name)
             reordered.swapAt(0, destination)
             return TodayRotationOffer(
-                title: L10n.format("After your run: do {1} today, {2} on {3}.",
+                kind: .swap, title: L10n.format("After your run: do {1} today, {2} on {3}.",
                                    lighter.name, heavy.name, weekday(partner.day)),
                 acceptTitle: L10n.text("Swap sessions"), orderPreview: orderPreview(reordered)
             )
         case let .postpone(days):
             return TodayRotationOffer(
-                title: L10n.format("After your run: move {1} to {2}.", next.slot.name,
+                kind: .postpone, title: L10n.format("After your run: move {1} to {2}.", next.slot.name,
                                    weekday(suggestion.day.adding(days: days, calendar: calendar))),
                 acceptTitle: L10n.text("Postpone session"), orderPreview: orderPreview(upcoming.map(\.slot.name))
             )

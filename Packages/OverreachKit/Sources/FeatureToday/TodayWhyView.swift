@@ -33,6 +33,8 @@ struct TodayWhyView<Extra: View>: View {
                 }
                 extra
                 if !why.rows.isEmpty { rows(why) }
+                NavigationLink("Review rotation suggestions") { TodayRotationFeedbackView(model: model) }
+                    .whyCard()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Spacing.medium)
