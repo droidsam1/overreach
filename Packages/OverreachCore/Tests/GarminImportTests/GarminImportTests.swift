@@ -218,6 +218,20 @@ struct GarminMappingTests {
         #expect(first.trainingLoad == 55.405)
         #expect(first.averageCadence == 101.35)
         #expect(first.elevationGainMeters == 41.5)
+        #expect(first.elevationLossMeters == 45.915)
+    }
+
+    @Test func cachePreservesDescentAndLoadsRunsWithoutIt() throws {
+        let activities = try GarminDecoding.activities(from: fixture("activities")).records
+        let run = try #require(GarminMapping.runs(activities).first)
+        let cache = GarminCache(runs: [run])
+        let data = try JSONEncoder().encode(cache)
+        #expect(try JSONDecoder().decode(GarminCache.self, from: data) == cache)
+
+        var legacyRun = run
+        legacyRun.elevationLossMeters = nil
+        let legacyData = try JSONEncoder().encode(GarminCache(runs: [legacyRun]))
+        #expect(try JSONDecoder().decode(GarminCache.self, from: legacyData).runs == [legacyRun])
     }
 
     @Test func strengthRecordingsAreNotSessions() throws {

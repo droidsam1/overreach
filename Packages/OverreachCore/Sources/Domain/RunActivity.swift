@@ -18,6 +18,7 @@ public struct RunActivity: Identifiable, Hashable, Codable, Sendable {
     public var averageHeartRate: Double?
     public var maxHeartRate: Double?
     public var elevationGainMeters: Double?
+    public var elevationLossMeters: Double?
     public var averageCadence: Double?
     /// Source-specific training load (e.g. Garmin "load").
     public var trainingLoad: Double?
@@ -40,6 +41,7 @@ public struct RunActivity: Identifiable, Hashable, Codable, Sendable {
         averageHeartRate: Double? = nil,
         maxHeartRate: Double? = nil,
         elevationGainMeters: Double? = nil,
+        elevationLossMeters: Double? = nil,
         averageCadence: Double? = nil,
         trainingLoad: Double? = nil,
         aerobicTrainingEffect: Double? = nil,
@@ -57,6 +59,7 @@ public struct RunActivity: Identifiable, Hashable, Codable, Sendable {
         self.averageHeartRate = averageHeartRate
         self.maxHeartRate = maxHeartRate
         self.elevationGainMeters = elevationGainMeters
+        self.elevationLossMeters = elevationLossMeters
         self.averageCadence = averageCadence
         self.trainingLoad = trainingLoad
         self.aerobicTrainingEffect = aerobicTrainingEffect

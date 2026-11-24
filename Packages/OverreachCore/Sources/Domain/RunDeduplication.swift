@@ -83,6 +83,7 @@ public enum RunDeduplication {
         run.averageHeartRate = run.averageHeartRate ?? other.averageHeartRate
         run.maxHeartRate = run.maxHeartRate ?? other.maxHeartRate
         run.elevationGainMeters = run.elevationGainMeters ?? other.elevationGainMeters
+        run.elevationLossMeters = run.elevationLossMeters ?? other.elevationLossMeters
         run.averageCadence = run.averageCadence ?? other.averageCadence
         if run.distanceMeters <= 0 { run.distanceMeters = other.distanceMeters }
         return run

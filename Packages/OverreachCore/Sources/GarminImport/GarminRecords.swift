@@ -136,6 +136,7 @@ public struct GarminActivity: Hashable, Sendable {
     public var averageHeartRate: Double?
     public var maxHeartRate: Double?
     public var elevationGainMeters: Double?
+    public var elevationLossMeters: Double?
     public var averageRunningCadence: Double?
     public var trainingLoad: Double?
     public var aerobicTrainingEffect: Double?
@@ -157,6 +158,7 @@ public struct GarminActivity: Hashable, Sendable {
         averageHeartRate: Double? = nil,
         maxHeartRate: Double? = nil,
         elevationGainMeters: Double? = nil,
+        elevationLossMeters: Double? = nil,
         averageRunningCadence: Double? = nil,
         trainingLoad: Double? = nil,
         aerobicTrainingEffect: Double? = nil,
@@ -177,6 +179,7 @@ public struct GarminActivity: Hashable, Sendable {
         self.averageHeartRate = averageHeartRate
         self.maxHeartRate = maxHeartRate
         self.elevationGainMeters = elevationGainMeters
+        self.elevationLossMeters = elevationLossMeters
         self.averageRunningCadence = averageRunningCadence
         self.trainingLoad = trainingLoad
         self.aerobicTrainingEffect = aerobicTrainingEffect
