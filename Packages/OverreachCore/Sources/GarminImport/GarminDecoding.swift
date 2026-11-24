@@ -130,6 +130,7 @@ public enum GarminDecoding {
                 averageHeartRate: positive(item["averageHR"]),
                 maxHeartRate: positive(item["maxHR"]),
                 elevationGainMeters: nonNegative(item["elevationGain"]),
+                elevationLossMeters: nonNegative(item["elevationLoss"]),
                 averageRunningCadence: positive(item["averageRunningCadenceInStepsPerMinute"]),
                 trainingLoad: nonNegative(item["activityTrainingLoad"]),
                 aerobicTrainingEffect: nonNegative(item["aerobicTrainingEffect"]),

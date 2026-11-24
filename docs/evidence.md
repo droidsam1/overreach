@@ -686,9 +686,9 @@ meta-analysis, trained men, mostly same-session). Leg-press volume was lower 4 a
 cause muscle damage with strength back after about 48 h; regular runners are protected by the repeated-bout effect.
 Running may interfere more than cycling at the fibre level (Lundberg et al. 2022). → Defaults
 (`RunCarryover.Settings`, #269): *notable* when anaerobic training effect ≥ 2.0 or aerobic ≥ 4.0, more than 60 min or
-110 % of the longest run of 30 days, elevation gain ≥ 15 m/km, no run in the previous 14 days, less than 24 h to the
-next lift, check-in soreness 3 of its 0–3 scale, or a pain report that holds (ADR-0043); otherwise *light*. The thresholds are
-heuristics. Refs: [Markov et al. 2022](https://doi.org/10.1007/s40279-021-01615-6) ·
+110 % of the longest run of 30 days, descent ≥ 15 m/km (ascent if descent is missing), no run in the previous 14 days, less than
+24 h to the next lift, check-in soreness 3 of its 0–3 scale, or a pain report that holds (ADR-0043); otherwise *light*.
+The thresholds are heuristics. Refs: [Markov et al. 2022](https://doi.org/10.1007/s40279-021-01615-6) ·
 [Sporer and Wenger 2003](https://pubmed.ncbi.nlm.nih.gov/14636098/) ·
 [Lundberg et al. 2022](https://doi.org/10.1007/s40279-022-01688-x) ·
 [Downhill running recovery](https://doi.org/10.1038/s41598-020-76008-2). Reviewed 2026-11-23.

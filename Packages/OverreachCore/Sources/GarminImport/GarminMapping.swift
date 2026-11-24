@@ -82,6 +82,7 @@ public enum GarminMapping {
                 averageHeartRate: activity.averageHeartRate,
                 maxHeartRate: activity.maxHeartRate,
                 elevationGainMeters: activity.elevationGainMeters,
+                elevationLossMeters: activity.elevationLossMeters,
                 averageCadence: activity.averageRunningCadence,
                 trainingLoad: activity.trainingLoad,
                 aerobicTrainingEffect: activity.aerobicTrainingEffect,

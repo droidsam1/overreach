@@ -24,7 +24,7 @@ public enum RunCarryover {
         /// A run longer than this share of the longest run of `historyDays` is long.
         public var longestRunFraction = 1.10
         public var historyDays = 30
-        /// Elevation gain per kilometre at or above this is hilly (descent when #274 lands).
+        /// Descent per kilometre at or above this is hilly. Use ascent when descent is missing.
         public var hillyMetersPerKm = 15.0
         /// No run in this many days before it makes the run unaccustomed (repeated-bout effect).
         public var unaccustomedDays = 14
@@ -82,8 +82,8 @@ public enum RunCarryover {
         let overLongest = longest.map { run.distanceMeters > $0 * settings.longestRunFraction } ?? false
         if run.durationSeconds > settings.longMinutes * 60 || overLongest { reasons.append(.long) }
 
-        if let gain = run.elevationGainMeters, run.distanceMeters > 0,
-           gain / (run.distanceMeters / 1_000) >= settings.hillyMetersPerKm { reasons.append(.hilly) }
+        if let elevation = run.elevationLossMeters ?? run.elevationGainMeters, run.distanceMeters > 0,
+           elevation / (run.distanceMeters / 1_000) >= settings.hillyMetersPerKm { reasons.append(.hilly) }
 
         let accustomedStart = run.startedAt.addingTimeInterval(-Double(settings.unaccustomedDays) * 86_400)
         if !others.contains(where: { $0.startedAt >= accustomedStart && $0.startedAt < run.startedAt }) {

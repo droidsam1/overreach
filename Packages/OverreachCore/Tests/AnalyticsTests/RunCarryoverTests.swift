@@ -63,6 +63,16 @@ struct RunCarryoverTests {
         #expect(assessment(easy(gain: nil)).level == .light)
     }
 
+    @Test func recordedDescentTakesPrecedenceOverAscent() {
+        var run = easy(gain: 200)
+        run.elevationLossMeters = 0
+        #expect(assessment(run).level == .light)
+
+        run.elevationGainMeters = 20
+        run.elevationLossMeters = 105
+        #expect(assessment(run).reasons == [.hilly])
+    }
+
     @Test func noRunInTheLastFourteenDaysIsUnaccustomed() {
         #expect(assessment(easy(), recent: []).reasons == [.unaccustomed])
         #expect(assessment(easy(), recent: [recent(daysBefore: 15)]).reasons == [.unaccustomed])
