@@ -58,7 +58,7 @@ public struct Exercise: Identifiable, Hashable, Codable, Sendable {
     public var needsMuscleMapping: Bool { primaryMuscles.isEmpty }
 }
 
-/// Unit used by an external source for weights. Overreach always stores kilograms.
+/// Unit used for entering and displaying weights. Overreach always stores kilograms.
 public enum WeightUnit: String, Codable, Sendable, CaseIterable {
     case kilograms, pounds
 
