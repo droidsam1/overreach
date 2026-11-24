@@ -295,3 +295,48 @@ struct GarminSyncPlanTests {
         )
     }
 }
+
+struct GarminLapTests {
+    @Test func splitsDecodeIntoLapsWithPace() throws {
+        let laps = try GarminDecoding.laps(from: fixture("activity-splits"))
+        #expect(laps.count == 7)
+        let first = try #require(laps.first)
+        #expect(first.distanceMeters == 1000)
+        #expect(first.paceSecondsPerKm == 345)
+        #expect(first.averageHeartRate == 141)
+        #expect(first.maxHeartRate == 150)
+        #expect(first.averageCadence == 168)
+        #expect(first.elevationGainMeters == 4)
+        #expect(first.elevationLossMeters == 2)
+        #expect(laps.last?.distanceMeters == 412.6)
+    }
+
+    @Test func lapsWithoutADistanceOrATimeAreDropped() throws {
+        let body = #"""
+        {"lapDTOs": [{"distance": 0, "duration": 60}, {"distance": 500}, {"distance": 500, "duration": 150}]}
+        """#
+        let laps = try GarminDecoding.laps(from: Data(body.utf8))
+        #expect(laps == [RunLap(distanceMeters: 500, durationSeconds: 150)])
+    }
+
+    @Test func noBodyAnEmptyListOrNoLapsMeansNoLaps() throws {
+        #expect(try GarminDecoding.laps(from: Data()).isEmpty)
+        #expect(try GarminDecoding.laps(from: Data("[]".utf8)).isEmpty)
+        #expect(try GarminDecoding.laps(from: Data(#"{"eventDTOs": []}"#.utf8)).isEmpty)
+        #expect(throws: GarminDecodingError.self) { try GarminDecoding.laps(from: Data("not json".utf8)) }
+    }
+
+    @Test func theSplitsRequestUsesTheActivityIdAndIsNeverPartOfThePlan() {
+        #expect(GarminEndpoint.activitySplits(id: "42").path == "/activity-service/activity/42/splits")
+        let range = CalendarDay(year: 2026, month: 1, day: 1)...CalendarDay(year: 2026, month: 1, day: 8)
+        #expect(!GarminSyncPlan.requests(for: range).contains { endpoint in
+            if case .activitySplits = endpoint { true } else { false }
+        })
+    }
+
+    @Test func aRunSavedBeforeLapsExistedStillDecodes() throws {
+        let old = #"{"id":"1","source":"garmin","startedAt":0,"durationSeconds":60,"distanceMeters":100}"#
+        let run = try JSONDecoder().decode(RunActivity.self, from: Data(old.utf8))
+        #expect(run.laps == nil)
+    }
+}
