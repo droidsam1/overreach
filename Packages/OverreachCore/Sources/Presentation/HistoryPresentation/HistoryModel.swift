@@ -11,6 +11,19 @@ public struct SessionSummary: Identifiable, Hashable, Sendable {
     public let workingSets: Int
     public let tonnageKg: Double
     var matchedSources: [DataSourceKind] = []
+    var rotationOutcomes: [RotationAdjustment.Outcome] = []
+
+    public var rotationLabels: [String] {
+        RotationAdjustment.Action.allCases.filter { action in
+            rotationOutcomes.contains { $0.action == action }
+        }.map {
+            switch $0 {
+            case .swapped: L10n.text("Swapped in rotation")
+            case .postponed: L10n.text("Postponed in rotation")
+            case .capped: L10n.text("Rotation effort capped")
+            }
+        }
+    }
 
     var sources: [DataSourceKind] {
         [session.source] + matchedSources.filter { $0 != session.source }
@@ -59,6 +72,7 @@ public struct SessionDetail: Sendable {
     public let entries: [Entry]
     public let recording: HistoryStrengthActivity?
     public let sourceText: String
+    public let rotationLabels: [String]
 }
 
 /// The latest completed set of an exercise the athlete searched for: "What did I lift last time?"
@@ -110,6 +124,7 @@ public final class HistoryModel {
     private let backup: (any BackupService)?
     private let health: (any HealthWorkoutWriter)?
     private let profiles: (any ProfileRepository)?
+    private var rotationAdjustments: [RotationAdjustment] = []
     private let progression: (any ProgressionSettingsRepository)?
     private let recordedStrength: (any RecordedStrengthSource)?
     private let walkSources: [any ActivitySource]
@@ -216,6 +231,7 @@ public final class HistoryModel {
             failed = true
         }
         if let profile = try? await profiles?.profile() {
+            rotationAdjustments = profile.rotationAdjustments
             effortScale = profile.effortScale
             walkingRoutine = profile.walkingRoutine
             calendar.restDays = Set(profile.restDays)
@@ -443,7 +459,8 @@ public final class HistoryModel {
             recording: recording.map {
                 HistoryStrengthActivity($0, sources: strengthMatches.sources(for: $0), format: format)
             },
-            sourceText: detailsSummary.sourceText
+            sourceText: detailsSummary.sourceText,
+            rotationLabels: detailsSummary.rotationLabels
         )
     }
 
@@ -540,7 +557,11 @@ public final class HistoryModel {
     }
 
     private func summary(_ session: StrengthSession) -> SessionSummary {
-        SessionSummary(session: session, names: exerciseNames)
+        var summary = SessionSummary(session: session, names: exerciseNames)
+        if let outcomes = calendar.rotationOutcomes[session.id] {
+            summary.rotationOutcomes = outcomes
+        }
+        return summary
     }
 
     private func rebuildTimeline() {
@@ -565,6 +586,13 @@ public final class HistoryModel {
     }
 
     private func resolveStrength() {
+        let outcomes = SessionRotation.outcomes(
+            for: strengthSessions, adjustments: rotationAdjustments, calendar: calendar.calendar
+        )
+        calendar.rotationOutcomes = outcomes
+        for index in summaries.indices {
+            summaries[index].rotationOutcomes = outcomes[summaries[index].id] ?? []
+        }
         let result = StrengthActivityMatching.resolve(
             sessions: strengthSessions, activities: recordings, choices: strengthChoices
         )

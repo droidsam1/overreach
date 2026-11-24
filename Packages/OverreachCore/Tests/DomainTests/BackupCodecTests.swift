@@ -11,7 +11,8 @@ struct BackupCodecTests {
             startedAt: Date(timeIntervalSince1970: 1_790_000_123.456),
             endedAt: Date(timeIntervalSince1970: 1_790_003_000),
             entries: [ExerciseEntry(exerciseID: custom.id, sets: [WorkoutSet(weightKg: 100, reps: 5, rpe: 8)])],
-            focus: .strength
+            focus: .strength,
+            rotationCap: .init(action: .capped, carryover: .notable, reason: .runCarryover, maximumRPE: 8)
         )
         return BackupDocument(
             createdAt: Date(timeIntervalSince1970: 1_790_010_000),

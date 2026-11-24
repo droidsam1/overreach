@@ -216,6 +216,9 @@ struct SessionRow: View {
                 .font(.subheadline.monospacedDigit())
                 .foregroundStyle(.secondary)
             if showsSources {
+                ForEach(summary.rotationLabels, id: \.self) { rotation in
+                    Text(rotation).font(.caption).foregroundStyle(.secondary)
+                }
                 Text(summary.sourceText)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -323,6 +326,7 @@ private struct SessionInfo: View {
                     Text(Duration.seconds(duration), format: .units(allowed: [.hours, .minutes], width: .abbreviated))
                 }
             }
+            ForEach(detail.rotationLabels, id: \.self) { Text($0) }
             LabeledContent("Sources", value: detail.sourceText)
             if let focus = detail.focus {
                 LabeledContent("Focus", value: focus)

@@ -20,7 +20,7 @@ public struct TodayView: View {
     private var settingsDestination: (() -> AnyView)?
     private var showsSettings = Binding.constant(false)
     private var settingsBadgeCount = 0
-    private var onStartStrength: ((Routine, Double?, Bool) -> Void)?
+    private var onStartStrength: ((Routine, RotationAdjustment.Outcome?, Bool) -> Void)?
     private var onReviewRunMove: ((PlannedRun, CalendarDay) -> Void)?
 
     private let workoutContinuation: TodayModel.WorkoutContinuation?
@@ -69,7 +69,7 @@ public struct TodayView: View {
         return copy
     }
 
-    public func startStrength(_ action: @escaping (Routine, Double?, Bool) -> Void) -> TodayView {
+    public func startStrength(_ action: @escaping (Routine, RotationAdjustment.Outcome?, Bool) -> Void) -> TodayView {
         var copy = self
         copy.onStartStrength = action
         return copy
@@ -436,7 +436,7 @@ public struct TodayView: View {
 
     private func startRecommendedStrength(_ routine: Routine) {
         if let onStartStrength {
-            onStartStrength(routine, model.rotationRPECap(for: routine), model.startsFromRotationHistory(routine))
+            onStartStrength(routine, model.rotationCap(for: routine), model.startsFromRotationHistory(routine))
         } else {
             onOpenTrain()
         }

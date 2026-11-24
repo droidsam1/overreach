@@ -111,8 +111,26 @@ public enum MarkdownReportRenderer {
                 .joined(separator: ", ")
             lines.append("- \(session.day) — \(session.name): \(format(session.tonnageKg, decimals: 0)) kg; "
                 + "effective sets: \(muscles.isEmpty ? "–" : muscles)")
+            for adjustment in session.rotationAdjustments {
+                lines.append("  - " + rotationAdjustment(adjustment))
+            }
         }
         return lines
+    }
+
+    private static func rotationAdjustment(_ adjustment: RotationAdjustment.Outcome) -> String {
+        let reason: String? = switch adjustment.reason {
+        case .runCarryover: "residual fatigue from the recorded run"
+        case .readiness: "reduced readiness"
+        case .heavyLegsBeforeRun: "heavy leg training before the run"
+        case .other: "other"
+        case nil: nil
+        }
+        var detail = ["Rotation \(adjustment.action.rawValue)"]
+        if let carryover = adjustment.carryover { detail.append("run carry-over \(carryover.rawValue)") }
+        if let reason { detail.append(reason) }
+        if let cap = adjustment.maximumRPE { detail.append("maximum RPE \(format(cap, decimals: 1))") }
+        return detail.joined(separator: " · ")
     }
 
     private static func runs(_ report: TrainingReport, calendar: Calendar) -> [String] {

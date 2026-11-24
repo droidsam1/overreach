@@ -19,12 +19,34 @@ public struct RotationAdjustment: Hashable, Codable, Sendable {
         case other
     }
 
+    public enum Carryover: String, Codable, Sendable { case light, notable, unknown }
+
+    public enum Action: String, Codable, Sendable, CaseIterable { case swapped, postponed, capped }
+
+    public struct Outcome: Hashable, Codable, Sendable {
+
+        public let action: Action
+        public let carryover: Carryover?
+        public let reason: Reason?
+        public let maximumRPE: Double?
+
+        public init(action: Action, carryover: Carryover? = nil, reason: Reason? = nil, maximumRPE: Double? = nil) {
+            self.action = action
+            self.carryover = carryover
+            self.reason = reason
+            self.maximumRPE = maximumRPE
+        }
+    }
+
     /// The day the adjusted session was planned for.
     public var day: CalendarDay
     public var kind: Kind
     public var reason: Reason?
     /// The projected day the heavy session trades places with. Older swaps used the next slot.
     public var swapDay: CalendarDay?
+    public var carryover: Carryover?
+    /// The slot postponed, recorded when the athlete accepts the change.
+    public var postponedSlotID: String?
 
     /// Adjustments kept per profile; older ones no longer match any recent history.
     public static let keptCount = 30

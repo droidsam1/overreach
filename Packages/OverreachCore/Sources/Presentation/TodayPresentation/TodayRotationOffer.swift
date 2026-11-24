@@ -11,6 +11,7 @@ public struct TodayRotationOffer: Hashable, Sendable {
 
 struct TodayRotationDecision {
     let suggestion: RotationAdjustment.Suggestion
+    let carryover: RunCarryover.Level
     let next: RotationProjection.Session
     let partner: RotationProjection.Session?
     let run: RunActivity

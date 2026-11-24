@@ -303,6 +303,7 @@ public final class WorkoutModel {
     /// remembers it so the plan knows which session comes next.
     public private(set) var sessionRoutine: Routine?
     private var rotationRPECap: Double?
+    private var rotationCap: RotationAdjustment.Outcome?
     private var startsFromRotationHistory = false
     /// Exercises of the session in progress. Views bind to it directly (`$model.exercises`).
     public var exercises: [DraftExercise] = [] {
@@ -457,6 +458,7 @@ public final class WorkoutModel {
         sessionFocus = routine?.focus
         sessionRoutine = routine
         rotationRPECap = nil
+        rotationCap = nil
         startsFromRotationHistory = false
         exercises = []
         errorMessage = nil
@@ -467,12 +469,14 @@ public final class WorkoutModel {
 
     /// Prefills a routine before exposing the editable draft, so recovery never restores half a routine.
     public func start(
-        _ routine: Routine, rotationRPECap: Double? = nil, startsFromRotationHistory: Bool = false
+        _ routine: Routine, rotationRPECap: Double? = nil, startsFromRotationHistory: Bool = false,
+        rotationCap: RotationAdjustment.Outcome? = nil
     ) async {
         guard !isSessionActive, !needsDraftRecovery, !isSavingSession else { return }
         isPreparingSession = true
         beginSession(name: routine.name, routine: routine)
-        self.rotationRPECap = rotationRPECap
+        self.rotationRPECap = rotationCap?.maximumRPE ?? rotationRPECap
+        self.rotationCap = rotationCap
         self.startsFromRotationHistory = startsFromRotationHistory
         await load()
         for exerciseID in routine.exerciseIDs {
@@ -860,7 +864,8 @@ public final class WorkoutModel {
         let finished = StrengthSession(
             id: sessionID, name: sessionName, startedAt: startedAt, endedAt: now, entries: entries,
             notes: Self.trimmedOrNil(sessionNotes), focus: sessionFocus,
-            routineID: startsFromRotationHistory ? nil : sessionRoutine?.id
+            routineID: startsFromRotationHistory ? nil : sessionRoutine?.id,
+            rotationCap: rotationCap ?? rotationRPECap.map { .init(action: .capped, maximumRPE: $0) }
         )
         let targets = Dictionary(exercises.map { ($0.exercise.id, $0.target) }, uniquingKeysWith: { first, _ in first })
         isSavingSession = true
@@ -937,6 +942,7 @@ public final class WorkoutModel {
         sessionFocus = pendingDraft.focus
         sessionRoutine = pendingDraft.routine
         rotationRPECap = pendingDraft.rotationRPECap
+        rotationCap = pendingDraft.rotationCap
         startsFromRotationHistory = pendingDraft.startsFromRotationHistory ?? false
         effortScale = pendingDraft.effortScale
         exercises = pendingDraft.exercises
@@ -962,7 +968,8 @@ public final class WorkoutModel {
         return WorkoutDraft(
             id: sessionID, startedAt: startedAt, name: sessionName, notes: sessionNotes, focus: sessionFocus,
             routine: sessionRoutine, effortScale: effortScale, exercises: exercises, rest: rest.draft,
-            rotationRPECap: rotationRPECap, startsFromRotationHistory: startsFromRotationHistory ? true : nil
+            rotationRPECap: rotationRPECap, startsFromRotationHistory: startsFromRotationHistory ? true : nil,
+            rotationCap: rotationCap
         )
     }
 
