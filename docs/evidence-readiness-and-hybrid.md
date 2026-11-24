@@ -134,7 +134,6 @@ within 48 hours of the recorded heavy squat session.
 
 For both cases the recent strength gaps vary, including two-, three- and four-day gaps.
 The default projection requires uniform gaps across the sessions that establish the rotation.
-The backup also lacks the exercise catalog needed to classify the projected slot's leg demand.
 Result with the available inputs: two runs assessed for carry-over, zero eligible rotation
 suggestions, and zero keep, swap, postpone or cap outcomes. The observed next strength session
 after the first run was a squat session without a recorded adjustment. The next heavy session
