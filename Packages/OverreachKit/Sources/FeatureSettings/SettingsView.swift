@@ -115,11 +115,19 @@ public struct SettingsView<Library: View>: View {
 
     private var trainingSection: some View {
         Section {
+            Picker("Weight unit", selection: Binding(
+                get: { trainingModel.weightUnit },
+                set: { unit in Task { await trainingModel.setWeightUnit(unit) } }
+            )) {
+                Text("kg").tag(WeightUnit.kilograms)
+                Text("lb").tag(WeightUnit.pounds)
+            }
+            .disabled(!trainingModel.canEditSettings)
             Toggle(trainingModel.breaksTitle, isOn: Binding(
                 get: { trainingModel.countsBreaksAutomatically },
                 set: { enabled in Task { await trainingModel.setCountsBreaksAutomatically(enabled) } }
             ))
-            .disabled(!trainingModel.canEditBreaks)
+            .disabled(!trainingModel.canEditSettings)
             if let error = trainingModel.errorMessage {
                 Label(error, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
             }
@@ -140,13 +148,16 @@ public struct SettingsView<Library: View>: View {
                 .onChange(of: importModel.weightUnit) {
                     Task { await importModel.refreshPreview() }
                 }
+                .disabled(importModel.state == .importing)
                 Button("Choose Strong CSV…", systemImage: "square.and.arrow.down") { pick(.strongCSV) }
+                    .disabled(importModel.state == .importing)
                 importStatus
             } footer: {
                 Text("In Strong: Settings → Export data. Re-importing the same file does not create duplicates.")
             }
         }
         .navigationTitle("Import from Strong")
+        .task { await importModel.loadDefaultWeightUnit() }
     }
 
     private func pick(_ kind: FilePick) {

@@ -5679,19 +5679,19 @@
         }
       }
     },
-    "Every session this week: for example, 4 × 6 at 100 kg becomes 2 × 6 at 90 kg, with at least 3 reps left.": {
+    "Every session this week: for example, 4 × 6 at {1} becomes 2 × 6 at {2}, with at least 3 reps left.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Todas las sesiones de esta semana: por ejemplo, 4 × 6 con 100 kg pasa a 2 × 6 con 90 kg, con al menos 3 repeticiones en reserva."
+            "value": "Todas las sesiones de esta semana: por ejemplo, 4 × 6 con {1} pasa a 2 × 6 con {2}, con al menos 3 repeticiones en reserva."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Todas as sesións desta semana: por exemplo, 4 × 6 con 100 kg pasa a 2 × 6 con 90 kg, con polo menos 3 repeticións en reserva."
+            "value": "Todas as sesións desta semana: por exemplo, 4 × 6 con {1} pasa a 2 × 6 con {2}, con polo menos 3 repeticións en reserva."
           }
         }
       }
@@ -19381,19 +19381,19 @@
         }
       }
     },
-    "Use smaller jumps ({1} kg): you were only 1 rep short, and a smaller step lets you keep adding load.": {
+    "Use smaller jumps ({1}): you were only 1 rep short, and a smaller step lets you keep adding load.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Usa saltos más pequeños ({1} kg): te faltó solo 1 repetición, y un salto menor te deja seguir subiendo."
+            "value": "Usa saltos más pequeños ({1}): te faltó solo 1 repetición, y un salto menor te deja seguir subiendo."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Usa saltos máis pequenos ({1} kg): faltouche só 1 repetición, e un salto menor permíteche seguir subindo."
+            "value": "Usa saltos máis pequenos ({1}): faltouche só 1 repetición, e un salto menor permíteche seguir subindo."
           }
         }
       }
@@ -20108,6 +20108,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Peso en quilos"
+          }
+        }
+      }
+    },
+    "Weight in pounds": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peso en libras"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peso en libras"
+          }
+        }
+      }
+    },
+    "Weight unit": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unidad de peso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unidade de peso"
           }
         }
       }

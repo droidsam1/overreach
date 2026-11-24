@@ -92,6 +92,7 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
     public var declaredBlocks: [TrainingBlock]
     /// How the user logs effort. Only the display changes: sets always store RPE.
     public var effortScale: EffortScale
+    public var weightUnit: WeightUnit
     /// Devices the person said they use (first-run setup). Empty: only the iPhone, or not asked yet.
     public var wearables: Set<Wearable>
     /// Deload weeks the person accepted, oldest first (ADR-0027). The latest resets "weeks since the last deload".
@@ -124,7 +125,8 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         deloadDecisions: [DeloadDecision] = [],
         restDays: [CalendarDay] = [],
         countsBreaksAutomatically: Bool = true,
-        rotationAdjustments: [RotationAdjustment] = []
+        rotationAdjustments: [RotationAdjustment] = [],
+        weightUnit: WeightUnit = .kilograms
     ) {
         self.sex = sex
         self.birthYear = birthYear
@@ -136,6 +138,7 @@ public struct AthleteProfile: Hashable, Codable, Sendable {
         self.goal = goal
         self.declaredBlocks = declaredBlocks
         self.effortScale = effortScale
+        self.weightUnit = weightUnit
         self.wearables = wearables
         self.deloads = deloads
         self.deloadPostponedUntil = deloadPostponedUntil
@@ -174,7 +177,7 @@ extension AthleteProfile {
     private enum CodingKeys: String, CodingKey {
         case sex, birthYear, bodyMassKg, maxHeartRate, restingHeartRate, cycleTracking, walkingRoutine, goal
         case declaredBlocks, effortScale, wearables, deloads, deloadPostponedUntil, deloadDecisions, restDays
-        case countsBreaksAutomatically, rotationAdjustments
+        case countsBreaksAutomatically, rotationAdjustments, weightUnit
     }
 
     /// Tolerant decoding: fields added in later versions fall back to their defaults, so older stores and
@@ -205,7 +208,8 @@ extension AthleteProfile {
                 ?? true,
             rotationAdjustments: try container.decodeIfPresent(
                 [RotationAdjustment].self, forKey: .rotationAdjustments
-            ) ?? []
+            ) ?? [],
+            weightUnit: try container.decodeIfPresent(WeightUnit.self, forKey: .weightUnit) ?? .kilograms
         )
     }
 }

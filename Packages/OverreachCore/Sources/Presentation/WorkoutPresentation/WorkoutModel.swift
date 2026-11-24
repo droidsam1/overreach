@@ -151,12 +151,14 @@ extension DraftExercise {
 
     public var summary: TargetSummary { summary(format: Format()) }
 
-    public var progressionOffer: ProgressionOffer? {
+    public var progressionOffer: ProgressionOffer? { progressionOffer(format: Format()) }
+
+    func progressionOffer(format: Format) -> ProgressionOffer? {
         guard let choices = firstProgressionChoices, !choices.isEmpty, sets == setsBeforeProgressionChoice else {
             return nil
         }
         return ProgressionOffer.make(baseline: target, choices: choices,
-                                     effortScale: effortScale, format: Format())
+                                     effortScale: effortScale, format: format)
     }
 
     public func summary(format: Format) -> TargetSummary {
@@ -181,7 +183,7 @@ extension DraftExercise {
                 effortScale.text(rpe: first.targetRPE, format: format)
             )
         } else if let first = target.sets.first {
-            let weight = first.weightKg.map { format.kilograms($0) + " × " } ?? ""
+            let weight = first.weightKg.map { format.weight($0) + " × " } ?? ""
             let reps = target.sets.map { String($0.reps) }.joined(separator: "/")
             targetLine = L10n.format(
                 "Target: {1}{2} @ {3}", weight, reps, effortScale.text(rpe: first.targetRPE, format: format)
@@ -195,7 +197,7 @@ extension DraftExercise {
         if case let .stalled(list) = status {
             evidence += list.map(\.evidence)
             suggestions = list.enumerated().map { index, suggestion in
-                "\(index + 1). \(suggestion.text) (\(suggestion.evidence.level.displayName))"
+                "\(index + 1). \(suggestion.text(format: format)) (\(suggestion.evidence.level.displayName))"
             }
         }
         var reasons = target.reasons.map { reason in
@@ -228,8 +230,8 @@ extension DraftExercise {
     /// "Stalled: your best estimated 1RM in the last 3 sessions (102 kg) does not beat the 6 before (103 kg)…".
     private func statusExplanation(format: Format) -> String? {
         guard let facts = stallFacts, status != .notEnoughData else { return nil }
-        let recent = format.kilograms((facts.recentBestKg * 10).rounded() / 10)
-        let previous = format.kilograms((facts.previousBestKg * 10).rounded() / 10)
+        let recent = format.weight((facts.recentBestKg * 10).rounded() / 10)
+        let previous = format.weight((facts.previousBestKg * 10).rounded() / 10)
         var text: String
         switch status {
         case .progressing:
@@ -334,6 +336,8 @@ public final class WorkoutModel {
 
     /// How effort is logged and shown (Settings for the athlete; changed from the logging guide).
     public private(set) var effortScale = EffortScale.rpe
+    public private(set) var weightUnit = WeightUnit.kilograms
+    private var format: Format { Format(weightUnit: weightUnit) }
     /// The plan of an accepted deload week covering today (ADR-0027): targets are reduced while it lasts.
     public private(set) var deloadPlan: DeloadPlan?
     /// "Deload week: targets have fewer sets and less load until Sunday 23 November."
@@ -415,12 +419,13 @@ public final class WorkoutModel {
         } catch {
             errorMessage = L10n.text("Could not load exercises.")
         }
-        await loadEffortScale()
+        await loadProfilePreferences()
     }
 
-    private func loadEffortScale() async {
+    private func loadProfilePreferences() async {
         guard let profile = try? await profiles?.profile() else { return }
         applyEffortScale(profile.effortScale)
+        weightUnit = profile.weightUnit
         let today = CalendarDay(clock())
         deloadPlan = RecoveryHistory.deloadInProgress(profile, on: today).map {
             $0.forLifeStress == true ? DeloadPlan.stressAware : DeloadPlan.standard
@@ -534,8 +539,12 @@ public final class WorkoutModel {
         }
     }
 
+    public func targetSummary(for exercise: DraftExercise) -> TargetSummary {
+        exercise.summary(format: format)
+    }
+
     public func progressionOffer(for id: DraftExercise.ID) -> ProgressionOffer? {
-        exercises.first { $0.id == id }?.progressionOffer
+        exercises.first { $0.id == id }?.progressionOffer(format: format)
     }
 
     public func clearProgressionSaveError() {
@@ -545,7 +554,7 @@ public final class WorkoutModel {
     /// Saves the selected scheme for the lift and uses its preview for untouched drafts in this session.
     public func chooseProgression(_ option: ProgressionOffer.Option, for id: DraftExercise.ID) async -> Bool {
         guard !isSavingProgression, let current = exercises.first(where: { $0.id == id }),
-              current.progressionOffer?.options.contains(option) == true else { return false }
+              current.progressionOffer(format: format)?.options.contains(option) == true else { return false }
         isSavingProgression = true
         progressionSaveError = nil
         defer { isSavingProgression = false }
@@ -565,7 +574,7 @@ public final class WorkoutModel {
             var draft = exercises[index]
             if draft.progressionOffer?.options.contains(option) == true {
                 draft.target = option.choice.target
-                draft.warmUpPlan = Self.warmUpPlan(
+                draft.warmUpPlan = warmUpPlan(
                     for: draft.target, exercise: draft.exercise, settings: settings, primed: draft.isPrimed
                 )
                 draft.sets = Self.prefilledSets(
@@ -607,7 +616,7 @@ public final class WorkoutModel {
     /// Brings the session up to date after progression settings changed elsewhere. Only affected exercises are
     /// touched, so typed values survive; exercises with completed sets keep their sets and update the target.
     public func applySettingsChanges() async {
-        await loadEffortScale()
+        await loadProfilePreferences()
         guard let sessionID, !isSavingSession, !isPreparingSession else { return }
         for current in exercises {
             let stored: ProgressionSettings?
@@ -648,13 +657,15 @@ public final class WorkoutModel {
         // A routine's prescription wins in that routine; the engine still sets the load from history.
         let prescribed = sessionRoutine?.prescription(for: exercise.id)
         let settings = ProgressionTargets.settings(for: exercise, stored: stored, focus: declaredFocus,
-                                                   prescription: prescribed)
+                                                   prescription: prescribed, weightUnit: weightUnit)
         let inferredFocus = FocusClassifier.dominant(history.indices.suffix(3).compactMap { index in
             FocusClassifier.focus(of: history[index], previous: Array(history[..<index]))
         })
         let focus = declaredFocus ?? inferredFocus
         let fromBaseline = stored == nil && prescribed == nil
-        let progressed = ProgressionTargets.next(history: history, settings: settings, startFromBaseline: fromBaseline)
+        let progressed = ProgressionTargets.next(
+            history: history, settings: settings, startFromBaseline: fromBaseline, weightUnit: weightUnit
+        )
         // During an accepted deload week the same exercises are trained lighter (ADR-0027).
         let adjusted = deloadPlan.map { $0.applied(to: progressed, incrementKg: settings.incrementKg) } ?? progressed
         let target = cappedTarget(adjusted, previousLoad: history.last?.workingWeightKg)
@@ -668,7 +679,7 @@ public final class WorkoutModel {
         let lift = LiftStatus.assess(exerciseID: exercise.id, history: history, settings: settings, now: now)
         let primed = isPrimed(exercise, before: id)
         let fallbackWeightKg = history.last?.workingWeightKg
-        let plan = Self.warmUpPlan(
+        let plan = warmUpPlan(
             for: target, exercise: exercise, settings: settings, primed: primed, fallbackWeightKg: fallbackWeightKg
         )
         let sets = Self.prefilledSets(
@@ -701,14 +712,14 @@ public final class WorkoutModel {
         return ExerciseTarget(sets: sets, reasons: reasons)
     }
 
-    private static func warmUpPlan(
+    private func warmUpPlan(
         for target: ExerciseTarget, exercise: Exercise, settings: ProgressionSettings, primed: Bool,
         fallbackWeightKg: Double? = nil
     ) -> [WarmUpSet] {
         guard let first = target.sets.first else { return [] }
         return WarmUpPrescription.sets(
             workingWeightKg: first.weightKg ?? fallbackWeightKg ?? 0, reps: first.reps, targetRPE: first.targetRPE,
-            equipment: exercise.equipment, incrementKg: settings.incrementKg, primed: primed
+            equipment: exercise.equipment, incrementKg: settings.incrementKg, primed: primed, weightUnit: weightUnit
         )
     }
 
@@ -895,9 +906,10 @@ public final class WorkoutModel {
         let history = (try? await workouts.sessions(from: now.addingTimeInterval(-Self.historyWindow), to: now)) ?? []
         let settings = (try? await progression.allProgressionSettings()) ?? [:]
         let review = SessionReviewer.review(
-            session, targets: targets, history: history, exercises: catalog, settings: settings, routine: sessionRoutine
+            session, targets: targets, history: history, exercises: catalog, settings: settings,
+            routine: sessionRoutine, weightUnit: weightUnit
         )
-        return SessionReport(review: review, effortScale: effortScale, format: Format())
+        return SessionReport(review: review, effortScale: effortScale, format: format)
     }
 
     public func discard() {

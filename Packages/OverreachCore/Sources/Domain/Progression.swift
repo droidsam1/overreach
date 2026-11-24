@@ -52,13 +52,25 @@ public struct ProgressionSettings: Hashable, Codable, Sendable {
         self.focus = focus
     }
 
-    public init(for exercise: Exercise, scheme: ProgressionScheme = .default, isMainLift: Bool = false) {
-        self.init(scheme: scheme, incrementKg: Self.defaultIncrement(for: exercise.equipment), isMainLift: isMainLift)
+    public init(
+        for exercise: Exercise, scheme: ProgressionScheme = .default, isMainLift: Bool = false,
+        weightUnit: WeightUnit = .kilograms
+    ) {
+        let increment = Self.defaultIncrement(for: exercise.equipment, weightUnit: weightUnit)
+        self.init(scheme: scheme, incrementKg: increment, isMainLift: isMainLift)
     }
 
     /// Typical smallest jump per equipment. The user can change it (e.g. microplates).
-    public static func defaultIncrement(for equipment: Equipment) -> Double {
-        switch equipment {
+    public static func defaultIncrement(for equipment: Equipment, weightUnit: WeightUnit = .kilograms) -> Double {
+        if weightUnit == .pounds {
+            let pounds: Double = switch equipment {
+            case .barbell, .cable, .dumbbell, .other: 5
+            case .machine, .kettlebell: 10
+            case .bodyweight, .band: 0
+            }
+            return pounds * weightUnit.kilogramsPerUnit
+        }
+        return switch equipment {
         case .barbell, .cable, .other: 2.5
         case .dumbbell: 2
         case .machine: 5

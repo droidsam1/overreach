@@ -1,6 +1,15 @@
 import Domain
 import Foundation
 
+extension WeightUnit {
+    public var symbol: String {
+        switch self {
+        case .kilograms: L10n.text("kg")
+        case .pounds: L10n.text("lb")
+        }
+    }
+}
+
 // User-facing names of domain values, shared by every presentation module.
 
 extension Exercise {

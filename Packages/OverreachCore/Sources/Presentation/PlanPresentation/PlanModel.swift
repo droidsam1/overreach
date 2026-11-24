@@ -470,7 +470,8 @@ extension PlanModel {
         stalledLifts.map { lift in
             LiftToUnblockRow(
                 lift: lift, name: exerciseNames[lift.exerciseID] ?? L10n.text("An exercise"),
-                applied: changedLifts.contains(lift.exerciseID), calendar: calendar
+                applied: changedLifts.contains(lift.exerciseID), calendar: calendar,
+                format: Format(weightUnit: profile.weightUnit)
             )
         }
     }

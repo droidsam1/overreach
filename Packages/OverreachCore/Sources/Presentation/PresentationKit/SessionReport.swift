@@ -44,7 +44,7 @@ extension SessionReport {
     public init(review: SessionReview, effortScale: EffortScale, format: Format) {
         let session = review.session
         let minutes = Self.durationMinutes(session.durationSeconds)
-        let volume = format.number(review.tonnageKg, maxFractionDigits: 0) + " kg"
+        let volume = format.weight(review.tonnageKg, maxFractionDigits: 0)
         let headline = L10n.format(
             "{1} min · {2} working sets · {3}", minutes ?? 0, review.workingSets, volume
         )
@@ -163,15 +163,15 @@ extension SessionReport {
         switch record {
         case let .estimatedOneRepMax(kg, previous):
             L10n.format(
-                "New best estimated 1RM: {1} (before {2}).", format.kilograms((kg * 10).rounded() / 10),
-                format.kilograms((previous * 10).rounded() / 10)
+                "New best estimated 1RM: {1} (before {2}).", format.weight((kg * 10).rounded() / 10),
+                format.weight((previous * 10).rounded() / 10)
             )
         case let .repsAtWeight(weight, reps, previous):
-            L10n.format("Most reps ever with {1}: {2} (before {3}).", format.kilograms(weight), reps, previous)
+            L10n.format("Most reps ever with {1}: {2} (before {3}).", format.weight(weight), reps, previous)
         case let .volume(kg, previous):
             L10n.format(
                 "Most volume ever in one session: {1} (before {2}).",
-                format.number(kg, maxFractionDigits: 0) + " kg", format.number(previous, maxFractionDigits: 0) + " kg"
+                format.weight(kg, maxFractionDigits: 0), format.weight(previous, maxFractionDigits: 0)
             )
         }
     }
@@ -179,7 +179,7 @@ extension SessionReport {
     /// "75 kg × 10/10/9", or "10/10/9" without load.
     private static func setsText(weight: Double, reps: [Int], format: Format) -> String {
         let repsText = reps.map(String.init).joined(separator: "/")
-        return weight > 0 ? "\(format.kilograms(weight)) × \(repsText)" : repsText
+        return weight > 0 ? "\(format.weight(weight)) × \(repsText)" : repsText
     }
 }
 
@@ -196,7 +196,7 @@ extension Format {
         }
         return groups.map { set, count in
             if let weight = set.weightKg, weight > 0 {
-                return L10n.format("{1} × {2} at {3}", count, set.reps, kilograms(weight))
+                return L10n.format("{1} × {2} at {3}", count, set.reps, self.weight(weight))
             }
             return L10n.format("{1} × {2} reps", count, set.reps)
         }.joined(separator: " · ")

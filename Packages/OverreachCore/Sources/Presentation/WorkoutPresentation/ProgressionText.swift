@@ -13,7 +13,7 @@ struct ReasonContext {
     var effortScale = EffortScale.rpe
 
     /// "75 kg", or "–" without a load (no history yet).
-    var weight: String { target.sets.first?.weightKg.map(format.kilograms) ?? "–" }
+    var weight: String { target.sets.first?.weightKg.map { format.weight($0) } ?? "–" }
 
     /// "9" when every set has the same reps, otherwise "10/10/9".
     var reps: String {
@@ -113,7 +113,7 @@ extension ProgressionReason {
             return L10n.format(
                 "Today: {1}, which is {2} of your estimated max ({3}) for {4} reps at {5}.",
                 context.weight, format.number(percent, maxFractionDigits: 0) + " %",
-                format.kilograms((estimate * 10).rounded() / 10), context.reps,
+                format.weight((estimate * 10).rounded() / 10), context.reps,
                 context.effortScale.text(rpe: context.rpe, format: format)
             )
         case .noLoadIncrementAvailable:

@@ -28,6 +28,8 @@ public final class ImportModel {
     static let batchSize = 100
 
     private var csv: String?
+    private var previewWeightUnit: WeightUnit?
+    private let profiles: (any ProfileRepository)?
     private let importer: any TrainingHistoryImporter
     private let workouts: any WorkoutRepository
     private let exercises: any ExerciseRepository
@@ -48,15 +50,25 @@ public final class ImportModel {
     public init(
         importer: any TrainingHistoryImporter,
         workouts: any WorkoutRepository,
-        exercises: any ExerciseRepository
+        exercises: any ExerciseRepository,
+        profiles: (any ProfileRepository)? = nil
     ) {
         self.importer = importer
         self.workouts = workouts
         self.exercises = exercises
+        self.profiles = profiles
+    }
+
+    public func loadDefaultWeightUnit() async {
+        let previousUnit = weightUnit
+        guard csv == nil, let profile = try? await profiles?.profile(),
+              csv == nil, weightUnit == previousUnit else { return }
+        weightUnit = profile.weightUnit
     }
 
     /// Reads the file's text (UTF-8, falling back to Latin-1) and builds a preview.
     public func load(fileData: Data) async {
+        guard state != .importing else { return }
         let decoded = String(data: fileData, encoding: .utf8) ?? String(data: fileData, encoding: .isoLatin1)
         guard let text = decoded else {
             state = .failed(L10n.text("The file is not a text CSV."))
@@ -68,25 +80,29 @@ public final class ImportModel {
 
     /// Rebuilds the preview, e.g. after changing the weight unit.
     public func refreshPreview() async {
-        guard let csv else { return }
+        guard state != .importing, let csv else { return }
+        let unit = weightUnit
+        preview = nil
         do {
             let catalog = try await exercises.allExercises()
             let importer = importer
-            let unit = weightUnit
             // Large exports (thousands of sets) are parsed off the main actor.
-            preview = try await Task.detached {
+            let result = try await Task.detached {
                 try importer.preview(csv: csv, weightUnit: unit, catalog: catalog)
             }.value
+            guard state != .importing, self.csv == csv, weightUnit == unit else { return }
+            preview = result
+            previewWeightUnit = unit
             state = .preview
         } catch {
-            preview = nil
+            guard state != .importing, self.csv == csv, weightUnit == unit else { return }
             state = .failed(Self.message(for: error))
         }
     }
 
     /// Saves new exercises first (so sessions never point to missing exercises), then the sessions.
     public func confirm() async {
-        guard let preview else { return }
+        guard state == .preview, let preview, previewWeightUnit == weightUnit else { return }
         state = .importing
         do {
             for exercise in preview.newExercises {

@@ -11,6 +11,7 @@ public struct SessionSummary: Identifiable, Hashable, Sendable {
     public let workingSets: Int
     public let tonnageKg: Double
     var matchedSources: [DataSourceKind] = []
+    var weightUnit = WeightUnit.kilograms
     var rotationOutcomes: [RotationAdjustment.Outcome] = []
 
     public var rotationLabels: [String] {
@@ -38,8 +39,9 @@ public struct SessionSummary: Identifiable, Hashable, Sendable {
     public var exerciseList: String { exerciseNames.joined(separator: ", ") }
 
     /// "12 sets · 3,450 kg"
-    public func statsLine(format: Format = Format()) -> String {
-        L10n.format("{1} sets · {2}", workingSets, format.kilograms(tonnageKg.rounded()))
+    public func statsLine(format: Format? = nil) -> String {
+        let format = format ?? Format(weightUnit: weightUnit)
+        return L10n.format("{1} sets · {2}", workingSets, format.weight(tonnageKg, maxFractionDigits: 0))
     }
 }
 
@@ -134,7 +136,7 @@ public final class HistoryModel {
     private var walks: [WalkBout] = []
     private var walkLines: [HistoryWalk] = []
     private let runSources: [any MetricsSource]
-    private let format: Format
+    private var format: Format
     private let clock: @Sendable () -> Date
     private var effortScale = EffortScale.rpe
     private var recordings: [RecordedStrengthActivity] = []
@@ -232,6 +234,8 @@ public final class HistoryModel {
         }
         if let profile = try? await profiles?.profile() {
             rotationAdjustments = profile.rotationAdjustments
+            format.weightUnit = profile.weightUnit
+            calendar.weightUnit = profile.weightUnit
             effortScale = profile.effortScale
             walkingRoutine = profile.walkingRoutine
             calendar.restDays = Set(profile.restDays)
@@ -426,7 +430,8 @@ public final class HistoryModel {
     }
 
     /// Detail of a listed session, with set descriptions and estimated 1RMs.
-    public func detail(for sessionID: UUID, format: Format = Format()) -> SessionDetail? {
+    public func detail(for sessionID: UUID, format: Format? = nil) -> SessionDetail? {
+        let format = format ?? self.format
         guard let session = session(id: sessionID) else { return nil }
         let recording = strengthMatches.activity(for: sessionID)
         var detailsSummary = summary(session)
@@ -448,7 +453,7 @@ public final class HistoryModel {
                             number: index + 1,
                             text: Self.describe(set, format: format),
                             estimatedOneRepMax: Self.estimatedOneRepMax(of: set).map {
-                                "e1RM " + format.fixed($0, digits: 1)
+                                "e1RM " + format.weight($0, maxFractionDigits: 1)
                             }
                         )
                     },
@@ -466,7 +471,7 @@ public final class HistoryModel {
 
     static func describe(_ set: WorkoutSet, format: Format) -> String {
         var parts: [String] = []
-        if let weight = set.weightKg { parts.append(format.kilograms(weight)) }
+        if let weight = set.weightKg { parts.append(format.weight(weight)) }
         if let reps = set.reps { parts.append("× \(reps)") }
         if let rpe = set.rpe { parts.append("@ \(format.number(rpe))") }
         if set.kind != .working { parts.append("(\(set.kind.displayName.lowercased()))") }
@@ -483,7 +488,8 @@ public final class HistoryModel {
     public var report: SessionReport?
 
     /// Opens the report of a listed session: how it went against the targets the engine gave it then.
-    public func showReport(for sessionID: UUID, format: Format = Format()) async {
+    public func showReport(for sessionID: UUID, format: Format? = nil) async {
+        let format = format ?? self.format
         guard let session = session(id: sessionID) else { return }
         let settings = (try? await progression?.allProgressionSettings()) ?? [:]
         let routine: Routine?
@@ -493,7 +499,8 @@ public final class HistoryModel {
             routine = nil
         }
         let review = SessionReviewer.review(
-            session, history: summaries.map(\.session), exercises: catalog, settings: settings, routine: routine
+            session, history: summaries.map(\.session), exercises: catalog, settings: settings, routine: routine,
+            weightUnit: format.weightUnit
         )
         report = SessionReport(review: review, effortScale: effortScale, format: format)
     }
@@ -512,7 +519,7 @@ public final class HistoryModel {
     public func makeEditor(for session: StrengthSession) -> SessionEditorModel {
         SessionEditorModel(
             session: session, catalog: catalog, workouts: workouts, backup: backup, health: health,
-            showsRepsInReserve: effortScale == .repsInReserve, clock: clock
+            showsRepsInReserve: effortScale == .repsInReserve, weightUnit: format.weightUnit, clock: clock
         )
     }
 
@@ -558,6 +565,7 @@ public final class HistoryModel {
 
     private func summary(_ session: StrengthSession) -> SessionSummary {
         var summary = SessionSummary(session: session, names: exerciseNames)
+        summary.weightUnit = format.weightUnit
         if let outcomes = calendar.rotationOutcomes[session.id] {
             summary.rotationOutcomes = outcomes
         }
@@ -591,6 +599,7 @@ public final class HistoryModel {
         )
         calendar.rotationOutcomes = outcomes
         for index in summaries.indices {
+            summaries[index].weightUnit = format.weightUnit
             summaries[index].rotationOutcomes = outcomes[summaries[index].id] ?? []
         }
         let result = StrengthActivityMatching.resolve(

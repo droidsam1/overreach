@@ -112,9 +112,11 @@ private struct StrengthOptionContext {
         let history = ExerciseExposure.history(of: id, in: progressionSessions)
         guard let recent = history.last, recent.date >= familiarityStart else { return nil }
         let stored = settings[id]
-        let resolved = ProgressionTargets.settings(for: exercise, stored: stored, focus: stored?.focus ?? routine.focus,
-                                                   prescription: routine.prescription(for: id))
-        let target = ProgressionTargets.next(history: history, settings: resolved)
+        let resolved = ProgressionTargets.settings(
+            for: exercise, stored: stored, focus: stored?.focus ?? routine.focus,
+            prescription: routine.prescription(for: id), weightUnit: format.weightUnit
+        )
+        let target = ProgressionTargets.next(history: history, settings: resolved, weightUnit: format.weightUnit)
         return row(exercise: exercise, referenceSets: target.sets, recent: recent, history: history, fromPlan: true)
     }
 
@@ -144,8 +146,8 @@ private struct StrengthOptionContext {
         var reference = fromPlan ? L10n.format("Usual target · {1} × {2}", count, reps)
             : L10n.format("Last session · {1} × {2}", count, reps)
         if let lower = referenceLoad, let upper = weights.max() {
-            let load = lower == upper ? format.kilograms(lower)
-                : "\(format.number(lower))–\(format.kilograms(upper))"
+            let load = lower == upper ? format.weight(lower)
+                : "\(format.weightNumber(lower))–\(format.weight(upper))"
             reference = L10n.format("{1} at {2}", reference, load)
         }
         let easyLoad = adjustment.startingLoad(referenceLoadKg: referenceLoad, recent: history.filter {
@@ -156,7 +158,7 @@ private struct StrengthOptionContext {
         let reserve = String(adjustment.repsInReserve)
         let suggestion = if let easyLoad {
             L10n.format("Easy option · {1} × {2}, start at {3} with at least {4} reps left",
-                        sets, easyReps, format.kilograms(easyLoad), reserve)
+                        sets, easyReps, format.weight(easyLoad), reserve)
         } else {
             L10n.format("Easy option · {1} × {2}, with at least {3} reps left", sets, easyReps, reserve)
         }

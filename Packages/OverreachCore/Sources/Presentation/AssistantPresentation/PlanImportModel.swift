@@ -68,7 +68,7 @@ public final class PlanImportModel {
     private let backup: (any BackupService)?
     private let clock: @Sendable () -> Date
     private let calendar: Calendar
-    private let format: Format
+    private var format: Format
 
     /// - Parameter profiles: where a plan's blocks are saved. Without it, plans with blocks cannot be imported.
     public init(
@@ -120,6 +120,7 @@ public final class PlanImportModel {
         if !planned.blocks.isEmpty, profiles == nil {
             planned.issues.append(.invalidValue(field: "blocks", value: "present", expected: "no blocks"))
         }
+        if let profile = try? await profiles?.profile() { format.weightUnit = profile.weightUnit }
         pending = planned
         preview = makePreview(planned)
     }
@@ -231,7 +232,7 @@ public final class PlanImportModel {
         }
         parts.append(scheme(settings.scheme))
         if settings.incrementKg > 0 {
-            parts.append("+" + format.kilograms(settings.incrementKg))
+            parts.append("+" + format.weight(settings.incrementKg))
         }
         if settings.isMainLift {
             parts.append(L10n.text("main lift"))

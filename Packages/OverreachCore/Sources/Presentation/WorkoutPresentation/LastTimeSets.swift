@@ -42,7 +42,7 @@ struct LastTimeSets: Hashable, Codable, Sendable {
         let text = groups.map { group in
             let reps = group.reps.map(String.init).joined(separator: "/")
             guard let weight = group.weightKg, weight > 0 else { return reps }
-            return "\(format.kilograms(weight)) × \(reps)"
+            return "\(format.weight(weight)) × \(reps)"
         }.joined(separator: " · ")
         guard let rpe = sets.first?.rpe, sets.allSatisfy({ $0.rpe == rpe }) else { return text }
         return "\(text) @ \(effortScale.text(rpe: rpe, format: format))"

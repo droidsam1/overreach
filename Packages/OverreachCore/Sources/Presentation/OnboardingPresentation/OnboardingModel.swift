@@ -35,6 +35,7 @@ public final class OnboardingModel {
     public private(set) var errorMessage: String?
 
     public var goalKind: TrainingGoal.Kind?
+    public var weightUnit = WeightUnit.kilograms
     /// Devices picked on the devices step. Empty: only the iPhone.
     public private(set) var wearables: Set<Wearable> = []
 
@@ -94,6 +95,7 @@ public final class OnboardingModel {
             profile = stored
             goalKind = stored.goal?.kind
             wearables = stored.wearables
+            weightUnit = stored.weightUnit
             step = .goal
             tourPage = .welcome
             isPresented = true
@@ -181,6 +183,7 @@ public final class OnboardingModel {
             updated.goal = goal
         }
         updated.wearables = wearables
+        updated.weightUnit = weightUnit
         return updated
     }
 }
