@@ -47,6 +47,8 @@ public final class RoutinesModel {
     private let profiles: (any ProfileRepository)?
     private let workouts: (any WorkoutRepository)?
     private let checkIns: (any CheckInRepository)?
+    private let readiness: (@Sendable (Date, AthleteProfile) async -> Readiness?)?
+    private let format: Format
     private let calendar: Calendar
     private let clock: @Sendable () -> Date
 
@@ -54,6 +56,8 @@ public final class RoutinesModel {
     ///   - profiles: where the plan's blocks are (`AthleteProfile.declaredBlocks`).
     ///   - workouts: past sessions, to know which routine of the block comes next.
     ///   - checkIns: recent check-ins, to notice an illness.
+    ///   - readiness: today's assessment, the one Today shows (`TrainingServices`); nil or a nil answer, as when no
+    ///     reading is available, adds no recovery proposal.
     public init(
         routines: any RoutineRepository,
         exercises: any ExerciseRepository,
@@ -61,6 +65,8 @@ public final class RoutinesModel {
         profiles: (any ProfileRepository)? = nil,
         workouts: (any WorkoutRepository)? = nil,
         checkIns: (any CheckInRepository)? = nil,
+        readiness: (@Sendable (Date, AthleteProfile) async -> Readiness?)? = nil,
+        format: Format = Format(),
         calendar: Calendar = .current,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
@@ -70,6 +76,8 @@ public final class RoutinesModel {
         self.profiles = profiles
         self.workouts = workouts
         self.checkIns = checkIns
+        self.readiness = readiness
+        self.format = format
         self.calendar = calendar
         self.clock = clock
     }
@@ -161,11 +169,23 @@ public final class RoutinesModel {
         let planned = PlanSchedule.next(
             blocks: profile.declaredBlocks, routines: routines, sessions: sessions, today: today, calendar: calendar
         )
+        // A session of the block is due when today has none of its routines done yet.
+        let dueRoutine = planned.flatMap { planned -> Routine? in
+            let done = sessions.contains { session in
+                session.startedAt >= calendar.startOfDay(for: now) && session.startedAt <= now
+                    && session.routineID.map(planned.block.routineIDs.contains) ?? false
+            }
+            return done ? nil : planned.routine
+        }
+        let assessment = dueRoutine == nil ? nil : await readiness?(now, profile)
         let review = PlanReviewer.review(
             blocks: profile.declaredBlocks, sessions: sessions, checkIns: recentCheckIns, today: today,
-            calendar: calendar
+            readiness: assessment, sessionDue: dueRoutine != nil, calendar: calendar
         )
-        planChecks = review.map(PlanFollowUpText.rows) ?? []
+        let planToday = dueRoutine.flatMap { routine in
+            assessment.map { PlanToday(session: routine.name, readiness: $0) }
+        }
+        planChecks = review.map { PlanFollowUpText.rows($0, today: planToday, format: format) } ?? []
         upNext = planned.map { planned in
             let block = planned.block.name ?? planned.block.focus.displayName
             let detail = planned.totalWeeks.map { L10n.format("{1} · week {2} of {3}", block, planned.week, $0) }

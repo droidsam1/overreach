@@ -132,6 +132,15 @@ public struct TrainingRecordLoader: Sendable {
         )
     }
 
+    /// The readiness Today shows for `now`, from the same reads and rule (ADR-0035). For screens that only need the
+    /// light and its reasons, such as the plan follow-up.
+    public func readiness(
+        now: Date, profile: AthleteProfile, settings: ReadinessRules.Settings = .init(), calendar: Calendar = .current
+    ) async -> Readiness {
+        await load(now: now, profile: profile, settings: settings, calendar: calendar)
+            .assessment(profile: profile, now: now, settings: settings, calendar: calendar).readiness
+    }
+
     private func readCycle(profile: AthleteProfile?, today: CalendarDay, calendar: Calendar) async -> CycleContext? {
         guard let profile, profile.usesCyclePhase, let cycle else { return nil }
         let range = today.adding(days: -Self.cycleDays, calendar: calendar)...today

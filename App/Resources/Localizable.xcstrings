@@ -8110,6 +8110,23 @@
         }
       }
     },
+    "Keep {1} easy today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haz {1} suave hoy."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fai {1} suave hoxe."
+          }
+        }
+      }
+    },
     "Kept short because you trained your legs close to this run.": {
       "extractionState": "manual",
       "localizations": {
@@ -9313,6 +9330,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hoxe, día de recuperación: un paseo ou unha sesión moi suave. Se levantas, que sexa lixeiro (RPE 6 ou menos)."
+          }
+        }
+      }
+    },
+    "Make {1} a recovery day: a walk or a very easy session. If you lift, keep it light (RPE 6 or less).": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Que {1} sea hoy un día de recuperación: un paseo o una sesión muy suave. Si levantas, que sea ligero (RPE 6 o menos)."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Que {1} sexa hoxe un día de recuperación: un paseo ou unha sesión moi suave. Se levantas, que sexa lixeiro (RPE 6 ou menos)."
           }
         }
       }
@@ -15896,6 +15930,23 @@
         }
       }
     },
+    "Skip {1} today and reassess how you feel.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omite {1} hoy y vuelve a valorar cómo te sientes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omite {1} hoxe e volve valorar como te sentes."
+          }
+        }
+      }
+    },
     "Sleep": {
       "extractionState": "manual",
       "localizations": {
@@ -21523,6 +21574,23 @@
         }
       }
     },
+    "Your recovery light is {1} today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu semáforo de recuperación está hoy en {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teu semáforo de recuperación está hoxe en {1}."
+          }
+        }
+      }
+    },
     "Your schedule has changed. Review the current plan and try again.": {
       "extractionState": "manual",
       "localizations": {
@@ -21961,6 +22029,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "evidencia sólida"
+          }
+        }
+      }
+    },
+    "today's session": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "la sesión de hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a sesión de hoxe"
           }
         }
       }

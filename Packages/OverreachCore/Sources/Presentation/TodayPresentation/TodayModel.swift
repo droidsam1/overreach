@@ -1462,47 +1462,7 @@ public final class TodayModel {
     }
 
     private func text(for reason: ReadinessReason) -> String {
-        switch reason {
-        case .markedSick:
-            L10n.text("Marked as sick in today's check-in. Rest until the symptoms ease.")
-        case .symptomsLimitTraining:
-            L10n.text("You reported symptoms that make you feel too unwell to train.")
-        case .exerciseWarningSigns:
-            L10n.text("Symptoms to discuss with a clinician")
-        case .runningPainLimitsTraining:
-            L10n.text("Running pain worsened or affected your stride")
-        case .unusualFatigue:
-            L10n.text("More fatigue than usual")
-        case .unusualStress:
-            L10n.text("More stress than usual")
-        case .hrvBelowBaseline(let nights):
-            if let coverage = readiness.hrvCoverage, let metric = coverage.metric {
-                L10n.format(
-                    "HRV ({1}) below your usual range ({2} of {3} comparable readings low in the last {4} days).",
-                    metric.seriesLabel, String(nights), String(coverage.recentReadings), String(coverage.recentDays)
-                )
-            } else {
-                L10n.text("HRV below your usual range.")
-            }
-        case .hrvMayReflectCycle:
-            L10n.text("HRV is normally lower in the second half of the menstrual cycle, so this alone does not make the light red.")
-        case .phaseBaseline(.follicular, let cycles):
-            L10n.format("Compared with your follicular days in the last {1} cycles.", cycles)
-        case .phaseBaseline(.luteal, let cycles):
-            L10n.format("Compared with your luteal days in the last {1} cycles.", cycles)
-        case .possibleLutealShift:
-            L10n.text("Resting HR often rises a few beats before a period; the threshold allows for it.")
-        case .restingHeartRateElevated(let bpm):
-            L10n.format("Resting HR {1} bpm above your usual.", format.number(bpm, maxFractionDigits: 0))
-        case .shortSleep(let hours):
-            L10n.format("Short sleep: {1} h.", format.number(hours, maxFractionDigits: 1))
-        case .lowEnergy(let score):
-            L10n.format("Low energy in today's check-in ({1}/5).", String(score))
-        case .highSoreness(let score):
-            L10n.format("Sore muscles in today's check-in ({1}/3).", String(score))
-        case .missingData:
-            L10n.text("It needs about two weeks of HRV or resting HR from Apple Health, last night's sleep or a check-in.")
-        }
+        ReadinessReasonText.text(for: reason, readiness: readiness, format: format)
     }
 
     /// Use activity-source steps for older walking baselines and prefer merged metric steps where available.

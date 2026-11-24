@@ -18,17 +18,36 @@ public struct PlanCheckRow: Identifiable, Hashable, Sendable {
     let block: TrainingBlock
 }
 
+/// Today's planned session and the daily assessment that proposes changing it (`DailyRecoveryAction`).
+struct PlanToday: Hashable, Sendable {
+    /// The routine's name.
+    let session: String
+    let readiness: Readiness
+}
+
 /// Texts of the plan follow-up.
 enum PlanFollowUpText {
+    /// The signals behind the recovery light, as Today's "Why" words them. Context that never decides the light on its
+    /// own is left out.
+    static func signalText(_ readiness: Readiness, format: Format) -> String {
+        let reasons = readiness.reasons.filter { !$0.isContext && $0 != .missingData }
+        let sentences = reasons.map { ReadinessReasonText.text(for: $0, readiness: readiness, format: format) }
+        return sentences.isEmpty
+            ? L10n.format("Your recovery light is {1} today.", readiness.level.displayName)
+            : sentences.joined(separator: " ")
+    }
+
     /// "This week: 1 of 3 sessions".
     static func weekProgress(_ review: PlanReview) -> String? {
         review.currentWeek.map { L10n.format("This week: {1} of {2} sessions", $0.done, $0.planned) }
     }
 
-    static func rows(_ review: PlanReview) -> [PlanCheckRow] {
+    /// - Parameters:
+    ///   - today: today's planned session and the assessment behind a recovery proposal.
+    static func rows(_ review: PlanReview, today: PlanToday? = nil, format: Format = Format()) -> [PlanCheckRow] {
         let blockName = review.block.name ?? review.block.focus.displayName
         return review.adjustments.enumerated().map { index, adjustment in
-            let texts = texts(adjustment, blockName: blockName)
+            let texts = texts(adjustment, blockName: blockName, today: today, format: format)
             return PlanCheckRow(
                 id: index, text: texts.text,
                 reason: "\(texts.reason) (\(adjustment.evidence.level.displayName))",
@@ -50,8 +69,15 @@ enum PlanFollowUpText {
         }
     }
 
-    private static func texts(_ adjustment: PlanAdjustment, blockName: String) -> Texts {
+    private static func texts(
+        _ adjustment: PlanAdjustment, blockName: String, today: PlanToday?, format: Format
+    ) -> Texts {
         switch adjustment {
+        case let .adaptToday(action):
+            adaptTexts(
+                action, session: today?.session ?? L10n.text("today's session"),
+                signals: today.map { signalText($0.readiness, format: format) } ?? ""
+            )
         case .restWhileIll:
             Texts(L10n.text("You logged being ill. Rest until the symptoms ease, then come back gradually."),
              L10n.text("There is no fixed timeline: how you feel decides when to train again."), nil)
@@ -72,6 +98,20 @@ enum PlanFollowUpText {
             Texts(L10n.format("Add {1} weeks to “{2}” to make up for missed sessions.", weeks, blockName),
              L10n.text("The blocks after it move back by the same time."),
              L10n.format("Add {1} weeks", weeks))
+        }
+    }
+
+    private static func adaptTexts(_ action: DailyRecoveryAction, session: String, signals: String) -> Texts {
+        switch action {
+        case .skip:
+            Texts(L10n.format("Skip {1} today and reassess how you feel.", session), signals, nil)
+        case .recoveryDay:
+            Texts(L10n.format(
+                "Make {1} a recovery day: a walk or a very easy session. If you lift, keep it light (RPE 6 or less).",
+                session
+            ), signals, nil)
+        case .easier:
+            Texts(L10n.format("Keep {1} easy today.", session), signals, nil)
         }
     }
 }

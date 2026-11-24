@@ -138,6 +138,73 @@ struct PlanReviewTests {
         #expect(try #require(reviewed(sessions, today: 22, checkIns: [longAgo])).adjustments.first != .restWhileIll)
     }
 
+    // MARK: Daily recovery
+
+    private func recovery(
+        _ readiness: Readiness?, due: Bool = true, sessions: [StrengthSession] = [], checkIns: [CheckIn] = [],
+        today: Int = 4
+    ) -> PlanReview? {
+        PlanReviewer.review(
+            blocks: [block], sessions: sessions, checkIns: checkIns, today: day(today), readiness: readiness,
+            sessionDue: due, calendar: calendar
+        )
+    }
+
+    @Test func recoveryLightMapsToTheActionTodayShows() {
+        #expect(DailyRecoveryAction(Readiness(level: .amber)) == .easier)
+        #expect(DailyRecoveryAction(Readiness(level: .red)) == .recoveryDay)
+        #expect(DailyRecoveryAction(Readiness(level: .amber, reasons: [.exerciseWarningSigns])) == .skip)
+        #expect(DailyRecoveryAction(Readiness(level: .red, reasons: [.markedSick])) == .skip)
+        #expect(DailyRecoveryAction(Readiness(level: .green)) == nil)
+        #expect(DailyRecoveryAction(Readiness(level: .unknown, reasons: [.missingData])) == nil)
+    }
+
+    @Test func aLowerLightProposesLessForTodaysSessionOnly() throws {
+        let amber = try #require(recovery(Readiness(level: .amber, reasons: [.hrvBelowBaseline(nights: 3)])))
+        #expect(amber.adjustments == [.adaptToday(.easier)])
+        #expect(amber.adjustments.first?.evidence == ReadinessEvidence.hrv)
+        #expect(amber.adjustments.first?.changesThePlan == false)
+        #expect(try #require(recovery(Readiness(level: .red))).adjustments == [.adaptToday(.recoveryDay)])
+        let warning = Readiness(level: .red, reasons: [.exerciseWarningSigns])
+        let skip = try #require(recovery(warning))
+        #expect(skip.adjustments == [.adaptToday(.skip)])
+        #expect(skip.adjustments.first?.evidence == ReadinessEvidence.reportedSymptoms)
+    }
+
+    @Test func normalUnavailableOrMissingReadingsProposeNothing() throws {
+        #expect(try #require(recovery(Readiness(level: .green))).adjustments.isEmpty)
+        #expect(try #require(recovery(Readiness(level: .unknown, reasons: [.missingData]))).adjustments.isEmpty)
+        #expect(try #require(recovery(nil)).adjustments.isEmpty)
+    }
+
+    @Test func noSessionDueTodayOrNoRunningBlockProposesNothing() throws {
+        #expect(try #require(recovery(Readiness(level: .red), due: false)).adjustments.isEmpty)
+        let ended = PlanReviewer.review(
+            blocks: [block], sessions: [], today: day(90), readiness: Readiness(level: .red), sessionDue: true,
+            calendar: calendar
+        )
+        #expect(ended == nil)
+        #expect(PlanReviewer.review(
+            blocks: [], sessions: [], today: day(4), readiness: Readiness(level: .red), sessionDue: true,
+            calendar: calendar
+        ) == nil)
+    }
+
+    @Test func anIllnessStaysTheOnlyAdviceAndABreakKeepsItsOwn() throws {
+        let ill = CheckIn(day: day(4), isSick: true)
+        let sick = try #require(recovery(Readiness(level: .red, reasons: [.markedSick]), checkIns: [ill]))
+        #expect(sick.adjustments == [.restWhileIll])
+        let afterBreak = try #require(recovery(Readiness(level: .amber), sessions: [session(on: 0)], today: 20))
+        #expect(afterBreak.adjustments == [.adaptToday(.easier), .easeBackIn(daysOff: 20)])
+    }
+
+    @Test func aRecoveryObservationLeavesTheBlockAndItsTargetsIntact() throws {
+        let review = try #require(recovery(Readiness(level: .red)))
+        #expect(review.block == block)
+        #expect(review.weeks.map(\.planned) == [3])
+        #expect(PlanReviewer.applying(.adaptToday(.recoveryDay), to: block, in: [block]) == [block])
+    }
+
     // MARK: Applying
 
     @Test func fewerSessionsChangesOnlyThatBlock() {
