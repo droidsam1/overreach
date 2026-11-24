@@ -64,6 +64,12 @@ public enum ContextPackBuilder {
         let byID = Dictionary(input.exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let name = { (id: UUID) in byID[id]?.name ?? "Unknown exercise" }
         let sessions = input.sessions.sorted { $0.startedAt < $1.startedAt }
+        let adjustments = input.profile?.rotationAdjustments ?? []
+        let rotation = SessionRotation.outcomes(
+            for: input.earlierSessions + sessions, adjustments: adjustments, calendar: calendar
+        )
+        let scheduleChanges = adjustments.filter { period.contains($0.day) }
+            .map { rotationChange($0, calendar: calendar) }
         let watchBySession = (matchedStrength ?? StrengthActivityMatching.match(
             sessions: sessions, activities: StrengthActivityMatching.removingDuplicates(input.strengthRecordings)
         )).bySession
@@ -93,6 +99,7 @@ public enum ContextPackBuilder {
             sessions: sessions.map { session in
                 var shared = self.session(from: session, name: name, calendar: calendar)
                 shared.watch = watchBySession[session.id].map(watch)
+                shared.rotationAdjustments = rotation[session.id]?.map(ContextPack.RotationOutcome.init)
                 return shared
             },
             exerciseTrends: trends(input, sessions: sessions, byID: byID, now: now, calendar: calendar),
@@ -103,12 +110,38 @@ public enum ContextPackBuilder {
             dailyMetrics: input.dailyMetrics.sorted { $0.day < $1.day }.map(metrics),
             runs: input.runs.sorted { $0.startedAt < $1.startedAt }.map { run(from: $0, calendar: calendar) },
             today: input.today,
+            rotationAdjustments: scheduleChanges.isEmpty ? nil : scheduleChanges,
             imports: [.init(format: PlanMessage.formatName, version: PlanMessage.currentVersion,
                             reference: PlanMessage.referenceURL, schema: PlanMessage.schemaURL)]
         )
     }
 
     // MARK: - Parts
+
+    private static func rotationChange(
+        _ adjustment: RotationAdjustment, calendar: Calendar
+    ) -> ContextPack.RotationScheduleChange {
+        let action: RotationAdjustment.Action
+        let movedToDay: CalendarDay?
+        var replacement: String?
+        var displaced: String?
+        switch adjustment.kind {
+        case let .swap(from, target):
+            action = .swapped
+            movedToDay = adjustment.swapDay
+            replacement = target
+            displaced = from
+        case let .postpone(days):
+            action = .postponed
+            movedToDay = adjustment.day.adding(days: days, calendar: calendar)
+            displaced = adjustment.postponedSlotID
+        }
+        return .init(
+            plannedDay: adjustment.day.description, movedToDay: movedToDay?.description,
+            replacementSlotID: replacement, displacedSlotID: displaced,
+            outcome: .init(.init(action: action, carryover: adjustment.carryover, reason: adjustment.reason))
+        )
+    }
 
     private static func athlete(
         _ profile: AthleteProfile?, routines: [Routine], today: CalendarDay, name: (UUID) -> String

@@ -11,6 +11,25 @@ struct MarkdownReportRendererTests {
         return calendar
     }
 
+    @Test func strengthSessionExplainsTheRotationAdjustment() {
+        let report = TrainingReport(
+            generatedAt: .now,
+            recentSessions: [
+                SessionSummary(
+                    day: CalendarDay(year: 2026, month: 11, day: 17), name: "Deadlift", tonnageKg: 2_000,
+                    effectiveSets: [.hamstrings: 3], rotationAdjustments: [
+                        .init(action: .postponed, carryover: .notable, reason: .runCarryover),
+                        .init(action: .capped, carryover: .light, reason: .readiness, maximumRPE: 8),
+                    ]
+                ),
+            ]
+        )
+        let markdown = MarkdownReportRenderer.render(report)
+        let postponement = "Rotation postponed · run carry-over notable · residual fatigue from the recorded run"
+        #expect(markdown.contains(postponement))
+        #expect(markdown.contains("Rotation capped · run carry-over light · reduced readiness · maximum RPE 8.0"))
+    }
+
     @Test func runsListTheWatchSplitOnlyWhenPresent() throws {
         let calendar = try utcCalendar()
         let day = CalendarDay(year: 2026, month: 11, day: 16)

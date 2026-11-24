@@ -73,6 +73,47 @@ public struct SessionRotation: Hashable, Sendable {
         return Slot(id: "name:" + key, name: name)
     }
 
+    /// Completed sessions associated with an accepted rotation change or a logged effort cap.
+    public static func outcomes(
+        for sessions: [StrengthSession], adjustments: [RotationAdjustment], calendar: Calendar = .current
+    ) -> [UUID: [RotationAdjustment.Outcome]] {
+        let timeline = timeline(sessions.filter { $0.endedAt != nil || $0.source == .strongImport })
+        var outcomes: [UUID: [RotationAdjustment.Outcome]] = [:]
+        let day = { (index: Int) in CalendarDay(timeline[index].session.startedAt, calendar: calendar) }
+        for adjustment in adjustments {
+            let action: RotationAdjustment.Action
+            let indices: [Int]
+            switch adjustment.kind {
+            case let .swap(from, target):
+                guard let first = timeline.indices.first(where: { day($0) == adjustment.day }),
+                      timeline[first].slot.id == target else { continue }
+                let destination = swapDestination(
+                    after: first, on: adjustment.swapDay, timeline: timeline, calendar: calendar
+                )
+                indices = [first] + (destination.flatMap { timeline[$0].slot.id == from ? [$0] : nil } ?? [])
+                action = .swapped
+            case let .postpone(days):
+                guard days > 0, let first = timeline.indices.first(where: { day($0) >= adjustment.day }),
+                      day(first) == adjustment.day.adding(days: days, calendar: calendar) else { continue }
+                let slotID = adjustment.postponedSlotID ?? detect(
+                    in: timeline[..<first].map(\.session), calendar: calendar
+                )?.next.id
+                guard slotID == timeline[first].slot.id else { continue }
+                indices = [first]
+                action = .postponed
+            }
+            for index in indices {
+                outcomes[timeline[index].session.id, default: []].append(
+                    .init(action: action, carryover: adjustment.carryover, reason: adjustment.reason)
+                )
+            }
+        }
+        for session in sessions where session.endedAt != nil {
+            if let cap = session.rotationCap { outcomes[session.id, default: []].append(cap) }
+        }
+        return outcomes
+    }
+
     /// The slots in planned order: every recorded swap that was carried out is undone. A swap whose second session has
     /// not happened yet reads as the planned workout, and `pendingNext` names the one that really comes next.
     static func plannedSlots(
@@ -85,11 +126,9 @@ public struct SessionRotation: Hashable, Sendable {
                   let index = timeline.firstIndex(where: {
                       CalendarDay($0.session.startedAt, calendar: calendar) == adjustment.day
                   }), slots[index].id == target else { continue }
-            let destination = adjustment.swapDay.flatMap { day in
-                timeline.indices.dropFirst(index + 1).first {
-                    CalendarDay(timeline[$0].session.startedAt, calendar: calendar) == day
-                }
-            } ?? (adjustment.swapDay == nil && index + 1 < slots.count ? index + 1 : nil)
+            let destination = swapDestination(
+                after: index, on: adjustment.swapDay, timeline: timeline, calendar: calendar
+            )
             if let destination {
                 if slots[destination].id == from { slots.swapAt(index, destination) }
             } else if let planned = slots.last(where: { $0.id == from }) {
@@ -107,6 +146,15 @@ public struct SessionRotation: Hashable, Sendable {
             }
         }
         return (slots, pendingSwap)
+    }
+
+    private static func swapDestination(
+        after index: Int, on day: CalendarDay?, timeline: [(slot: Slot, session: StrengthSession)], calendar: Calendar
+    ) -> Int? {
+        guard let day else { return index + 1 < timeline.count ? index + 1 : nil }
+        return timeline.indices.dropFirst(index + 1).first {
+            CalendarDay(timeline[$0].session.startedAt, calendar: calendar) == day
+        }
     }
 
     private static func slots(_ sessions: [StrengthSession]) -> [Slot] {

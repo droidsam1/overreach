@@ -7,12 +7,17 @@ public struct SessionSummary: Hashable, Sendable {
     public var name: String
     public var tonnageKg: Double
     public var effectiveSets: [MuscleGroup: Double]
+    public var rotationAdjustments: [RotationAdjustment.Outcome]
 
-    public init(day: CalendarDay, name: String, tonnageKg: Double, effectiveSets: [MuscleGroup: Double]) {
+    public init(
+        day: CalendarDay, name: String, tonnageKg: Double, effectiveSets: [MuscleGroup: Double],
+        rotationAdjustments: [RotationAdjustment.Outcome] = []
+    ) {
         self.day = day
         self.name = name
         self.tonnageKg = tonnageKg
         self.effectiveSets = effectiveSets
+        self.rotationAdjustments = rotationAdjustments
     }
 }
 

@@ -155,6 +155,10 @@ public final class TodayModel {
         defer { isAcceptingRotation = false }
         let routine = rotationSwapRoutine
         adjustment.swapDay = decision.partner?.day
+        adjustment.carryover = decision.carryover
+        if case .postpone = adjustment.kind {
+            adjustment.postponedSlotID = decision.next.slot.id
+        }
         do {
             var profile = try await profiles.profile()
             profile.record(adjustment)
@@ -168,9 +172,14 @@ public final class TodayModel {
     }
 
     public func rotationRPECap(for routine: Routine) -> Double? {
+        rotationCap(for: routine)?.maximumRPE
+    }
+
+    public func rotationCap(for routine: Routine) -> RotationAdjustment.Outcome? {
         guard rotationCanBeShown, heroTrainingAction == .startStrength(routine), let rotationDecision,
               case let .keepCapped(maxRPE) = rotationDecision.suggestion.action else { return nil }
-        return maxRPE
+        return .init(action: .capped, carryover: rotationDecision.carryover,
+                     reason: rotationDecision.suggestion.reasons.first, maximumRPE: maxRPE)
     }
 
     public func startsFromRotationHistory(_ routine: Routine) -> Bool {
@@ -1090,8 +1099,8 @@ public final class TodayModel {
         }
         if case .postpone = suggestion.action, profiles == nil { return }
         rotationDecision = TodayRotationDecision(
-            suggestion: suggestion, next: next, partner: partner, run: run, previousLegs: previous,
-            readiness: readiness.level, now: now, calendar: calendar, format: format
+            suggestion: suggestion, carryover: carryover, next: next, partner: partner, run: run,
+            previousLegs: previous, readiness: readiness.level, now: now, calendar: calendar, format: format
         )
     }
 

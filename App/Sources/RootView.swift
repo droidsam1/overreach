@@ -116,12 +116,11 @@ struct RootView: View {
                     onConnectGarmin: { garminModel.start() },
                     recoveryHistory: { PlanProgressView(model: planModel) }
                 )
-                .startStrength { routine, rotationRPECap, startsFromRotationHistory in
+                .startStrength { routine, rotationCap, startsFromRotationHistory in
                     selectedTab = .train
                     Task {
                         await workoutModel.start(
-                            routine, rotationRPECap: rotationRPECap,
-                            startsFromRotationHistory: startsFromRotationHistory
+                            routine, startsFromRotationHistory: startsFromRotationHistory, rotationCap: rotationCap
                         )
                     }
                 }

@@ -9,7 +9,7 @@ public enum RunCarryover {
     public static let recentWindow: TimeInterval = 48 * 3_600
     public static let evidence = EvidenceReference(key: "run-before-strength-carryover", level: .limited)
 
-    public enum Level: String, Hashable, Sendable { case light, notable, unknown }
+    public typealias Level = RotationAdjustment.Carryover
 
     /// What made the carry-over notable.
     public enum Reason: String, Hashable, Sendable, CaseIterable {

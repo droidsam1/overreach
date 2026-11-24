@@ -35,6 +35,41 @@ struct HistoryModelTests {
         return (model, store)
     }
 
+    @Test func marksCompletedRotationChangesInListDetailsAndCalendar() async throws {
+        let calendar = Calendar(identifier: .gregorian)
+        let sets = [WorkoutSet(weightKg: 100, reps: 5)]
+        let lighter = session("Upper", daysAgo: 6, sets: sets)
+        let intervening = session("Other", daysAgo: 5, sets: sets)
+        let heavy = session("Heavy", daysAgo: 4, sets: sets)
+        var postponed = session("Heavy", daysAgo: 1, sets: sets)
+        postponed.rotationCap = .init(action: .capped, carryover: .notable, reason: .runCarryover, maximumRPE: 8)
+        let actualDay = CalendarDay(postponed.startedAt, calendar: calendar)
+        let swap = RotationAdjustment(
+            day: CalendarDay(lighter.startedAt, calendar: calendar),
+            kind: .swap(from: "name:heavy", to: "name:upper"),
+            swapDay: CalendarDay(heavy.startedAt, calendar: calendar)
+        )
+        var delay = RotationAdjustment(day: actualDay.adding(days: -1, calendar: calendar), kind: .postpone(days: 1))
+        delay.postponedSlotID = "name:heavy"
+        let store = TestStore(exercises: [squat], sessions: [lighter, intervening, heavy, postponed])
+        try await store.save(AthleteProfile(rotationAdjustments: [swap, delay]))
+        let fixedNow = now
+        let model = HistoryModel(
+            workouts: store, exercises: store, routines: store, profiles: store, calendar: calendar,
+            format: format, clock: { fixedNow }
+        )
+        await model.load()
+        #expect(model.detail(for: lighter.id)?.rotationLabels == ["Swapped in rotation"])
+        #expect(model.detail(for: heavy.id)?.rotationLabels == ["Swapped in rotation"])
+        #expect(model.detail(for: intervening.id)?.rotationLabels == [])
+        let expected = ["Postponed in rotation", "Rotation effort capped"]
+        #expect(model.detail(for: postponed.id)?.rotationLabels == expected)
+        #expect(model.summaries.first { $0.id == postponed.id }?.rotationLabels == expected)
+        await model.calendar.load()
+        model.calendar.select(actualDay)
+        #expect(model.calendar.selectedDetail?.sessions.first?.rotationLabels == expected)
+    }
+
     @Test func companionAnswerCanBeChangedForBothSourcesOfAnOlderRun() async throws {
         let start = now.addingTimeInterval(-7 * 86_400)
         let garmin = RunActivity(id: "g", source: .garmin, startedAt: start, durationSeconds: 1_800,

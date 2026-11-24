@@ -12326,6 +12326,23 @@
         }
       }
     },
+    "Postponed in rotation": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplazada en la rotación"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aprazada na rotación"
+          }
+        }
+      }
+    },
     "Prefer not to say": {
       "extractionState": "manual",
       "localizations": {
@@ -14243,6 +14260,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Alterna os bloques de repeticións. A carga sae do teu 1RM estimado."
+          }
+        }
+      }
+    },
+    "Rotation effort capped": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esfuerzo limitado por la rotación"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esforzo limitado pola rotación"
           }
         }
       }
@@ -17184,6 +17218,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cambia a unha variante parecida durante {1}–{2} semanas e logo volve: é máis doado progresar no movemento novo e os músculos seguen traballando."
+          }
+        }
+      }
+    },
+    "Swapped in rotation": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intercambiada en la rotación"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intercambiada na rotación"
           }
         }
       }

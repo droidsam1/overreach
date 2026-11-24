@@ -31,6 +31,8 @@ public struct ContextPack: Codable, Hashable, Sendable {
     public var dailyMetrics: [Metrics]
     public var runs: [Run]
     public var today: Today?
+    /// Accepted schedule changes during the period, including changes still pending.
+    public var rotationAdjustments: [RotationScheduleChange]?
     /// Formats the app can import back. Optional, added after v1 shipped.
     public var imports: [ImportFormat]?
 
@@ -168,6 +170,29 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var exercises: [Entry]
         /// What a watch recorded during the session. Optional, added after v1 shipped; absent when no watch did.
         public var watch: Watch?
+        public var rotationAdjustments: [RotationOutcome]?
+    }
+
+    public struct RotationOutcome: Codable, Hashable, Sendable {
+        public var action: String
+        public var carryover: String?
+        public var reason: String?
+        public var maximumRPE: Double?
+
+        init(_ outcome: RotationAdjustment.Outcome) {
+            action = outcome.action.rawValue
+            carryover = outcome.carryover?.rawValue
+            reason = outcome.reason?.rawValue
+            maximumRPE = outcome.maximumRPE
+        }
+    }
+
+    public struct RotationScheduleChange: Codable, Hashable, Sendable {
+        public var plannedDay: String
+        public var movedToDay: String?
+        public var replacementSlotID: String?
+        public var displacedSlotID: String?
+        public var outcome: RotationOutcome
     }
 
     /// A watch's recording of a logged session (Garmin, or another app through Apple Health).

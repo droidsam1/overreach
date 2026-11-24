@@ -95,6 +95,8 @@ public struct StrengthSession: Identifiable, Hashable, Codable, Sendable {
     public var focus: TrainingFocus?
     /// The routine it was started from, if any; it tells which planned session comes next.
     public var routineID: UUID?
+    /// Recorded when the logger applied the post-run effort cap.
+    public var rotationCap: RotationAdjustment.Outcome?
 
     public init(
         id: UUID = UUID(),
@@ -106,7 +108,8 @@ public struct StrengthSession: Identifiable, Hashable, Codable, Sendable {
         notes: String? = nil,
         source: DataSourceKind = .app,
         focus: TrainingFocus? = nil,
-        routineID: UUID? = nil
+        routineID: UUID? = nil,
+        rotationCap: RotationAdjustment.Outcome? = nil
     ) {
         self.id = id
         self.name = name
@@ -118,6 +121,7 @@ public struct StrengthSession: Identifiable, Hashable, Codable, Sendable {
         self.source = source
         self.focus = focus
         self.routineID = routineID
+        self.rotationCap = rotationCap
     }
 
     public var durationSeconds: Double? {

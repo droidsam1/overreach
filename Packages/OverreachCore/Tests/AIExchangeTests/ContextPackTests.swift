@@ -54,6 +54,38 @@ struct ContextPackTests {
         return ContextPackBuilder.build(input, period: period, now: now, calendar: calendar)
     }
 
+    @Test func exportsAcceptedAndCompletedRotationChangesWithoutBumpingVersion() throws {
+        let moved = session(daysAgo: 2, reps: [8])
+        let day = CalendarDay(moved.startedAt, calendar: calendar)
+        var postponement = RotationAdjustment(
+            day: day.adding(days: -1, calendar: calendar), kind: .postpone(days: 1), reason: .runCarryover
+        )
+        postponement.carryover = .notable
+        postponement.postponedSlotID = "name:push"
+        let pending = RotationAdjustment(day: period.upperBound, kind: .swap(from: "name:legs", to: "name:push"))
+        var capped = moved
+        capped.rotationCap = .init(action: .capped, carryover: .light, reason: .readiness, maximumRPE: 8)
+        let input = ContextInput(
+            sessions: [capped],
+            profile: AthleteProfile(rotationAdjustments: [postponement, pending])
+        )
+        let pack = ContextPackBuilder.build(input, period: period, now: now, calendar: calendar)
+        let json = try ContextMessage.json(pack)
+        let wire = try #require(JSONSerialization.jsonObject(with: json) as? [String: Any])
+        #expect(wire["version"] as? Int == 1)
+        let changes = try #require(wire["rotationAdjustments"] as? [[String: Any]])
+        #expect(changes.map { $0["plannedDay"] as? String } == [postponement.day.description, pending.day.description])
+        #expect(changes[0]["movedToDay"] as? String == day.description)
+        #expect(changes[1]["replacementSlotID"] as? String == "name:push")
+        let sessions = try #require(wire["sessions"] as? [[String: Any]])
+        let outcomes = try #require(sessions[0]["rotationAdjustments"] as? [[String: Any]])
+        #expect(outcomes.map { $0["action"] as? String } == ["postponed", "capped"])
+        #expect(outcomes[0]["carryover"] as? String == "notable")
+        #expect(outcomes[0]["reason"] as? String == "runCarryover")
+        #expect(outcomes[1]["maximumRPE"] as? Double == 8)
+        #expect(self.pack().rotationAdjustments == nil)
+    }
+
     @Test func identifiesItsFormatAndVersion() {
         let pack = pack()
         #expect(pack.format == "overreach.context")

@@ -149,11 +149,12 @@ struct TodayRotationAdjustmentTests {
         let nextDay = await load(store, at: shifted)
         #expect(nextDay.nextAction == .startStrength(routines[0]))
         #expect(nextDay.rotationOffer == nil)
-        let cap = nextDay.rotationRPECap(for: routines[0])
-        #expect(cap == 8)
+        let cap = try #require(nextDay.rotationCap(for: routines[0]))
+        #expect(cap.maximumRPE == 8)
+        #expect(cap.carryover == .notable)
 
         let workout = WorkoutModel(workouts: store, exercises: store, progression: store, clock: { shifted })
-        await workout.start(routines[0], rotationRPECap: cap)
+        await workout.start(routines[0], rotationCap: cap)
         let draft = try #require(workout.exercises.first)
         #expect(draft.target.sets.allSatisfy { ($0.weightKg ?? 0) <= 100 && $0.targetRPE <= 8 })
         let set = try #require(draft.workingSets.first)
@@ -161,6 +162,7 @@ struct TodayRotationAdjustmentTests {
         #expect(await workout.finish())
         let sessions = await store.sessions(from: shifted, to: shifted)
         #expect(sessions.first?.entries.first?.countsForProgression == false)
+        #expect(sessions.first?.rotationCap == cap)
     }
 
     @Test func keepPlanSurvivesRelaunchAndLeavesTheOriginalRoutine() async {

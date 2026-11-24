@@ -123,3 +123,20 @@ observed action, coverage, unnecessary prompts, skipped proposals and adverse su
 hard session despite reported warning symptoms or a move into another protected slot. Compare against
 the existing schedule behavior. The cases are review fixtures. Running them against actual histories
 and review by a running coach and a sports clinician remain release gates for automatic programming.
+
+### Partial replay of rotation adjustments
+
+A strength backup and two Garmin runs supplied one athlete's sequence. With the default thresholds
+and only those runs as run history, both runs meet the notable carry-over threshold. The first
+has no earlier run in the supplied 14-day window. The second exceeds 110% of the longest prior
+run in the supplied 30-day window. Both flags depend on source coverage. The second run started
+within 48 hours of the recorded heavy squat session.
+
+For both cases the recent strength gaps vary, including two-, three- and four-day gaps.
+The default projection requires uniform gaps across the sessions that establish the rotation.
+Result with the available inputs: two runs assessed for carry-over, zero eligible rotation
+suggestions, and zero keep, swap, postpone or cap outcomes. The observed next strength session
+after the first run was a squat session without a recorded adjustment. The next heavy session
+after the second run was still pending when the backup was taken. No adjusted session is
+available for an RPE or load comparison, and these counts cannot estimate action frequency
+when the rotation is eligible.
