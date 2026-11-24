@@ -37,12 +37,13 @@ No trial tests "swap B and C after an extra run". The ladder below is a heuristi
 ## Decision
 
 1. **Carry-over of a recorded run (`RunCarryover`, Analytics).** *Notable* when the run was hard (training effect,
-   tag), long (> 60 min or > 110 % of the longest of 30 days), hilly, unaccustomed (no run in 14 days), ended less than
-   24 h before the next lift, or followed by soreness or pain that holds. *Light* otherwise; *unknown* without
-   duration. Thresholds are configurable heuristics.
+   tag), long (> 60 min or > 110 % of the longest of 30 days), hilly, unaccustomed (no run in 14 days), or followed
+   by soreness or pain that holds. The reference windows for relative distance and an unaccustomed run must have
+   known coverage. *Light* otherwise; *unknown* without duration. A gap under 24 h is timing context. Thresholds
+   are configurable heuristics.
 2. **Only a leg-heavy next session is reconsidered.** An upper-body or light slot needs nothing.
 3. **Decision ladder (`RotationAdjustment.suggest`).** Red readiness, illness and symptoms keep their own rules first.
-   Then: light carry-over and green readiness → **keep** (strength is back after 24 h of easy aerobic work). Notable
+   Then: light carry-over and green readiness → **keep**. Notable
    carry-over, amber readiness, or a heavy leg session ≤ 48 h before the run → **swap** the heavy slot with the next
    lighter one when every slot stays in the cycle and the heavy slot keeps ≥ 48 h to the following heavy-leg session;
    else **postpone one day** when the cycle absorbs it; else **keep capped** (no load increase, top sets at RPE 8, not

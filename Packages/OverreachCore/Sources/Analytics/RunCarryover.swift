@@ -2,7 +2,7 @@ import Domain
 import Foundation
 
 /// How much a recorded run carries over into the next strength session (ADR-0044, decision 1). *Notable* when the run
-/// was hard, long, hilly, unaccustomed, ended soon before the lift, or was followed by soreness or pain that holds.
+/// was hard, long, hilly, unaccustomed, or was followed by soreness or pain that holds. Timing adds context.
 /// Every threshold is a labelled heuristic in `Settings`. Pure: the caller decides what a notable carry-over changes.
 public enum RunCarryover {
     /// The recovery window used when deciding whether to reconsider a lift after a recorded run.
@@ -46,22 +46,26 @@ public enum RunCarryover {
         public let reasons: [Reason]
         /// No training effect, tag or heart rate: intensity was not part of the assessment (Apple Health runs).
         public let intensityUnknown: Bool
+        /// Neither recent exposure nor a fully observed gap was established.
+        public let exposureUnknown: Bool
     }
 
     public static func assess(
         run: RunActivity, recentRuns: [RunActivity], checkIn: CheckIn?, nextSessionStart: Date?,
-        painReport: RunPainReport? = nil, tag: PlannedRun.Purpose? = nil, settings: Settings = .init()
+        painReport: RunPainReport? = nil, tag: PlannedRun.Purpose? = nil,
+        historyCoveredSince: Date? = nil, settings: Settings = .init()
     ) -> Level {
         assessment(run: run, recentRuns: recentRuns, checkIn: checkIn, nextSessionStart: nextSessionStart,
-                   painReport: painReport, tag: tag, settings: settings).level
+                   painReport: painReport, tag: tag, historyCoveredSince: historyCoveredSince, settings: settings).level
     }
 
     public static func assessment(
         run: RunActivity, recentRuns: [RunActivity], checkIn: CheckIn?, nextSessionStart: Date?,
-        painReport: RunPainReport? = nil, tag: PlannedRun.Purpose? = nil, settings: Settings = .init()
+        painReport: RunPainReport? = nil, tag: PlannedRun.Purpose? = nil,
+        historyCoveredSince: Date? = nil, settings: Settings = .init()
     ) -> Assessment {
         guard run.durationSeconds.isFinite, run.durationSeconds > 0, run.startedAt.timeIntervalSince1970 > 0 else {
-            return Assessment(level: .unknown, reasons: [], intensityUnknown: true)
+            return Assessment(level: .unknown, reasons: [], intensityUnknown: true, exposureUnknown: true)
         }
         let end = run.startedAt.addingTimeInterval(run.durationSeconds)
         let others = RunDeduplication.removingDuplicates(recentRuns).filter {
@@ -80,7 +84,8 @@ public enum RunCarryover {
 
         let windowStart = run.startedAt.addingTimeInterval(-Double(settings.historyDays) * 86_400)
         let window = others.filter { $0.startedAt >= windowStart && $0.startedAt < run.startedAt }
-        let longest = SessionCeiling.sessions(window).map(\.distanceMeters).max()
+        let coversHistory = historyCoveredSince.map { $0 <= windowStart } ?? false
+        let longest = coversHistory ? SessionCeiling.sessions(window).map(\.distanceMeters).max() : nil
         let overLongest = longest.map { run.distanceMeters > $0 * settings.longestRunFraction } ?? false
         if run.durationSeconds > settings.longMinutes * 60 || overLongest { reasons.append(.long) }
 
@@ -88,18 +93,22 @@ public enum RunCarryover {
            elevation / (run.distanceMeters / 1_000) >= settings.hillyMetersPerKm { reasons.append(.hilly) }
 
         let accustomedStart = run.startedAt.addingTimeInterval(-Double(settings.unaccustomedDays) * 86_400)
-        if !others.contains(where: { $0.startedAt >= accustomedStart && $0.startedAt < run.startedAt }) {
-            reasons.append(.unaccustomed)
+        let hasRecentExposure = others.contains {
+            $0.startedAt >= accustomedStart && $0.startedAt < run.startedAt
         }
+        let coversExposure = historyCoveredSince.map { $0 <= accustomedStart } ?? false
+        if coversExposure && !hasRecentExposure { reasons.append(.unaccustomed) }
 
-        if let nextSessionStart, nextSessionStart.timeIntervalSince(end) < settings.closeHours * 3_600 {
-            reasons.append(.close)
-        }
         if let sore = checkIn?.soreness, sore >= settings.soreness { reasons.append(.soreness) }
         if let painReport, painReport.reportsPain, !painReport.isTolerated(threshold: settings.painTolerance) {
             reasons.append(.pain)
         }
-        return Assessment(level: reasons.isEmpty ? .light : .notable, reasons: reasons,
-                          intensityUnknown: intensityUnknown)
+        let level: Level = reasons.isEmpty ? .light : .notable
+        if let nextSessionStart, nextSessionStart >= end,
+           nextSessionStart.timeIntervalSince(end) < settings.closeHours * 3_600 {
+            reasons.append(.close)
+        }
+        return Assessment(level: level, reasons: reasons, intensityUnknown: intensityUnknown,
+                          exposureUnknown: !hasRecentExposure && !coversExposure)
     }
 }
