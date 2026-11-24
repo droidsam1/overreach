@@ -28,7 +28,7 @@ struct HistoryWalkTests {
         func load(_ walks: [WalkBout]) async -> HistoryModel {
             let model = HistoryModel(
                 workouts: store, exercises: store, routines: store, profiles: store,
-                walkSources: [HistoryWalkSource(walks: walks)],
+                activitySources: [HistoryWalkSource(walks: walks)],
                 companionAnswers: DogWalkAnswers(saved) { saved = $0 }, clock: { now }
             )
             await model.load()

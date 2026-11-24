@@ -129,7 +129,7 @@ public final class HistoryModel {
     private var rotationAdjustments: [RotationAdjustment] = []
     private let progression: (any ProgressionSettingsRepository)?
     private let recordedStrength: (any RecordedStrengthSource)?
-    private let walkSources: [any ActivitySource]
+    private let activitySources: [any ActivitySource]
     private let companionAnswers: DogWalkAnswers
     private let dogRunAnswers: DogRunAnswers
     private var walkingRoutine = WalkingRoutine()
@@ -164,10 +164,9 @@ public final class HistoryModel {
         health: (any HealthWorkoutWriter)? = nil,
         profiles: (any ProfileRepository)? = nil,
         progression: (any ProgressionSettingsRepository)? = nil,
-        activity: (any ActivitySource)? = nil,
         runSources: [any MetricsSource] = [],
         recordedStrength: (any RecordedStrengthSource)? = nil,
-        walkSources: [any ActivitySource] = [],
+        activitySources: [any ActivitySource] = [],
         companionAnswers: DogWalkAnswers? = nil,
         dogRunAnswers: DogRunAnswers = DogRunAnswers(),
         calendar: Calendar = .current,
@@ -186,7 +185,7 @@ public final class HistoryModel {
         self.profiles = profiles
         self.progression = progression
         self.recordedStrength = recordedStrength
-        self.walkSources = walkSources
+        self.activitySources = activitySources
         self.companionAnswers = companionAnswers ?? DogWalkAnswers()
         self.dogRunAnswers = dogRunAnswers
         self.runSources = runSources
@@ -197,7 +196,7 @@ public final class HistoryModel {
         self.strengthChoices = strengthChoices
         self.saveStrengthChoices = saveStrengthChoices
         self.calendar = HistoryCalendarModel(
-            workouts: workouts, activity: activity, runSources: runSources,
+            workouts: workouts, activitySources: activitySources, runSources: runSources,
             calendar: calendar, format: format, runChoices: runChoices, clock: clock
         )
     }
@@ -260,7 +259,7 @@ public final class HistoryModel {
         let calendar = calendar.calendar
         let range = CalendarDay(start, calendar: calendar)...CalendarDay(now, calendar: calendar)
         var walks: [WalkKey: WalkBout] = [:]
-        for source in walkSources {
+        for source in activitySources {
             let days = (try? await source.dailyActivity(in: range)) ?? []
             for walk in days.flatMap(\.walks) where walk.start >= start && walk.start <= now {
                 guard walk.durationSeconds.isFinite, walk.durationSeconds > 0 else { continue }

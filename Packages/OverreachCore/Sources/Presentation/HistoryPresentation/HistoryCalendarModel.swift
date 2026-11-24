@@ -61,7 +61,7 @@ public struct CalendarDayDetail: Hashable, Sendable {
 }
 
 /// The month calendar of History: strength days, runs and steps per day (ADR-0014). Sessions come from the
-/// workout repository, steps from Apple Health, and runs from available sources. A failing source leaves the
+/// workout repository, steps and runs from available sources. A failing source leaves the
 /// successful reads visible.
 @MainActor
 @Observable
@@ -93,7 +93,7 @@ public final class HistoryCalendarModel {
     var restDays: Set<CalendarDay> = []
     var weightUnit = WeightUnit.kilograms
     var rotationOutcomes: [UUID: [RotationAdjustment.Outcome]] = [:]
-    /// Whether reading Apple Health failed for the shown month.
+    /// Whether an activity source or Apple Health runs failed to load for the shown month.
     public private(set) var activityFailed = false
     public private(set) var sessionsFailed = false
     public private(set) var runWarning: String?
@@ -104,7 +104,7 @@ public final class HistoryCalendarModel {
     var exerciseNames: [UUID: String] = [:]
 
     private let workouts: any WorkoutRepository
-    private let activity: (any ActivitySource)?
+    private let activitySources: [any ActivitySource]
     private let runSources: [any MetricsSource]
     let calendar: Calendar
     private let format: Format
@@ -112,7 +112,7 @@ public final class HistoryCalendarModel {
 
     public init(
         workouts: any WorkoutRepository,
-        activity: (any ActivitySource)? = nil,
+        activitySources: [any ActivitySource] = [],
         runSources: [any MetricsSource] = [],
         calendar: Calendar = .current,
         format: Format = Format(),
@@ -120,7 +120,7 @@ public final class HistoryCalendarModel {
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
-        self.activity = activity
+        self.activitySources = activitySources
         self.runSources = runSources
         self.calendar = calendar
         self.format = format
@@ -236,11 +236,13 @@ public final class HistoryCalendarModel {
         return Double(steps.values.reduce(0, +)) / Double(steps.count)
     }
 
-    /// Shown under the grid while runs and steps are missing: Health is not connected, or could not be read.
+    /// Shows a source failure when steps are missing, or a connection hint when there is no activity.
     public var healthHint: String? {
-        if activityFailed { return L10n.text("Could not read Apple Health. Your sessions are still shown.") }
+        if activityFailed, steps.isEmpty {
+            return L10n.text("Could not read some activity data. Your sessions are still shown.")
+        }
         guard steps.isEmpty, runs.isEmpty, runWarning == nil, !isLoading else { return nil }
-        return L10n.text("Connect Apple Health or Garmin from Today to see runs. Steps come from Apple Health.")
+        return L10n.text("Connect Apple Health or Garmin from Today to see runs and steps.")
     }
 
     public var errorMessage: String? {
@@ -353,10 +355,11 @@ public final class HistoryCalendarModel {
 
         var failed = false
         var loadedSteps: [CalendarDay: Int] = [:]
-        if let activity {
+        // Source order sets the preference per day, as with daily metrics.
+        for source in activitySources {
             do {
-                for day in try await activity.dailyActivity(in: range) where range.contains(day.day) {
-                    if let count = day.steps { loadedSteps[day.day] = count }
+                for day in try await source.dailyActivity(in: range) where range.contains(day.day) {
+                    loadedSteps[day.day] = loadedSteps[day.day] ?? day.steps
                 }
             } catch {
                 failed = true

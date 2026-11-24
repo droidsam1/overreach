@@ -127,8 +127,24 @@ func makeService(
 }
 
 @MainActor
-@Suite("Garmin runs in History")
-struct GarminRunHistoryTests {
+@Suite("Garmin activity in History")
+struct GarminHistoryTests {
+    @Test func syncedGarminStepsAppearWithoutAppleHealth() async throws {
+        let service = makeService()
+        try await service.connect(key: "valid-key-0123456789", lifetime: .recommended)
+
+        let store = TestStore()
+        let history = HistoryModel(
+            workouts: store, exercises: store, routines: store, runSources: [service], activitySources: [service],
+            calendar: utcCalendar, clock: { fixtureNow }
+        )
+        await history.calendar.showPreviousMonth()
+        let day = CalendarDay(year: 2025, month: 12, day: 26)
+        #expect(history.calendar.steps[day] == 19_022)
+        #expect(history.calendar.averageSteps != nil)
+        #expect(history.calendar.healthHint == nil)
+    }
+
     @Test func aRunUploadedLateThisWeekAppearsInTheTimelineAndCalendar() async throws {
         let garmin = FakeGarmin()
         let service = makeService(garmin: garmin)

@@ -3197,19 +3197,19 @@
         }
       }
     },
-    "Connect Apple Health or Garmin from Today to see runs. Steps come from Apple Health.": {
+    "Connect Apple Health or Garmin from Today to see runs and steps.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Conecta Apple Salud o Garmin desde Hoy para ver tus carreras. Los pasos vienen de Apple Salud."
+            "value": "Conecta Apple Salud o Garmin desde Hoy para ver tus carreras y pasos."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Conecta Apple Saúde ou Garmin desde Hoxe para ver as túas carreiras. Os pasos veñen de Apple Saúde."
+            "value": "Conecta Apple Saúde ou Garmin desde Hoxe para ver as túas carreiras e pasos."
           }
         }
       }
@@ -3826,19 +3826,19 @@
         }
       }
     },
-    "Could not read Apple Health. Your sessions are still shown.": {
+    "Could not read some activity data. Your sessions are still shown.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "No se ha podido leer Apple Salud. Tus sesiones se siguen mostrando."
+            "value": "No se han podido leer algunos datos de actividad. Tus sesiones se siguen mostrando."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Non se puido ler Apple Saúde. As túas sesións seguen á vista."
+            "value": "Non se puideron ler algúns datos de actividade. As túas sesións seguen á vista."
           }
         }
       }

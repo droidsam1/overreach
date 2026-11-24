@@ -41,7 +41,7 @@ struct GarminWalkTests {
         #expect(walk.distanceMeters == 3_100)
         #expect(walk.averageHeartRate == 98)
         #expect(walk.elevationGainMeters == 40)
-        #expect(days.allSatisfy { $0.steps == nil })  // steps come from the daily metrics
+        #expect(days.allSatisfy { $0.steps == nil })  // these days have no daily step totals
     }
 
     @Test func aCacheFromBeforeWalksFetchesSixtyDaysOfActivitiesOnce() async throws {
