@@ -80,19 +80,23 @@ Order is by impact: Train and History first (daily use).
 | `AskAIView` | Five coloured labels; `Form`. | Low | X1. |
 | `SessionReportSheet` | See Train finish summary. | Medium | See above. |
 
-## Proposed child issues (ordered)
+## Child issues
 
-1. DesignSystem: `Card`, `SectionHeader`, `IconTile`, `InlineNotice`, `LoadingState`, radius and spacing tokens, with
-   Showcase entries (X1, X3, X4, X5, X12). **Blocks the rest.**
-2. Train start screen as hero + routine cards (mock-up first).
-3. History: cards, summary-first details, `InlineNotice`.
-4. Plan: two-level restructure (mock-up first).
-5. Finish summary reuses the done hero.
-6. Recovery & Progress: `SignalTrendChart` and Why-style cards.
-7. Tone colours and `InlineNotice` in Settings, Garmin, Exercises, Onboarding, Ask AI (X6).
-8. Accessibility pass: Dynamic Type and VoiceOver labels in the screens listed in X8 and X9.
-9. Haptics per interaction (belongs to #245).
-10. Navigation and titles rule (belongs to #244).
+Epic: [#247](https://github.com/droidsam1/overreach/issues/247). Order is the order in [Priorities](../priorities.md). Every screen issue is blocked by #296.
+
+1. [#296](https://github.com/droidsam1/overreach/issues/296) DesignSystem foundations (X1, X3, X4, X5, X12). **Blocks the rest.**
+2. [#297](https://github.com/droidsam1/overreach/issues/297) Status colours to `InlineNotice` in Train, History and Plan (X1, X6).
+3. [#298](https://github.com/droidsam1/overreach/issues/298) Train start screen as hero and routine cards.
+4. [#300](https://github.com/droidsam1/overreach/issues/300) History cards and summary-first details.
+5. [#299](https://github.com/droidsam1/overreach/issues/299) Live session cards, rest timer, finish summary.
+6. [#301](https://github.com/droidsam1/overreach/issues/301) Plan two-level layout.
+7. [#302](https://github.com/droidsam1/overreach/issues/302) Status colours in Settings, Garmin, Exercises, Onboarding, Ask AI.
+8. [#303](https://github.com/droidsam1/overreach/issues/303) Recovery & Progress charts and cards (after #127).
+9. [#304](https://github.com/droidsam1/overreach/issues/304) Plan detail screens (after #301).
+10. [#305](https://github.com/droidsam1/overreach/issues/305) Dynamic Type and touch targets (X8, X10).
+11. [#306](https://github.com/droidsam1/overreach/issues/306) VoiceOver labels (X9).
+12. [#307](https://github.com/droidsam1/overreach/issues/307) Haptics (X7).
+13. [#308](https://github.com/droidsam1/overreach/issues/308) Titles rule (X11).
 
 ## Not covered
 
