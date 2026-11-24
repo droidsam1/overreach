@@ -182,7 +182,8 @@ final class AppContainer {
                 if let data = try? JSONEncoder().encode(day) {
                     UserDefaults.standard.set(data, forKey: Self.dismissedRotationDayKey)
                 }
-            }
+            },
+            rotationFeedback: rotationFeedback
         )
     }
 
@@ -190,6 +191,17 @@ final class AppContainer {
     private static let dismissedRunOfferDayKey = "today.runOffer.dismissedDay"
 
     private static let dismissedRotationDayKey = "today.rotation.dismissedDay"
+
+    private let rotationFeedback: RotationFeedback = {
+        let defaults = UserDefaults.standard
+        let key = "today.rotationFeedback"
+        let state = defaults.data(forKey: key).flatMap {
+            try? JSONDecoder().decode(RotationFeedback.State.self, from: $0)
+        }
+        return RotationFeedback(state ?? RotationFeedback.State()) { state in
+            if let data = try? JSONEncoder().encode(state) { defaults.set(data, forKey: key) }
+        }
+    }()
 
     private static let profileQuestionsKey = "today.profileQuestions"
 

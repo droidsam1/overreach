@@ -45,7 +45,8 @@ struct TodayRotationAdjustmentTests {
         _ store: TestStore, at date: Date? = nil, hard: Bool = true,
         hoursSinceStart: Double = 30, hasEarlierRun: Bool = true, dismissed: CalendarDay? = nil,
         checkIns: (any CheckInRepository)? = nil,
-        saveDismissal: @escaping @MainActor (CalendarDay) -> Void = { _ in }
+        saveDismissal: @escaping @MainActor (CalendarDay) -> Void = { _ in },
+        feedback: RotationFeedback = RotationFeedback()
     ) async -> TodayModel {
         let date = date ?? now
         let run = RunActivity(
@@ -62,7 +63,7 @@ struct TodayRotationAdjustmentTests {
             sources: [RotationRunSource(day: CalendarDay(date, calendar: calendar), runs: runs)],
             checkIns: checkIns, profiles: store, workouts: store, exercises: store, routines: store,
             dismissedRotationDay: dismissed, saveDismissedRotationDay: saveDismissal,
-            calendar: calendar, format: Format(locale: Locale(identifier: "en_US"))
+            rotationFeedback: feedback, calendar: calendar, format: Format(locale: Locale(identifier: "en_US"))
         )
         await model.load(now: date)
         return model
@@ -71,20 +72,30 @@ struct TodayRotationAdjustmentTests {
     @Test func heavyButFunctionalLegsKeepAWithAnEffortCap() async throws {
         let (store, routines) = history()
         let answers = CheckInStore()
-        let model = await load(store, hard: false, checkIns: answers)
+        let feedback = RotationFeedback()
+        feedback.setEnabled(true)
+        let model = await load(store, hard: false, checkIns: answers, feedback: feedback)
 
         #expect(model.shouldAskLegResponse)
+        #expect(model.heroRotationFeedbackKind == .warmUpQuestion)
+        model.recordRotationFeedbackShown(.warmUpQuestion)
         #expect(model.nextAction == .checkIn)
         let sheet = try #require(model.makeCheckInModel(now: now))
         #expect(sheet.legResponseQuestionTitle == model.heroTitle)
         sheet.legResponse = .heavy
         #expect(await sheet.save())
+        model.recordWarmUpQuestionSaved(sheet)
+        #expect(feedback.recentEntries.first?.choice == .answered)
         await model.load(now: now)
 
         #expect(!model.shouldAskLegResponse)
         #expect(model.nextAction == .startStrength(routines[0]))
         #expect(model.rotationRPECap(for: routines[0]) == 8)
         #expect(model.heroReason == "Your legs feel heavy but you can move normally.")
+        #expect(model.heroRotationFeedbackKind == .cap)
+        model.recordRotationFeedbackShown(.cap)
+        model.recordRotationCapStarted()
+        #expect(feedback.recentEntries.first?.choice == .accepted)
     }
 
     @Test func limitedMovementOffersTorsoWithoutStartingTheOriginalLegSession() async {
@@ -155,12 +166,17 @@ struct TodayRotationAdjustmentTests {
 
     @Test func acceptingASwapStartsTheLighterRoutineAndRecordsItsOriginalDay() async throws {
         let (store, routines) = history()
-        let model = await load(store)
+        let feedback = RotationFeedback()
+        feedback.setEnabled(true)
+        let model = await load(store, feedback: feedback)
+        #expect(feedback.recentEntries.isEmpty)
+        model.recordRotationFeedbackShown(.swap)
         #expect(model.rotationOffer?.title.contains("do C today, A on") == true)
         #expect(model.rotationOffer?.orderPreview == "Strength order: C → B → A → D")
         #expect(model.nextAction == .startStrength(routines[0]))
         let started = await model.acceptRotation()
         #expect(started == routines[2])
+        #expect(feedback.recentEntries.first?.choice == .accepted)
         let saved = try #require(await store.profile().rotationAdjustments.first)
         #expect(saved.day == today)
         #expect(saved.kind == .swap(from: routines[0].id.uuidString, to: routines[2].id.uuidString))

@@ -54,6 +54,7 @@ public final class TodayModel {
     private var runProgression: RunWalkProgression.Result?
     private var dismissedRunOfferDay: CalendarDay?
     private var hasRunningGoal = false
+    public let rotationFeedback: RotationFeedback
     private var rotationDecision: TodayRotationDecision?
     private var legResponseRelevant = false
     private var rotationSwapRoutine: Routine?
@@ -149,8 +150,40 @@ public final class TodayModel {
         return nextAction == .rest && !restLoggedToday && holdsLegWork
     }
 
+    public var heroRotationFeedbackKind: RotationFeedback.Kind? {
+        switch nextAction {
+        case .checkIn where shouldAskLegResponse:
+            return .warmUpQuestion
+        case let .startStrength(routine) where checkIn?.legResponse == .heavy && rotationCap(for: routine) != nil:
+            return .cap
+        default:
+            return nil
+        }
+    }
+
+    public func recordRotationFeedbackShown(_ kind: RotationFeedback.Kind) {
+        guard let loadedDay, rotationOffer?.kind == kind || heroRotationFeedbackKind == kind else { return }
+        rotationFeedback.shown(kind, on: loadedDay)
+    }
+
+    public func recordWarmUpQuestionSaved(_ sheet: CheckInModel) {
+        guard sheet.legResponseQuestionTitle != nil else { return }
+        let answered = sheet.legResponse != nil && sheet.legResponse != .skipped
+        rotationFeedback.chose(answered ? .answered : .skipped, for: .warmUpQuestion, on: sheet.day)
+    }
+
+    public func recordRotationCapStarted() {
+        guard let loadedDay, heroRotationFeedbackKind == .cap else { return }
+        rotationFeedback.chose(.accepted, for: .cap, on: loadedDay)
+    }
+
+    public func rotationFeedbackDate(_ day: CalendarDay) -> String {
+        day.startDate(in: calendar).formatted(.dateTime.locale(format.locale).year().month().day())
+    }
+
     public func dismissRotation() {
-        guard rotationOffer != nil, !isAcceptingRotation, let loadedDay else { return }
+        guard let offer = rotationOffer, !isAcceptingRotation, let loadedDay else { return }
+        rotationFeedback.chose(.keptPlan, for: offer.kind, on: loadedDay)
         dismissedRotationDay = loadedDay
         rotationSaveError = nil
         saveDismissedRotationDay(loadedDay)
@@ -159,7 +192,7 @@ public final class TodayModel {
 
     /// Saves before starting the replacement. A postponement leaves today free.
     public func acceptRotation() async -> Routine? {
-        guard rotationOffer != nil, !isAcceptingRotation, let decision = rotationDecision,
+        guard let offer = rotationOffer, !isAcceptingRotation, let decision = rotationDecision,
               var adjustment = decision.suggestion.adjustment, let profiles else { return nil }
         isAcceptingRotation = true
         rotationSaveError = nil
@@ -178,6 +211,7 @@ public final class TodayModel {
             rotationSaveError = L10n.text("Could not save the rotation change. Try again.")
             return nil
         }
+        rotationFeedback.chose(.accepted, for: offer.kind, on: decision.suggestion.day)
         await load(now: decision.now)
         return routine
     }
@@ -846,9 +880,11 @@ public final class TodayModel {
         saveDismissedRunOfferDay: @escaping @MainActor (CalendarDay) -> Void = { _ in },
         dismissedRotationDay: CalendarDay? = nil,
         saveDismissedRotationDay: @escaping @MainActor (CalendarDay) -> Void = { _ in },
+        rotationFeedback: RotationFeedback = RotationFeedback(),
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format()
     ) {
+        self.rotationFeedback = rotationFeedback
         self.activityMatchChoices = activityMatchChoices
         self.profileQuestions = profileQuestions
         self.sectionHints = sectionHints
