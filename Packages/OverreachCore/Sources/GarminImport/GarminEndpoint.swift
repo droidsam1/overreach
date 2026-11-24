@@ -10,6 +10,9 @@ public enum GarminEndpoint: Hashable, Sendable {
     case vo2Max(ClosedRange<CalendarDay>)
     /// One page of activities started in the range (`limit` per page).
     case activities(ClosedRange<CalendarDay>, start: Int, limit: Int)
+    /// The laps of one activity. Not part of `GarminSyncPlan.requests`: the service asks for the recent runs that
+    /// have none yet, a few per sync (`GarminSyncPlan.lapRefreshDays`, `maximumLapRequests`).
+    case activitySplits(id: String)
 
     public static let host = "personal.connectapi.garmin.com"
     /// `POST` with `Authorization: ApiKey <key>`; the body of the response is the access token.
@@ -23,11 +26,12 @@ public enum GarminEndpoint: Hashable, Sendable {
         case .hrv, .dailySummaries, .vo2Max: 365
         case .sleep: 31
         case .activities: 365
+        case .activitySplits: 1
         }
     }
 
     public enum Kind: Sendable, CaseIterable {
-        case hrv, sleep, dailySummaries, vo2Max, activities
+        case hrv, sleep, dailySummaries, vo2Max, activities, activitySplits
     }
 
     public var kind: Kind {
@@ -37,6 +41,7 @@ public enum GarminEndpoint: Hashable, Sendable {
         case .dailySummaries: .dailySummaries
         case .vo2Max: .vo2Max
         case .activities: .activities
+        case .activitySplits: .activitySplits
         }
     }
 
@@ -54,6 +59,8 @@ public enum GarminEndpoint: Hashable, Sendable {
         case let .activities(range, start, limit):
             "/activitylist-service/activities/search/activities?start=\(start)&limit=\(limit)"
                 + "&startDate=\(range.lowerBound)&endDate=\(range.upperBound)"
+        case let .activitySplits(id):
+            "/activity-service/activity/\(id)/splits"
         }
     }
 }
@@ -66,6 +73,10 @@ public enum GarminSyncPlan {
     public static let refetchDays = 2
     /// A watch can upload a workout days after it was recorded. Always revisit the last week of activities.
     public static let activityRefetchDays = 7
+    /// Laps are fetched only for runs this recent, and for at most `maximumLapRequests` runs per sync (newest first),
+    /// so a sync costs at most that many requests more. Older runs keep what they have; ADR-0022 sets the budget.
+    public static let lapRefreshDays = 14
+    public static let maximumLapRequests = 5
 
     /// The days to fetch now, from the last day synced before (nil on the first sync) up to `today`.
     public static func range(
@@ -102,13 +113,14 @@ public enum GarminSyncPlan {
             let windowRange = kind == .activities
                 ? activityRange(including: range, days: activityDays, calendar: calendar) : range
             return windows(windowRange, maximumDays: GarminEndpoint.maximumDays(for: kind), calendar: calendar)
-                .map { window in
+                .compactMap { window in
                     switch kind {
                     case .hrv: GarminEndpoint.hrv(window)
                     case .sleep: GarminEndpoint.sleep(window)
                     case .dailySummaries: GarminEndpoint.dailySummaries(window)
                     case .vo2Max: GarminEndpoint.vo2Max(window)
                     case .activities: GarminEndpoint.activities(window, start: 0, limit: GarminEndpoint.activityPageSize)
+                    case .activitySplits: nil
                     }
                 }
         }

@@ -90,6 +90,13 @@ public struct GarminCache: Codable, Hashable, Sendable {
         merged.metrics = (self.metrics.filter { !range.contains($0.day) } + metrics)
             .filter { $0.day >= oldest }
             .sorted { $0.day < $1.day }
+        // A fresh activity list has no laps: keep the ones fetched before.
+        let knownLaps = Dictionary(self.runs.compactMap { run in run.laps.map { (run.id, $0) } }) { first, _ in first }
+        let runs = runs.map { run in
+            var run = run
+            if run.laps == nil { run.laps = knownLaps[run.id] }
+            return run
+        }
         merged.runs = Self.merge(self.runs, runs, id: \.id).filter { $0.startedAt >= oldestDate }
         merged.strength = Self.merge(self.strength, strength, id: \.id).filter { $0.startedAt >= oldestDate }
         merged.walks = Self.merge(self.walks ?? [], walks, id: \.id).filter { $0.walk.start >= oldestDate }
@@ -306,6 +313,8 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
                     let decoded = try GarminDecoding.vo2Max(from: data)
                     vo2Max += decoded.records
                     skipped += decoded.skipped
+                case .activitySplits:
+                    break  // never planned: `withLaps` asks for the laps once the runs are known
                 case let .activities(window, start, limit):
                     let decoded = try GarminDecoding.activities(from: data)
                     // Offset pages can overlap when new activities arrive during a sync.
@@ -327,9 +336,10 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
 
         let metrics = GarminMapping.dailyMetrics(hrv: hrv, sleep: sleep, summaries: summaries, vo2Max: vo2Max)
         let activities = Array(activitiesByID.values)
-        let runs = GarminMapping.runs(activities)
+        var runs = GarminMapping.runs(activities)
         let strength = GarminMapping.strengthActivities(activities)
         let walks = GarminMapping.walks(activities)
+        runs = try await withLaps(runs, cached: cache.runs, key: key.value)
         let updated = cache.merging(
             metrics, runs: runs, strength: strength, walks: walks, range: range, at: clock(), calendar: calendar
         )
@@ -344,6 +354,36 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
             strengthWorkouts: strength.count,
             skippedRecords: skipped
         )
+    }
+
+    /// Fetches the laps of the newest recent runs that have none yet, within the request budget
+    /// (`GarminSyncPlan.maximumLapRequests`). Garmin saying it has none is remembered (empty laps) so it is not asked
+    /// again; a failure stops the fetching but not the sync, and those runs are tried again on the next one.
+    /// Only a rejected key ends the sync, as for any other request.
+    private func withLaps(
+        _ runs: [RunActivity], cached: [RunActivity], key: String
+    ) async throws(GarminAccountError) -> [RunActivity] {
+        let known = Set(cached.filter { $0.laps != nil }.map(\.id))
+        let oldest = clock().addingTimeInterval(-Double(GarminSyncPlan.lapRefreshDays) * 86_400)
+        let wanted = runs.filter { $0.laps == nil && !known.contains($0.id) && $0.startedAt >= oldest }
+            .sorted { $0.startedAt > $1.startedAt }
+            .prefix(GarminSyncPlan.maximumLapRequests)
+        var laps: [String: [RunLap]] = [:]
+        for run in wanted {
+            do {
+                let data = try await client.dataIfServed(for: .activitySplits(id: run.id), key: key)
+                laps[run.id] = (try? data.map(GarminDecoding.laps(from:))) ?? []
+            } catch .keyRejected {
+                throw .keyRejected
+            } catch {
+                break
+            }
+        }
+        return runs.map { run in
+            var run = run
+            if let found = laps[run.id] { run.laps = found }
+            return run
+        }
     }
 
     private func loadCache() async -> GarminCache {

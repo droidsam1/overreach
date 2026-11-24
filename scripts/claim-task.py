@@ -15,7 +15,7 @@ Options:
   --title TITLE     PR title (default: "chore(claim): <task>"; rename it when the work is ready)
   --trailer TEXT    line appended to the claim commit message (repeatable), e.g. a Co-Authored-By line
   --wait SECONDS    pause before the final check, so a PR opened at the same moment is visible (default 20)
-  --dry-run         print the task --next would claim and change nothing
+  --dry-run         show the task --next would claim and why earlier tasks were skipped
 
 Prints `CLAIMED <task> #<PR> <branch>` and the priorities item, or exits 1 when nothing could be claimed.
 """
@@ -28,20 +28,18 @@ import sys
 import time
 from pathlib import Path
 
+from priority_queue import ready_issues
+
 ROOT = Path(__file__).resolve().parent.parent
 _spec = importlib.util.spec_from_file_location("check_task_claim", ROOT / "scripts/check-task-claim.py")
 claims = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(claims)
 
-ITEM = re.compile(r"^(?:\d+\.|-)\s", re.M)
-TASK = re.compile(r"\]\(((?:https://github\.com/[^)]+/issues/\d+)|(?:[\w./-]+\.md#[\w-]+))\)")
-# "once #12 is done", "once #12 and #13 are done", "once #12, #13 and #14 are done"
-BLOCKED_BY = re.compile(r"#(\d+)(?=(?:,?\s*(?:and\s+)?#\d+)*\s+(?:is|are)\s+done)", re.I)
 MAX_ATTEMPTS = 5
 
 
 def git(*args, check=True):
-    result = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True)
+    result = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, encoding="utf-8")
     if check and result.returncode != 0:
         raise RuntimeError(result.stderr.strip() or f"git {' '.join(args)} failed")
     return result.stdout.strip()
@@ -55,7 +53,7 @@ def gh_write(method, path, fields):
             args += ["-F", f"{name}={str(value).lower()}"]
         else:
             args += ["-f", f"{name}={value}"]
-    result = subprocess.run(args, cwd=ROOT, capture_output=True, text=True)
+    result = subprocess.run(args, cwd=ROOT, capture_output=True, encoding="utf-8")
     if result.returncode != 0:
         # gh prints the API's reason (for example the validation errors of a 422) on stdout.
         detail = " ".join(part.strip() for part in (result.stderr, result.stdout) if part.strip())
@@ -64,57 +62,35 @@ def gh_write(method, path, fields):
     return json.loads(result.stdout or "{}")
 
 
-def ready_items():
-    """The tasks of each "Ready to implement" item on origin/main, in order, with the item's text."""
-    text = git("show", "origin/main:docs/priorities.md")
-    section, _, rest = text.split("## Ready to implement", 1)[-1].partition("\n## ")
-    # A task the later sections also list (e.g. "Needs a person or an iPhone") is mentioned, not ready for an agent.
-    elsewhere = {match.group(1) for match in TASK.finditer(rest)}
-    starts = [match.start() for match in ITEM.finditer(section)] + [len(section)]
-    items = []
-    for start, end in zip(starts, starts[1:]):
-        body = section[start:end].strip()
-        tasks = []
-        for match in TASK.finditer(body):
-            if match.group(1) in elsewhere:
-                continue
-            following = body[match.end():].split("](", 1)[0]
-            tasks.append((match.group(1), BLOCKED_BY.findall(following)))
-        items.append((body, tasks))
-    return items
+def next_task(owner, repo, priorities, skip):
+    """Return the first available issue and the reasons earlier rows were skipped."""
+    claimed = {}
+    for pull in sorted(open_pulls(owner, repo), key=claims.claim_order):
+        claimed.setdefault(claims.task_key(pull.get("body")), pull["number"])
 
-
-def issue_state(owner, repo, number, cache={}):
-    """"open", "closed" or "parent" (an issue with sub-issues is an umbrella, not a task)."""
-    if number not in cache:
-        issue = claims.gh(f"repos/{owner}/{repo}/issues/{number}")
-        state = issue["state"]
-        if state == "open" and issue.get("sub_issues_summary", {}).get("total", 0) > 0:
-            state = "parent"
-        cache[number] = state
-    return cache[number]
-
-
-def next_task(owner, repo, skip):
-    """The first task of "Ready to implement" that is open, unblocked and unclaimed."""
-    claimed = {claims.task_key(pull.get("body")) for pull in open_pulls(owner, repo)}
-    for body, tasks in ready_items():
-        keys = [(link, claims.task_key(f"Task: {link}"), blockers) for link, blockers in tasks]
-        one_at_a_time = "one task at a time" in body.lower()
-        if one_at_a_time and any(key in claimed for _, key, _ in keys):
-            continue
-        for link, key, blockers in keys:
-            number = key[1:] if key.startswith("#") else None
-            if number and issue_state(owner, repo, number) != "open":
-                continue
-            if any(issue_state(owner, repo, blocker) == "open" for blocker in blockers):
-                continue
-            if key in claimed or key in skip:
-                if one_at_a_time:
-                    break
-                continue
-            return link, key, body
-    return None
+    skipped = []
+    for task in priorities:
+        key = f"#{task.number}"
+        if key in claimed:
+            reason = f"claimed by PR #{claimed[key]}"
+        elif key in skip:
+            reason = "already attempted this run"
+        else:
+            endpoint = f"repos/{owner}/{repo}/issues/{task.number}"
+            issue = claims.gh(endpoint)
+            if issue["state"] != "open":
+                reason = "closed"
+            elif issue.get("sub_issues_summary", {}).get("total", 0):
+                reason = "umbrella issue with sub-issues"
+            else:
+                dependencies = claims.gh(f"{endpoint}/dependencies/blocked_by?per_page=100", paginate=True)
+                blockers = [f"#{dependency['number']}" for dependency in dependencies
+                            if dependency["state"] == "open"]
+                if not blockers:
+                    return task, skipped
+                reason = "blocked by " + ", ".join(blockers)
+        skipped.append(f"SKIP {key} - {reason}")
+    return None, skipped
 
 
 def slugify(text):
@@ -122,7 +98,7 @@ def slugify(text):
 
 
 def open_pulls(owner, repo):
-    return claims.gh(f"repos/{owner}/{repo}/pulls?state=open&per_page=100")
+    return claims.gh(f"repos/{owner}/{repo}/pulls?state=open&per_page=100", paginate=True)
 
 
 def claim(owner, repo, link, key, args, slug):
@@ -174,6 +150,8 @@ def main():
     parser.add_argument("--wait", type=float, default=20)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
+    if args.dry_run and not args.next:
+        parser.error("--dry-run requires --next")
 
     try:
         owner, repo = claims.repository()
@@ -182,18 +160,21 @@ def main():
             pull = claim(owner, repo, f"none — {args.none}", "none", args, slugify(args.none))
             print(f"CLAIMED none #{pull['number']} {pull['branch']}")
             return 0
+        priorities = ready_issues(git("show", "origin/main:docs/priorities.md")) if args.next else []
         skip = set()
         for _ in range(MAX_ATTEMPTS):
             item = ""
             if args.next:
-                found = next_task(owner, repo, skip)
-                if not found:
-                    print("NONE - every ready task is claimed, blocked or closed. Ask the user what to do next.")
-                    return 1
-                link, key, item = found
-                if args.dry_run:
-                    print(f"NEXT {key}\n{item}")
-                    return 0
+                task, skipped = next_task(owner, repo, priorities, skip)
+                if args.dry_run or task is None:
+                    if task is None:
+                        print("NONE - no task is currently available in docs/priorities.md.")
+                    else:
+                        print(f"NEXT #{task.number}\n{task.row}")
+                    for reason in skipped:
+                        print(reason)
+                    return 0 if task is not None else 1
+                link, key, item = task.url, f"#{task.number}", task.row
             else:
                 link = args.task
                 key = claims.task_key(f"Task: {link}")
@@ -216,7 +197,7 @@ def main():
             skip.add(key)
         print("NONE - too many races in a row. Ask the user.")
         return 1
-    except (RuntimeError, OSError) as error:
+    except (RuntimeError, OSError, ValueError) as error:
         print(f"FAIL claim - {error}")
         return 1
 

@@ -145,6 +145,29 @@ public enum GarminDecoding {
         }
     }
 
+    /// The laps of one activity (`/activity-service/activity/{id}/splits`, `lapDTOs[]`), oldest first. Laps without
+    /// a distance or a time are dropped. An empty body (204) or an answer without `lapDTOs` is no laps, not an error.
+    public static func laps(from data: Data) throws -> [RunLap] {
+        guard let root = try object(data, "splits") else { return [] }
+        if root is [Any] { return [] }
+        guard let root = root as? [String: Any] else { throw GarminDecodingError.unexpectedShape("splits") }
+        guard let items = root["lapDTOs"] as? [[String: Any]] else { return [] }
+        return items.compactMap { item in
+            guard let distance = nonNegative(item["distance"]), let duration = positive(item["duration"]),
+                distance > 0
+            else { return nil }
+            return RunLap(
+                distanceMeters: distance,
+                durationSeconds: duration,
+                averageHeartRate: positive(item["averageHR"]),
+                maxHeartRate: positive(item["maxHR"]),
+                averageCadence: positive(item["averageRunCadence"]),
+                elevationGainMeters: nonNegative(item["elevationGain"]),
+                elevationLossMeters: nonNegative(item["elevationLoss"])
+            )
+        }
+    }
+
     /// Garmin's run/walk detection in the activity summary: `RWD_RUN`, `RWD_WALK` and `RWD_STAND` split summaries.
     /// Interval splits (`INTERVAL_*`) describe workout steps and are ignored.
     public static func runWalk(_ value: Any?) -> RunWalkSplits? {

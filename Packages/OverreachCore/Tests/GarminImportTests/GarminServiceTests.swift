@@ -21,6 +21,10 @@ actor FakeGarmin: GarminTransport {
 
     func setActivityPage(start: Int, body: Data) { activityPages[start] = body }
 
+    private var responses: [String: GarminHTTPResponse] = [:]
+    /// Always answer requests whose path ends with `suffix` with `response`.
+    func respond(to suffix: String, with response: GarminHTTPResponse) { responses[suffix] = response }
+
     func send(_ request: GarminHTTPRequest) throws -> GarminHTTPResponse {
         requests.append(request)
         if offline { throw URLError(.notConnectedToInternet) }
@@ -34,6 +38,7 @@ actor FakeGarmin: GarminTransport {
         guard request.headers["Authorization"]?.hasPrefix("Bearer ") == true else {
             return GarminHTTPResponse(status: 403)
         }
+        if let match = responses.first(where: { request.path.hasSuffix($0.key) }) { return match.value }
         if request.path.hasPrefix("/activitylist-service"),
             let page = activityPages.first(where: { request.path.contains("?start=\($0.key)&") }) {
             return GarminHTTPResponse(status: 200, body: page.value)
@@ -43,6 +48,7 @@ actor FakeGarmin: GarminTransport {
         case let path where path.hasPrefix("/sleep-service"): "sleep-summaries-range"
         case let path where path.hasPrefix("/usersummary-service/v2"): "daily-summaries-v2"
         case let path where path.hasPrefix("/metrics-service/metrics/maxmet"): "vo2max"
+        case let path where path.hasSuffix("/splits"): "activity-splits"
         case let path where path.hasPrefix("/activitylist-service") && path.contains("start=0&"): "activities"
         default: nil
         }
@@ -329,7 +335,7 @@ struct GarminServiceTests {
         #expect(summary.runs == 4)
         #expect(summary.strengthWorkouts == 9)
         #expect(summary.skippedRecords == 0)
-        let dataRequests = await garmin.requests.filter { $0.method == "GET" }
+        let dataRequests = await garmin.requests.filter { $0.method == "GET" && !$0.path.hasSuffix("/splits") }
         #expect(dataRequests.count == 6)  // 60 days: HRV, summaries, VO2max, activities and two sleep windows
         let stored = try #require(await cache.cache)
         #expect(stored.lastSyncedDay == CalendarDay(year: 2026, month: 1, day: 8))
@@ -394,6 +400,74 @@ struct GarminServiceTests {
 
         #expect(await service.strengthActivities(from: .distantPast, to: .distantFuture) == [newerStrength])
         #expect(try await service.runs(from: .distantPast, to: .distantFuture) == [newerRun])
+    }
+
+    @Test func lapsAreFetchedForRecentRunsOnlyOnceAndKeptAcrossSyncs() async throws {
+        let garmin = FakeGarmin()
+        let cache = MemoryCache()
+        let service = makeService(garmin: garmin, cache: cache)
+        try await service.connect(key: "valid-key-0123456789", lifetime: .oneYear)
+
+        _ = try await service.sync { _ in }
+        let splits = await garmin.requests.filter { $0.path.hasSuffix("/splits") }.map(\.path)
+        // Four runs in the fixtures; only two are within the last 14 days.
+        #expect(splits == [
+            "/activity-service/activity/10000004/splits", "/activity-service/activity/10000014/splits",
+        ])
+        let runs = try await service.runs(from: .distantPast, to: .distantFuture)
+        let recent = try #require(runs.first { $0.id == "10000004" })
+        #expect(recent.laps?.count == 7)
+        #expect(recent.laps?.first?.paceSecondsPerKm == 345)
+        #expect(runs.first { $0.id == "10000018" }?.laps == nil)  // too old to ask for
+
+        // The next sync reads the activity list again, but the laps come from the cache and nothing is requested.
+        let before = await garmin.requests.count
+        _ = try await service.sync { _ in }
+        let later = await garmin.requests.dropFirst(before)
+        #expect(!later.contains { $0.path.hasSuffix("/splits") })
+        let again = try await service.runs(from: .distantPast, to: .distantFuture)
+        #expect(again.first { $0.id == "10000004" }?.laps?.count == 7)
+        #expect(try #require(await cache.cache).runs.first { $0.id == "10000004" }?.laps?.count == 7)
+    }
+
+    @Test func lapRequestsStayWithinTheBudget() async throws {
+        let garmin = FakeGarmin()
+        let service = makeService(garmin: garmin)
+        let runs = (1...8).map { index in
+            """
+            {"activityId": \(900 + index), "startTimeGMT": "2026-01-0\(index) 08:00:00",
+             "activityType": {"typeKey": "running"}, "duration": 1500, "distance": 5000}
+            """
+        }
+        await garmin.setActivityPage(start: 0, body: Data("[\(runs.joined(separator: ","))]".utf8))
+        try await service.connect(key: "valid-key-0123456789", lifetime: .oneYear)
+
+        _ = try await service.sync { _ in }
+        let splits = await garmin.requests.filter { $0.path.hasSuffix("/splits") }.map(\.path)
+        #expect(splits.count == GarminSyncPlan.maximumLapRequests)
+        #expect(splits.first == "/activity-service/activity/908/splits")  // newest first
+
+        // The runs that did not fit are asked for on the next sync.
+        _ = try await service.sync { _ in }
+        let all = await garmin.requests.filter { $0.path.hasSuffix("/splits") }.map(\.path)
+        #expect(Set(all).count == 8)
+    }
+
+    @Test func aMissingSplitsEndpointIsRememberedAndNeverFailsTheSync() async throws {
+        let garmin = FakeGarmin()
+        let service = makeService(garmin: garmin)
+        try await service.connect(key: "valid-key-0123456789", lifetime: .oneYear)
+        await garmin.respond(to: "/splits", with: GarminHTTPResponse(status: 404))
+
+        let summary = try await service.sync { _ in }
+        #expect(summary.runs == 4)
+        let runs = try await service.runs(from: .distantPast, to: .distantFuture)
+        #expect(runs.first { $0.id == "10000004" }?.laps == [])
+        let asked = await garmin.requests.filter { $0.path.hasSuffix("/splits") }.count
+        #expect(asked == 2)
+
+        _ = try await service.sync { _ in }
+        #expect(await garmin.requests.filter { $0.path.hasSuffix("/splits") }.count == asked)
     }
 
     @Test func readingMetricsSyncsOnlyWhenTheLastSyncIsOld() async throws {

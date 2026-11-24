@@ -67,7 +67,7 @@ the diff. Rules a tool can decide are listed at the end and are not repeated her
 | Strings are in the catalog, translated, with matching placeholders; catalogs sorted | `check-localization.py` |
 | Unique ADR numbers, `# NNNN — Title` headings | `check-repo.py` |
 | Evidence keys used in code have an entry in `docs/evidence.md` | `check-repo.py` |
-| Each "Ready to implement" item in `docs/priorities.md` links an issue or design-doc task | `check-repo.py` |
+| Each "Ready to implement" row in `docs/priorities.md` links one unique issue | `check-repo.py` |
 | Frozen v1 backup fixture unchanged | `check-repo.py` |
 | Every released version has "What's new" highlights | `check-repo.py` |
 | Skill copies in sync, agent guide links resolve, no tracked bytecode | `check-repo.py` |

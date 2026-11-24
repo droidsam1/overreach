@@ -1,32 +1,21 @@
 # Priorities
 
-The order in which to take open work, highest user value first. Take the first item that is not blocked and has
-no open PR. Claim one task, not a range: an item that lists several tasks or issues in order is claimed one task at a
-time, the first without a PR. `scripts/claim-task.py --next` reads this list: it skips closed and umbrella issues,
-tasks also listed in a later section and tasks written as "once #N is done" (or "once #N and #M are done") while any of them is open. When you merge a PR
-that finishes or changes an item, update this list in the same PR. Every item links an issue or a design-doc task
-(`check-repo.py` fails otherwise). `--next --dry-run` reads the list on `origin/main`, not your working copy.
+Take the first available issue in order. `scripts/claim-task.py --next --dry-run` reads the list on `origin/main`
+and shows the next issue and why earlier issues were skipped. To reserve it, run `scripts/claim-task.py --next`.
 
-Reviewed 2026-11-23. Value is judged for one hybrid athlete who uses Overreach every day: decisions in Today
-and the logger come before review tools, and work that only a person with an iPhone can do is listed apart.
+Use one issue link and a short summary per row. Record prerequisites as GitHub issue dependencies. When a PR
+finishes a task, close the issue and update this list in the same PR. Link any remaining work to its own issue.
+Keep delivery history in the relevant design document or ADR.
+
+Reviewed 2026-11-24. Give priority to work that completes a feature and improves daily decisions or logging for a
+hybrid athlete. The device and external review steps below have their own acceptance criteria.
 
 ## Ready to implement
 
-1. **Minimal UI with progressive disclosure** — [#179](https://github.com/droidsam1/overreach/issues/179)
-   ([ADR-0041](adr/0041-minimal-ui-progressive-disclosure.md)): all sub-issues shipped, including
-   [#185](https://github.com/droidsam1/overreach/issues/185) (sections by data) and
-   [#186](https://github.com/droidsam1/overreach/issues/186) (set feedback and achievements); a running-goal
-   milestone waits for a goal-progress event to attach it to. What remains is the device measurement in
-   [#21](https://github.com/droidsam1/overreach/issues/21).
-2. **Rotation after a recorded run** — [#268](https://github.com/droidsam1/overreach/issues/268)
-   ([ADR-0044](adr/0044-rotation-after-a-recorded-run.md)), one task at a time in this order:
-   [#269](https://github.com/droidsam1/overreach/issues/269) (run carry-over, done),
-   [#270](https://github.com/droidsam1/overreach/issues/270) (record swaps, done),
-   [#271](https://github.com/droidsam1/overreach/issues/271) (decision ladder, once #269 and #270 are done),
-   [#272](https://github.com/droidsam1/overreach/issues/272) (Today, once #271 is done; Today work, now free to start),
-   [#273](https://github.com/droidsam1/overreach/issues/273) (replay and AI context, once #271 is done),
-   [#274](https://github.com/droidsam1/overreach/issues/274) (elevation loss, done).
-3. **Per-lap Garmin values** — [#259](https://github.com/droidsam1/overreach/issues/259).
+1. [#292](https://github.com/droidsam1/overreach/issues/292) — Use the daily recovery assessment in imported-plan follow-up.
+2. [#247](https://github.com/droidsam1/overreach/issues/247) — Audit screens for consistency with Today.
+3. [#127](https://github.com/droidsam1/overreach/issues/127) — Add 30- and 90-day trends to Recovery & Progress.
+4. [#279](https://github.com/droidsam1/overreach/issues/279) — Add a one-time hint when a section first appears.
 
 ## Needs a person or an iPhone
 
@@ -36,6 +25,7 @@ Agents can prepare these but not finish them.
   automatic planning. [Task 9](design/readiness-and-hybrid-planning.md#9-research-and-validate-hybrid-planning-rules-before-automating-plans)
 
 - Data survives re-signing and reinstall — [#11](https://github.com/droidsam1/overreach/issues/11).
+- Verify the unified activity log with Overreach, Apple Health and Garmin — [#40](https://github.com/droidsam1/overreach/issues/40).
 - Real-device review — [#21](https://github.com/droidsam1/overreach/issues/21). Compare the Today decision,
   access to recovery and everyday movement details (#125), and Plan scheduling. Compare the time and taps
   to find a Garmin run and a prior lift in History (#92). Time the active logger
