@@ -708,6 +708,8 @@ swap with the next slot without heavy leg demand when every slot stays in the cy
 [Zhang et al. 2021](https://doi.org/10.3389/fphys.2021.651112) ·
 [Doma et al. 2017](https://researchonline.jcu.edu.au/51391/) ·
 [Bittencourt et al. 2024](https://doi.org/10.3389/fphys.2024.1472702). Reviewed 2026-11-23.
+Partial replay (#273): two Garmin runs, no eligible rotation suggestions with the recorded cadence,
+and no adjusted session available for an outcome comparison. [Replay details](evidence-readiness-and-hybrid.md#partial-replay-of-rotation-adjustments).
 
 ### `hybrid-race-taper` — limited
 
