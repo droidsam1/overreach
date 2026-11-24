@@ -174,12 +174,22 @@ final class AppContainer {
                 if let data = try? JSONEncoder().encode(day) {
                     UserDefaults.standard.set(data, forKey: Self.dismissedRunOfferDayKey)
                 }
+            },
+            dismissedRotationDay: UserDefaults.standard.data(forKey: Self.dismissedRotationDayKey).flatMap {
+                try? JSONDecoder().decode(CalendarDay.self, from: $0)
+            },
+            saveDismissedRotationDay: { day in
+                if let data = try? JSONEncoder().encode(day) {
+                    UserDefaults.standard.set(data, forKey: Self.dismissedRotationDayKey)
+                }
             }
         )
     }
 
     /// Last day the run offer got "Not today" (#264). Per device, not in backups, reports or the profile.
     private static let dismissedRunOfferDayKey = "today.runOffer.dismissedDay"
+
+    private static let dismissedRotationDayKey = "today.rotation.dismissedDay"
 
     private static let profileQuestionsKey = "today.profileQuestions"
 

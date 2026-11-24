@@ -5,6 +5,8 @@ import Foundation
 /// was hard, long, hilly, unaccustomed, ended soon before the lift, or was followed by soreness or pain that holds.
 /// Every threshold is a labelled heuristic in `Settings`. Pure: the caller decides what a notable carry-over changes.
 public enum RunCarryover {
+    /// The recovery window used when deciding whether to reconsider a lift after a recorded run.
+    public static let recentWindow: TimeInterval = 48 * 3_600
     public static let evidence = EvidenceReference(key: "run-before-strength-carryover", level: .limited)
 
     public enum Level: String, Hashable, Sendable { case light, notable, unknown }

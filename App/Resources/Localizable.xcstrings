@@ -1208,6 +1208,23 @@
         }
       }
     },
+    "Aerobic training effect {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efecto aeróbico {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efecto aeróbico {1}"
+          }
+        }
+      }
+    },
     "After each session: plan adherence, records and next targets. Reopen it from History.": {
       "extractionState": "manual",
       "localizations": {
@@ -1238,6 +1255,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Despois da primeira sesión dun exercicio, compara as propostas e escolle como progresar."
+          }
+        }
+      }
+    },
+    "After your run: do {1} today, {2} on {3}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tras la carrera, haz {1} hoy y {2} el {3}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tras a carreira, fai {1} hoxe e {2} o {3}."
+          }
+        }
+      }
+    },
+    "After your run: move {1} to {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tras la carrera, pasa {1} al {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tras a carreira, pasa {1} ao {2}."
+          }
+        }
+      }
+    },
+    "After your run: no load increase and {1} at most.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tras la carrera, no subas la carga y quédate como máximo en {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tras a carreira, non subas a carga e queda como máximo en {1}."
           }
         }
       }
@@ -1476,6 +1544,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Efecto anaeróbico do adestramento"
+          }
+        }
+      }
+    },
+    "Anaerobic training effect {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efecto anaeróbico {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Efecto anaeróbico {1}"
           }
         }
       }
@@ -3860,6 +3945,23 @@
         }
       }
     },
+    "Could not save the rotation change. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo guardar el cambio de rotación. Inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido gardar o cambio de rotación. Téntao de novo."
+          }
+        }
+      }
+    },
     "Could not save the routine.": {
       "extractionState": "manual",
       "localizations": {
@@ -5403,6 +5505,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "O esforzo á túa maneira"
+          }
+        }
+      }
+    },
+    "Elevation: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desnivel: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desnivel: {1}"
           }
         }
       }
@@ -7719,6 +7838,23 @@
         }
       }
     },
+    "Keep plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantener el plan"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manter o plan"
+          }
+        }
+      }
+    },
     "Keep reps fixed and add {1} when you have enough reps in reserve.": {
       "extractionState": "manual",
       "localizations": {
@@ -7936,6 +8072,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hoxe, pasea con {1} a un ritmo suave."
+          }
+        }
+      }
+    },
+    "Keep {1} as planned.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén {1} según lo previsto."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén {1} segundo o previsto."
+          }
+        }
+      }
+    },
+    "Keep {1} at the previous load and cap the targets at RPE {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En {1}, conserva la carga anterior y limita los objetivos a RPE {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En {1}, conserva a carga anterior e limita os obxectivos a RPE {2}."
           }
         }
       }
@@ -12105,6 +12275,23 @@
         }
       }
     },
+    "Postpone session": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posponer sesión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adiar a sesión"
+          }
+        }
+      }
+    },
     "Postpone this run": {
       "extractionState": "manual",
       "localizations": {
@@ -12186,6 +12373,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Preparando adestramento…"
+          }
+        }
+      }
+    },
+    "Previous leg session: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última sesión de piernas: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Última sesión de pernas: {1}"
           }
         }
       }
@@ -12747,6 +12951,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Semáforo de recuperación"
+          }
+        }
+      }
+    },
+    "Readiness: {1} · {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparación: {1} · {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparación: {1} · {2}"
           }
         }
       }
@@ -14260,6 +14481,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Corre {1} min a ritmo suave"
+          }
+        }
+      }
+    },
+    "Run: {1} · {2} · {3} · {4} hours ago": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera: {1} · {2} · {3} · hace {4} h"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira: {1} · {2} · {3} · hai {4} h"
           }
         }
       }
@@ -16912,6 +17150,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sinais de recuperación que apoian a proposta"
+          }
+        }
+      }
+    },
+    "Swap sessions": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intercambiar sesiones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intercambiar sesións"
           }
         }
       }
@@ -21744,6 +21999,23 @@
         }
       }
     },
+    "{1} bpm": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} lpm"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} lpm"
+          }
+        }
+      }
+    },
     "{1} completed": {
       "extractionState": "manual",
       "localizations": {
@@ -21982,6 +22254,40 @@
         }
       }
     },
+    "{1} m ascent": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} m de subida"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} m de subida"
+          }
+        }
+      }
+    },
+    "{1} m descent": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} m de bajada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} m de baixada"
+          }
+        }
+      }
+    },
     "{1} main lifts have stalled.": {
       "extractionState": "manual",
       "localizations": {
@@ -22097,6 +22403,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} de {2} sesións feitas esta semana"
+          }
+        }
+      }
+    },
+    "{1} on {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} el {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} o {2}"
           }
         }
       }

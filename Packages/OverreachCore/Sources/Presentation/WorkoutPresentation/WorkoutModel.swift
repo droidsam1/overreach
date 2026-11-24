@@ -302,6 +302,8 @@ public final class WorkoutModel {
     /// The routine the session was started from: its prescriptions set sets and reps, and the saved session
     /// remembers it so the plan knows which session comes next.
     public private(set) var sessionRoutine: Routine?
+    private var rotationRPECap: Double?
+    private var startsFromRotationHistory = false
     /// Exercises of the session in progress. Views bind to it directly (`$model.exercises`).
     public var exercises: [DraftExercise] = [] {
         didSet { saveDraft() }
@@ -454,6 +456,8 @@ public final class WorkoutModel {
         sessionNotes = ""
         sessionFocus = routine?.focus
         sessionRoutine = routine
+        rotationRPECap = nil
+        startsFromRotationHistory = false
         exercises = []
         errorMessage = nil
         draftNotice = nil
@@ -462,10 +466,14 @@ public final class WorkoutModel {
     }
 
     /// Prefills a routine before exposing the editable draft, so recovery never restores half a routine.
-    public func start(_ routine: Routine) async {
+    public func start(
+        _ routine: Routine, rotationRPECap: Double? = nil, startsFromRotationHistory: Bool = false
+    ) async {
         guard !isSessionActive, !needsDraftRecovery, !isSavingSession else { return }
         isPreparingSession = true
         beginSession(name: routine.name, routine: routine)
+        self.rotationRPECap = rotationRPECap
+        self.startsFromRotationHistory = startsFromRotationHistory
         await load()
         for exerciseID in routine.exerciseIDs {
             guard let exercise = catalog.first(where: { $0.id == exerciseID }) else { continue }
@@ -644,9 +652,11 @@ public final class WorkoutModel {
         let fromBaseline = stored == nil && prescribed == nil
         let progressed = ProgressionTargets.next(history: history, settings: settings, startFromBaseline: fromBaseline)
         // During an accepted deload week the same exercises are trained lighter (ADR-0027).
-        let target = deloadPlan.map { $0.applied(to: progressed, incrementKg: settings.incrementKg) } ?? progressed
+        let adjusted = deloadPlan.map { $0.applied(to: progressed, incrementKg: settings.incrementKg) } ?? progressed
+        let target = cappedTarget(adjusted, previousLoad: history.last?.workingWeightKg)
         let choices: [FirstProgression.Choice]
-        if fromBaseline, deloadPlan == nil, readSettings, history.count == 1, let first = history.first {
+        if fromBaseline, deloadPlan == nil, rotationRPECap == nil, readSettings, history.count == 1,
+           let first = history.first {
             choices = FirstProgression.choices(from: first, settings: settings)
         } else {
             choices = []
@@ -675,6 +685,16 @@ public final class WorkoutModel {
             setsBeforeProgressionChoice: choices.isEmpty ? [] : sets,
             lastTime: LastTimeSets.latest(of: exercise.id, in: sessions)
         )
+    }
+
+    private func cappedTarget(_ target: ExerciseTarget, previousLoad: Double?) -> ExerciseTarget {
+        guard let rotationRPECap else { return target }
+        let sets = target.sets.map { set in
+            let weight = previousLoad.map { min(set.weightKg ?? $0, $0) }
+            return PlannedSet(weightKg: weight, reps: set.reps, targetRPE: min(set.targetRPE, rotationRPECap))
+        }
+        let reasons = (deloadPlan == nil ? [] : target.reasons) + [.rotationEffortCap(maximumRPE: rotationRPECap)]
+        return ExerciseTarget(sets: sets, reasons: reasons)
     }
 
     private static func warmUpPlan(
@@ -828,7 +848,8 @@ public final class WorkoutModel {
             }
             return done.isEmpty ? nil : ExerciseEntry(
                 id: exercise.id, exerciseID: exercise.exercise.id, sets: done, notes: Self.trimmedOrNil(exercise.notes),
-                countsForProgression: countingUnfinished || !Self.isUnfinished(exercise)
+                countsForProgression: rotationRPECap == nil
+                    && (countingUnfinished || !Self.isUnfinished(exercise))
             )
         }
         guard !entries.isEmpty else {
@@ -838,7 +859,8 @@ public final class WorkoutModel {
         }
         let finished = StrengthSession(
             id: sessionID, name: sessionName, startedAt: startedAt, endedAt: now, entries: entries,
-            notes: Self.trimmedOrNil(sessionNotes), focus: sessionFocus, routineID: sessionRoutine?.id
+            notes: Self.trimmedOrNil(sessionNotes), focus: sessionFocus,
+            routineID: startsFromRotationHistory ? nil : sessionRoutine?.id
         )
         let targets = Dictionary(exercises.map { ($0.exercise.id, $0.target) }, uniquingKeysWith: { first, _ in first })
         isSavingSession = true
@@ -914,6 +936,8 @@ public final class WorkoutModel {
         sessionNotes = pendingDraft.notes
         sessionFocus = pendingDraft.focus
         sessionRoutine = pendingDraft.routine
+        rotationRPECap = pendingDraft.rotationRPECap
+        startsFromRotationHistory = pendingDraft.startsFromRotationHistory ?? false
         effortScale = pendingDraft.effortScale
         exercises = pendingDraft.exercises
         if let timer = pendingDraft.rest,
@@ -937,7 +961,8 @@ public final class WorkoutModel {
         guard let sessionID, let startedAt else { return nil }
         return WorkoutDraft(
             id: sessionID, startedAt: startedAt, name: sessionName, notes: sessionNotes, focus: sessionFocus,
-            routine: sessionRoutine, effortScale: effortScale, exercises: exercises, rest: rest.draft
+            routine: sessionRoutine, effortScale: effortScale, exercises: exercises, rest: rest.draft,
+            rotationRPECap: rotationRPECap, startsFromRotationHistory: startsFromRotationHistory ? true : nil
         )
     }
 

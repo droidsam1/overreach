@@ -14,7 +14,10 @@ path from data to the screen.
    relaunch (the day is kept on the device only, not in backups).
 3. `trainingAction` turns the scheduled strength, scheduled runs, `RunningOption` and what is already done today
    into `heroTrainingAction`. Training already done today ends the recommendation unless the plan has another dated
-   session.
+   session. On the day of a projected leg-heavy session, a run within the last 48 hours can produce a rotation
+   suggestion (ADR-0044). A swap or postponement uses the secondary action under the hero. Acceptance saves the
+   change, and Keep plan is remembered on the device for the day. Why shows the inputs and the heuristic, including
+   when the plan stands. A capped session carries its effort limit into the workout and is excluded from progression.
 4. `nextAction` (`baseAction`) orders the hero by urgency: safety advice, check-in, red light, deload proposal,
    then `heroTrainingAction`. `heroTitle` and `heroReason` are the texts for that action.
 5. `FeatureToday` only renders: `TodayView` lays out the blocks and its `primaryAction` switch maps each `NextAction`
