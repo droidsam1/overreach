@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Garmin runs of the last 14 days keep each lap's distance, time, pace, heart rate, cadence and elevation (`RunLap`), fetched from the activity's splits after the activity list: at most 5 more requests per sync, kept in the cache and never asked twice. A Garmin that does not serve the splits leaves the laps empty and the sync unaffected.
 - Today suggests a swap or postponement after a recorded run. Accepting saves the change, and a swap starts the
   replacement workout. Keep plan hides the offer for the day. Why explains the run and readiness, and a capped
   workout uses no load increase and stays out of progression checks.

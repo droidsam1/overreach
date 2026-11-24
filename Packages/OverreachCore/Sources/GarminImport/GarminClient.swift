@@ -112,6 +112,19 @@ public actor GarminClient {
 
     /// The body of `endpoint` (empty for 204: no data).
     public func data(for endpoint: GarminEndpoint, key: String) async throws(GarminAccountError) -> Data {
+        guard let body = try await body(for: endpoint, key: key, missingIsNil: false) else { throw .garminUnavailable }
+        return body
+    }
+
+    /// Like `data(for:key:)`, but nil when Garmin has nothing at this address (404 or 410): the activity is gone or
+    /// the endpoint is not served to this key. Not retried, and not a failure of the sync.
+    public func dataIfServed(for endpoint: GarminEndpoint, key: String) async throws(GarminAccountError) -> Data? {
+        try await body(for: endpoint, key: key, missingIsNil: true)
+    }
+
+    private func body(
+        for endpoint: GarminEndpoint, key: String, missingIsNil: Bool
+    ) async throws(GarminAccountError) -> Data? {
         var minted = false
         if token == nil || (token?.expiresAt ?? .distantPast) < clock().addingTimeInterval(Self.tokenRenewalMargin) {
             try await mintToken(key: key)
@@ -131,6 +144,8 @@ public actor GarminClient {
                 minted = true
             case 401, 403:
                 throw .keyRejected
+            case 404 where missingIsNil, 410 where missingIsNil:
+                return nil
             default:
                 throw Self.error(for: response.status)
             }

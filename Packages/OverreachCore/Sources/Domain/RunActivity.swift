@@ -30,6 +30,8 @@ public struct RunActivity: Identifiable, Hashable, Codable, Sendable {
     public var movingDurationSeconds: Double?
     /// Running, walking and standing parts as the watch detected them.
     public var runWalk: RunWalkSplits?
+    /// Each lap's values, oldest first. nil: not fetched yet. Empty: the source has none for this run.
+    public var laps: [RunLap]?
 
     public init(
         id: String,
@@ -48,7 +50,8 @@ public struct RunActivity: Identifiable, Hashable, Codable, Sendable {
         anaerobicTrainingEffect: Double? = nil,
         lapCount: Int? = nil,
         movingDurationSeconds: Double? = nil,
-        runWalk: RunWalkSplits? = nil
+        runWalk: RunWalkSplits? = nil,
+        laps: [RunLap]? = nil
     ) {
         self.id = id
         self.source = source
@@ -67,6 +70,7 @@ public struct RunActivity: Identifiable, Hashable, Codable, Sendable {
         self.lapCount = lapCount
         self.movingDurationSeconds = movingDurationSeconds
         self.runWalk = runWalk
+        self.laps = laps
     }
 
     /// Average pace in seconds per kilometre, if distance is known.
