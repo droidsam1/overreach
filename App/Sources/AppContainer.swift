@@ -40,8 +40,6 @@ final class AppContainer {
     let onboardingStatus: any OnboardingStatusStore
     /// In priority order: when two sources report the same value, the first wins.
     let metricsSources: [any MetricsSource]
-    /// Apple Health: steps for the History calendar.
-    let healthSource: (any MetricsSource & ActivitySource)?
     /// Walks for Today (ADR-0010): Garmin's walking activities and Apple Health's walks, each walk once.
     let activitySources: [any ActivitySource]
     /// Apple Health: menstrual flow for phase-aware baselines (ADR-0009).
@@ -65,8 +63,7 @@ final class AppContainer {
         health: any HealthWorkoutWriter = HealthKitWorkoutWriter(),
         onboardingStatus: any OnboardingStatusStore = DefaultsOnboardingStatus(),
         metricsSources: [any MetricsSource],
-        healthSource: (any MetricsSource & ActivitySource)? = nil,
-        activitySources: [any ActivitySource]? = nil,
+        activitySources: [any ActivitySource] = [],
         cycleSource: (any CycleSource)? = nil,
         garmin: (any GarminAccount)? = nil,
         recordedStrength: (any RecordedStrengthSource)? = nil,
@@ -88,8 +85,7 @@ final class AppContainer {
             routines: routines, destination: backupDestination, appVersion: Self.appVersion
         )
         self.metricsSources = metricsSources
-        self.healthSource = healthSource
-        self.activitySources = activitySources ?? healthSource.map { [$0 as any ActivitySource] } ?? []
+        self.activitySources = activitySources
         self.cycleSource = cycleSource
         self.garmin = garmin
         self.recordedStrength = recordedStrength
@@ -112,7 +108,7 @@ final class AppContainer {
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store, workoutDraftStore: FileWorkoutDraftStore(),
-                metricsSources: sources, healthSource: healthKit, activitySources: [garmin, healthKit],
+                metricsSources: sources, activitySources: [garmin, healthKit],
                 cycleSource: healthKit, garmin: garmin,
                 recordedStrength: recordedStrength, historyRecordedStrength: historyRecordedStrength
             )
@@ -121,7 +117,7 @@ final class AppContainer {
             return AppContainer(
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store,
-                metricsSources: sources, healthSource: healthKit, activitySources: [garmin, healthKit],
+                metricsSources: sources, activitySources: [garmin, healthKit],
                 cycleSource: healthKit, garmin: garmin,
                 recordedStrength: recordedStrength, historyRecordedStrength: historyRecordedStrength
             )
@@ -301,8 +297,9 @@ final class AppContainer {
         let defaults = UserDefaults.standard
         return HistoryModel(
             workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
-            profiles: profiles, progression: progression, activity: healthSource, runSources: metricsSources,
-            recordedStrength: historyRecordedStrength, walkSources: activitySources, companionAnswers: dogWalkAnswers,
+            profiles: profiles, progression: progression, runSources: metricsSources,
+            recordedStrength: historyRecordedStrength, activitySources: activitySources,
+            companionAnswers: dogWalkAnswers,
             dogRunAnswers: dogRunAnswers,
             runChoices: choices.runs,
             saveRunChoices: { choices in

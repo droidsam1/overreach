@@ -238,16 +238,20 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
 
     // MARK: ActivitySource
 
-    /// Walking and hiking activities by the day they started. Steps stay in `dailyMetrics`, where Garmin's count
-    /// already wins over Apple Health's.
+    /// Daily step totals from the cached summaries, alongside walking and hiking activities.
     public func dailyActivity(in range: ClosedRange<CalendarDay>) async throws -> [DailyActivity] {
         let failure = await syncIfDue()
         let cache = await loadCache()
-        if cache.walks == nil, let failure { throw failure }
+        var steps: [CalendarDay: Int] = [:]
+        for metrics in cache.metrics where range.contains(metrics.day) {
+            if let count = metrics.steps { steps[metrics.day] = count }
+        }
         let walks = Dictionary(grouping: (cache.walks ?? []).map(\.walk)) { CalendarDay($0.start, calendar: calendar) }
-        return walks.filter { range.contains($0.key) }
-            .map { DailyActivity(day: $0.key, walks: $0.value.sorted { $0.start < $1.start }) }
-            .sorted { $0.day < $1.day }
+        let days = Set(steps.keys).union(walks.keys.filter { range.contains($0) })
+        if days.isEmpty, cache.walks == nil, let failure { throw failure }
+        return days.sorted().map { day in
+            DailyActivity(day: day, steps: steps[day], walks: (walks[day] ?? []).sorted { $0.start < $1.start })
+        }
     }
 
     // MARK: Sync

@@ -84,14 +84,15 @@ struct HistoryCalendarTests {
 
     private func model(
         sessions: [StrengthSession] = [],
-        activity: (any ActivitySource)? = nil,
+        activitySources: [any ActivitySource] = [],
         runSources: [any MetricsSource] = [],
         at now: Date? = nil
     ) async -> HistoryModel {
         let store = TestStore(exercises: [squat], sessions: sessions)
         let fixedNow = now ?? self.now
         let model = HistoryModel(
-            workouts: store, exercises: store, routines: store, activity: activity, runSources: runSources,
+            workouts: store, exercises: store, routines: store, runSources: runSources,
+            activitySources: activitySources,
             calendar: calendar, format: format, clock: { fixedNow }
         )
         await model.load()
@@ -170,7 +171,7 @@ struct HistoryCalendarTests {
     @Test func agendaShowsRecordedDaysAndRetainsAnEmptySelection() async {
         let model = await model(
             sessions: [session(on: day(2))],
-            activity: StepsSource([DailyActivity(day: day(8), steps: 1_100)]),
+            activitySources: [StepsSource([DailyActivity(day: day(8), steps: 1_100)])],
             runSources: [RunsSource([run(on: day(5), kilometres: 5, minutes: 28)])]
         )
         let calendar = model.calendar
@@ -221,7 +222,7 @@ struct HistoryCalendarTests {
             DailyActivity(day: day(4), steps: nil),
             DailyActivity(day: day(1, month: 12), steps: 50_000),  // other month: ignored
         ])
-        let calendar = await model(activity: steps).calendar
+        let calendar = await model(activitySources: [steps]).calendar
 
         #expect(calendar.averageSteps == 8_000)
         #expect(try cell(day(1), in: calendar).stepsFraction == 0.5)
@@ -229,7 +230,7 @@ struct HistoryCalendarTests {
         #expect(try cell(day(3), in: calendar).stepsFraction == 1)  // 1.5, capped
         #expect(try cell(day(4), in: calendar).stepsFraction == nil)
         #expect(try cell(day(5), in: calendar).stepsFraction == nil)
-        #expect(await steps.requestedRanges == [day(1)...day(30)])
+        #expect(await steps.requestedRanges.last == day(1)...day(30))
     }
 
     // MARK: Totals
@@ -237,7 +238,9 @@ struct HistoryCalendarTests {
     @Test func totalsCountSessionsRunsKilometresAndAverageSteps() async {
         let calendar = await model(
             sessions: [session(on: day(2)), session(on: day(9))],
-            activity: StepsSource([DailyActivity(day: day(1), steps: 6_000), DailyActivity(day: day(2), steps: 9_002)]),
+            activitySources: [StepsSource([
+                DailyActivity(day: day(1), steps: 6_000), DailyActivity(day: day(2), steps: 9_002)
+            ])],
             runSources: [RunsSource([
                 run(on: day(3), kilometres: 5.3, minutes: 28), run(on: day(10), kilometres: 10, minutes: 55),
             ])]
@@ -253,7 +256,7 @@ struct HistoryCalendarTests {
     @Test func selectingADayShowsItsSessionsRunsAndSteps() async throws {
         let model = await model(
             sessions: [session(on: day(4))],
-            activity: StepsSource([DailyActivity(day: day(4), steps: 10_250)]),
+            activitySources: [StepsSource([DailyActivity(day: day(4), steps: 10_250)])],
             runSources: [RunsSource([run(on: day(4), kilometres: 5, minutes: 27.5)])]
         )
         let calendar = model.calendar
@@ -301,7 +304,7 @@ struct HistoryCalendarTests {
         let steps = StepsSource([DailyActivity(day: day(15, month: 10), steps: 7_000)])
         let calendar = await model(
             sessions: [session(on: day(20, month: 10)), session(on: day(5, month: 1, year: 2025))],
-            activity: steps,
+            activitySources: [steps],
             runSources: [RunsSource([run(on: day(21, month: 10), kilometres: 8, minutes: 45)])]
         ).calendar
         #expect(calendar.isShowingCurrentMonth)
@@ -362,22 +365,41 @@ struct HistoryCalendarTests {
         let calendar = await model(sessions: [session(on: day(2))]).calendar
         #expect(try cell(day(2), in: calendar).hasStrength)
         #expect(calendar.totals.map(\.value) == ["1", "–", "–", "–"])
-        let connectionHint = "Connect Apple Health or Garmin from Today to see runs. Steps come from Apple Health."
+        let connectionHint = "Connect Apple Health or Garmin from Today to see runs and steps."
         #expect(calendar.healthHint == connectionHint)
         #expect(calendar.errorMessage == nil)
     }
 
     @Test func aFailingSourceNeverBlocksTheSessions() async throws {
         let source = FailingSource()
-        let calendar = await model(sessions: [session(on: day(2))], activity: source, runSources: [source]).calendar
+        let calendar = await model(
+            sessions: [session(on: day(2))], activitySources: [source], runSources: [source]
+        ).calendar
         #expect(try cell(day(2), in: calendar).hasStrength)
         #expect(calendar.cells.allSatisfy { $0.stepsFraction == nil && !$0.hasRun })
         #expect(calendar.totals.first?.value == "1")
-        #expect(calendar.healthHint == "Could not read Apple Health. Your sessions are still shown.")
+        #expect(calendar.healthHint == "Could not read some activity data. Your sessions are still shown.")
+    }
+
+    @Test func stepTotalsPreferTheFirstSourceAndFillMissingDays() async throws {
+        let garmin = StepsSource([DailyActivity(day: day(1), steps: 0), DailyActivity(day: day(2), steps: 8_000)])
+        let health = StepsSource([DailyActivity(day: day(1), steps: 7_000), DailyActivity(day: day(3), steps: 4_000)])
+        let calendar = await model(activitySources: [garmin, health]).calendar
+        #expect(calendar.steps == [day(1): 0, day(2): 8_000, day(3): 4_000])
+        #expect(calendar.totals.last?.value == "4,000")
+    }
+
+    @Test func aFailingHealthSourceKeepsAvailableStepsVisible() async throws {
+        let garmin = StepsSource([DailyActivity(day: day(2), steps: 8_000)])
+        let health = FailingSource()
+        let calendar = await model(activitySources: [garmin, health], runSources: [health]).calendar
+        #expect(try cell(day(2), in: calendar).stepsFraction != nil)
+        #expect(calendar.totals.last?.value == "8,000")
+        #expect(calendar.healthHint == nil)
     }
 
     @Test func stepsWithoutRunsStillShowRings() async throws {
-        let calendar = await model(activity: StepsSource([DailyActivity(day: day(1), steps: 5_000)])).calendar
+        let calendar = await model(activitySources: [StepsSource([DailyActivity(day: day(1), steps: 5_000)])]).calendar
         #expect(try cell(day(1), in: calendar).stepsFraction == 1)
         #expect(calendar.totals.map(\.value) == ["0", "–", "–", "5,000"])
         #expect(calendar.healthHint == nil)
