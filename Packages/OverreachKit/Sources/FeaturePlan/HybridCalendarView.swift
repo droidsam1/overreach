@@ -23,6 +23,15 @@ struct HybridCalendarView: View {
                     strengthEditor: $strengthEditor
                 )
             }
+            if !model.recordedRunCalendarRows.isEmpty {
+                Section("Recent recorded runs") {
+                    ForEach(model.recordedRunCalendarRows) { run in
+                        CalendarRowLabel(
+                            title: run.title, date: run.date, status: run.status, symbol: "figure.run", isRest: false
+                        )
+                    }
+                }
+            }
             if !model.pastCalendarRows.isEmpty {
                 Section("Past training days") {
                     CalendarRows(

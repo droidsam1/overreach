@@ -22,6 +22,13 @@ public struct StrengthCalendarRow: Identifiable, Sendable {
     public var id: UUID { entry.id }
 }
 
+public struct RecordedRunCalendarRow: Identifiable, Sendable {
+    public let id: String
+    public let title: String
+    public let date: String
+    public let status: String
+}
+
 public enum HybridCalendarRow: Identifiable, Sendable {
     case run(RunningCalendarRow)
     case strength(StrengthCalendarRow)

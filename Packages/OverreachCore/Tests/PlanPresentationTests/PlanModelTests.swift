@@ -281,7 +281,7 @@ struct PlanModelTests {
         #expect(choices.map(\.completion.activityID) == [run.id])
         edit.completion = choices.first?.completion
         #expect(await model.saveRunningEntry(edit))
-        #expect(model.pastRunningEntries.first?.status == "Completed")
+        #expect(model.pastRunningEntries.first?.status == "Run completed · no strength recorded")
 
         var second = model.editRunningEntry()
         second.date = start
@@ -326,6 +326,40 @@ struct PlanModelTests {
         #expect(saved.goal?.scheduledStrength.map(\.id) == [rest.id])
         #expect(saved.goal?.scheduledRuns == [run])
         #expect(saved.declaredBlocks == [block])
+    }
+
+    @Test func completedRunOnAStrengthRestDayLeavesTheRotationPending() async throws {
+        let today = CalendarDay(now, calendar: calendar)
+        let run = RunActivity(
+            id: "dog-run", source: .garmin, name: "Dog run", startedAt: now.addingTimeInterval(-3_600),
+            durationSeconds: 900, distanceMeters: 2_000
+        )
+        let history = ["A", "B", "A", "B"].enumerated().map { index, name in
+            let start = now.addingTimeInterval(-Double(8 - index * 2) * 86_400)
+            return StrengthSession(
+                name: name, startedAt: start, endedAt: start.addingTimeInterval(1_800),
+                entries: [ExerciseEntry(exerciseID: squat.id, sets: [WorkoutSet(weightKg: 80, reps: 5)])]
+            )
+        }
+        let (model, store) = await model(history: history, runSources: [CalendarRunSource(run: run)])
+        await model.setGoal(kind: .hybrid)
+        let rest = model.editStrengthEntry()
+        #expect(await model.saveStrengthEntry(rest))
+
+        #expect(model.pendingRotationSummary == "Next in your rotation: A")
+        #expect(model.upcomingCalendarRows.first?.isRest == true)
+        let row = try #require(model.recordedRunCalendarRows.first)
+        #expect(row.title == "Dog run")
+        #expect(row.status == "Run completed · no strength recorded")
+
+        var goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000))
+        let planned = PlannedRun(day: today, purpose: .easy, completion: PlannedRunCompletion(run))
+        goal.setRunningSchedule([planned])
+        try await store.save(AthleteProfile(goal: goal))
+        await model.load()
+
+        #expect(model.recordedRunCalendarRows.isEmpty)
+        #expect(model.upcomingRunningEntries.first?.status == row.status)
     }
 
     @Test func strengthCalendarIsAvailableWithoutARunningGoal() async {
