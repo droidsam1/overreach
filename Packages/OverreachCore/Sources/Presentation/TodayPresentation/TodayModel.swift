@@ -1056,7 +1056,8 @@ public final class TodayModel {
     }
 
     private func loadRotationDecision(
-        _ rotation: RotationProjection?, runs: [RunActivity], record: TrainingRecord, profile: AthleteProfile?, now: Date
+        _ rotation: RotationProjection?, runs: [RunActivity], record: TrainingRecord,
+        profile: AthleteProfile?, now: Date
     ) {
         let today = CalendarDay(now, calendar: calendar)
         guard let rotation, let next = rotation.upcoming.first, next.day == today, next.demand == .heavy,

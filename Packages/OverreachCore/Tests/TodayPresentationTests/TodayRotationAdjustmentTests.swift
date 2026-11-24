@@ -92,6 +92,9 @@ struct TodayRotationAdjustmentTests {
 
     @Test func aSwapFromHistoryCanStartWithoutChangingTheSlotIdentity() async throws {
         let (store, _) = history(templates: false)
+        var profile = AthleteProfile()
+        profile.deloadPostponedUntil = today.adding(days: 7, calendar: calendar)
+        try await store.save(profile)
         let model = await load(store)
         let accepted = await model.acceptRotation()
         let routine = try #require(accepted)
