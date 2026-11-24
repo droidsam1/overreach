@@ -6,6 +6,7 @@ import PresentationKit
 public struct TodayRotationOffer: Hashable, Sendable {
     public let title: String
     public let acceptTitle: String
+    public let orderPreview: String
     public let dismissTitle = L10n.text("Keep plan")
 }
 
@@ -14,6 +15,7 @@ struct TodayRotationDecision {
     let carryover: RunCarryover.Level
     let next: RotationProjection.Session
     let partner: RotationProjection.Session?
+    let upcoming: [RotationProjection.Session]
     let run: RunActivity
     let previousLegs: RotationProjection.Session?
     let readiness: ReadinessLevel
@@ -24,21 +26,27 @@ struct TodayRotationDecision {
     var offer: TodayRotationOffer? {
         switch suggestion.action {
         case let .swap(heavy, lighter):
-            guard let partner else { return nil }
+            guard let partner, let destination = upcoming.firstIndex(of: partner) else { return nil }
+            var reordered = upcoming.map(\.slot.name)
+            reordered.swapAt(0, destination)
             return TodayRotationOffer(
                 title: L10n.format("After your run: do {1} today, {2} on {3}.",
                                    lighter.name, heavy.name, weekday(partner.day)),
-                acceptTitle: L10n.text("Swap sessions")
+                acceptTitle: L10n.text("Swap sessions"), orderPreview: orderPreview(reordered)
             )
         case let .postpone(days):
             return TodayRotationOffer(
                 title: L10n.format("After your run: move {1} to {2}.", next.slot.name,
                                    weekday(suggestion.day.adding(days: days, calendar: calendar))),
-                acceptTitle: L10n.text("Postpone session")
+                acceptTitle: L10n.text("Postpone session"), orderPreview: orderPreview(upcoming.map(\.slot.name))
             )
         case .keep, .keepCapped:
             return nil
         }
+    }
+
+    private func orderPreview(_ names: [String]) -> String {
+        L10n.format("Strength order: {1}", names.joined(separator: " → "))
     }
 
     var explanation: [String] {

@@ -87,6 +87,8 @@ public final class PlanModel {
     public private(set) var isApplyingLiftChange = false
     /// Completed and in-progress strength sessions of the last eight days, for this week's progress.
     private(set) var weekSessions: [StrengthSession] = []
+    private var pendingRotationName: String?
+    private var strengthRecordedDays: Set<CalendarDay> = []
     /// The current week of the declared block with planned routines, when there is one.
 
     // Editable state of the screen.
@@ -444,6 +446,18 @@ public final class PlanModel {
         let weekStart = CalendarDay(now, calendar: calendar).adding(days: -7, calendar: calendar)
         weekSessions = sessions.filter { $0.startedAt >= weekStart.startDate(in: calendar) }
         let today = CalendarDay(now, calendar: calendar)
+        let completedSessions = sessions.filter { $0.isCompleted(through: now) }
+        let strengthDates = completedSessions.map(\.startedAt) + recordings.filter { activity in
+            activity.durationSeconds.isFinite && activity.durationSeconds >= 0
+                && activity.startedAt.addingTimeInterval(activity.durationSeconds) <= now
+        }.map(\.startedAt)
+        strengthRecordedDays = Set(strengthDates.map { CalendarDay($0, calendar: calendar) })
+        let rotationStart = today.adding(days: -LiftStatus.rotationHistoryDays, calendar: calendar)
+            .startDate(in: calendar)
+        pendingRotationName = SessionRotation.detect(
+            in: completedSessions.filter { $0.startedAt >= rotationStart },
+            adjustments: profile.rotationAdjustments, calendar: calendar
+        )?.next.name
         dayTraining = DayTraining.assess(
             sessions: sessions, recordings: recordings, runs: runs,
             planned: profile.goal?.scheduledRuns.filter { $0.day == today && !$0.isPostponed } ?? [],
@@ -616,8 +630,8 @@ extension PlanModel {
     private func calendarRow(for entry: PlannedRun, isPast: Bool, exceedsCeiling: Bool = false) -> RunningCalendarRow {
         let style = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).day().month(.abbreviated).year()
         let status: String?
-        if entry.completion != nil {
-            status = L10n.text("Completed")
+        if let completion = entry.completion {
+            status = recordedRunStatus(on: CalendarDay(completion.startedAt, calendar: calendar))
         } else if entry.isPostponed {
             status = L10n.text("Postponed")
         } else if isPast, entry.purpose != .rest {
@@ -714,6 +728,34 @@ extension PlanModel {
             options.append(Option(value: id, name: L10n.text("Scheduled routine unavailable")))
         }
         return options
+    }
+
+    public var pendingRotationSummary: String? {
+        pendingRotationName.map { L10n.format("Next in your rotation: {1}", $0) }
+    }
+
+    /// Actual runs without an explicit calendar link. Linked runs are already shown on their plan rows.
+    public var recordedRunCalendarRows: [RecordedRunCalendarRow] {
+        let now = clock()
+        let start = CalendarDay(now, calendar: calendar).adding(days: -30, calendar: calendar)
+            .startDate(in: calendar)
+        let linked = showsRunningCalendar ? profile.goal?.scheduledRuns.compactMap(\.completion) ?? [] : []
+        let style = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).day().month(.abbreviated).year()
+        return recentRuns.reversed().compactMap { run in
+            guard run.startedAt >= start,
+                  run.durationSeconds.isFinite, run.durationSeconds >= 0,
+                  run.startedAt.addingTimeInterval(run.durationSeconds) <= now,
+                  !linked.contains(where: { $0.matches(run) }) else { return nil }
+            return RecordedRunCalendarRow(
+                id: "\(run.source.rawValue):\(run.id)",
+                title: run.name ?? L10n.text("Run"), date: run.startedAt.formatted(style),
+                status: recordedRunStatus(on: CalendarDay(run.startedAt, calendar: calendar))
+            )
+        }
+    }
+
+    private func recordedRunStatus(on day: CalendarDay) -> String {
+        strengthRecordedDays.contains(day) ? L10n.text("Completed") : L10n.text("Run completed · no strength recorded")
     }
 
     public var upcomingCalendarRows: [HybridCalendarRow] {
