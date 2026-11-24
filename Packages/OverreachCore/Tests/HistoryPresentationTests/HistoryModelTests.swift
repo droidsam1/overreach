@@ -384,6 +384,25 @@ struct HistoryModelTests {
         #expect(runs[1].movementMetrics.isEmpty)
     }
 
+    @Test func poundsProfileChangesHistoryPresentationWithoutChangingStoredLoads() async throws {
+        let recorded = session("Lower", daysAgo: 1, sets: [WorkoutSet(weightKg: 100, reps: 5)])
+        let store = TestStore(exercises: [squat], sessions: [recorded])
+        try await store.save(AthleteProfile(weightUnit: .pounds))
+        let fixedNow = now
+        let model = HistoryModel(
+            workouts: store, exercises: store, routines: store, profiles: store, format: format, clock: { fixedNow }
+        )
+        await model.load()
+        let detail = try #require(model.detail(for: recorded.id))
+        #expect(detail.entries.first?.sets.first?.text == "220.46 lb × 5")
+        #expect(model.summaries.first?.statsLine().hasSuffix("lb") == true)
+
+        let editor = try #require(model.makeEditor(forSessionID: recorded.id))
+        #expect(editor.weightUnit == .pounds)
+        #expect(editor.draft.entries.first?.sets.first?.weightKg == 100)
+        #expect(!editor.hasChanges)
+    }
+
     @Test func detailDescribesSetsAndEstimatesOneRepMaxForWorkingSets() async throws {
         let squatSession = session("Lower", daysAgo: 1, sets: [
             WorkoutSet(kind: .warmup, weightKg: 60, reps: 5),

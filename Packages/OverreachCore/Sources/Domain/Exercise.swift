@@ -62,6 +62,9 @@ public struct Exercise: Identifiable, Hashable, Codable, Sendable {
 public enum WeightUnit: String, Codable, Sendable, CaseIterable {
     case kilograms, pounds
 
+    public func value(fromKilograms value: Double?) -> Double? { value.map { $0 / kilogramsPerUnit } }
+    public func kilograms(from value: Double?) -> Double? { value.map { $0 * kilogramsPerUnit } }
+
     public var kilogramsPerUnit: Double {
         switch self {
         case .kilograms: 1

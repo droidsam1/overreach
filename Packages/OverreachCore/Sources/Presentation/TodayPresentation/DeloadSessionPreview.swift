@@ -33,7 +33,9 @@ public struct DeloadSessionPreview: Hashable, Sendable {
                 guard let exercise = byID[entry.exerciseID],
                       let exposure = ExerciseExposure.history(of: entry.exerciseID, in: [session]).last
                 else { return nil }
-                let increment = ProgressionTargets.settings(for: exercise, stored: settings[exercise.id]).incrementKg
+                let increment = ProgressionTargets.settings(
+                    for: exercise, stored: settings[exercise.id], weightUnit: format.weightUnit
+                ).incrementKg
                 let sets = exposure.setsAtWorkingWeight
                 guard let reps = sets.compactMap(\.reps).max() else { return nil }
                 let weight = exposure.workingWeightKg
@@ -54,6 +56,6 @@ public struct DeloadSessionPreview: Hashable, Sendable {
 
     private static func text(sets: Int, reps: Int, weight: Double, format: Format) -> String {
         let volume = "\(sets) × \(reps)"
-        return weight > 0 ? volume + " · " + format.number(weight, maxFractionDigits: 2) + " kg" : volume
+        return weight > 0 ? volume + " · " + format.weight(weight) : volume
     }
 }

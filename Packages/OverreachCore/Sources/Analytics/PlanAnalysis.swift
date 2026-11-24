@@ -59,7 +59,8 @@ public struct PlanAnalysis: Hashable, Sendable {
             sessions: recentSessions, routines: routines, profile: profile, now: now, calendar: calendar
         )
         let lifts = LiftStatus.assessAll(
-            index: index, exercises: exercises, stored: settings, routines: routines, now: now
+            index: index, exercises: exercises, stored: settings, routines: routines, now: now,
+            weightUnit: profile.weightUnit
         )
         let liftsToUnblock = LiftsToUnblock.find(
             in: lifts, index: index, stored: settings, routines: routines, currentExerciseIDs: currentIDs

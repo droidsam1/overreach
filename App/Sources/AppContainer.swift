@@ -299,7 +299,8 @@ final class AppContainer {
 
     func makeExercisesModel() -> ExercisesModel {
         ExercisesModel(
-            workouts: workouts, exercises: exercises, progression: progression, routines: routines, backup: backup
+            workouts: workouts, exercises: exercises, progression: progression, routines: routines, backup: backup,
+            profiles: profiles
         )
     }
 
@@ -328,7 +329,7 @@ final class AppContainer {
     }
 
     func makeImportModel() -> ImportModel {
-        ImportModel(importer: importer, workouts: workouts, exercises: exercises)
+        ImportModel(importer: importer, workouts: workouts, exercises: exercises, profiles: profiles)
     }
 }
 

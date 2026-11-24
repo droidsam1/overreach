@@ -6,7 +6,9 @@ import SwiftUI
 
 /// Weight, reps and RPE fields of one set. The caller adds the set number and trailing controls.
 public struct SetValueFields: View {
-    @Binding private var weightKg: Double?
+    private let weightUnit: LocalizedStringKey
+    private let weightAccessibilityLabel: LocalizedStringKey
+    @Binding private var weight: Double?
     @Binding private var reps: Int?
     @Binding private var rpe: Double?
     private let showsRepsInReserve: Bool
@@ -16,9 +18,12 @@ public struct SetValueFields: View {
 
     /// - Parameter showsRepsInReserve: show effort as reps in reserve (RIR = 10 − RPE); the binding stays RPE.
     public init(
-        weightKg: Binding<Double?>, reps: Binding<Int?>, rpe: Binding<Double?>, showsRepsInReserve: Bool = false
+        weight: Binding<Double?>, reps: Binding<Int?>, rpe: Binding<Double?>, showsRepsInReserve: Bool = false,
+        weightUnit: LocalizedStringKey = "kg", weightAccessibilityLabel: LocalizedStringKey = "Weight in kilograms"
     ) {
-        _weightKg = weightKg
+        self.weightUnit = weightUnit
+        self.weightAccessibilityLabel = weightAccessibilityLabel
+        _weight = weight
         _reps = reps
         _rpe = rpe
         self.showsRepsInReserve = showsRepsInReserve
@@ -32,8 +37,8 @@ public struct SetValueFields: View {
     }
 
     @ViewBuilder private var fields: some View {
-        NumberField(placeholder: "kg", unit: "kg", accessibilityLabel: "Weight in kilograms", allowsDecimals: true,
-                    value: $weightKg)
+        NumberField(placeholder: weightUnit, unit: weightUnit, accessibilityLabel: weightAccessibilityLabel,
+                    allowsDecimals: true, value: $weight)
         NumberField(placeholder: "reps", unit: "reps", accessibilityLabel: "Repetitions", allowsDecimals: false,
                     value: Binding(
                         get: { reps.map(Double.init) },
@@ -405,7 +410,7 @@ public struct SetLoggingGuide: View {
 #Preview("Set editor at an accessibility text size") {
     List {
         SetEntryRow(number: SetNumberLabel(1)) {
-            SetValueFields(weightKg: .constant(102.5), reps: .constant(12), rpe: .constant(8))
+            SetValueFields(weight: .constant(102.5), reps: .constant(12), rpe: .constant(8))
         } action: {
             Image(systemName: "checkmark.circle")
                 .frame(minWidth: 44, minHeight: 44)

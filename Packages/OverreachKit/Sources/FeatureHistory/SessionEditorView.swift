@@ -136,8 +136,15 @@ private struct EntrySection: View {
             ForEach($entry.sets) { $set in
                 SetEntryRow(number: SetNumberLabel(model.number(of: set.id, in: entry.id))) {
                     SetValueFields(
-                        weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe,
-                        showsRepsInReserve: model.showsRepsInReserve
+                        weight: Binding(
+                            get: { model.weightUnit.value(fromKilograms: set.weightKg) },
+                            set: { set.weightKg = model.weightUnit.kilograms(from: $0) }
+                        ),
+                        reps: $set.reps, rpe: $set.rpe,
+                        showsRepsInReserve: model.showsRepsInReserve,
+                        weightUnit: model.weightUnit == .pounds ? "lb" : "kg",
+                        weightAccessibilityLabel: model.weightUnit == .pounds
+                            ? "Weight in pounds" : "Weight in kilograms"
                     )
                 } action: {
                     Menu {

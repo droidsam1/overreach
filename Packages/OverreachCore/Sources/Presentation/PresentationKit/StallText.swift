@@ -3,12 +3,14 @@ import Foundation
 
 extension StallSuggestion {
     /// The suggestion in plain words, with its reason.
-    public var text: String {
+    public var text: String { text(format: Format()) }
+
+    public func text(format: Format) -> String {
         switch self {
         case let .microload(increment):
             L10n.format(
-                "Use smaller jumps ({1} kg): you were only 1 rep short, and a smaller step lets you keep adding load.",
-                increment.formatted()
+                "Use smaller jumps ({1}): you were only 1 rep short, and a smaller step lets you keep adding load.",
+                format.weight(increment)
             )
         case .switchToDoubleProgression:
             L10n.text(

@@ -22,7 +22,7 @@ struct NumberField: View {
 
     var body: some View {
         HStack(spacing: Spacing.xSmall) {
-            TextField(placeholder, text: $text, selection: $selection)
+            TextField(placeholder, text: input, selection: $selection)
                 .focused($isFocused)
                 .numericKeyboard(decimal: allowsDecimals)
                 .multilineTextAlignment(.trailing)
@@ -37,10 +37,6 @@ struct NumberField: View {
         .onChange(of: value) {
             if !isFocused { text = NumberText.text(for: value) }
         }
-        .onChange(of: text) {
-            let parsed = NumberText.value(of: text, allowsDecimals: allowsDecimals)
-            if parsed != value { value = parsed }
-        }
         .onChange(of: isFocused) {
             if isFocused {
                 selectAll()
@@ -48,6 +44,15 @@ struct NumberField: View {
                 text = NumberText.text(for: value)
             }
         }
+    }
+
+    /// Only typed edits write back. Formatting an existing value may round it for display.
+    private var input: Binding<String> {
+        Binding(get: { text }, set: { newText in
+            text = newText
+            let parsed = NumberText.value(of: newText, allowsDecimals: allowsDecimals)
+            if parsed != value { value = parsed }
+        })
     }
 
     /// Selects the value after the tap has placed the cursor, so the next key replaces it.

@@ -23,6 +23,7 @@ public final class SessionEditorModel: Identifiable {
 
     /// Effort is shown as reps in reserve instead of RPE (the athlete's choice).
     public let showsRepsInReserve: Bool
+    public let weightUnit: WeightUnit
 
     public init(
         session: StrengthSession,
@@ -31,9 +32,11 @@ public final class SessionEditorModel: Identifiable {
         backup: (any BackupService)? = nil,
         health: (any HealthWorkoutWriter)? = nil,
         showsRepsInReserve: Bool = false,
+        weightUnit: WeightUnit = .kilograms,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.showsRepsInReserve = showsRepsInReserve
+        self.weightUnit = weightUnit
         self.draft = session
         self.original = session
         self.catalog = catalog

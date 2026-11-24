@@ -203,6 +203,9 @@ struct RootView: View {
         .onChange(of: planModel.profile.goal) {
             Task { await todayModel.load() }
         }
+        .onChange(of: trainingSettingsModel.weightUnit) {
+            Task { await todayModel.load() }
+        }
         .onChange(of: importModel.state) {
             // New exercises from an import need muscles: refresh the badge.
             if case .done = importModel.state {

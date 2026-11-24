@@ -31,6 +31,8 @@ public final class ExercisesModel {
     private let exerciseRepository: any ExerciseRepository
     private let progression: any ProgressionSettingsRepository
     private let routines: any RoutineRepository
+    private var weightUnit = WeightUnit.kilograms
+    private let profiles: (any ProfileRepository)?
     private let backup: (any BackupService)?
     private let clock: @Sendable () -> Date
 
@@ -40,6 +42,7 @@ public final class ExercisesModel {
         progression: any ProgressionSettingsRepository,
         routines: any RoutineRepository,
         backup: (any BackupService)? = nil,
+        profiles: (any ProfileRepository)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.workouts = workouts
@@ -47,6 +50,7 @@ public final class ExercisesModel {
         self.progression = progression
         self.routines = routines
         self.backup = backup
+        self.profiles = profiles
         self.clock = clock
     }
 
@@ -84,8 +88,9 @@ public final class ExercisesModel {
     }
 
     /// The progression settings of one exercise, or `nil` if it no longer exists.
-    public func settingsEditor(for exerciseID: UUID, format: Format = Format()) -> ExerciseSettingsModel? {
-        exercise(id: exerciseID).map {
+    public func settingsEditor(for exerciseID: UUID, format: Format? = nil) -> ExerciseSettingsModel? {
+        let format = format ?? Format(weightUnit: weightUnit)
+        return exercise(id: exerciseID).map {
             ExerciseSettingsModel(
                 exercise: $0, repository: progression, backup: backup, clock: clock, format: format
             )
@@ -97,6 +102,7 @@ public final class ExercisesModel {
     public func load() async {
         isLoading = true
         defer { isLoading = false }
+        if let profile = try? await profiles?.profile() { weightUnit = profile.weightUnit }
         do {
             exercises = try await exerciseRepository.allExercises()
             let sessions = try await workouts.sessions(from: .distantPast, to: .distantFuture)

@@ -87,7 +87,7 @@ extension TodayDone {
         let review = SessionReviewer.review(
             session, targets: [:], history: record.sessions.filter { $0.startedAt >= historyStart },
             exercises: record.exercises, settings: record.settings,
-            routine: record.routines.first { $0.id == session.routineID }
+            routine: record.routines.first { $0.id == session.routineID }, weightUnit: format.weightUnit
         )
         let report = SessionReport(review: review, effortScale: effortScale, format: format)
         return Session(

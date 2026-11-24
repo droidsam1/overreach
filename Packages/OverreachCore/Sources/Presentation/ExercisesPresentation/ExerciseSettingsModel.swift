@@ -87,7 +87,7 @@ public final class ExerciseSettingsModel {
         self.backup = backup
         self.clock = clock
         self.format = format
-        incrementKg = ProgressionSettings.defaultIncrement(for: exercise.equipment)
+        incrementKg = ProgressionSettings.defaultIncrement(for: exercise.equipment, weightUnit: format.weightUnit)
     }
 
     // MARK: Screen state
@@ -106,8 +106,9 @@ public final class ExerciseSettingsModel {
     }
 
     public var incrementOptions: [Option<Double>] {
-        Set(Self.incrementChoices + [incrementKg, defaults.incrementKg]).sorted().map { value in
-            Option(value: value, name: value > 0 ? format.kilograms(value) : L10n.text("No added load"))
+        let increments = Self.incrementChoices.map { $0 * format.weightUnit.kilogramsPerUnit }
+        return Set(increments + [incrementKg, defaults.incrementKg]).sorted().map { value in
+            Option(value: value, name: value > 0 ? format.weight(value) : L10n.text("No added load"))
         }
     }
 
@@ -120,7 +121,7 @@ public final class ExerciseSettingsModel {
     public var suggestionLine: String {
         let suggested = Self.suggestedScheme(for: focus)
         let increment = defaults.incrementKg > 0
-            ? "+" + format.kilograms(defaults.incrementKg)
+            ? "+" + format.weight(defaults.incrementKg)
             : L10n.text("no added load")
         var parts = [describe(suggested), increment]
         var label = L10n.text("Default:")
@@ -174,7 +175,7 @@ public final class ExerciseSettingsModel {
 
     // MARK: Helpers
 
-    private var defaults: ProgressionSettings { ProgressionSettings(for: exercise) }
+    private var defaults: ProgressionSettings { ProgressionSettings(for: exercise, weightUnit: format.weightUnit) }
 
     private static func suggestedScheme(for focus: TrainingFocus?) -> ProgressionScheme {
         FocusPrescription.suggestedScheme(for: focus)

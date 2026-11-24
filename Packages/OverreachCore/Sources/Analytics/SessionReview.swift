@@ -73,7 +73,7 @@ public enum SessionReviewer {
         history: [StrengthSession],
         exercises: [Exercise],
         settings: [UUID: ProgressionSettings],
-        routine: Routine? = nil
+        routine: Routine? = nil, weightUnit: WeightUnit = .kilograms
     ) -> SessionReview {
         let byID = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let earlier = history.filter { $0.id != session.id && $0.startedAt < session.startedAt }
@@ -89,10 +89,13 @@ public enum SessionReviewer {
             exercises: session.entries.compactMap { entry in
                 byID[entry.exerciseID].map { exercise in
                     let config = configuration(
-                        for: exercise, in: session, stored: settings[exercise.id], routine: routine
+                        for: exercise, in: session, stored: settings[exercise.id], routine: routine,
+                        weightUnit: weightUnit
                     )
-                    return review(entry, of: exercise, in: session, target: targets[exercise.id], earlier: earlier,
-                                  settings: config.settings, startFromBaseline: config.startFromBaseline)
+                    return review(
+                        entry, of: exercise, in: session, target: targets[exercise.id], earlier: earlier,
+                        settings: config.settings, startFromBaseline: config.startFromBaseline, weightUnit: weightUnit
+                    )
                 }
             },
             previous: previous,
@@ -104,36 +107,41 @@ public enum SessionReviewer {
     /// History). Settings are today's: a scheme changed since then is not reflected.
     public static func review(
         _ session: StrengthSession, history: [StrengthSession], exercises: [Exercise],
-        settings: [UUID: ProgressionSettings], routine: Routine? = nil
+        settings: [UUID: ProgressionSettings], routine: Routine? = nil, weightUnit: WeightUnit = .kilograms
     ) -> SessionReview {
         let earlier = history.filter { $0.id != session.id && $0.startedAt < session.startedAt }
         var targets: [UUID: ExerciseTarget] = [:]
         for exercise in exercises where session.entries.contains(where: { $0.exerciseID == exercise.id }) {
             let before = ExerciseExposure.history(of: exercise.id, in: earlier)
             guard !before.isEmpty else { continue }
-            let config = configuration(for: exercise, in: session, stored: settings[exercise.id], routine: routine)
+            let config = configuration(
+                for: exercise, in: session, stored: settings[exercise.id], routine: routine, weightUnit: weightUnit
+            )
             targets[exercise.id] = ProgressionTargets.next(
-                history: before, settings: config.settings, startFromBaseline: config.startFromBaseline
+                history: before, settings: config.settings, startFromBaseline: config.startFromBaseline,
+                weightUnit: weightUnit
             )
         }
         return review(
-            session, targets: targets, history: history, exercises: exercises, settings: settings, routine: routine
+            session, targets: targets, history: history, exercises: exercises, settings: settings, routine: routine,
+            weightUnit: weightUnit
         )
     }
 
     private static func configuration(
-        for exercise: Exercise, in session: StrengthSession, stored: ProgressionSettings?, routine: Routine?
+        for exercise: Exercise, in session: StrengthSession, stored: ProgressionSettings?, routine: Routine?,
+        weightUnit: WeightUnit
     ) -> (settings: ProgressionSettings, startFromBaseline: Bool) {
         let prescribed = routine?.prescription(for: exercise.id)
         let settings = ProgressionTargets.settings(
-            for: exercise, stored: stored, focus: session.focus, prescription: prescribed
+            for: exercise, stored: stored, focus: session.focus, prescription: prescribed, weightUnit: weightUnit
         )
         return (settings, stored == nil && prescribed == nil)
     }
 
     private static func review(
         _ entry: ExerciseEntry, of exercise: Exercise, in session: StrengthSession, target: ExerciseTarget?,
-        earlier: [StrengthSession], settings: ProgressionSettings, startFromBaseline: Bool
+        earlier: [StrengthSession], settings: ProgressionSettings, startFromBaseline: Bool, weightUnit: WeightUnit
     ) -> ExerciseReview {
         let working = entry.sets.filter(\.isWorking)
         let done = ExerciseExposure(date: session.startedAt, sets: working)
@@ -148,7 +156,7 @@ public enum SessionReviewer {
             averageRPE: rpes.isEmpty ? nil : rpes.reduce(0, +) / Double(rpes.count),
             records: records(in: done, before: before),
             nextTarget: ProgressionTargets.next(
-                history: after, settings: settings, startFromBaseline: startFromBaseline
+                history: after, settings: settings, startFromBaseline: startFromBaseline, weightUnit: weightUnit
             ),
             statusBefore: StallDetection.status(history: before, settings: settings),
             statusAfter: StallDetection.status(history: after, settings: settings)

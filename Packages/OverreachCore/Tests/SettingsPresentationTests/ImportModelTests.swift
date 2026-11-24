@@ -10,9 +10,37 @@ private struct FakeImporter: TrainingHistoryImporter {
     func preview(csv: String, weightUnit: WeightUnit, catalog: [Exercise]) throws -> ImportPreview { preview }
 }
 
+private struct UnitRecordingImporter: TrainingHistoryImporter {
+    func preview(csv: String, weightUnit: WeightUnit, catalog: [Exercise]) throws -> ImportPreview {
+        let set = WorkoutSet(weightKg: 100 * weightUnit.kilogramsPerUnit, reps: 8)
+        let session = StrengthSession(
+            name: "Workout", startedAt: Date(timeIntervalSince1970: 1_000),
+            entries: [ExerciseEntry(exerciseID: UUID(), sets: [set])], source: .strongImport
+        )
+        return ImportPreview(sessions: [session], newExercises: [], skippedLines: [])
+    }
+}
+
 @MainActor
 @Suite("ImportModel")
 struct ImportModelTests {
+    @Test func savedWeightUnitDefaultsImportAndCanBeOverridden() async throws {
+        let store = TestStore()
+        try await store.save(AthleteProfile(weightUnit: .pounds))
+        let model = ImportModel(importer: UnitRecordingImporter(), workouts: store, exercises: store, profiles: store)
+        await model.loadDefaultWeightUnit()
+        #expect(model.weightUnit == .pounds)
+        await model.load(fileData: Data("Date,Exercise Name".utf8))
+        #expect(model.preview?.sessions.first?.entries.first?.sets.first?.weightKg == 45.359237)
+
+        model.weightUnit = .kilograms
+        await model.confirm()
+        #expect(await store.sessions(from: .distantPast, to: .distantFuture).isEmpty)
+        await model.refreshPreview()
+        #expect(model.preview?.sessions.first?.entries.first?.sets.first?.weightKg == 100)
+        #expect(try await store.profile().weightUnit == .pounds)
+    }
+
     @Test func previewThenConfirmSavesExercisesAndSessions() async throws {
         let newExercise = Exercise(name: "Zercher Squat", primaryMuscles: [], isCustom: true)
         let session = StrengthSession(

@@ -1,11 +1,15 @@
+import Domain
 import Foundation
 
 /// Number formatting for presentation texts, in the user's locale (tests pass a fixed one).
 public struct Format: Sendable {
     public let locale: Locale
 
-    public init(locale: Locale = .current) {
+    public var weightUnit: WeightUnit
+
+    public init(locale: Locale = .current, weightUnit: WeightUnit = .kilograms) {
         self.locale = locale
+        self.weightUnit = weightUnit
     }
 
     /// "62.5" — up to `maxFractionDigits` decimals, no trailing zeros.
@@ -19,7 +23,13 @@ public struct Format: Sendable {
     }
 
     /// "62.5 kg".
-    public func kilograms(_ value: Double) -> String { "\(number(value)) kg" }
+    public func weight(_ kilograms: Double, maxFractionDigits: Int = 2) -> String {
+        "\(weightNumber(kilograms, maxFractionDigits: maxFractionDigits)) \(weightUnit.symbol)"
+    }
+
+    public func weightNumber(_ kilograms: Double, maxFractionDigits: Int = 2) -> String {
+        number(kilograms / weightUnit.kilogramsPerUnit, maxFractionDigits: maxFractionDigits)
+    }
 
     /// "3:00" from seconds.
     public func minutesAndSeconds(_ seconds: Int) -> String {

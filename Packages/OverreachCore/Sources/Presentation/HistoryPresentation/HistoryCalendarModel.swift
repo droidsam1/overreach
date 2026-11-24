@@ -91,6 +91,7 @@ public final class HistoryCalendarModel {
     public private(set) var steps: [CalendarDay: Int] = [:]
     /// Days marked as a deliberate rest, kept up to date by `HistoryModel`.
     var restDays: Set<CalendarDay> = []
+    var weightUnit = WeightUnit.kilograms
     var rotationOutcomes: [UUID: [RotationAdjustment.Outcome]] = [:]
     /// Whether reading Apple Health failed for the shown month.
     public private(set) var activityFailed = false
@@ -257,6 +258,7 @@ public final class HistoryCalendarModel {
                 .filter { CalendarDay($0.startedAt, calendar: calendar) == day }
                 .map { session in
                     var summary = SessionSummary(session: session, names: exerciseNames)
+                    summary.weightUnit = weightUnit
                     if let outcomes = rotationOutcomes[session.id] {
                         summary.rotationOutcomes = outcomes
                     }

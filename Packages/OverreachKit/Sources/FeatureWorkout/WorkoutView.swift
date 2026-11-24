@@ -281,8 +281,8 @@ private struct SessionList: View {
             }
             ForEach($model.exercises) { $exercise in
                 Section {
-                    TargetSummaryView(summary: exercise.summary)
-                    if let offer = exercise.progressionOffer {
+                    TargetSummaryView(summary: model.targetSummary(for: exercise))
+                    if let offer = model.progressionOffer(for: exercise.id) {
                         Button {
                             model.clearProgressionSaveError()
                             progressionExercise = exercise.id
@@ -298,7 +298,7 @@ private struct SessionList: View {
                     ForEach($exercise.sets) { $set in
                         SetRow(
                             number: exercise.number(of: set.id), set: $set,
-                            showsRepsInReserve: model.showsRepsInReserve
+                            showsRepsInReserve: model.showsRepsInReserve, weightUnit: model.weightUnit
                         ) { isDone in
                             model.setDone(isDone, set: set.id, in: exercise.id)
                         }
@@ -511,13 +511,20 @@ private struct SetRow: View {
     let number: Int
     @Binding var set: DraftSet
     let showsRepsInReserve: Bool
+    let weightUnit: WeightUnit
     let onDoneChange: (Bool) -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         SetEntryRow(number: SetNumberLabel(number, isWarmUp: set.isWarmUp)) {
             SetValueFields(
-                weightKg: $set.weightKg, reps: $set.reps, rpe: $set.rpe, showsRepsInReserve: showsRepsInReserve
+                weight: Binding(
+                    get: { weightUnit.value(fromKilograms: set.weightKg) },
+                    set: { set.weightKg = weightUnit.kilograms(from: $0) }
+                ),
+                reps: $set.reps, rpe: $set.rpe, showsRepsInReserve: showsRepsInReserve,
+                weightUnit: weightUnit == .pounds ? "lb" : "kg",
+                weightAccessibilityLabel: weightUnit == .pounds ? "Weight in pounds" : "Weight in kilograms"
             )
         } action: {
             Toggle(isOn: Binding(get: { set.isDone }, set: onDoneChange)) {

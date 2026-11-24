@@ -65,11 +65,12 @@ public enum WarmUpPrescription {
     /// lighter than the working load.
     public static func sets(
         workingWeightKg: Double, reps: Int, targetRPE: Double, equipment: Equipment, incrementKg: Double,
-        primed: Bool
+        primed: Bool, weightUnit: WeightUnit = .kilograms
     ) -> [WarmUpSet] {
         guard workingWeightKg > 0, equipment != .bodyweight else { return [] }
-        let step = incrementKg > 0 ? incrementKg : 1
-        let minimum = equipment == .barbell ? barKg : step
+        let step = incrementKg > 0 ? incrementKg : weightUnit.kilogramsPerUnit
+        let emptyBar = weightUnit == .pounds ? 45 * weightUnit.kilogramsPerUnit : barKg
+        let minimum = equipment == .barbell ? emptyBar : step
         var result: [WarmUpSet] = []
         for (fraction, stepReps) in steps(for: intensity(reps: reps, targetRPE: targetRPE), primed: primed) {
             let weight = max(LoadPrescription.round(workingWeightKg * fraction, toIncrement: step), minimum)

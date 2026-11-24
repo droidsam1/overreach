@@ -26,9 +26,8 @@ and the logger come before review tools, and work that only a person with an iPh
    [#272](https://github.com/droidsam1/overreach/issues/272) (Today, once #271 is done; Today work, now free to start),
    [#273](https://github.com/droidsam1/overreach/issues/273) (replay and AI context, once #271 is done),
    [#274](https://github.com/droidsam1/overreach/issues/274) (elevation loss, done).
-3. **Pounds** — [#37](https://github.com/droidsam1/overreach/issues/37). Current users train in kilograms.
-4. **Per-lap Garmin values** — [#259](https://github.com/droidsam1/overreach/issues/259).
-5. **Run offer follow-up** — [#265](https://github.com/droidsam1/overreach/issues/265) (learn usual run slots).
+3. **Per-lap Garmin values** — [#259](https://github.com/droidsam1/overreach/issues/259).
+4. **Run offer follow-up** — [#265](https://github.com/droidsam1/overreach/issues/265) (learn usual run slots).
 
 ## Needs a person or an iPhone
 

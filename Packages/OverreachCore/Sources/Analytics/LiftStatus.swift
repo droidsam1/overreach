@@ -44,7 +44,7 @@ public struct LiftStatus: Hashable, Sendable {
     /// routine's prescription and the declared focus, as the logger set its targets.
     public static func assessAll(
         index: ExposureIndex, exercises: [UUID: Exercise], stored: [UUID: ProgressionSettings], routines: [Routine],
-        now: Date, lookbackDays: Int = recentDays
+        now: Date, lookbackDays: Int = recentDays, weightUnit: WeightUnit = .kilograms
     ) -> [Self] {
         let routineByID = Dictionary(routines.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         return index.progressionExerciseIDs.map { id in
@@ -52,7 +52,7 @@ public struct LiftStatus: Hashable, Sendable {
             let routine = session?.routineID.flatMap { routineByID[$0] }
             let settings = ProgressionTargets.settings(
                 for: exercises[id], stored: stored[id], focus: stored[id]?.focus ?? session?.focus ?? routine?.focus,
-                prescription: routine?.prescription(for: id)
+                prescription: routine?.prescription(for: id), weightUnit: weightUnit
             )
             return assess(
                 exerciseID: id, history: index.progressionExposures(of: id), settings: settings, now: now,

@@ -43,6 +43,17 @@ struct BackupCodecTests {
         #expect(decoded.routines.isEmpty)
     }
 
+    @Test func weightUnitRoundTripsAndOlderProfilesDefaultToKilograms() throws {
+        var document = sampleDocument()
+        document.profile.weightUnit = .pounds
+        let decoded = try BackupCodec.decode(BackupCodec.encode(document))
+        #expect(decoded.profile.weightUnit == .pounds)
+        #expect(decoded.sessions.first?.entries.first?.sets.first?.weightKg == 100)
+
+        let old = Data(#"{"formatVersion": 1, "createdAt": 0, "profile": {"cycleTracking": "off"}}"#.utf8)
+        #expect(try BackupCodec.decode(old).profile.weightUnit == .kilograms)
+    }
+
     @Test func rejectsNewerFormatsAndOtherFiles() {
         #expect(throws: BackupError.newerFormat(99)) {
             try BackupCodec.decode(Data(#"{"formatVersion": 99, "createdAt": 0}"#.utf8))

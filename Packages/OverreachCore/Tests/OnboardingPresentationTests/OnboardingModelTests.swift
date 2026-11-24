@@ -45,7 +45,7 @@ struct OnboardingModelTests {
         #expect(!model.isPresented)
     }
 
-    @Test func theFirstRunAsksOnlyTheGoalAndTheDevices() async throws {
+    @Test func theFirstRunSavesGoalDevicesAndWeightUnit() async throws {
         let (model, store) = makeModel()
         await model.presentIfNeeded()
         #expect(model.canSkipStep && !model.isLastStep)
@@ -58,6 +58,7 @@ struct OnboardingModelTests {
         #expect(model.usesOnlyPhone && !model.offersGarminSetup)
         model.toggle(.garmin)
         model.toggle(.appleWatch)
+        model.weightUnit = .pounds
         #expect(model.offersGarminSetup && model.isSelected(.appleWatch))
         model.next()
         #expect(model.step == .devices)
@@ -67,6 +68,7 @@ struct OnboardingModelTests {
         let profile = try await store.profile()
         #expect(profile.goal?.kind == .hybrid)
         #expect(profile.wearables == [.garmin, .appleWatch])
+        #expect(profile.weightUnit == .pounds)
         // Nothing else was asked: those questions wait for Today.
         #expect(profile.sex == nil && profile.cycleTracking == .off)
         #expect(profile.walkingRoutine == WalkingRoutine())

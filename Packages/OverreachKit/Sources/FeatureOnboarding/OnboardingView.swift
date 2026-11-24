@@ -186,6 +186,12 @@ public struct OnboardingView: View {
         }
         .animation(reduceMotion ? nil : .spring(duration: 0.4), value: model.offersGarminSetup)
         .animation(reduceMotion ? nil : .spring(duration: 0.4), value: isGarminConnected)
+        Section {
+            Picker("Weight unit", selection: $model.weightUnit) {
+                Text("kg").tag(WeightUnit.kilograms)
+                Text("lb").tag(WeightUnit.pounds)
+            }
+        }
         startSection
     }
 

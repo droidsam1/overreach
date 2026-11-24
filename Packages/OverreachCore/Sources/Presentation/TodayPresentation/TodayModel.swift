@@ -265,7 +265,7 @@ public final class TodayModel {
     private let workouts: (any WorkoutRepository)?
     private let readinessSettings: ReadinessRules.Settings
     private let calendar: Calendar
-    private let format: Format
+    private var format: Format
 
     // MARK: Screen state
 
@@ -861,6 +861,7 @@ public final class TodayModel {
         }.value
         let garminConnected = await garminConnection != nil
         guard activeLoad == loadID else { return }
+        if let profile { format.weightUnit = profile.weightUnit }
         cycleContext = snapshot.record.cycle
         let goal = profile?.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         hasRunningGoal = goal?.running.map { $0.distanceMeters > 0 } ?? false
@@ -1436,8 +1437,12 @@ public final class TodayModel {
         if deloadSession != nil {
             return L10n.text("Apply it to every session of the week, starting with the next one:")
         }
-        return L10n.text(
-            "Every session this week: for example, 4 × 6 at 100 kg becomes 2 × 6 at 90 kg, with at least 3 reps left."
+        let step = ProgressionSettings.defaultIncrement(for: .barbell, weightUnit: format.weightUnit)
+        let example = LoadPrescription.round(100, toIncrement: step)
+        let deload = LoadPrescription.round(example * 0.9, toIncrement: step)
+        return L10n.format(
+            "Every session this week: for example, 4 × 6 at {1} becomes 2 × 6 at {2}, with at least 3 reps left.",
+            format.weight(example), format.weight(deload)
         )
     }
 

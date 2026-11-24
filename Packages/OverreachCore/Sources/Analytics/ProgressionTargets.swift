@@ -73,9 +73,11 @@ public enum ProgressionTargets {
     /// screen resolves settings here (ADR-0035).
     public static func settings(
         for exercise: Exercise?, stored: ProgressionSettings?, focus: TrainingFocus? = nil,
-        prescription: ProgressionScheme? = nil
+        prescription: ProgressionScheme? = nil, weightUnit: WeightUnit = .kilograms
     ) -> ProgressionSettings {
-        var settings = stored ?? exercise.map { ProgressionSettings(for: $0) } ?? ProgressionSettings(incrementKg: 2.5)
+        let defaultIncrement = ProgressionSettings.defaultIncrement(for: .other, weightUnit: weightUnit)
+        var settings = stored ?? exercise.map { ProgressionSettings(for: $0, weightUnit: weightUnit) }
+            ?? ProgressionSettings(incrementKg: defaultIncrement)
         if stored == nil, let focus {
             settings.scheme = FocusPrescription.for(focus).defaultScheme
         }
@@ -96,7 +98,8 @@ public enum ProgressionTargets {
 
     /// Target for the next exposure, given past exposures (oldest first).
     public static func next(
-        history: [ExerciseExposure], settings: ProgressionSettings, startFromBaseline: Bool = false
+        history: [ExerciseExposure], settings: ProgressionSettings, startFromBaseline: Bool = false,
+        weightUnit: WeightUnit = .kilograms
     ) -> ExerciseTarget {
         let scheme = settings.scheme
         guard let last = history.last else {
@@ -112,7 +115,18 @@ public enum ProgressionTargets {
            let hold = FirstProgression.hold(from: last, settings: settings) {
             return hold
         }
-        let target = nextTarget(history: history, last: last, settings: settings)
+        var target = nextTarget(history: history, last: last, settings: settings)
+        // Align new loads to a pound grid when the configured jump uses quarter-pound steps.
+        // Keep values from history and preserve custom jumps configured on a metric grid.
+        let incrementInPounds = settings.incrementKg / WeightUnit.pounds.kilogramsPerUnit
+        if weightUnit == .pounds, incrementInPounds > 0,
+           abs(incrementInPounds * 4 - (incrementInPounds * 4).rounded()) < 0.000_001 {
+            let previous = last.workingWeightKg
+            for index in target.sets.indices {
+                guard let load = target.sets[index].weightKg, load != previous else { continue }
+                target.sets[index].weightKg = LoadPrescription.round(load, toIncrement: settings.incrementKg)
+            }
+        }
         if settings.requiresLoggedEffort == true,
            FirstProgression.isOversizedLoadStep(target, from: last, scheme: scheme) {
             return FirstProgression.repeatSets(from: last, rpe: scheme.targetRPE, reason: .repeatBeforeLoadJump)

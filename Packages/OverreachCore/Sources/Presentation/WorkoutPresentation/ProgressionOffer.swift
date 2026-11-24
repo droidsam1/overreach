@@ -30,7 +30,7 @@ public struct ProgressionOffer: Hashable, Sendable {
             case .load:
                 title = L10n.text("Add weight at fixed reps")
                 detail = L10n.format("Keep reps fixed and add {1} when you have enough reps in reserve.",
-                                    format.kilograms(choice.settings.incrementKg))
+                                    format.weight(choice.settings.incrementKg))
             case .wave:
                 title = L10n.text("Alternate heavy and light sessions")
                 detail = L10n.text("Cycle through different rep targets with a load estimated for each.")

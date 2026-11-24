@@ -35,14 +35,16 @@ public struct LiftToUnblockRow: Identifiable, Hashable, Sendable {
         let date = explanation.stalledSince.formatted(style)
         if let weight = explanation.bestSet.weightKg, let reps = explanation.bestSet.reps {
             since = L10n.format(
-                "No progress since {1} (best {2} × {3})", date, format.kilograms(weight),
+                "No progress since {1} (best {2} × {3})", date, format.weight(weight),
                 format.number(Double(reps), maxFractionDigits: 0)
             )
         } else {
             since = L10n.format("No progress since {1}", date)
         }
-        nextStep = lift.nextStep.map { ExplainedLine(text: $0.text, evidence: $0.evidence) }
-        otherSteps = explanation.suggestions.dropFirst().map { ExplainedLine(text: $0.text, evidence: $0.evidence) }
+        nextStep = lift.nextStep.map { ExplainedLine(text: $0.text(format: format), evidence: $0.evidence) }
+        otherSteps = explanation.suggestions.dropFirst().map {
+            ExplainedLine(text: $0.text(format: format), evidence: $0.evidence)
+        }
 
         let changed = lift.nextStep.flatMap(lift.applying)
         if applied {
@@ -66,7 +68,7 @@ public struct LiftToUnblockRow: Identifiable, Hashable, Sendable {
     ) -> LiftChange? {
         switch (step, settings.scheme) {
         case (.microload, _):
-            let step = format.kilograms(settings.incrementKg)
+            let step = format.weight(settings.incrementKg)
             return LiftChange(
                 title: L10n.format("Use {1} jumps", step),
                 confirmation: L10n.format("{1} will add {2} at a time from its next session.", name, step)

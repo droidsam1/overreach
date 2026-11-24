@@ -64,6 +64,25 @@ struct LoadPrescriptionTests {
         #expect(LoadPrescription.estimatedOneRepMax(weightKg: 50, reps: 15, rpe: 9) == nil)
     }
 
+    @Test func poundsDefaultRoundsNewLoadAndRetainsUnchangedAndCustomLoads() throws {
+        let metricLoad = 100.0
+        let completed = exposure(day: 1, weight: metricLoad, reps: [5, 5, 5], rpe: 7)
+        let missed = exposure(day: 1, weight: metricLoad, reps: [5, 5, 4], rpe: 7)
+        let poundsPerKilogram = 1 / WeightUnit.pounds.kilogramsPerUnit
+        var settings = linear
+        settings.incrementKg = ProgressionSettings.defaultIncrement(for: .barbell, weightUnit: .pounds)
+
+        let above = ProgressionTargets.next(history: [completed], settings: settings, weightUnit: .pounds)
+        let increased = try #require(above.sets.first?.weightKg)
+        #expect(increased > metricLoad)
+        #expect(abs(increased * poundsPerKilogram - 225) < 0.001)
+        let repeated = ProgressionTargets.next(history: [missed], settings: settings, weightUnit: .pounds)
+        #expect(repeated.sets.first?.weightKg == metricLoad)
+
+        let custom = ProgressionTargets.next(history: [completed], settings: linear, weightUnit: .pounds)
+        #expect(custom.sets.first?.weightKg == 102.5)
+    }
+
     @Test func roundsToTheNearestIncrement() {
         #expect(LoadPrescription.round(81.3, toIncrement: 2.5) == 82.5)
         #expect(LoadPrescription.round(81.3, toIncrement: 0) == 81.3)
