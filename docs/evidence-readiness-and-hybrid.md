@@ -126,14 +126,11 @@ and review by a running coach and a sports clinician remain release gates for au
 
 ### Partial replay of rotation adjustments
 
-One athlete supplied a strength backup and two Garmin runs from November 2026. Both runs preceded a
-recorded or expected heavy strength slot. With the default thresholds and only those two FIT files
-as run history, both runs meet the notable carry-over threshold. The first is just below the descent
-threshold (50 m over 3,333.91 m). Its notable classification comes from the absence of an earlier
-run in the supplied 14-day window.
-The second exceeds 110% of the longest prior run in the supplied 30-day window (6.55 km vs 3.33 km).
-Both flags depend on source coverage. The second run started about 29 hours after the recorded
-heavy squat session.
+A strength backup and two Garmin runs supplied one athlete's sequence. With the default thresholds
+and only those runs as run history, both runs meet the notable carry-over threshold. The first
+has no earlier run in the supplied 14-day window. The second exceeds 110% of the longest prior
+run in the supplied 30-day window. Both flags depend on source coverage. The second run started
+within 48 hours of the recorded heavy squat session.
 
 For both cases the recent strength gaps vary, including two-, three- and four-day gaps.
 The default projection requires uniform gaps across the sessions that establish the rotation.
