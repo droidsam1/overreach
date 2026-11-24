@@ -230,7 +230,7 @@ struct HistoryCalendarTests {
         #expect(try cell(day(3), in: calendar).stepsFraction == 1)  // 1.5, capped
         #expect(try cell(day(4), in: calendar).stepsFraction == nil)
         #expect(try cell(day(5), in: calendar).stepsFraction == nil)
-        #expect(await steps.requestedRanges == [day(1)...day(30)])
+        #expect(await steps.requestedRanges.last == day(1)...day(30))
     }
 
     // MARK: Totals

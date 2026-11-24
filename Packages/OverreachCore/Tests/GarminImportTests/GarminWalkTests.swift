@@ -31,8 +31,9 @@ struct GarminWalkTests {
             in: CalendarDay(year: 2026, month: 1, day: 1)...CalendarDay(year: 2026, month: 1, day: 8)
         )
 
+        let walkingDays = days.filter { !$0.walks.isEmpty }
         let expectedDays = [CalendarDay(year: 2026, month: 1, day: 7), CalendarDay(year: 2026, month: 1, day: 8)]
-        #expect(days.map(\.day) == expectedDays)
+        #expect(walkingDays.map(\.day) == expectedDays)
         let walk = try #require(days.last?.walks.first)
         #expect(days.last?.walks.count == 1)
         #expect(walk.source == .garmin)
@@ -41,7 +42,8 @@ struct GarminWalkTests {
         #expect(walk.distanceMeters == 3_100)
         #expect(walk.averageHeartRate == 98)
         #expect(walk.elevationGainMeters == 40)
-        #expect(days.allSatisfy { $0.steps == nil })  // these days have no daily step totals
+        #expect(days.first { $0.day == CalendarDay(year: 2026, month: 1, day: 6) }?.steps == 14_847)
+        #expect(days.last?.steps == 17_443)
     }
 
     @Test func aCacheFromBeforeWalksFetchesSixtyDaysOfActivitiesOnce() async throws {
