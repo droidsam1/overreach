@@ -10,7 +10,7 @@ Checks:
 - No Python bytecode is tracked.
 - Presentation accesses shared training rules and sources through TrainingServices.
 - Every evidence key used in code has an entry in docs/evidence.md (ADR-0012).
-- Every item under "Ready to implement" in docs/priorities.md links an issue or a design-doc task.
+- Every row under "Ready to implement" in docs/priorities.md names one unique issue.
 
 Usage: scripts/check-repo.py
 """
@@ -19,6 +19,8 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+
+from priority_queue import ready_issues
 
 ROOT = Path(__file__).resolve().parent.parent
 ADR_DIR = ROOT / "docs/adr"
@@ -29,7 +31,6 @@ SKILL_MIRRORS = (ROOT / ".agents/skills", ROOT / ".claude/skills")
 AGENT_GUIDES = ["AGENTS.md", "CLAUDE.md", "CODING_STANDARDS.md"]
 LINK = re.compile(r"\]\(([^)#\s]+)(?:#[^)]*)?\)")
 EVIDENCE_KEY = re.compile(r"EvidenceReference\(\s*key:\s*\"([^\"]+)\"")
-TASK_LINK = re.compile(r"\]\((?:https://github\.com/[^)]+/issues/\d+|[\w./-]+\.md#[\w-]+)\)")
 
 
 def text(path):
@@ -136,12 +137,11 @@ def evidence_keys():
 
 
 def priorities():
-    ready = re.search(r"^## Ready to implement\n(.*?)(?=^## )", text(ROOT / "docs/priorities.md"), re.M | re.S)
-    if not ready:
-        return ["docs/priorities.md has no 'Ready to implement' section"]
-    items = re.split(r"^(?=\d+\.\s)", ready.group(1), flags=re.M)
-    return [f"docs/priorities.md: item without an issue or design-doc task link: {item.split(chr(10))[0][:70]}"
-            for item in items if re.match(r"\d+\.\s", item) and not TASK_LINK.search(item)]
+    try:
+        ready_issues(text(ROOT / "docs/priorities.md"))
+    except ValueError as error:
+        return str(error).splitlines()
+    return []
 
 
 def main():
