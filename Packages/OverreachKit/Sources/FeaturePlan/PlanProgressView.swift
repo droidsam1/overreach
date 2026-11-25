@@ -31,7 +31,12 @@ public struct PlanProgressView: View {
                     ForEach(model.importedPlanProgress) { block in
                         DisclosureGroup {
                             ForEach(block.weeks) { week in
-                                LabeledContent(week.title, value: week.summary)
+                                AdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: Spacing.xSmall) {
+                                    Text(week.title)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    Text(week.summary).foregroundStyle(.secondary)
+                                }
+                                .accessibilityElement(children: .combine)
                             }
                         } label: {
                             VStack(alignment: .leading, spacing: Spacing.xSmall) {

@@ -21,7 +21,6 @@ hybrid athlete. The device and external review steps below have their own accept
 7. [#302](https://github.com/droidsam1/overreach/issues/302) — Settings, Garmin, Exercises, Onboarding, Ask AI: tone badges and InlineNotice.
 8. [#303](https://github.com/droidsam1/overreach/issues/303) — Recovery & Progress: SignalTrendChart and Why-style signal cards.
 9. [#304](https://github.com/droidsam1/overreach/issues/304) — Plan detail screens: use DesignSystem calendar, bars and charts.
-10. [#305](https://github.com/droidsam1/overreach/issues/305) — Dynamic Type and touch targets outside Today.
 11. [#306](https://github.com/droidsam1/overreach/issues/306) — VoiceOver labels for Exercises, Onboarding, Settings, Garmin setup and forms.
 12. [#307](https://github.com/droidsam1/overreach/issues/307) — Haptics for save, confirm and check-in feedback.
 13. [#308](https://github.com/droidsam1/overreach/issues/308) — Titles: large on tab roots, inline on pushed screens.

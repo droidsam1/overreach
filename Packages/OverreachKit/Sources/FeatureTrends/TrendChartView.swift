@@ -43,9 +43,9 @@ private struct TrendChartView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
-            HStack(alignment: .firstTextBaseline) {
+            AdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: Spacing.xSmall) {
                 Text(chart.title).font(.headline)
-                Spacer()
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 Text(chart.unit).font(.caption).foregroundStyle(.secondary)
             }
             Text(chart.interval).font(.caption).foregroundStyle(.secondary)
