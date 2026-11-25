@@ -16049,23 +16049,6 @@
         }
       }
     },
-    "Retry saving draft": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Volver a guardar el borrador"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Volver gardar o borrador"
-          }
-        }
-      }
-    },
     "Review move to {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -18765,6 +18748,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Comezar co catálogo de exercicios"
+          }
+        }
+      }
+    },
+    "Start workout": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empezar entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comezar adestramento"
           }
         }
       }

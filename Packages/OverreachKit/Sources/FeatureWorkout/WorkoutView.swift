@@ -26,9 +26,9 @@ public struct WorkoutView: View {
         NavigationStack {
             Group {
                 if model.isPreparingSession {
-                    ProgressView("Preparing workout…")
+                    LoadingState("Preparing workout…")
                 } else if model.isSavingSession && !model.isSessionActive {
-                    ProgressView("Saving workout…")
+                    LoadingState("Saving workout…")
                 } else if model.isSessionActive {
                     SessionList(
                         model: model, isPickingExercise: $isPickingExercise, isReordering: $isReorderingExercises
@@ -164,42 +164,49 @@ private struct WorkoutRecoveryView: View {
     let onDiscard: () -> Void
 
     var body: some View {
-        List {
-            Section {
-                if let name = model.recoverableWorkoutName, let start = model.recoverableWorkoutStart {
-                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                        Text(name).font(.title2.weight(.semibold))
-                        Label {
-                            Text(start, format: .dateTime.day().month().year().hour().minute())
-                        } icon: {
-                            Image(systemName: "clock")
-                                .accessibilityHidden(true)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.large) {
+                Card {
+                    VStack(alignment: .leading, spacing: Spacing.medium) {
+                        SectionHeader(Text("Saved workout draft"), font: .title2.weight(.bold))
+                        if let name = model.recoverableWorkoutName, let start = model.recoverableWorkoutStart {
+                            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                                Text(name).font(.headline)
+                                Text(start, format: .dateTime.day().month().year().hour().minute())
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .accessibilityElement(children: .combine)
                         }
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        if let message = model.draftErrorMessage {
+                            StatusLabel(title: message, tone: .caution)
+                        }
+                        if model.isRecoveringDraft {
+                            LoadingState()
+                        } else if model.canResumeWorkout {
+                            Button {
+                                Task { await model.resumeSavedWorkout() }
+                            } label: {
+                                Label("Resume workout", systemImage: "play.fill")
+                            }
+                            .buttonStyle(BrandButtonStyle())
+                        } else {
+                            Button(action: model.retryDraftAccess) {
+                                Label("Try again", systemImage: "arrow.clockwise")
+                            }
+                            .buttonStyle(BrandButtonStyle())
+                        }
                     }
-                    .accessibilityElement(children: .combine)
                 }
-                if let message = model.draftErrorMessage {
-                    StatusLabel(title: message, tone: .caution)
+                Button(role: .destructive, action: onDiscard) {
+                    Text("Discard saved workout")
+                        .frame(minHeight: 44)
+                        .contentShape(.rect)
                 }
-                if model.isRecoveringDraft {
-                    ProgressView()
-                } else if model.canResumeWorkout {
-                    Button("Resume workout", systemImage: "play.fill") {
-                        Task { await model.resumeSavedWorkout() }
-                    }
-                    .buttonStyle(BrandButtonStyle())
-                } else {
-                    Button("Try again", systemImage: "arrow.clockwise") { model.retryDraftAccess() }
-                }
-            } header: {
-                Text("Saved workout draft")
+                .buttonStyle(.borderless)
+                .disabled(model.isRecoveringDraft)
             }
-            Section {
-                Button("Discard saved workout", role: .destructive, action: onDiscard)
-                    .disabled(model.isRecoveringDraft)
-            }
+            .padding(Spacing.medium)
         }
     }
 }
@@ -268,12 +275,13 @@ private struct SessionList: View {
                 .accessibilityAddTraits(.isHeader)
             // Failures and what fixes them stay above the sets.
             if let message = model.draftErrorMessage {
-                StatusLabel(title: message, tone: .caution)
-                Button("Retry saving draft", systemImage: "arrow.clockwise") { model.retryDraftAccess() }
+                InlineNotice(Text(verbatim: message), tone: .caution, retry: model.retryDraftAccess)
             }
             if let message = model.errorMessage {
-                Label(message, systemImage: "exclamationmark.triangle")
-                    .foregroundStyle(.red)
+                InlineNotice(
+                    Text(verbatim: message), tone: .critical,
+                    retry: model.canRetryFinish ? { Task { await model.requestFinish() } } : nil
+                )
             }
             if let deload = model.deloadNotice {
                 Label(deload, systemImage: "arrow.down.right.circle.fill")
