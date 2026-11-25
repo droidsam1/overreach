@@ -630,6 +630,23 @@
         }
       }
     },
+    "API key saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave de API guardada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave da API gardada"
+          }
+        }
+      }
+    },
     "About Apple Health data": {
       "extractionState": "manual",
       "localizations": {
@@ -2568,6 +2585,23 @@
         }
       }
     },
+    "Check and save": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobar y guardar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobar e gardar"
+          }
+        }
+      }
+    },
     "Check in": {
       "extractionState": "manual",
       "localizations": {
@@ -2615,6 +2649,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hai un rexistro de como te sentes hoxe."
+          }
+        }
+      }
+    },
+    "Checking the key…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobando la clave…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobando a clave…"
           }
         }
       }
@@ -3605,6 +3656,23 @@
         }
       }
     },
+    "Copy the key from your OpenWeather API keys tab, paste it here and save. Overreach checks it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copia la clave de la pestaña API keys de OpenWeather, pégala aquí y guárdala. Overreach la comprueba."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copia a clave da lapela API keys de OpenWeather, pégaa aquí e gárdaa. Overreach comprébaa."
+          }
+        }
+      }
+    },
     "Copy the reply format": {
       "extractionState": "manual",
       "localizations": {
@@ -4026,6 +4094,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non se puideron preparar os teus datos. Téntao de novo."
+          }
+        }
+      }
+    },
+    "Could not reach OpenWeather. Check your connection and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo contactar con OpenWeather. Revisa tu conexión e inténtalo de nuevo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido contactar con OpenWeather. Revisa a túa conexión e téntao de novo."
           }
         }
       }
@@ -4506,6 +4591,23 @@
         }
       }
     },
+    "Create a free OpenWeather account, then subscribe to One Call API 3.0 from the API page.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea una cuenta gratuita de OpenWeather y suscríbete a One Call API 3.0 desde la página de API."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea unha conta gratuíta de OpenWeather e subscríbete a One Call API 3.0 desde a páxina da API."
+          }
+        }
+      }
+    },
     "Create a new one in Settings → Garmin to keep importing. It takes the same three steps.": {
       "extractionState": "manual",
       "localizations": {
@@ -4553,6 +4655,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Crea unha con + ou garda unha sesión pasada como rutina desde Historial."
+          }
+        }
+      }
+    },
+    "Create your OpenWeather account": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea tu cuenta de OpenWeather"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea a túa conta de OpenWeather"
           }
         }
       }
@@ -6648,6 +6767,23 @@
         }
       }
     },
+    "Forecast unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsión no disponible"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsión non dispoñible"
+          }
+        }
+      }
+    },
     "From {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -8297,6 +8433,23 @@
         }
       }
     },
+    "In OpenWeather, set the One Call API 3.0 daily limit to 1,000 or fewer to avoid charges.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En OpenWeather, fija el límite diario de One Call API 3.0 en 1000 o menos para evitar cargos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En OpenWeather, fixa o límite diario de One Call API 3.0 en 1000 ou menos para evitar cargos."
+          }
+        }
+      }
+    },
     "In Strong: Settings → Export data. Re-importing the same file does not create duplicates.": {
       "extractionState": "manual",
       "localizations": {
@@ -8582,6 +8735,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Manter as carreiras separadas"
+          }
+        }
+      }
+    },
+    "Keep the daily limit low": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén bajo el límite diario"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén baixo o límite diario"
           }
         }
       }
@@ -9755,6 +9925,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cargando Hoxe…"
+          }
+        }
+      }
+    },
+    "Loading weather": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cargando el tiempo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cargando o tempo"
           }
         }
       }
@@ -12428,6 +12615,23 @@
         }
       }
     },
+    "Open OpenWeather": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir OpenWeather"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir OpenWeather"
+          }
+        }
+      }
+    },
     "Open Train": {
       "extractionState": "manual",
       "localizations": {
@@ -12475,6 +12679,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Clave da API de OpenWeather"
+          }
+        }
+      }
+    },
+    "OpenWeather rejected this key. Check you copied all of it and subscribed to One Call API 3.0.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenWeather rechazó esta clave. Comprueba que la copiaste entera y que te suscribiste a One Call API 3.0."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenWeather rexeitou esta clave. Comproba que a copiaches enteira e que te subscribiches a One Call API 3.0."
           }
         }
       }
@@ -12679,6 +12900,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Overreach"
+          }
+        }
+      }
+    },
+    "Overreach needs your own free OpenWeather key. It stays here and only goes to OpenWeather.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach necesita tu propia clave gratuita de OpenWeather. Se queda aquí y solo va a OpenWeather."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach necesita a túa propia clave gratuíta de OpenWeather. Queda aquí e só vai a OpenWeather."
           }
         }
       }
@@ -14774,6 +15012,23 @@
         }
       }
     },
+    "Replace key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sustituir clave"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Substituír a clave"
+          }
+        }
+      }
+    },
     "Replace today's planned run with an easy run at a conversational pace.": {
       "extractionState": "manual",
       "localizations": {
@@ -16759,6 +17014,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Configurar"
+          }
+        }
+      }
+    },
+    "Set up weather": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurar el tiempo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurar o tempo"
+          }
+        }
+      }
+    },
+    "Set up with a guide": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurar con una guía"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configurar cunha guía"
           }
         }
       }
@@ -20894,6 +21183,23 @@
         }
       }
     },
+    "Updated {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizado {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizado {1}"
+          }
+        }
+      }
+    },
     "Updates": {
       "extractionState": "manual",
       "localizations": {
@@ -21778,6 +22084,23 @@
         }
       }
     },
+    "Weather area not set": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zona del tiempo sin definir"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zona do tempo sen definir"
+          }
+        }
+      }
+    },
     "Weather data from OpenWeather": {
       "extractionState": "manual",
       "localizations": {
@@ -21791,6 +22114,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Datos meteorolóxicos de OpenWeather"
+          }
+        }
+      }
+    },
+    "Weather is connected.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El tiempo está conectado."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O tempo está conectado."
           }
         }
       }
@@ -21812,19 +22152,36 @@
         }
       }
     },
-    "Weather settings": {
+    "Weather not connected": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ajustes del tiempo"
+            "value": "Tiempo sin conectar"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Axustes do tempo"
+            "value": "Tempo sen conectar"
+          }
+        }
+      }
+    },
+    "Weather setup": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuración del tiempo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuración do tempo"
           }
         }
       }
@@ -22233,6 +22590,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Por que"
+          }
+        }
+      }
+    },
+    "Why Overreach needs a key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por qué Overreach necesita una clave"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por que Overreach necesita unha clave"
           }
         }
       }

@@ -7,6 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Weather settings show a masked "API key saved" state with Replace key and Disconnect, and a four-step guide to
+  getting an OpenWeather key that checks it before saving (#362, #363).
+- The Today weather button is grey until weather is set up, then shows a coloured condition icon with the
+  temperature, or a progress or warning badge while loading or when the forecast failed (#364).
+- The weather forecast is kept between launches, shows "Updated HH:mm" and refreshes on pull without exceeding the
+  daily request budget (#365).
 - Today can show a local hourly weather forecast and likely dry and sunny periods for running or walks.
 - The timing evidence review now covers long-term prevention: exercise hour and disease risk (no preferred time, cohorts
   disagree), weekend-warrior patterns (never a fault), consistent training time (habit, not circadian) and meal timing,

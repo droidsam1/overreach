@@ -6,6 +6,8 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
     public enum Response: Sendable {
         case data(Data)
         case backOff
+        /// The provider refused the key (HTTP 401). Backs off like `backOff`.
+        case rejected
         case unavailable
     }
 
@@ -21,6 +23,23 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
         var requestDay: TimeInterval = 0
         var attempts = 0
         var history: [HistoryEntry] = []
+        var forecasts: [ForecastEntry] = []
+
+        init() {}
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            requestDay = try container.decodeIfPresent(TimeInterval.self, forKey: .requestDay) ?? 0
+            attempts = try container.decodeIfPresent(Int.self, forKey: .attempts) ?? 0
+            history = try container.decodeIfPresent([HistoryEntry].self, forKey: .history) ?? []
+            forecasts = try container.decodeIfPresent([ForecastEntry].self, forKey: .forecasts) ?? []
+        }
+    }
+
+    private struct ForecastEntry: Codable {
+        let area: WeatherArea
+        let fetchedAt: Date
+        let hours: [WeatherHour]
     }
 
     private struct HistoryEntry: Codable {
@@ -33,32 +52,30 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
         let hour: TimeInterval?
     }
 
-    private struct Forecast {
-        let fetchedAt: Date
-        let hours: [WeatherHour]
-    }
-
     private let cacheFile: URL
     private let readKey: @Sendable () -> String?
     private let writeKey: @Sendable (String?) throws -> Void
     private let request: @Sendable (URL) async -> Response
     private let now: @Sendable () -> Date
+    private let forecastFreshness: TimeInterval
     private var cache: Cache
-    private var forecasts: [WeatherArea: Forecast] = [:]
     private var pending: [Query: Task<Reply, Never>] = [:]
     private var nextRequestDate: Date?
     private var retryAfter: [Query: Date] = [:]
     private var generation = 0
     private static let dailyLimit = 200
     private static let maximumHistory = 512
+    private static let maximumForecasts = 4
 
     public init(
         cacheFile: URL,
         readKey: @escaping @Sendable () -> String?,
         writeKey: @escaping @Sendable (String?) throws -> Void,
         request: @escaping @Sendable (URL) async -> Response,
-        now: @escaping @Sendable () -> Date = Date.init
+        now: @escaping @Sendable () -> Date = Date.init,
+        forecastFreshness: TimeInterval = 30 * 60
     ) {
+        self.forecastFreshness = forecastFreshness
         self.cacheFile = cacheFile
         self.readKey = readKey
         self.writeKey = writeKey
@@ -80,9 +97,21 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
     public func disconnect() throws {
         try writeKey(nil)
         resetRequests()
-        forecasts.removeAll()
+        cache.forecasts.removeAll()
         cache.history.removeAll()
         try persist()
+    }
+
+    public func validate(key: String) async -> WeatherKeyCheck {
+        let cleaned = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleaned.isEmpty, let area = WeatherArea(latitude: 0, longitude: 0),
+              let url = OpenWeatherTimeline.url(for: area, start: nil, key: cleaned),
+              reserveAttempt(at: now()) else { return .unavailable }
+        switch await request(url) {
+        case let .data(data): return (try? OpenWeatherTimeline.decode(data)) == nil ? .unavailable : .valid
+        case .rejected: return .rejected
+        case .backOff, .unavailable: return .unavailable
+        }
     }
 
     public func historical(for area: WeatherArea, at date: Date) async -> WeatherHour? {
@@ -107,18 +136,52 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
     }
 
     public func forecast(for area: WeatherArea) async -> [WeatherHour] {
-        guard readKey() != nil else { return [] }
+        await forecast(for: area, forceRefresh: false).hours
+    }
+
+    public func cachedForecast(for area: WeatherArea) async -> WeatherForecast? {
+        guard readKey() != nil else { return nil }
+        return storedForecast(for: area).map { WeatherForecast(hours: $0.hours, fetchedAt: $0.fetchedAt) }
+    }
+
+    public func forecast(for area: WeatherArea, forceRefresh: Bool) async -> WeatherForecast {
+        guard readKey() != nil else { return WeatherForecast(hours: []) }
+        let stored = storedForecast(for: area)
         let date = now()
-        if let forecast = forecasts[area], date.timeIntervalSince(forecast.fetchedAt) < 30 * 60 {
-            return forecast.hours
+        if !forceRefresh, let stored, isFresh(stored, at: date) {
+            return WeatherForecast(hours: stored.hours, fetchedAt: stored.fetchedAt)
         }
         let revision = generation
         let hours = await fetch(Query(area: area, hour: nil), start: nil)
-        guard revision == generation else { return [] }
-        if !hours.isEmpty {
-            forecasts[area] = Forecast(fetchedAt: date, hours: hours)
+        guard revision == generation else { return WeatherForecast(hours: []) }
+        if hours.isEmpty {
+            // Refused (budget, back-off) or failed: keep showing what is stored.
+            return stored.map { WeatherForecast(hours: $0.hours, fetchedAt: $0.fetchedAt) }
+                ?? WeatherForecast(hours: [])
         }
-        return hours.isEmpty ? forecasts[area]?.hours ?? [] : hours
+        let fetchedAt = now()
+        cache.forecasts.removeAll { $0.area == area }
+        cache.forecasts.append(ForecastEntry(area: area, fetchedAt: fetchedAt, hours: hours))
+        if cache.forecasts.count > Self.maximumForecasts {
+            cache.forecasts.removeFirst(cache.forecasts.count - Self.maximumForecasts)
+        }
+        try? persist()
+        return WeatherForecast(hours: hours, fetchedAt: fetchedAt)
+    }
+
+    public func discardForecast(for area: WeatherArea) async {
+        guard cache.forecasts.contains(where: { $0.area == area }) else { return }
+        cache.forecasts.removeAll { $0.area == area }
+        try? persist()
+    }
+
+    private func storedForecast(for area: WeatherArea) -> ForecastEntry? {
+        cache.forecasts.first { $0.area == area }
+    }
+
+    private func isFresh(_ entry: ForecastEntry, at date: Date) -> Bool {
+        let age = date.timeIntervalSince(entry.fetchedAt)
+        return age >= 0 && age < forecastFreshness
     }
 
     private func fetch(_ query: Query, start: Date?) async -> [WeatherHour] {
@@ -134,7 +197,7 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
             switch await request(url) {
             case let .data(data):
                 return Reply(hours: (try? OpenWeatherTimeline.decode(data)) ?? [])
-            case .backOff:
+            case .backOff, .rejected:
                 return Reply(shouldBackOff: true)
             case .unavailable:
                 return Reply()

@@ -16,14 +16,14 @@ struct TodayForecastView<Settings: View>: View {
                     NavigationLink {
                         settings()
                     } label: {
-                        Label("Weather settings", systemImage: "gearshape")
+                        Label("Set up weather", systemImage: "key")
                     }
                 }
             }
         }
         .navigationTitle("Weather today")
         .task { await model.load() }
-        .refreshable { await model.load() }
+        .refreshable { await model.load(forceRefresh: true) }
     }
 
     @ViewBuilder private var forecast: some View {
@@ -35,6 +35,9 @@ struct TodayForecastView<Settings: View>: View {
                     Text("The forecast is unavailable. Try refreshing later.")
                 }
             } else {
+                if let updated = model.updatedText {
+                    Text(verbatim: updated).font(.footnote).foregroundStyle(.secondary)
+                }
                 windows("Likely dry", model.dryWindows, symbol: "drop.degreesign.slash")
                 windows("Clear or mostly sunny", model.sunnyWindows, symbol: "sun.max")
                 Section("Hourly forecast") {
@@ -60,7 +63,7 @@ struct TodayForecastView<Settings: View>: View {
                     .foregroundStyle(.secondary)
             }
             if model.area != nil {
-                Button("Remove saved area", role: .destructive) { model.removeArea() }
+                Button("Remove saved area", role: .destructive) { Task { await model.removeArea() } }
                     .disabled(model.isLocating)
             }
         } footer: {
@@ -88,7 +91,7 @@ struct TodayForecastView<Settings: View>: View {
 
     private func hourRow(_ hour: TodayForecastModel.Hour) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: Spacing.small) {
-            Image(systemName: hour.symbol).accessibilityHidden(true)
+            WeatherSymbol(systemName: hour.symbol, tone: hour.sky?.tone ?? .cloudy)
             VStack(alignment: .leading, spacing: Spacing.xSmall) {
                 Text(hour.id, format: .dateTime.hour().minute()).font(.headline)
                 if let conditions = hour.conditions {
@@ -102,5 +105,50 @@ struct TodayForecastView<Settings: View>: View {
             if let temperature = hour.temperature { Text(temperature).monospacedDigit() }
         }
         .accessibilityElement(children: .combine)
+    }
+}
+
+extension TodayForecastModel.Sky {
+    var tone: WeatherTone {
+        switch self {
+        case .clear: .clear
+        case .clearNight: .clearNight
+        case .partlyCloudy: .partlyCloudy
+        case .partlyCloudyNight: .partlyCloudyNight
+        case .cloudy: .cloudy
+        case .rain: .rain
+        case .thunderstorm: .thunderstorm
+        case .snow: .snow
+        case .fog: .fog
+        }
+    }
+}
+
+/// The weather button of the Today toolbar: grey when weather is not set up, coloured with the temperature when a
+/// forecast is shown, and a small progress or warning badge while loading or when the forecast failed.
+struct TodayWeatherToolbarLabel: View {
+    let model: TodayForecastModel
+
+    var body: some View {
+        HStack(spacing: Spacing.xSmall) {
+            switch model.toolbarState {
+            case .notConnected, .needsArea:
+                WeatherSymbol(systemName: "cloud.sun", tone: .muted)
+            case .loading:
+                WeatherSymbol(systemName: "cloud.sun", tone: .muted)
+                ProgressView().controlSize(.mini)
+            case .unavailable:
+                WeatherSymbol(systemName: "cloud.sun", tone: .muted)
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.caption2)
+                    .foregroundStyle(StatusTone.caution.color)
+                    .accessibilityHidden(true)
+            case .ready:
+                WeatherSymbol(systemName: model.toolbarSymbol, tone: model.toolbarSky?.tone ?? .cloudy)
+                if let temperature = model.toolbarTemperature {
+                    Text(temperature).monospacedDigit()
+                }
+            }
+        }
     }
 }
