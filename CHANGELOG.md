@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Evidence review of sleep and training timing (zeitgebers): regular sleep, social jetlag, evening exercise and
+  exercise phase shifts, with five register entries, ADR-0045 and a design note. `CircadianTiming` computes usual
+  bedtime, wake and training times and returns neutral insights; it is not yet shown in the app (#347).
 - Recovery & Progress shows observed 1, 5 and 10 km running times, recorded strength results and eligible
   estimated 1RM trends for the last 30 or 90 days. Select a chart point or session row to open its source.
   Plan progress, deloads and rest history remain available from Progress.
