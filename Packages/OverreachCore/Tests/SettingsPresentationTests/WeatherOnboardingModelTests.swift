@@ -28,7 +28,7 @@ struct WeatherOnboardingModelTests {
     @Test func everyStepHasATitleAndMessageAndTheLimitStepStatesThe1000Cap() {
         let model = WeatherOnboardingModel(credentials: WeatherCredentialsFixture())
         var titles: Set<String> = []
-        for _ in WeatherOnboardingModel.Step.allCases {
+        for _ in model.steps {
             #expect(!model.title.isEmpty && !model.message.isEmpty)
             titles.insert(model.title)
             if model.step == .limit { #expect(model.message.contains("1,000")) }

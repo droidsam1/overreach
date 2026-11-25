@@ -137,6 +137,7 @@ public final class HistoryModel {
     private var walkLines: [HistoryWalk] = []
     private let runSources: [any MetricsSource]
     private let runWeather: @Sendable (RunActivity) async -> WeatherHour?
+    private let weatherProvider: @Sendable () async -> WeatherProvider
     private var format: Format
     private let clock: @Sendable () -> Date
     private var effortScale = EffortScale.rpe
@@ -167,6 +168,7 @@ public final class HistoryModel {
         progression: (any ProgressionSettingsRepository)? = nil,
         runSources: [any MetricsSource] = [],
         runWeather: @escaping @Sendable (RunActivity) async -> WeatherHour? = { _ in nil },
+        weatherProvider: @escaping @Sendable () async -> WeatherProvider = { .openWeatherOneCall },
         recordedStrength: (any RecordedStrengthSource)? = nil,
         activitySources: [any ActivitySource] = [],
         companionAnswers: DogWalkAnswers? = nil,
@@ -192,6 +194,7 @@ public final class HistoryModel {
         self.dogRunAnswers = dogRunAnswers
         self.runSources = runSources
         self.runWeather = runWeather
+        self.weatherProvider = weatherProvider
         self.format = format
         self.clock = clock
         self.runChoices = runChoices
@@ -202,6 +205,11 @@ public final class HistoryModel {
             workouts: workouts, activitySources: activitySources, runSources: runSources,
             calendar: calendar, format: format, runChoices: runChoices, clock: clock
         )
+    }
+
+    /// The credit line for the weather shown on a run, naming the active provider.
+    public func weatherAttribution() async -> String {
+        await weatherProvider().attributionTitle
     }
 
     public func weatherDetails(for run: HistoryRunActivity) async -> [HistoryMetric] {

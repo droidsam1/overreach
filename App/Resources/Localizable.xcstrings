@@ -307,6 +307,23 @@
         }
       }
     },
+    "3-hour steps, so dry and sunny windows are coarser.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tramos de 3 horas, así que los periodos secos y soleados son menos precisos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tramos de 3 horas, así que os períodos secos e soleados son menos precisos."
+          }
+        }
+      }
+    },
     "30 days": {
       "extractionState": "manual",
       "localizations": {
@@ -473,6 +490,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Un borrador segundo o teu obxectivo. A duración dos bloques é unha heurística de adestramento; axústaa sobre a marcha."
+          }
+        }
+      }
+    },
+    "A free OpenWeather key needs no card. The forecast has 3-hour steps and there is no weather for past runs. The key stays here and only goes to OpenWeather.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una clave gratuita de OpenWeather no necesita tarjeta. La previsión va en tramos de 3 horas y no hay tiempo de las carreras pasadas. La clave se queda aquí y solo se envía a OpenWeather."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unha chave gratuíta de OpenWeather non precisa tarxeta. A previsión vai en tramos de 3 horas e non hai tempo das carreiras pasadas. A chave queda aquí e só se envía a OpenWeather."
           }
         }
       }
@@ -2449,6 +2483,23 @@
         }
       }
     },
+    "Card": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tarjeta"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tarxeta"
+          }
+        }
+      }
+    },
     "Catalog exercises show their Spanish name; search works in English or Spanish.": {
       "extractionState": "manual",
       "localizations": {
@@ -2819,6 +2870,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Escolle un exercicio que coñezas e unha carga lixeira. Remata cada serie sentindo que poderías facer polo menos catro repeticións máis."
+          }
+        }
+      }
+    },
+    "Choose a weather provider to see a forecast for running and walks.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige un proveedor del tiempo para ver la previsión para correr y pasear."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolle un provedor do tempo para ver a previsión para correr e pasear."
           }
         }
       }
@@ -3316,6 +3384,23 @@
         }
       }
     },
+    "Confirm Open-Meteo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar Open-Meteo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar Open-Meteo"
+          }
+        }
+      }
+    },
     "Confirm heart-rate sensors": {
       "extractionState": "manual",
       "localizations": {
@@ -3465,23 +3550,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Conectar Garmin agora"
-          }
-        }
-      }
-    },
-    "Connect OpenWeather to see an hourly forecast for running and walks.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Conecta OpenWeather para ver la previsión por horas para correr y pasear."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Conecta OpenWeather para ver a previsión por horas para correr e pasear."
           }
         }
       }
@@ -4587,6 +4655,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cobertura: {1} lecturas nos últimos {2} días"
+          }
+        }
+      }
+    },
+    "Create a free OpenWeather account and copy your key. A new key can take a while to start working.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea una cuenta gratuita de OpenWeather y copia tu clave. Una clave nueva puede tardar un tiempo en funcionar."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea unha conta gratuíta de OpenWeather e copia a túa chave. Unha chave nova pode tardar un tempo en funcionar."
           }
         }
       }
@@ -6189,23 +6274,6 @@
         }
       }
     },
-    "Estimated hourly weather from OpenWeather": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tiempo estimado por hora de OpenWeather"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tempo estimado por hora de OpenWeather"
-          }
-        }
-      }
-    },
     "Estimated maxes dropped on {1} lifts this month.": {
       "extractionState": "manual",
       "localizations": {
@@ -6780,6 +6848,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Previsión non dispoñible"
+          }
+        }
+      }
+    },
+    "Free for non-commercial use. Data by Open-Meteo.com under CC BY 4.0.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gratis para uso no comercial. Datos de Open-Meteo.com bajo CC BY 4.0."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gratis para uso non comercial. Datos de Open-Meteo.com baixo CC BY 4.0."
           }
         }
       }
@@ -7749,6 +7834,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Previsión por horas"
+          }
+        }
+      }
+    },
+    "Hourly.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por horas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por horas."
           }
         }
       }
@@ -11527,6 +11629,23 @@
         }
       }
     },
+    "No key or account. Hourly forecast and past-run weather.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin clave ni cuenta. Previsión por horas y tiempo de carreras pasadas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen chave nin conta. Previsión por horas e tempo de carreiras pasadas."
+          }
+        }
+      }
+    },
     "No leg-heavy workout the day before or after, so your legs are fresh.": {
       "extractionState": "manual",
       "localizations": {
@@ -12139,6 +12258,23 @@
         }
       }
     },
+    "No weather for past runs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin tiempo de carreras pasadas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen tempo de carreiras pasadas."
+          }
+        }
+      }
+    },
     "None": {
       "extractionState": "manual",
       "localizations": {
@@ -12152,6 +12288,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ningunha"
+          }
+        }
+      }
+    },
+    "None. No account or key.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ninguna. Sin cuenta ni clave."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ningunha. Sen conta nin chave."
           }
         }
       }
@@ -12237,6 +12390,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen indicar"
+          }
+        }
+      }
+    },
+    "Not required.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No es necesaria."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non é necesaria."
           }
         }
       }
@@ -12547,6 +12717,23 @@
         }
       }
     },
+    "One Call needs your own OpenWeather key and a One Call subscription. OpenWeather asks for a card; the first 1,000 calls a day are free. The key stays here and only goes to OpenWeather.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One Call necesita tu propia clave de OpenWeather y una suscripción a One Call. OpenWeather pide una tarjeta; las primeras 1.000 llamadas al día son gratis. La clave se queda aquí y solo se envía a OpenWeather."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One Call precisa a túa propia chave de OpenWeather e unha subscrición a One Call. OpenWeather pide unha tarxeta; as primeiras 1.000 chamadas ao día son gratis. A chave queda aquí e só se envía a OpenWeather."
+          }
+        }
+      }
+    },
     "Only light running recorded": {
       "extractionState": "manual",
       "localizations": {
@@ -12649,6 +12836,57 @@
         }
       }
     },
+    "Open-Meteo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open-Meteo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open-Meteo"
+          }
+        }
+      }
+    },
+    "Open-Meteo is connected": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open-Meteo está conectado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open-Meteo está conectado"
+          }
+        }
+      }
+    },
+    "Open-Meteo needs no key, no account and no card. It is free for non-commercial use.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open-Meteo no necesita clave, cuenta ni tarjeta. Es gratis para uso no comercial."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open-Meteo non precisa chave, conta nin tarxeta. É gratis para uso non comercial."
+          }
+        }
+      }
+    },
     "OpenWeather": {
       "extractionState": "manual",
       "localizations": {
@@ -12683,6 +12921,40 @@
         }
       }
     },
+    "OpenWeather One Call": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenWeather One Call"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenWeather One Call"
+          }
+        }
+      }
+    },
+    "OpenWeather free key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave gratuita de OpenWeather"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chave gratuíta de OpenWeather"
+          }
+        }
+      }
+    },
     "OpenWeather rejected this key. Check you copied all of it and subscribed to One Call API 3.0.": {
       "extractionState": "manual",
       "localizations": {
@@ -12696,6 +12968,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "OpenWeather rexeitou esta clave. Comproba que a copiaches enteira e que te subscribiches a One Call API 3.0."
+          }
+        }
+      }
+    },
+    "OpenWeather rejected this key. Check you copied all of it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenWeather rechazó esta clave. Comprueba que la copiaste entera."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenWeather rexeitou esta chave. Comproba que a copiaches enteira."
+          }
+        }
+      }
+    },
+    "OpenWeather rejected this key. Check you copied all of it; a new key can take a while.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenWeather rechazó esta clave. Comprueba que la copiaste entera; una clave nueva puede tardar un tiempo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenWeather rexeitou esta chave. Comproba que a copiaches enteira; unha chave nova pode tardar un tempo."
           }
         }
       }
@@ -12904,19 +13210,19 @@
         }
       }
     },
-    "Overreach needs your own free OpenWeather key. It stays here and only goes to OpenWeather.": {
+    "Overreach asks Open-Meteo for the forecast of your approximate area and sends nothing else. Data by Open-Meteo.com under CC BY 4.0.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Overreach necesita tu propia clave gratuita de OpenWeather. Se queda aquí y solo va a OpenWeather."
+            "value": "Overreach pide a Open-Meteo la previsión de tu zona aproximada y no envía nada más. Datos de Open-Meteo.com bajo CC BY 4.0."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Overreach necesita a túa propia clave gratuíta de OpenWeather. Queda aquí e só vai a OpenWeather."
+            "value": "Overreach pide a Open-Meteo a previsión da túa zona aproximada e non envía nada máis. Datos de Open-Meteo.com baixo CC BY 4.0."
           }
         }
       }
@@ -13138,6 +13444,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Parcialmente nubrado"
+          }
+        }
+      }
+    },
+    "Past runs": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreras pasadas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreiras pasadas"
           }
         }
       }
@@ -13937,6 +14260,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Coida o sono: o estrés e as noites curtas sómanse."
+          }
+        }
+      }
+    },
+    "Provider": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proveedor"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Provedor"
           }
         }
       }
@@ -15080,6 +15420,23 @@
         }
       }
     },
+    "Required. 1,000 calls a day are free.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Necesaria. 1.000 llamadas al día son gratis."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Necesaria. 1.000 chamadas ao día son gratis."
+          }
+        }
+      }
+    },
     "Rescheduled": {
       "extractionState": "manual",
       "localizations": {
@@ -15110,6 +15467,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fonte científica"
+          }
+        }
+      }
+    },
+    "Resolution": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resolución"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resolución"
           }
         }
       }
@@ -17171,6 +17545,23 @@
         }
       }
     },
+    "Setup": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuración"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configuración"
+          }
+        }
+      }
+    },
     "Setup options": {
       "extractionState": "manual",
       "localizations": {
@@ -19109,6 +19500,23 @@
         }
       }
     },
+    "Switching provider clears the saved forecast. A saved OpenWeather key stays until you disconnect.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar de proveedor borra la previsión guardada. La clave de OpenWeather guardada se mantiene hasta que te desconectes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar de provedor borra a previsión gardada. A chave de OpenWeather gardada mantense ata que te desconectes."
+          }
+        }
+      }
+    },
     "Symptoms to discuss with a clinician": {
       "extractionState": "manual",
       "localizations": {
@@ -19479,6 +19887,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dez segundos en Hoxe: enerxía, agulletas ou enfermidade. O semáforo téñeo en conta."
+          }
+        }
+      }
+    },
+    "Terms": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Condiciones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Condicións"
           }
         }
       }
@@ -19976,6 +20401,23 @@
         }
       }
     },
+    "This forecast has 3-hour steps.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta previsión va en tramos de 3 horas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta previsión vai en tramos de 3 horas."
+          }
+        }
+      }
+    },
     "This is not an Overreach plan.": {
       "extractionState": "manual",
       "localizations": {
@@ -19989,6 +20431,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Isto non é un plan de Overreach."
+          }
+        }
+      }
+    },
+    "This key also has One Call, so Overreach uses the hourly forecast and past-run weather.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta clave también tiene One Call, así que Overreach usa la previsión por horas y el tiempo de carreras pasadas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta chave tamén ten One Call, así que Overreach usa a previsión por horas e o tempo de carreiras pasadas."
+          }
+        }
+      }
+    },
+    "This key has no One Call subscription, so Overreach uses the free forecast in 3-hour steps.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta clave no tiene suscripción a One Call, así que Overreach usa la previsión gratuita en tramos de 3 horas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta chave non ten subscrición a One Call, así que Overreach usa a previsión gratuíta en tramos de 3 horas."
           }
         }
       }
@@ -21217,6 +21693,40 @@
         }
       }
     },
+    "Use Open-Meteo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar Open-Meteo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar Open-Meteo"
+          }
+        }
+      }
+    },
+    "Use a free OpenWeather key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar una clave gratuita de OpenWeather"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar unha chave gratuíta de OpenWeather"
+          }
+        }
+      }
+    },
     "Use a lighter load or an easier version if you need it to keep the effort light.": {
       "extractionState": "manual",
       "localizations": {
@@ -21468,6 +21978,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Usa a Personal API oficial de Garmin coa túa propia chave. Sen relación con Garmin."
+          }
+        }
+      }
+    },
+    "Using One Call: hourly forecast and past-run weather.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usando One Call: previsión por horas y tiempo de carreras pasadas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usando One Call: previsión por horas e tempo de carreiras pasadas."
+          }
+        }
+      }
+    },
+    "Using your free key: 3-hour steps and no past-run weather. Subscribe to One Call for hourly data.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usando tu clave gratuita: tramos de 3 horas y sin tiempo de carreras pasadas. Suscríbete a One Call para datos por horas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usando a túa chave gratuíta: tramos de 3 horas e sen tempo de carreiras pasadas. Subscríbete a One Call para datos por horas."
           }
         }
       }
@@ -22101,6 +22645,23 @@
         }
       }
     },
+    "Weather data by Open-Meteo.com": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datos meteorológicos de Open-Meteo.com"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datos meteorolóxicos de Open-Meteo.com"
+          }
+        }
+      }
+    },
     "Weather data from OpenWeather": {
       "extractionState": "manual",
       "localizations": {
@@ -22148,6 +22709,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tempo preto da saída"
+          }
+        }
+      }
+    },
+    "Weather near the start of runs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiempo cerca del inicio de las carreras."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo preto do inicio das carreiras."
           }
         }
       }
@@ -22437,6 +23015,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Que cambia"
+          }
+        }
+      }
+    },
+    "What to expect": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qué esperar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Que esperar"
           }
         }
       }
@@ -23376,6 +23971,57 @@
         }
       }
     },
+    "Your OpenWeather free plan.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu plan gratuito de OpenWeather."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teu plan gratuíto de OpenWeather."
+          }
+        }
+      }
+    },
+    "Your OpenWeather key and a One Call subscription.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu clave de OpenWeather y una suscripción a One Call."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa chave de OpenWeather e unha subscrición a One Call."
+          }
+        }
+      }
+    },
+    "Your OpenWeather plan. Charges apply above the daily limit.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu plan de OpenWeather. Se cobra por encima del límite diario."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teu plan de OpenWeather. Cóbrase por riba do límite diario."
+          }
+        }
+      }
+    },
     "Your answer can change today's recommendation.": {
       "extractionState": "manual",
       "localizations": {
@@ -23580,6 +24226,23 @@
         }
       }
     },
+    "Your free OpenWeather key.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu clave gratuita de OpenWeather."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa chave gratuíta de OpenWeather."
+          }
+        }
+      }
+    },
     "Your key stays on your iPhone, in the Keychain, and only syncs through your own iCloud Keychain.": {
       "extractionState": "manual",
       "localizations": {
@@ -23729,6 +24392,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "O movemento estivo limitado durante o quecemento."
+          }
+        }
+      }
+    },
+    "Your own free key, no card. 3-hour steps and no past-run weather.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu propia clave gratuita, sin tarjeta. Tramos de 3 horas y sin tiempo de carreras pasadas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa propia chave gratuíta, sen tarxeta. Tramos de 3 horas e sen tempo de carreiras pasadas."
+          }
+        }
+      }
+    },
+    "Your own key with a One Call subscription. Needs a card.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu propia clave con suscripción a One Call. Necesita tarjeta."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A túa propia chave con subscrición a One Call. Precisa tarxeta."
           }
         }
       }
