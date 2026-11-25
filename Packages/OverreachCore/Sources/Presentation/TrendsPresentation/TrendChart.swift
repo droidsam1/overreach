@@ -38,8 +38,10 @@ public struct TrendChart: Identifiable, Hashable, Sendable {
     public let unit: String
     /// "Last 30 days".
     public let interval: String
-    /// Lines: runs of consecutive days, so a day without a reading is a visible break. Bars: one run of weeks.
-    public let segments: [[TrendPoint]]
+    /// Lines keep one slot per day, including gaps. Bars use one slot per week.
+    let points: [TrendPoint?]
+    public let startLabel: String?
+    public let endLabel: String?
     /// The full date interval, including days before the first or after the last available reading.
     public let dateDomain: ClosedRange<Date>?
     public let partialWeekLabel: String?
@@ -49,7 +51,24 @@ public struct TrendChart: Identifiable, Hashable, Sendable {
     public let summary: String
 
     public var id: Kind { kind }
-    public var hasData: Bool { segments.contains { !$0.isEmpty } }
+    public var values: [Double?] { points.map { $0?.value } }
+    public var hasData: Bool { points.contains { $0 != nil } }
+
+    /// Runs of consecutive points. A missing day ends a run.
+    public var segments: [[TrendPoint]] {
+        var runs: [[TrendPoint]] = []
+        var current: [TrendPoint] = []
+        for point in points {
+            if let point {
+                current.append(point)
+            } else if !current.isEmpty {
+                runs.append(current)
+                current = []
+            }
+        }
+        if !current.isEmpty { runs.append(current) }
+        return runs
+    }
 }
 
 /// Builds the trend charts from the shared training record and the merged daily metrics, so the weekly totals use
@@ -174,19 +193,10 @@ struct TrendCharts {
         _ spec: Spec, range: TrendRange, days: [CalendarDay], values: [Double?], band: ClosedRange<Double>? = nil
     ) -> TrendChart {
         let (kind, title, unit, digits) = (spec.kind, spec.title, spec.unit, spec.digits)
-        var segments: [[TrendPoint]] = []
-        var current: [TrendPoint] = []
-        var present: [(day: CalendarDay, value: Double)] = []
-        for (day, value) in zip(days, values) {
-            guard let value else {
-                if !current.isEmpty { segments.append(current) }
-                current = []
-                continue
-            }
-            current.append(TrendPoint(day: day.startDate(in: calendar), value: value, label: dayText(day)))
-            present.append((day, value))
+        let points = zip(days, values).map { day, value in
+            value.map { TrendPoint(day: day.startDate(in: calendar), value: $0, label: dayText(day)) }
         }
-        if !current.isEmpty { segments.append(current) }
+        let present = points.compactMap { $0 }
         let amount = { (value: Double) in format.number(value, maxFractionDigits: digits) + " " + unit }
         let interval = L10n.format("Last {1} days", String(range.days))
         let summary: String
@@ -196,7 +206,7 @@ struct TrendCharts {
                 "{1}, last {2} days: average {3}, from {4} to {5}, latest {6} on {7}. {8} of {9} days have a reading.",
                 title, String(range.days), amount(numbers.reduce(0, +) / Double(numbers.count)),
                 amount(numbers.min() ?? last.value), amount(numbers.max() ?? last.value), amount(last.value),
-                dayText(last.day), String(present.count), String(range.days)
+                last.label, String(present.count), String(range.days)
             )
         } else {
             summary = L10n.format("{1}: no readings in the last {2} days.", title, String(range.days))
@@ -205,7 +215,8 @@ struct TrendCharts {
             days.last.map { first.startDate(in: calendar)...$0.startDate(in: calendar) }
         }
         return TrendChart(
-            kind: kind, style: .line, title: title, unit: unit, interval: interval, segments: segments,
+            kind: kind, style: .line, title: title, unit: unit, interval: interval, points: points,
+            startLabel: days.first.map(dayText), endLabel: days.last.map(dayText),
             dateDomain: domain, partialWeekLabel: nil, band: band,
             bandLabel: band.map { _ in L10n.text("Garmin's usual range") }, summary: summary
         )
@@ -241,7 +252,9 @@ struct TrendCharts {
         }
         return TrendChart(
             kind: kind, style: .bars, title: title, unit: unit, interval: interval,
-            segments: hasHistory ? [points] : [], dateDomain: nil, partialWeekLabel: partialWeekLabel,
+            points: hasHistory ? points.map(Optional.some) : [],
+            startLabel: points.first?.label, endLabel: points.last?.label,
+            dateDomain: nil, partialWeekLabel: partialWeekLabel,
             band: nil, bandLabel: nil, summary: summary
         )
     }

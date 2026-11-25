@@ -23,6 +23,6 @@ public enum SectionAvailability {
     /// "What appears here": one line for a screen where no section is available, naming the action that unlocks it.
     public static func unlockHint(recovery: Bool, recentLoad: Bool, progress: Bool) -> String? {
         guard !(recovery || recentLoad || progress) else { return nil }
-        return L10n.text("Nothing to show yet. Connect a source or log a workout, and recovery and load appear here.")
+        return L10n.text("Connect a source or log a workout to see recovery and load here.")
     }
 }

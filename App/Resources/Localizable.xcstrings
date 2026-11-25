@@ -3520,6 +3520,23 @@
         }
       }
     },
+    "Connect Apple Health or Garmin to see recovery readings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta Apple Salud o Garmin para ver las lecturas de recuperación."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta Apple Saúde ou Garmin para ver as lecturas de recuperación."
+          }
+        }
+      }
+    },
     "Connect Garmin": {
       "extractionState": "manual",
       "localizations": {
@@ -3550,6 +3567,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Conectar Garmin agora"
+          }
+        }
+      }
+    },
+    "Connect a source or log a workout to see recovery and load here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta una fuente o registra un entrenamiento para ver aquí tu recuperación y carga."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta unha fonte ou rexistra un adestramento para ver aquí a túa recuperación e carga."
           }
         }
       }
@@ -10150,6 +10184,23 @@
         }
       }
     },
+    "Log a workout to see how your recent load compares.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registra un entrenamiento para comparar tu carga reciente."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rexistra un adestramento para comparar a túa carga recente."
+          }
+        }
+      }
+    },
     "Log another workout": {
       "extractionState": "manual",
       "localizations": {
@@ -11595,6 +11646,23 @@
         }
       }
     },
+    "No data yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no hay datos"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aínda non hai datos"
+          }
+        }
+      }
+    },
     "No dated sessions. Today follows your usual rotation until you schedule one.": {
       "extractionState": "manual",
       "localizations": {
@@ -12033,23 +12101,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen carreira rexistrada vinculada"
-          }
-        }
-      }
-    },
-    "No recovery readings yet. Connect Apple Health or Garmin to see them here.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aún no hay lecturas de recuperación. Conecta Apple Health o Garmin para verlas aquí."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aínda non hai lecturas de recuperación. Conecta Apple Health ou Garmin para velas aquí."
           }
         }
       }
@@ -12662,23 +12713,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non hai nada rexistrado este día."
-          }
-        }
-      }
-    },
-    "Nothing to show yet. Connect a source or log a workout, and recovery and load appear here.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Todavía no hay nada que mostrar. Conecta una fuente o registra un entrenamiento y aquí aparecerán la recuperación y la carga."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aínda non hai nada que amosar. Conecta unha fonte ou rexistra un adestramento e aquí aparecerán a recuperación e a carga."
           }
         }
       }
@@ -17184,6 +17218,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ver a túa sesión de descarga"
+          }
+        }
+      }
+    },
+    "Segment": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segmento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segmento"
           }
         }
       }
@@ -22101,36 +22152,19 @@
         }
       }
     },
-    "Usual high": {
+    "Usual range {1}–{2}": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Máximo habitual"
+            "value": "Rango habitual {1}–{2}"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Máximo habitual"
-          }
-        }
-      }
-    },
-    "Usual low": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mínimo habitual"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mínimo habitual"
+            "value": "Intervalo habitual {1}–{2}"
           }
         }
       }
@@ -22896,23 +22930,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "O servizo meteorolóxico usa a zona aproximada e a hora das carreiras ao aire libre compatibles."
-          }
-        }
-      }
-    },
-    "Week starting": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Semana que empieza el"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Semana que comeza o"
           }
         }
       }
