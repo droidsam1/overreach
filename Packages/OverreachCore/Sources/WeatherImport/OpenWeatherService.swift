@@ -1,6 +1,14 @@
 import Domain
 import Foundation
 
+/// Which OpenWeather endpoints a key can use.
+public enum OpenWeatherMode: String, Codable, Sendable {
+    /// One Call timeline: hourly forecast and history. Needs a One Call subscription.
+    case oneCall
+    /// Free 5-day forecast in 3-hour steps; no history.
+    case free
+}
+
 /// Shared client for historical and forecast requests, including their persistent per-install budget.
 public actor OpenWeatherService: WeatherSource, WeatherCredentials {
     public enum Response: Sendable {
@@ -24,6 +32,7 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
         var attempts = 0
         var history: [HistoryEntry] = []
         var forecasts: [ForecastEntry] = []
+        var mode = OpenWeatherMode.oneCall
 
         init() {}
 
@@ -33,6 +42,7 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
             attempts = try container.decodeIfPresent(Int.self, forKey: .attempts) ?? 0
             history = try container.decodeIfPresent([HistoryEntry].self, forKey: .history) ?? []
             forecasts = try container.decodeIfPresent([ForecastEntry].self, forKey: .forecasts) ?? []
+            mode = try container.decodeIfPresent(OpenWeatherMode.self, forKey: .mode) ?? .oneCall
         }
     }
 
@@ -87,6 +97,27 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
 
     public func isConfigured() async -> Bool { readKey() != nil }
 
+    public func mode() -> OpenWeatherMode { cache.mode }
+
+    public func provider() async -> WeatherProvider {
+        cache.mode == .free ? .openWeatherFree : .openWeatherOneCall
+    }
+
+    /// Switches endpoints. Stored forecasts belong to the old mode, so they go.
+    public func setMode(_ mode: OpenWeatherMode) {
+        guard mode != cache.mode else { return }
+        cache.mode = mode
+        cache.forecasts.removeAll()
+        resetRequests()
+        try? persist()
+    }
+
+    public func discardAllForecasts() async {
+        guard !cache.forecasts.isEmpty else { return }
+        cache.forecasts.removeAll()
+        try? persist()
+    }
+
     public func configure(key: String) throws {
         let cleaned = key.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleaned.isEmpty else { throw ClientError.emptyKey }
@@ -99,6 +130,7 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
         resetRequests()
         cache.forecasts.removeAll()
         cache.history.removeAll()
+        cache.mode = .oneCall
         try persist()
     }
 
@@ -109,6 +141,19 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
               reserveAttempt(at: now()) else { return .unavailable }
         switch await request(url) {
         case let .data(data): return (try? OpenWeatherTimeline.decode(data)) == nil ? .unavailable : .valid
+        case .rejected, .backOff:
+            // One Call refuses keys without its subscription (401/403); the free forecast may still accept it.
+            return await validateFree(key: cleaned, area: area)
+        case .unavailable: return .unavailable
+        }
+    }
+
+    private func validateFree(key: String, area: WeatherArea) async -> WeatherKeyCheck {
+        guard let url = OpenWeatherFreeForecast.url(for: area, key: key), reserveAttempt(at: now()) else {
+            return .unavailable
+        }
+        switch await request(url) {
+        case let .data(data): return (try? OpenWeatherFreeForecast.decode(data)) == nil ? .unavailable : .validFree
         case .rejected: return .rejected
         case .backOff, .unavailable: return .unavailable
         }
@@ -116,7 +161,7 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
 
     public func historical(for area: WeatherArea, at date: Date) async -> WeatherHour? {
         let hour = OpenWeatherTimeline.hour(date)
-        guard readKey() != nil, hour.isFinite, date < now() else { return nil }
+        guard readKey() != nil, cache.mode == .oneCall, hour.isFinite, date < now() else { return nil }
         let query = Query(area: area, hour: hour)
         if let item = cache.history.first(where: { $0.query == query }) { return item.hour }
         let revision = generation
@@ -188,15 +233,20 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
         if let existing = pending[query] { return await existing.value.hours }
         let date = now()
         retryAfter = retryAfter.filter { $0.value > date }
-        guard nextRequestDate.map({ date >= $0 }) ?? true, retryAfter[query] == nil,
-              let key = readKey(), let url = OpenWeatherTimeline.url(for: query.area, start: start, key: key),
+        let mode = cache.mode
+        guard nextRequestDate.map({ date >= $0 }) ?? true, retryAfter[query] == nil, let key = readKey(),
+              let url = mode == .free
+                ? OpenWeatherFreeForecast.url(for: query.area, key: key)
+                : OpenWeatherTimeline.url(for: query.area, start: start, key: key),
               reserveAttempt(at: date) else { return [] }
 
         let revision = generation
         let task = Task { [request] in
             switch await request(url) {
             case let .data(data):
-                return Reply(hours: (try? OpenWeatherTimeline.decode(data)) ?? [])
+                let decoded = mode == .free ? try? OpenWeatherFreeForecast.decode(data)
+                    : try? OpenWeatherTimeline.decode(data)
+                return Reply(hours: decoded ?? [])
             case .backOff, .rejected:
                 return Reply(shouldBackOff: true)
             case .unavailable:
