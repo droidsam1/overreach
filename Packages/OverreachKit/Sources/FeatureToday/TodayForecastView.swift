@@ -104,4 +104,3 @@ struct TodayForecastView<Settings: View>: View {
         .accessibilityElement(children: .combine)
     }
 }
-
