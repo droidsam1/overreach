@@ -23,6 +23,15 @@ enum GarminFITArchive {
         return track
     }
 
+    private struct Entry {
+        let name: [UInt8]
+        let method: Int
+        let checksum: UInt32
+        let compressedSize: Int
+        let size: Int
+        let offset: Int
+    }
+
     private struct Zip {
         let bytes: [UInt8]
 
@@ -48,7 +57,7 @@ enum GarminFITArchive {
                 let next = nameStart + nameSize + extra + comment
                 guard next <= end else { throw ArchiveError.invalidArchive }
                 let name = Array(bytes[nameStart..<nameStart + nameSize])
-                if String(decoding: name, as: UTF8.self).lowercased().hasSuffix(".fit") {
+                if String(bytes: name, encoding: .utf8)?.lowercased().hasSuffix(".fit") == true {
                     entries.append(try entry(at: cursor, name: name))
                 }
                 cursor = next
@@ -71,15 +80,6 @@ enum GarminFITArchive {
                 return index
             }
             throw ArchiveError.invalidArchive
-        }
-
-        private struct Entry {
-            let name: [UInt8]
-            let method: Int
-            let checksum: UInt32
-            let compressedSize: Int
-            let size: Int
-            let offset: Int
         }
 
         private func entry(at start: Int, name: [UInt8]) throws -> Entry {

@@ -362,11 +362,14 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
         var runs = GarminMapping.runs(activities)
         let strength = GarminMapping.strengthActivities(activities)
         let walks = GarminMapping.walks(activities)
-        runs = try await withLaps(runs, cached: cache.runs, key: key.value)
+        let enrichment = try await withLaps(runs, cached: cache.runs, key: key.value)
+        runs = enrichment.runs
         var updated = cache.merging(
             metrics, runs: runs, strength: strength, walks: walks, range: range, at: clock(), calendar: calendar
         )
-        updated.runningTracks = await withRunningTracks(updated, today: today, key: key.value)
+        if !enrichment.reachedRateLimit {
+            updated.runningTracks = await withRunningTracks(updated, today: today, key: key.value)
+        }
         self.cache = updated
         await cacheStore.save(updated)
         await secrets.saveToken(await client.currentToken)
@@ -386,13 +389,14 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
     /// Only a rejected key ends the sync, as for any other request.
     private func withLaps(
         _ runs: [RunActivity], cached: [RunActivity], key: String
-    ) async throws(GarminAccountError) -> [RunActivity] {
+    ) async throws(GarminAccountError) -> (runs: [RunActivity], reachedRateLimit: Bool) {
         let known = Set(cached.filter { $0.laps != nil }.map(\.id))
         let oldest = clock().addingTimeInterval(-Double(GarminSyncPlan.lapRefreshDays) * 86_400)
         let wanted = runs.filter { $0.laps == nil && !known.contains($0.id) && $0.startedAt >= oldest }
             .sorted { $0.startedAt > $1.startedAt }
             .prefix(GarminSyncPlan.maximumLapRequests)
         var laps: [String: [RunLap]] = [:]
+        var reachedRateLimit = false
         for run in wanted {
             do {
                 let data = try await client.dataIfServed(for: .activitySplits(id: run.id), key: key)
@@ -400,14 +404,16 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
             } catch .keyRejected {
                 throw .keyRejected
             } catch {
+                reachedRateLimit = error == .rateLimited
                 break
             }
         }
-        return runs.map { run in
+        let enriched = runs.map { run in
             var run = run
             if let found = laps[run.id] { run.laps = found }
             return run
         }
+        return (enriched, reachedRateLimit)
     }
 
     private func withRunningTracks(

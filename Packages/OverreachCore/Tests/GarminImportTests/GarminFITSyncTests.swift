@@ -7,11 +7,13 @@ struct GarminFITSyncTests {
     // One synthetic FIT record (143 bpm), with stored and deflated ZIP envelopes.
     private static let raw = "DCAAABIAAAAuRklUQAAAFAAC/QSGAwECAAUAAACP2PM="
     private static let stored =
-        "UEsDBBQAAAAAAINreV1qFEPMIAAAACAAAAAOAAAAMV9BQ1RJVklUWS5maXQMIAAAEgAAAC5GSVRAAAAUAAL9BIYDAQIABQAA"
-        + "AI/Y81BLAQIUABQAAAAAAINreV1qFEPMIAAAACAAAAAOAAAAAAAAAAAAAACAAQAAAAAxX0FDVElWSVRZLmZpdFBLBQYAAAAAAQABADwAAABMAAAAAAA="
+        "UEsDBBQAAAAAAINreV1qFEPMIAAAACAAAAAOAAAAMV9BQ1RJVklUWS5maXQMIAAAEgAAAC5GSVRAAAAUAAL9BIYD"
+        + "AQIABQAAAI/Y81BLAQIUABQAAAAAAINreV1qFEPMIAAAACAAAAAOAAAAAAAAAAAAAACAAQAAAAAxX0FDVElWSVRZ"
+        + "LmZpdFBLBQYAAAAAAQABADwAAABMAAAAAAA="
     private static let deflated =
-        "UEsDBBQAAAAIAINreV1qFEPMIQAAACAAAAAOAAAAMV9BQ1RJVklUWS5maXTjUWBgEGJgYNBz8wxxYGAQYWD6y9LGzMjEwAoU"
-        + "7L/xGQBQSwECFAAUAAAACACDa3ldahRDzCEAAAAgAAAADgAAAAAAAAAAAAAAgAEAAAAAMV9BQ1RJVklUWS5maXRQSwUGAAAAAAEAAQA8AAAATQAAAAAA"
+        "UEsDBBQAAAAIAINreV1qFEPMIQAAACAAAAAOAAAAMV9BQ1RJVklUWS5maXTjUWBgEGJgYNBz8wxxYGAQYWD6y9LG"
+        + "zMjEwAoU7L/xGQBQSwECFAAUAAAACACDa3ldahRDzCEAAAAgAAAADgAAAAAAAAAAAAAAgAEAAAAAMV9BQ1RJVklU"
+        + "WS5maXRQSwUGAAAAAAEAAQA8AAAATQAAAAAA"
 
     @Test func readsTheGarminEnvelopesAndRejectsBadArchiveChecksums() throws {
         let expected = try GarminFITArchive.track(from: #require(Data(base64Encoded: Self.raw)))
@@ -38,7 +40,8 @@ struct GarminFITSyncTests {
              {"activityId":31,"duration":600,"activityType":{"typeKey":"running"},"startTimeGMT":"2026-01-06 08:00:00"},
              {"activityId":32,"duration":600,"activityType":{"typeKey":"running"},"startTimeGMT":"2026-01-07 08:00:00"},
              {"activityId":33,"duration":600,"activityType":{"typeKey":"running"},"startTimeGMT":"2026-01-08 08:00:00"},
-             {"activityId":34,"duration":600,"activityType":{"typeKey":"strength_training"},"startTimeGMT":"2026-01-08 07:00:00"}
+             {"activityId":34,"duration":600,"activityType":{"typeKey":"strength_training"},
+              "startTimeGMT":"2026-01-08 07:00:00"}
             ]
             """
         let zip = try #require(Data(base64Encoded: Self.deflated))
@@ -68,5 +71,20 @@ struct GarminFITSyncTests {
         await garmin.setOffline(true)
         let reopened = makeService(garmin: garmin, secrets: secrets, cache: cache)
         #expect(await reopened.runningTrack(for: run) == track)
+    }
+
+    @Test func optionalFITRateLimitPreservesTheSummaryAndStopsFurtherDownloads() async throws {
+        let garmin = FakeGarmin()
+        let service = makeService(garmin: garmin)
+        await garmin.respond(to: "/activity/10000004", with: GarminHTTPResponse(status: 429))
+
+        try await service.connect(key: "valid-key-0123456789", lifetime: .recommended)
+        let summary = try await service.sync { _ in }
+
+        #expect(summary.runs == 4)
+        #expect(await service.connection()?.lastSync == fixtureNow)
+        let requests = await garmin.requests.filter { $0.path.hasPrefix("/download-service/") }
+        #expect(requests.count == 3)  // The client retries twice before pausing optional downloads.
+        #expect(requests.allSatisfy { $0.path == "/download-service/files/activity/10000004" })
     }
 }
