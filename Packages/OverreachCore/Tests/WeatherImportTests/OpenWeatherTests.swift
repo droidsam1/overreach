@@ -45,6 +45,20 @@ struct OpenWeatherTests {
         #expect(await fixture.calls == 1)
     }
 
+    @Test func historyAndForecastShareThePersistedDailyBudget() async throws {
+        let fixture = RequestFixture()
+        let area = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let cache = temporaryCache()
+        let weather = service(cache: cache, fixture: fixture)
+        let date = Date(timeIntervalSince1970: 1_700_003_020)
+        for offset in 0..<200 {
+            _ = await weather.historical(for: area, at: date.addingTimeInterval(Double(offset) * 3_600))
+        }
+        let restarted = service(cache: cache, fixture: fixture)
+        #expect(await restarted.forecast(for: area).isEmpty)
+        #expect(await fixture.calls == 200)
+    }
+
     private func temporaryCache() -> URL {
         FileManager.default.temporaryDirectory.appending(path: "overreach-weather-test-" + UUID().uuidString)
             .appending(path: "cache.json")
