@@ -206,12 +206,13 @@ struct TodayForecastModelTests {
 
     @Test func toolbarSkyDistinguishesRainSnowStormAndNight() async throws {
         let area = try #require(WeatherArea(latitude: 40, longitude: -3))
-        let cases: [(Int, Bool, TodayForecastModel.Sky)] = [
-            (800, true, .clear), (800, false, .clearNight), (802, false, .partlyCloudyNight),
-            (804, true, .cloudy), (501, true, .rain), (211, true, .thunderstorm), (601, true, .snow),
-            (741, true, .fog),
+        let cases: [SkyCase] = [
+            SkyCase(800, true, .clear), SkyCase(800, false, .clearNight), SkyCase(802, false, .partlyCloudyNight),
+            SkyCase(804, true, .cloudy), SkyCase(501, true, .rain), SkyCase(211, true, .thunderstorm),
+            SkyCase(601, true, .snow), SkyCase(741, true, .fog),
         ]
-        for (code, daylight, expected) in cases {
+        for skyCase in cases {
+            let (code, daylight, expected) = (skyCase.code, skyCase.daylight, skyCase.expected)
             let forecast = WeatherForecast(
                 hours: [WeatherHour(date: date(10), conditionCode: code, isDaylight: daylight)], fetchedAt: date(9)
             )
@@ -221,6 +222,18 @@ struct TodayForecastModelTests {
             )
             await model.load(now: date(9, minute: 30))
             #expect(model.toolbarSky == expected)
+        }
+    }
+
+    private struct SkyCase {
+        let code: Int
+        let daylight: Bool
+        let expected: TodayForecastModel.Sky
+
+        init(_ code: Int, _ daylight: Bool, _ expected: TodayForecastModel.Sky) {
+            self.code = code
+            self.daylight = daylight
+            self.expected = expected
         }
     }
 

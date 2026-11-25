@@ -1,5 +1,19 @@
 import SwiftUI
 
+/// The three palette layers of a weather symbol, in SF Symbols order: the cloud (or the only shape), then the sun,
+/// moon or bolt, then drops.
+public struct WeatherPalette: Sendable {
+    public let primary: Color
+    public let secondary: Color
+    public let tertiary: Color
+
+    init(_ primary: Color, _ secondary: Color, _ tertiary: Color) {
+        self.primary = primary
+        self.secondary = secondary
+        self.tertiary = tertiary
+    }
+}
+
 /// Colour roles of a weather symbol, independent of where the weather comes from.
 public enum WeatherTone: Sendable, CaseIterable {
     case clear
@@ -14,19 +28,18 @@ public enum WeatherTone: Sendable, CaseIterable {
     /// Not connected or no data: grey.
     case muted
 
-    /// Palette layers in SF Symbols order: the cloud (or the only shape), then the sun, moon or bolt, then drops.
-    public var layers: (primary: Color, secondary: Color, tertiary: Color) {
+    public var layers: WeatherPalette {
         switch self {
-        case .clear: (.yellow, .yellow, .yellow)
-        case .clearNight: (.indigo, .yellow, .yellow)
-        case .partlyCloudy: (.gray, .yellow, .yellow)
-        case .partlyCloudyNight: (.gray, .indigo, .indigo)
-        case .cloudy: (.gray, .gray, .gray)
-        case .rain: (.gray, .blue, .blue)
-        case .thunderstorm: (.gray, .yellow, .blue)
-        case .snow: (.gray, .cyan, .cyan)
-        case .fog: (.gray, .secondary, .secondary)
-        case .muted: (.secondary, .secondary, .secondary)
+        case .clear: WeatherPalette(.yellow, .yellow, .yellow)
+        case .clearNight: WeatherPalette(.indigo, .yellow, .yellow)
+        case .partlyCloudy: WeatherPalette(.gray, .yellow, .yellow)
+        case .partlyCloudyNight: WeatherPalette(.gray, .indigo, .indigo)
+        case .cloudy: WeatherPalette(.gray, .gray, .gray)
+        case .rain: WeatherPalette(.gray, .blue, .blue)
+        case .thunderstorm: WeatherPalette(.gray, .yellow, .blue)
+        case .snow: WeatherPalette(.gray, .cyan, .cyan)
+        case .fog: WeatherPalette(.gray, .secondary, .secondary)
+        case .muted: WeatherPalette(.secondary, .secondary, .secondary)
         }
     }
 }

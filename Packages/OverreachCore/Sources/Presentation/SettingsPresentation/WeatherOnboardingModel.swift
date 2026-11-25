@@ -65,15 +65,13 @@ public final class WeatherOnboardingModel: Identifiable {
     public var message: String {
         switch step {
         case .why:
-            L10n.text(
-                "Overreach needs your own OpenWeather key for the forecast. It is free, stays on this device and only goes to OpenWeather."
-            )
+            L10n.text("Overreach needs your own free OpenWeather key. It stays here and only goes to OpenWeather.")
         case .account:
             L10n.text("Create a free OpenWeather account, then subscribe to One Call API 3.0 from the API page.")
         case .limit:
             L10n.text("In OpenWeather, set the One Call API 3.0 daily limit to 1,000 or fewer to avoid charges.")
         case .key:
-            L10n.text("Copy the key from the API keys tab of your account, paste it here and save. Overreach checks it first.")
+            L10n.text("Copy the key from your OpenWeather API keys tab, paste it here and save. Overreach checks it.")
         }
     }
 

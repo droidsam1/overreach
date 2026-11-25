@@ -38,9 +38,11 @@ public struct WeatherSettingsView: View {
         }
         .navigationTitle("Weather")
         .task { await model.load() }
-        .sheet(item: $onboarding, onDismiss: { Task { await model.load() } }) { onboarding in
-            WeatherOnboardingView(model: onboarding)
-        }
+        .sheet(
+            item: $onboarding,
+            onDismiss: { Task { await model.load() } },
+            content: { onboarding in WeatherOnboardingView(model: onboarding) }
+        )
     }
 
     private var trimmedKey: String { key.trimmingCharacters(in: .whitespacesAndNewlines) }

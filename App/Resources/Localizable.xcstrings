@@ -3656,19 +3656,19 @@
         }
       }
     },
-    "Copy the key from the API keys tab of your account, paste it here and save. Overreach checks it first.": {
+    "Copy the key from your OpenWeather API keys tab, paste it here and save. Overreach checks it.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copia la clave de la pestaña API keys de tu cuenta, pégala aquí y guárdala. Overreach la comprueba antes."
+            "value": "Copia la clave de la pestaña API keys de OpenWeather, pégala aquí y guárdala. Overreach la comprueba."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copia a clave da lapela API keys da túa conta, pégaa aquí e gárdaa. Overreach comprébaa antes."
+            "value": "Copia a clave da lapela API keys de OpenWeather, pégaa aquí e gárdaa. Overreach comprébaa."
           }
         }
       }
@@ -12904,19 +12904,19 @@
         }
       }
     },
-    "Overreach needs your own OpenWeather key for the forecast. It is free, stays on this device and only goes to OpenWeather.": {
+    "Overreach needs your own free OpenWeather key. It stays here and only goes to OpenWeather.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Overreach necesita tu propia clave de OpenWeather para la previsión. Es gratis, se queda en este dispositivo y solo va a OpenWeather."
+            "value": "Overreach necesita tu propia clave gratuita de OpenWeather. Se queda aquí y solo va a OpenWeather."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Overreach necesita a túa propia clave de OpenWeather para a previsión. É gratis, queda neste dispositivo e só vai a OpenWeather."
+            "value": "Overreach necesita a túa propia clave gratuíta de OpenWeather. Queda aquí e só vai a OpenWeather."
           }
         }
       }

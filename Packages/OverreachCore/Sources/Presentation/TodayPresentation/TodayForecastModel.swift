@@ -247,19 +247,31 @@ public final class TodayForecastModel {
         )
     }
 
-    private func sky(_ code: Int?, daylight: Bool?) -> (text: String, symbol: String, kind: Sky)? {
+    private struct SkyInfo {
+        let text: String
+        let symbol: String
+        let kind: Sky
+
+        init(_ text: String, _ symbol: String, _ kind: Sky) {
+            self.text = text
+            self.symbol = symbol
+            self.kind = kind
+        }
+    }
+
+    private func sky(_ code: Int?, daylight: Bool?) -> SkyInfo? {
         guard let code else { return nil }
         let night = daylight == false
         switch code {
-        case 200...299: return (L10n.text("Thunderstorms"), "cloud.bolt.rain", .thunderstorm)
-        case 300...599: return (L10n.text("Rain or drizzle"), "cloud.rain", .rain)
-        case 600...699: return (L10n.text("Snow"), "cloud.snow", .snow)
-        case 700...799: return (L10n.text("Reduced visibility"), "cloud.fog", .fog)
-        case 800: return (L10n.text("Clear sky"), night ? "moon.stars" : "sun.max", night ? .clearNight : .clear)
+        case 200...299: return SkyInfo(L10n.text("Thunderstorms"), "cloud.bolt.rain", .thunderstorm)
+        case 300...599: return SkyInfo(L10n.text("Rain or drizzle"), "cloud.rain", .rain)
+        case 600...699: return SkyInfo(L10n.text("Snow"), "cloud.snow", .snow)
+        case 700...799: return SkyInfo(L10n.text("Reduced visibility"), "cloud.fog", .fog)
+        case 800: return SkyInfo(L10n.text("Clear sky"), night ? "moon.stars" : "sun.max", night ? .clearNight : .clear)
         case 801...802:
-            return (L10n.text("Partly cloudy"), night ? "cloud.moon" : "cloud.sun",
-                    night ? .partlyCloudyNight : .partlyCloudy)
-        case 803...804: return (L10n.text("Cloudy"), "cloud", .cloudy)
+            return SkyInfo(L10n.text("Partly cloudy"), night ? "cloud.moon" : "cloud.sun",
+                           night ? .partlyCloudyNight : .partlyCloudy)
+        case 803...804: return SkyInfo(L10n.text("Cloudy"), "cloud", .cloudy)
         default: return nil
         }
     }
