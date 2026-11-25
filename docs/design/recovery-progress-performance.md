@@ -24,8 +24,12 @@ Use separate comparable cohorts and let missing inputs leave the comparison unav
 
 ## Garmin block pilot
 
-Use the original activity FIT from the Garmin Personal API. Decode timestamped distance, speed,
-elevation, heart rate and cadence, plus lap triggers and timer events. A run can begin after an
+Use the original activity FIT from the Garmin Personal API. Sync downloads at most two originals
+per sync for known runs in the past 180 days, newest eligible first. It retains only compressed
+decoded track measurements in its local cache. A missing or unreadable original is retried
+after a week. Transient failures defer remaining downloads without discarding summary data.
+Decode timestamped distance, speed, elevation, heart rate and cadence, plus lap triggers and
+timer events. A run can begin after an
 unrecorded walking warm-up. Join automatic laps within a block and use manual laps, sustained
 walks or timer stops as boundaries. Measure the whole block's duration and distance. Use the
 steady portion after the initial heart-rate response for the comparison, including short runs.

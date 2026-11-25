@@ -36,7 +36,8 @@ let package = Package(
         // Strong CSV import (phase 1).
         .target(name: "StrongImport", dependencies: ["Domain"]),
         // Garmin Connect Personal API responses → domain values (ADR-0022). Networking lives in OverreachKit.
-        .target(name: "GarminImport", dependencies: ["Domain"]),
+        .systemLibrary(name: "CZlib", pkgConfig: "zlib", providers: [.apt(["zlib1g-dev"])]),
+        .target(name: "GarminImport", dependencies: ["Domain", "CZlib"]),
         // Markdown report shared with ChatGPT/Claude, and context for the in-app assistant.
         .target(name: "Reports", dependencies: ["Domain", "Analytics"]),
         // Versioned messages exchanged with AI chat apps (ADR-0017, docs/ai-exchange.md).

@@ -13,6 +13,8 @@ public enum GarminEndpoint: Hashable, Sendable {
     /// The laps of one activity. Not part of `GarminSyncPlan.requests`: the service asks for the recent runs that
     /// have none yet, a few per sync (`GarminSyncPlan.lapRefreshDays`, `maximumLapRequests`).
     case activitySplits(id: String)
+    /// Original FIT archive for one activity. Fetched only within the bounded run enrichment budget.
+    case activityFIT(id: String)
 
     public static let host = "personal.connectapi.garmin.com"
     /// `POST` with `Authorization: ApiKey <key>`; the body of the response is the access token.
@@ -26,12 +28,12 @@ public enum GarminEndpoint: Hashable, Sendable {
         case .hrv, .dailySummaries, .vo2Max: 365
         case .sleep: 31
         case .activities: 365
-        case .activitySplits: 1
+        case .activitySplits, .activityFIT: 1
         }
     }
 
     public enum Kind: Sendable, CaseIterable {
-        case hrv, sleep, dailySummaries, vo2Max, activities, activitySplits
+        case hrv, sleep, dailySummaries, vo2Max, activities, activitySplits, activityFIT
     }
 
     public var kind: Kind {
@@ -42,7 +44,13 @@ public enum GarminEndpoint: Hashable, Sendable {
         case .vo2Max: .vo2Max
         case .activities: .activities
         case .activitySplits: .activitySplits
+        case .activityFIT: .activityFIT
         }
+    }
+
+    var accept: String {
+        kind == .activityFIT ? "application/x-zip-compressed, application/zip, application/octet-stream"
+            : "application/json"
     }
 
     /// Path and query, to append to `https://` + `host`.
@@ -61,6 +69,8 @@ public enum GarminEndpoint: Hashable, Sendable {
                 + "&startDate=\(range.lowerBound)&endDate=\(range.upperBound)"
         case let .activitySplits(id):
             "/activity-service/activity/\(id)/splits"
+        case let .activityFIT(id):
+            "/download-service/files/activity/\(id)"
         }
     }
 }
@@ -77,6 +87,9 @@ public enum GarminSyncPlan {
     /// so a sync costs at most that many requests more. Older runs keep what they have; ADR-0022 sets the budget.
     public static let lapRefreshDays = 14
     public static let maximumLapRequests = 5
+    /// Coverage for two 90-day trend windows. Progressively backfill without flooding the API.
+    public static let trackHistoryDays = 180
+    public static let maximumFITRequests = 2
 
     /// The days to fetch now, from the last day synced before (nil on the first sync) up to `today`.
     public static func range(
@@ -120,7 +133,7 @@ public enum GarminSyncPlan {
                     case .dailySummaries: GarminEndpoint.dailySummaries(window)
                     case .vo2Max: GarminEndpoint.vo2Max(window)
                     case .activities: GarminEndpoint.activities(window, start: 0, limit: GarminEndpoint.activityPageSize)
-                    case .activitySplits: nil
+                    case .activitySplits, .activityFIT: nil
                     }
                 }
         }

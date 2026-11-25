@@ -133,7 +133,7 @@ public actor GarminClient {
         while true {
             let response = try await send(GarminHTTPRequest(
                 method: "GET", path: endpoint.path,
-                headers: ["Authorization": "Bearer \(token?.value ?? "")", "Accept": "application/json"]
+                headers: ["Authorization": "Bearer \(token?.value ?? "")", "Accept": endpoint.accept]
             ))
             switch response.status {
             case 200..<300:
