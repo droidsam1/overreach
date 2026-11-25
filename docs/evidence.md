@@ -659,8 +659,9 @@ cardiometabolic mortality risk than the least regular. After adjusting for durat
 deaths but not for cardiometabolic deaths, and a 2025 cohort found duration and regularity interact. Observational:
 direction of effect is not established.
 → Flag a bedtime spread (circular SD) above 60 min over ≥ 7 nights. The 60 min threshold is a labelled heuristic;
-the cohort used a regularity index, not bedtime SD. Refs: Windred et al. 2024, Sleep 47(1):zsad253; Sci Rep 2025,
-doi 10.1038/s41598-025-15828-6. Reviewed 2026-11-25.
+the cohort used a regularity index, not bedtime SD. Same direction in MESA (Huang et al. 2020, J Am Coll Cardiol 75:991: irregular sleep duration and incident
+cardiovascular events; Lunsford-Avery et al. 2018, Sci Rep 8:14158). Refs: Windred et al. 2024, Sleep 47(1):zsad253;
+Sci Rep 2025, doi 10.1038/s41598-025-15828-6. Reviewed 2026-11-25.
 
 ### `social-jetlag` — limited
 Weekend-vs-weekday shift of sleep midpoint shows small observational associations: with BMI (r ≈ 0.12; 23 % higher
@@ -693,14 +694,51 @@ Used only to explain why a very late or very early habitual session moves sleep 
 JCI Insight 5(3):e134270; Youngstedt et al. 2019, J Physiol 597:2253; Buxton et al. 2003, Am J Physiol Regul Integr
 Comp Physiol 284:R714. Reviewed 2026-11-25.
 
-### `training-time-consistency` — heuristic
-No trial shows that training at the same clock time improves health or recovery. What is supported: time of day does not
-change hypertrophy or strength gains (no evidence for or against any time), and performance is better when training and
-testing times match (Grgic et al. 2019; Sport Med Open 2023 meta-analysis; a 2026 6-week RCT agreed). Zeitgeber theory
-suggests a steady schedule helps, but this is mechanistic.
-→ State a very variable start time (spread > 2 h over ≥ 5 sessions) neutrally, as an observation. Do not rank times of day.
-Refs: Grgic et al. 2019, Chronobiol Int 36(4):449 (PMID 30704301); Best time of day for strength and endurance training,
-Sports Med Open 2023, doi 10.1186/s40798-023-00577-5; Dighriri et al. 2026, Exp Physiol, doi 10.1113/EP093020.
+### `training-time-consistency` — limited
+A steady training time is associated with *doing more exercise*, not with a circadian benefit. In 375 National Weight
+Control Registry members, people who trained at a consistent time (> 50 % of sessions) exercised more (4.8 vs 4.4
+days/week; 350 vs 285 min/week) and met the 150 min/week guideline more often, whichever time of day it was; the design
+is correlational. Training at a fixed time also tunes performance to that time (adaptations are larger at the usual
+hour), and time of day does not change hypertrophy or strength gains (no evidence for or against any time; matching
+training and testing times helps).
+→ State a very variable start time (spread > 2 h over ≥ 5 sessions) as an observation about habit, never as a fault, and
+never rank times of day. The 2 h threshold is a heuristic. Refs: Schumacher et al. 2019, Obesity 27:1785,
+doi 10.1002/oby.22535; Chtourou & Souissi 2012, J Strength Cond Res 26:1984, doi 10.1519/JSC.0b013e31825770a7;
+Grgic et al. 2019, Chronobiol Int 36(4):449 (PMID 30704301); Sports Med Open 2023, doi 10.1186/s40798-023-00577-5;
+Dighriri et al. 2026, Exp Physiol, doi 10.1113/EP093020. Reviewed 2026-11-25.
+
+### `exercise-timing-prevention` — limited (no rule)
+Does the hour of exercise change long-term disease risk, beyond what the exercise itself does? Observational
+accelerometer cohorts disagree. UK Biobank, about 92,000 adults: midday-afternoon and mixed timing had lower all-cause
+and cardiovascular mortality than morning-dominant, evening did not. UK Biobank adults with obesity (29,836): evening
+aerobic activity had the lowest mortality, cardiovascular and microvascular risk. UK Biobank, about 59,000 meeting the
+guideline: incident atrial fibrillation was 4.1 % morning, 3.7 % afternoon, 2.7 % evening (only about 7 % trained in the
+evening). Other reports favour morning for cardiometabolic risk. All find that activity at any time lowers risk. Timing
+is confounded by chronotype, shift work, job, season and reverse causation, and the groups differ in size. Trials in type
+2 diabetes are small: afternoon exercise improved glycaemia more than morning in some crossover work, but a 2025 crossover
+found no difference in 24 h glucose.
+→ No rule and no preferred time. The honest message is that total moderate-to-vigorous activity matters and the hour
+does not have a reliable preventive effect yet. Revisit if a randomised trial or a pooled analysis agrees across
+cohorts. Refs: Feng et al. 2023, Nat Commun 14:930, doi 10.1038/s41467-023-36546-5; Diabetes Care 2024 47:890
+(adults with obesity, PMID 38592034); Khurshid et al., timing of physical activity and incident CVD, PMC13186595;
+Eur J Prev Cardiol 2023 30:232; Savikj et al. 2019, Diabetologia (afternoon vs morning HIIT, PMC6323076); Diabetologia
+2025, doi 10.1007/s00125-025-06477-5. Reviewed 2026-11-25.
+
+### `weekend-warrior` — limited (no penalty)
+Concentrating the usual weekly activity into 1–2 days is still associated with lower mortality and cardiovascular risk
+than inactivity, similar to spreading it. In 89,573 UK Biobank adults, the weekend-warrior pattern was linked to lower
+risk of most of the 678 conditions studied, and more activity was better within both patterns; in people with
+cardiovascular disease, weekend-warrior (HR 0.61) and regularly active (HR 0.68) both had lower all-cause mortality
+than inactive. Observational, leisure-time activity self-reported or accelerometer-derived.
+→ Never penalise a week because load is uneven across days; the load rules (`weekly-load-change`) and recovery rules
+stay as they are. This only prevents a timing insight from implying that spread-out training is required for health.
+Refs: Circulation 2024, doi 10.1161/CIRCULATIONAHA.124.068669 (phenome-wide, UK Biobank); JAHA 2025 (UK Biobank and
+NHANES, 1–2-day activity and mortality). Reviewed 2026-11-25.
+
+### `meal-timing` — limited (not measured)
+Eating the main meal late was linked to less weight lost in a 20-week programme (Garaulet et al. 2013, Int J Obes
+37:604, doi 10.1038/ijo.2012.229); evening eating is associated with worse glycaemia in the lab during the biological
+night. Overreach does not record meals, so this has no rule or insight; it may appear later as optional advice.
 Reviewed 2026-11-25.
 
 ## Wearable data

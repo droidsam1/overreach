@@ -22,3 +22,12 @@ recommend a "best time of day" or clock-shifting protocol. Thresholds are labell
 
 Users with a regular schedule see nothing. The analysis stays pure, so presentation (a Recovery card and the AI
 context export) can follow without changing it. Light exposure and meal timing are not measured and stay out.
+
+## Amendment 2026-11-25 — health lens
+
+Overreach prioritises health over performance, so timing claims were re-checked for long-term prevention, not only
+for strength or size. Only sleep regularity qualifies (docs/design/circadian-timing.md → Health lens). The hour of
+exercise stays without a recommendation because cohorts disagree and trials are small; weekend-warrior patterns are
+never framed as a fault; consistent training time is described as a habit and adherence observation
+(`training-time-consistency` is now limited). The decision is unchanged; the criteria for a prevention-based insight
+are now written down.

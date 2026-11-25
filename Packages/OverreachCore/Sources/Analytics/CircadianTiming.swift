@@ -9,8 +9,8 @@ public enum CircadianEvidence {
     public static let socialJetlag = EvidenceReference(key: "social-jetlag", level: .limited)
     /// Hard exercise ending ≤ 1 h before bed can delay sleep; ending ≥ 2 h before is neutral or helpful.
     public static let eveningExercise = EvidenceReference(key: "evening-exercise-sleep", level: .moderate)
-    /// A steady training time is a coaching default; no trial shows that consistency of exercise time matters.
-    public static let trainingTimeConsistency = EvidenceReference(key: "training-time-consistency", level: .heuristic)
+    /// A steady training time goes with more exercise (observational); no benefit of the hour itself is shown.
+    public static let trainingTimeConsistency = EvidenceReference(key: "training-time-consistency", level: .limited)
 }
 
 /// Looks at when the athlete sleeps and trains and says what the evidence supports about it (ADR-0045).
