@@ -33,6 +33,12 @@ public struct PerformanceComparison: Sendable {
         current.contains(CalendarDay(date, calendar: calendar))
     }
 
+    /// Whether a date is in either comparison period.
+    public func contains(_ date: Date) -> Bool {
+        let day = CalendarDay(date, calendar: calendar)
+        return current.contains(day) || previous.contains(day)
+    }
+
     /// Callers supply one comparable result per session.
     public func summarize<Point>(
         _ points: [Point], date: KeyPath<Point, Date>, value: KeyPath<Point, Double>

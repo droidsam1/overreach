@@ -41,8 +41,19 @@ confidence when routes overlap. Other routes remain eligible with comparable dif
 helps distinguish running from walking and provides context. Consider block order and recovery
 before the block. Keep sensor identity independent of the activity recorder. If the FIT does
 not identify the heart-rate source, offer a user confirmation and keep unknowns visible.
-Summarize at most one comparable observation per session and keep the three-session gate per
-period. Treat the change as descriptive when sleep, recent load or weather differ or are unknown.
+Summarize at most one comparable observation per session. The pilot allows a descriptive
+comparison with one matching session in each period. Trend labels require three distinct
+session days in each period and use within-period variability. Treat the result as descriptive
+when sleep, recent load or weather differ or are unknown.
+
+The version 1 matching heuristics require no more than 15 s/km between pace midpoints,
+1.5 percentage points at each end of the grade band, and 45 seconds between measured windows.
+Whole-block duration helps rank alternatives. The measured windows determine duration
+compatibility. When a plausible profile maximum is available, exclude a window whose median HR
+is at least 90% of that maximum. Without a maximum the estimate describes a stable effort
+of unverified intensity. Compare only matching confirmed sensor identities. Matching ranks cohort
+coverage first, then GPS overlap. When choosing a block within a cohort, favor overlap in the same direction, then the
+same block number or a similar recovery interval. HR values never rank cohorts or blocks.
 
 - [Decode FIT and reconstruct blocks](https://github.com/droidsam1/overreach/issues/337)
 - [Sync the original Garmin activity](https://github.com/droidsam1/overreach/issues/338)

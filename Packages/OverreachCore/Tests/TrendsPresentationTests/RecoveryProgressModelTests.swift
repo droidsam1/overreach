@@ -223,6 +223,43 @@ struct RecoveryProgressModelTests {
         #expect(model.runningPerformance.first { $0.id == "training" }?.best?.id == .run(previous))
     }
 
+    @Test func garminSensorConfirmationEnablesApproximateComparisonAndSessionLinks() async {
+        let runs = [-2, -35].map { offset in
+            RunActivity(
+                id: String(offset), source: .garmin, startedAt: now.addingTimeInterval(Double(offset) * 86_400),
+                durationSeconds: 240, distanceMeters: 800, kind: .training
+            )
+        }
+        var saved: [String: String] = [:]
+        let model = RecoveryProgressModel(
+            sources: [DaysSource(kind: .garmin, runs: runs)], calendar: calendar,
+            runningTrack: { run in
+                let heartRate: Double = run.id == "-2" ? 142 : 150
+                let samples = (0...240).map { second in
+                    RunningTrack.Sample(
+                        date: run.startedAt.addingTimeInterval(Double(second)),
+                        distanceMeters: Double(second) * 10 / 3, speedMetersPerSecond: 10 / 3,
+                        altitudeMeters: 20, heartRateBPM: heartRate, cadenceStepsPerMinute: 170
+                    )
+                }
+                return RunningTrack(samples: samples)
+            },
+            savePulseSensors: { saved = $0 }
+        )
+        model.performanceRange = .days30
+        await model.load(now: now)
+        #expect(model.comparableHeartRate == nil)
+        #expect(model.runningPulseSensorRows.count == 2)
+        for run in runs { model.choosePulseSensor(.watch, for: run.id) }
+        #expect(saved == ["-2": "watch", "-35": "watch"])
+        let series = model.comparableHeartRate
+        #expect(series?.comparison.hasPrefix("Approximate comparison · Median change −8 bpm") == true)
+        #expect(series?.points.map(\.id) == [.run(runs[1]), .run(runs[0])])
+        #expect(series?.trend == "Insufficient evidence for a trend")
+        model.choosePulseSensor(.strap, for: runs[0].id)
+        #expect(model.comparableHeartRate == nil)
+    }
+
     @Test func withoutTrainingTheLoadSectionIsEmpty() async {
         let model = RecoveryProgressModel(sources: [DaysSource()], calendar: calendar)
         await model.load(now: now)

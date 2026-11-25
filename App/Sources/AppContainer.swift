@@ -265,11 +265,17 @@ final class AppContainer {
     }()
 
     func makeRecoveryProgressModel() -> RecoveryProgressModel {
-        RecoveryProgressModel(
+        let trackSource = garmin as? any RunningTrackSource
+        let pulseKey = "trends.garminPulseSensors"
+        let defaults = UserDefaults.standard
+        return RecoveryProgressModel(
             sources: metricsSources, activity: activitySources, checkIns: checkIns, garmin: garmin,
             profiles: profiles, workouts: workouts, exercises: exercises, recordedStrength: recordedStrength,
             routines: routines, progression: progression, cycle: cycleSource, sectionHints: sectionHints,
-            runChoices: { self.readActivityMatchChoices().runs }
+            runChoices: { self.readActivityMatchChoices().runs },
+            runningTrack: { await trackSource?.runningTrack(for: $0) },
+            pulseSensors: defaults.dictionary(forKey: pulseKey) as? [String: String] ?? [:],
+            savePulseSensors: { defaults.set($0, forKey: pulseKey) }
         )
     }
 
