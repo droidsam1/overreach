@@ -8,6 +8,7 @@ import WorkoutPresentation
 
 /// What the Train tab shows when no session is open: start an empty session or one from a routine.
 struct StartSessionView: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
     let routines: RoutinesModel
     let notice: String?
     let onStartEmpty: () -> Void
@@ -28,7 +29,7 @@ struct StartSessionView: View {
                     Button {
                         onStart(next.routine)
                     } label: {
-                        HStack(spacing: Spacing.medium) {
+                        AdaptiveStack(spacing: Spacing.medium) {
                             Image(systemName: "calendar.badge.clock")
                                 .font(.title2)
                                 .foregroundStyle(Color.accentColor)
@@ -42,9 +43,9 @@ struct StartSessionView: View {
                                 Text(next.exerciseList)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
-                                    .lineLimit(2)
+                                    .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
                             }
-                            Spacer()
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             Image(systemName: "play.circle.fill")
                                 .font(.title)
                                 .foregroundStyle(Color.accentColor)
@@ -88,7 +89,7 @@ struct StartSessionView: View {
     }
 
     private func routineRow(_ row: RoutineRow) -> some View {
-        HStack {
+        AdaptiveStack {
             Button {
                 onStart(row.routine)
             } label: {
@@ -97,12 +98,12 @@ struct StartSessionView: View {
                     Text(row.exerciseList)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                        .lineLimit(2)
+                        .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
                     if let focus = row.focus {
                         Text(focus).font(.caption).foregroundStyle(.secondary)
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                 .contentShape(.rect)
             }
             .buttonStyle(.borderless)

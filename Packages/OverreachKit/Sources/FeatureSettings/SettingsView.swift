@@ -238,6 +238,8 @@ public struct SettingsView<Library: View>: View {
                         symbol: "applewatch.radiowaves.left.and.right", title: Text("Connect Garmin"),
                         detail: Text("Nightly HRV, sleep score, Body Battery and more. Three steps.")
                     )
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }

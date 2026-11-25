@@ -309,10 +309,22 @@ private struct SessionList: View {
                             }
                     }
                     // Both adds sit under the sets they extend, so neither hides in a menu.
-                    HStack {
-                        Button("Add set", systemImage: "plus") { model.addSet(to: exercise.id) }
-                        Spacer()
-                        Button(exercise.addWarmUpTitle, systemImage: "flame") { model.addWarmUp(to: exercise.id) }
+                    AdaptiveStack {
+                        Button {
+                            model.addSet(to: exercise.id)
+                        } label: {
+                            Label("Add set", systemImage: "plus")
+                                .frame(minHeight: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        Button {
+                            model.addWarmUp(to: exercise.id)
+                        } label: {
+                            Label(exercise.addWarmUpTitle, systemImage: "flame")
+                                .frame(minHeight: 44)
+                                .contentShape(Rectangle())
+                        }
                     }
                     .buttonStyle(.borderless)
                     TextField("Notes", text: $exercise.notes, axis: .vertical)

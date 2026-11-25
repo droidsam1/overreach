@@ -91,21 +91,30 @@ struct TourPageView: View {
 
     @State private var appeared = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ScaledMetric(relativeTo: .largeTitle) private var heroSize: CGFloat = 84
 
     var body: some View {
         VStack(spacing: Spacing.large) {
             HStack {
                 if canGoBack {
-                    Button("Back", systemImage: "chevron.left", action: onBack)
-                        .labelStyle(.iconOnly)
+                    Button(action: onBack) {
+                        Label("Back", systemImage: "chevron.left")
+                            .labelStyle(.iconOnly)
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(Rectangle())
+                    }
                 }
                 Spacer()
-                Button("Skip setup", action: onSkipSetup)
+                Button(action: onSkipSetup) {
+                    Text("Skip setup")
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
             }
             ScrollView {
                 VStack(spacing: Spacing.large) {
                     Image(systemName: content.symbol)
-                        .font(.system(size: 84, weight: .semibold))
+                        .font(.system(size: heroSize, weight: .semibold))
                         .symbolRenderingMode(.hierarchical)
                         .foregroundStyle(.tint)
                         .symbolEffect(.bounce, options: .nonRepeating, value: appeared && !reduceMotion)

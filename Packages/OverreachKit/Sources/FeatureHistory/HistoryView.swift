@@ -211,7 +211,6 @@ struct SessionRow: View {
             }
             Text(summary.exerciseList)
                 .font(.subheadline)
-                .lineLimit(2)
             Text(summary.statsLine())
                 .font(.subheadline.monospacedDigit())
                 .foregroundStyle(.secondary)

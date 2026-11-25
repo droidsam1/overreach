@@ -251,9 +251,9 @@ private struct ChangeRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xSmall) {
-            HStack {
+            AdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: Spacing.xSmall) {
                 Text(title).bold()
-                Spacer()
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 Group {
                     if isUpdate {
                         Text("Updates")

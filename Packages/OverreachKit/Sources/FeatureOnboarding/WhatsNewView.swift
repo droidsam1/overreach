@@ -9,6 +9,7 @@ public struct WhatsNewView: View {
     private let model: WhatsNewModel
     @State private var appeared = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ScaledMetric(relativeTo: .largeTitle) private var heroSize: CGFloat = 72
 
     public init(model: WhatsNewModel) {
         self.model = model
@@ -21,7 +22,7 @@ public struct WhatsNewView: View {
                 ScrollView {
                     VStack(spacing: Spacing.large) {
                         Image(systemName: "sparkles")
-                            .font(.system(size: 72, weight: .semibold))
+                            .font(.system(size: heroSize, weight: .semibold))
                             .symbolRenderingMode(.hierarchical)
                             .foregroundStyle(.tint)
                             .symbolEffect(.bounce, options: .nonRepeating, value: appeared && !reduceMotion)
