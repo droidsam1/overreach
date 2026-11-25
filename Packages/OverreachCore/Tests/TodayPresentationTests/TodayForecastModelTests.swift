@@ -1,5 +1,6 @@
 import Domain
 import Foundation
+import PresentationKit
 import Testing
 import TodayPresentation
 
@@ -58,7 +59,7 @@ struct TodayForecastModelTests {
         #expect(saved == area)
         #expect(await source.requests == [area])
 
-        model.removeArea()
+        await model.removeArea()
         #expect(model.area == nil)
         #expect(saved == nil)
         await model.load()
@@ -72,6 +73,116 @@ struct TodayForecastModelTests {
         await model.load()
         #expect(!model.isConfigured)
         #expect(await source.requests.isEmpty)
+    }
+
+    @Test func showsTheStoredForecastAtOnceThenReplacesItWithTheRefreshedOne() async throws {
+        let area = try #require(WeatherArea(latitude: 40, longitude: -3))
+        let now = date(9, minute: 30)
+        let stale = WeatherForecast(
+            hours: [WeatherHour(date: date(9), temperatureCelsius: 10, conditionCode: 800)],
+            fetchedAt: date(6)
+        )
+        let fresh = WeatherForecast(
+            hours: [WeatherHour(date: date(9), temperatureCelsius: 14, conditionCode: 800)],
+            fetchedAt: date(9, minute: 29)
+        )
+        let source = StoredSource(stored: stale, refreshed: fresh)
+        let model = TodayForecastModel(
+            source: source, area: area, calendar: calendar, format: Format(locale: Locale(identifier: "en_GB")),
+            locate: { nil }, storeArea: { _ in }
+        )
+        await source.hold()
+        let loading = Task { await model.load(now: now) }
+        while await !source.isWaiting { await Task.yield() }
+        #expect(model.toolbarTemperature == "10 °C")
+        #expect(model.updatedAt == date(6))
+        #expect(model.updatedText == "Updated 06:00")
+        await source.release()
+        await loading.value
+        #expect(model.toolbarTemperature == "14 °C")
+        #expect(model.updatedAt == date(9, minute: 29))
+        #expect(model.updatedText == "Updated 09:29")
+    }
+
+    @Test func pullToRefreshForcesTheSourceAndAPlainLoadDoesNot() async throws {
+        let area = try #require(WeatherArea(latitude: 40, longitude: -3))
+        let forecast = WeatherForecast(hours: [WeatherHour(date: date(10), conditionCode: 800)], fetchedAt: date(9))
+        let source = StoredSource(stored: nil, refreshed: forecast)
+        let model = TodayForecastModel(
+            source: source, area: area, calendar: calendar, locate: { nil }, storeArea: { _ in }
+        )
+        await model.load(now: date(9, minute: 30))
+        await model.load(now: date(9, minute: 30), forceRefresh: true)
+        #expect(await source.forceFlags == [false, true])
+    }
+
+    @Test func aFailedRefreshKeepsTheForecastOnScreen() async throws {
+        let area = try #require(WeatherArea(latitude: 40, longitude: -3))
+        let forecast = WeatherForecast(hours: [WeatherHour(date: date(10), conditionCode: 800)], fetchedAt: date(9))
+        let source = StoredSource(stored: forecast, refreshed: forecast)
+        let model = TodayForecastModel(
+            source: source, area: area, calendar: calendar, locate: { nil }, storeArea: { _ in }
+        )
+        await model.load(now: date(9, minute: 30))
+        #expect(model.hours.count == 1)
+        await source.setRefreshed(WeatherForecast(hours: []))
+        await model.load(now: date(9, minute: 40), forceRefresh: true)
+        #expect(model.hours.count == 1)
+        #expect(model.updatedAt == date(9))
+    }
+
+    @Test func removingOrChangingTheAreaDiscardsItsStoredForecast() async throws {
+        let first = try #require(WeatherArea(latitude: 40, longitude: -3))
+        let second = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let forecast = WeatherForecast(hours: [WeatherHour(date: date(10), conditionCode: 800)], fetchedAt: date(9))
+        let source = StoredSource(stored: nil, refreshed: forecast)
+        let model = TodayForecastModel(
+            source: source, area: first, calendar: calendar, locate: { second }, storeArea: { _ in }
+        )
+        await model.useCurrentArea()
+        #expect(await source.discarded == [first])
+        await model.removeArea()
+        #expect(await source.discarded == [first, second])
+        #expect(model.updatedAt == nil && model.hours.isEmpty)
+    }
+
+    private actor StoredSource: WeatherSource {
+        private let stored: WeatherForecast?
+        private var refreshed: WeatherForecast
+        private var holding = false
+        private(set) var isWaiting = false
+        private var gate: CheckedContinuation<Void, Never>?
+        private(set) var forceFlags: [Bool] = []
+        private(set) var discarded: [WeatherArea] = []
+
+        init(stored: WeatherForecast?, refreshed: WeatherForecast) {
+            self.stored = stored
+            self.refreshed = refreshed
+        }
+
+        func hold() { holding = true }
+        func release() {
+            holding = false
+            gate?.resume()
+            gate = nil
+        }
+        func setRefreshed(_ forecast: WeatherForecast) { refreshed = forecast }
+
+        func cachedForecast(for area: WeatherArea) async -> WeatherForecast? { stored }
+
+        func forecast(for area: WeatherArea, forceRefresh: Bool) async -> WeatherForecast {
+            forceFlags.append(forceRefresh)
+            if holding {
+                isWaiting = true
+                await withCheckedContinuation { gate = $0 }
+                isWaiting = false
+            }
+            return refreshed
+        }
+
+        func forecast(for area: WeatherArea) async -> [WeatherHour] { refreshed.hours }
+        func discardForecast(for area: WeatherArea) async { discarded.append(area) }
+        func historical(for area: WeatherArea, at date: Date) async -> WeatherHour? { nil }
     }
 
     private actor Source: WeatherSource {

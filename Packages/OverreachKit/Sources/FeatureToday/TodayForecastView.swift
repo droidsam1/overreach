@@ -23,7 +23,7 @@ struct TodayForecastView<Settings: View>: View {
         }
         .navigationTitle("Weather today")
         .task { await model.load() }
-        .refreshable { await model.load() }
+        .refreshable { await model.load(forceRefresh: true) }
     }
 
     @ViewBuilder private var forecast: some View {
@@ -35,6 +35,9 @@ struct TodayForecastView<Settings: View>: View {
                     Text("The forecast is unavailable. Try refreshing later.")
                 }
             } else {
+                if let updated = model.updatedText {
+                    Text(verbatim: updated).font(.footnote).foregroundStyle(.secondary)
+                }
                 windows("Likely dry", model.dryWindows, symbol: "drop.degreesign.slash")
                 windows("Clear or mostly sunny", model.sunnyWindows, symbol: "sun.max")
                 Section("Hourly forecast") {
@@ -60,7 +63,7 @@ struct TodayForecastView<Settings: View>: View {
                     .foregroundStyle(.secondary)
             }
             if model.area != nil {
-                Button("Remove saved area", role: .destructive) { model.removeArea() }
+                Button("Remove saved area", role: .destructive) { Task { await model.removeArea() } }
                     .disabled(model.isLocating)
             }
         } footer: {

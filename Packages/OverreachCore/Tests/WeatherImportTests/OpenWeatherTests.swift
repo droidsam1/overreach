@@ -69,6 +69,138 @@ struct OpenWeatherTests {
         #expect(await fixture.calls == 1)
     }
 
+    @Test func freshForecastIsReusedByANewServiceInstance() async throws {
+        let fixture = RequestFixture()
+        let area = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let cache = temporaryCache()
+        let clock = Clock()
+        let first = await service(cache: cache, fixture: fixture, clock: clock).forecast(for: area, forceRefresh: false)
+        #expect(first.fetchedAt == clock.date)
+        clock.advance(10 * 60)
+        let second = await service(cache: cache, fixture: fixture, clock: clock).forecast(for: area, forceRefresh: false)
+        #expect(second == first)
+        #expect(await fixture.calls == 1)
+    }
+
+    @Test func expiredForecastIsFetchedAgain() async throws {
+        let fixture = RequestFixture()
+        let area = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let cache = temporaryCache()
+        let clock = Clock()
+        _ = await service(cache: cache, fixture: fixture, clock: clock).forecast(for: area)
+        clock.advance(31 * 60)
+        let renewed = await service(cache: cache, fixture: fixture, clock: clock).forecast(for: area, forceRefresh: false)
+        #expect(await fixture.calls == 2)
+        #expect(renewed.fetchedAt == clock.date)
+    }
+
+    @Test func freshnessIsConfigurable() async throws {
+        let fixture = RequestFixture()
+        let area = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let clock = Clock()
+        let weather = service(cache: temporaryCache(), fixture: fixture, clock: clock, freshness: 5 * 60)
+        _ = await weather.forecast(for: area)
+        clock.advance(6 * 60)
+        _ = await weather.forecast(for: area)
+        #expect(await fixture.calls == 2)
+    }
+
+    @Test func forceRefreshBypassesAFreshCache() async throws {
+        let fixture = RequestFixture()
+        let area = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let clock = Clock()
+        let weather = service(cache: temporaryCache(), fixture: fixture, clock: clock)
+        _ = await weather.forecast(for: area)
+        clock.advance(60)
+        let refreshed = await weather.forecast(for: area, forceRefresh: true)
+        #expect(await fixture.calls == 2)
+        #expect(refreshed.fetchedAt == clock.date)
+    }
+
+    @Test func cachedForecastNeverCallsTheNetworkAndKeepsStaleData() async throws {
+        let fixture = RequestFixture()
+        let area = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let cache = temporaryCache()
+        let clock = Clock()
+        let weather = service(cache: cache, fixture: fixture, clock: clock)
+        #expect(await weather.cachedForecast(for: area) == nil)
+        let stored = await weather.forecast(for: area, forceRefresh: false)
+        clock.advance(5 * 3_600)
+        let reopened = await service(cache: cache, fixture: fixture, clock: clock).cachedForecast(for: area)
+        #expect(reopened == stored)
+        #expect(await fixture.calls == 1)
+    }
+
+    @Test func exhaustedBudgetKeepsStaleDataEvenWhenForced() async throws {
+        let fixture = RequestFixture()
+        let area = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let cache = temporaryCache()
+        let clock = Clock()
+        let weather = service(cache: cache, fixture: fixture, clock: clock)
+        let stored = await weather.forecast(for: area, forceRefresh: false)
+        for offset in 0..<199 {
+            _ = await weather.historical(for: area, at: clock.date.addingTimeInterval(-Double(offset + 1) * 3_600))
+        }
+        #expect(await fixture.calls == 200)
+        clock.advance(60 * 60)
+        let forced = await weather.forecast(for: area, forceRefresh: true)
+        #expect(await fixture.calls == 200)
+        #expect(forced == stored)
+    }
+
+    @Test func backOffKeepsStaleDataAndForceRefreshDoesNotRetryEarly() async throws {
+        let area = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let cache = temporaryCache()
+        let clock = Clock()
+        let seed = service(cache: cache, fixture: RequestFixture(), clock: clock)
+        let stored = await seed.forecast(for: area, forceRefresh: false)
+        let limited = RequestFixture(shouldBackOff: true)
+        let weather = service(cache: cache, fixture: limited, clock: clock)
+        clock.advance(60 * 60)
+        #expect(await weather.forecast(for: area, forceRefresh: true) == stored)
+        #expect(await weather.forecast(for: area, forceRefresh: true) == stored)
+        #expect(await limited.calls == 1)
+    }
+
+    @Test func disconnectingClearsTheStoredForecast() async throws {
+        let fixture = RequestFixture()
+        let area = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let cache = temporaryCache()
+        let clock = Clock()
+        let key = KeyBox("fixture")
+        let weather = service(cache: cache, fixture: fixture, clock: clock, key: key)
+        _ = await weather.forecast(for: area)
+        try await weather.disconnect()
+        key.set("fixture")
+        #expect(await weather.cachedForecast(for: area) == nil)
+        #expect(await service(cache: cache, fixture: fixture, clock: clock).cachedForecast(for: area) == nil)
+    }
+
+    @Test func discardingAnAreaClearsOnlyItsForecast() async throws {
+        let fixture = RequestFixture()
+        let one = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let other = try #require(WeatherArea(latitude: 40.4, longitude: -3.7))
+        let cache = temporaryCache()
+        let weather = service(cache: cache, fixture: fixture, clock: Clock())
+        _ = await weather.forecast(for: one)
+        _ = await weather.forecast(for: other)
+        await weather.discardForecast(for: one)
+        #expect(await weather.cachedForecast(for: one) == nil)
+        #expect(await service(cache: cache, fixture: fixture, clock: Clock()).cachedForecast(for: other) != nil)
+    }
+
+    @Test func cacheFilesWrittenBeforeForecastsWereStoredStillLoad() async throws {
+        let area = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let cache = temporaryCache()
+        try FileManager.default.createDirectory(
+            at: cache.deletingLastPathComponent(), withIntermediateDirectories: true
+        )
+        try Data(#"{"requestDay":19000,"attempts":7,"history":[]}"#.utf8).write(to: cache)
+        let weather = service(cache: cache, fixture: RequestFixture(), clock: Clock())
+        #expect(await weather.cachedForecast(for: area) == nil)
+        #expect(await weather.forecast(for: area).first?.conditionCode == 800)
+    }
+
     @Test func validatingAKeyDoesNotSaveItAndTellsRejectedFromUnavailable() async {
         let saved = SavedKey()
         func check(_ response: OpenWeatherService.Response) async -> WeatherKeyCheck {
@@ -91,12 +223,30 @@ struct OpenWeatherTests {
             .appending(path: "cache.json")
     }
 
-    private func service(cache: URL, fixture: RequestFixture) -> OpenWeatherService {
+    private func service(
+        cache: URL, fixture: RequestFixture, clock: Clock = Clock(), freshness: TimeInterval = 30 * 60,
+        key: KeyBox = KeyBox("fixture")
+    ) -> OpenWeatherService {
         OpenWeatherService(
-            cacheFile: cache, readKey: { "fixture" }, writeKey: { _ in },
-            request: { await fixture.request($0) }, now: { Date(timeIntervalSince1970: 1_710_000_000) }
+            cacheFile: cache, readKey: { key.value }, writeKey: { key.set($0) },
+            request: { await fixture.request($0) }, now: { clock.date }, forecastFreshness: freshness
         )
     }
+}
+
+private final class Clock: @unchecked Sendable {
+    private let lock = NSLock()
+    private var current = Date(timeIntervalSince1970: 1_710_000_000)
+    var date: Date { lock.withLock { current } }
+    func advance(_ seconds: TimeInterval) { lock.withLock { current = current.addingTimeInterval(seconds) } }
+}
+
+private final class KeyBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var stored: String?
+    init(_ key: String?) { stored = key }
+    var value: String? { lock.withLock { stored } }
+    func set(_ key: String?) { lock.withLock { stored = key } }
 }
 
 private actor RequestFixture {

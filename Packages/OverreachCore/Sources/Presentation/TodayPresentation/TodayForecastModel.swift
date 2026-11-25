@@ -31,6 +31,8 @@ public final class TodayForecastModel {
     public private(set) var dryWindows: [Window] = []
     public private(set) var sunnyWindows: [Window] = []
     public private(set) var isLoading = false
+    /// When the shown forecast was fetched. It can be hours old while a refresh runs or the network is down.
+    public private(set) var updatedAt: Date?
     public private(set) var isLocating = false
     public private(set) var locationUnavailable = false
 
@@ -55,6 +57,15 @@ public final class TodayForecastModel {
     }
 
     public static let attributionURL = URL(string: "https://openweathermap.org/")
+    /// "Updated 14:05" for the forecast on screen, nil when its age is unknown.
+    public var updatedText: String? {
+        guard let updatedAt, !hours.isEmpty else { return nil }
+        let style = Date.FormatStyle(
+            date: .omitted, time: .shortened, locale: format.locale, calendar: calendar, timeZone: calendar.timeZone
+        )
+        return L10n.format("Updated {1}", updatedAt.formatted(style))
+    }
+
     public var toolbarSymbol: String { hours.first?.symbol ?? "cloud.sun" }
     public var toolbarTemperature: String? { hours.first?.temperature }
 
@@ -67,22 +78,29 @@ public final class TodayForecastModel {
             return
         }
         locationUnavailable = false
-        if self.area != area { clearHours() }
+        if let previous = self.area, previous != area {
+            clearHours()
+            await source.discardForecast(for: previous)
+        }
         self.area = area
         storeArea(area)
         await load()
     }
 
-    public func removeArea() {
+    public func removeArea() async {
         loadID = UUID()
+        let removed = area
         area = nil
         isLoading = false
         locationUnavailable = false
         storeArea(nil)
         clearHours()
+        if let removed { await source.discardForecast(for: removed) }
     }
 
-    public func load(now: Date = .now) async {
+    /// Shows the stored forecast first, then asks the source, which only goes to the network when the stored one
+    /// is stale. `forceRefresh` (pull to refresh) skips that freshness check, not the source's request budget.
+    public func load(now: Date = .now, forceRefresh: Bool = false) async {
         let id = UUID()
         loadID = id
         let configured = await source.isConfigured()
@@ -94,16 +112,28 @@ public final class TodayForecastModel {
             return
         }
         isLoading = true
-        let forecast = await source.forecast(for: area)
+        if hours.isEmpty, let stored = await source.cachedForecast(for: area) {
+            guard loadID == id else { return }
+            apply(stored, now: now)
+        }
+        let forecast = await source.forecast(for: area, forceRefresh: forceRefresh)
         guard loadID == id else { return }
         isLoading = false
         apply(forecast, now: now)
     }
 
     private func clearHours() {
+        updatedAt = nil
         hours = []
         dryWindows = []
         sunnyWindows = []
+    }
+
+    private func apply(_ forecast: WeatherForecast, now: Date) {
+        // A failed refresh returns nothing: keep what is shown rather than blanking the screen.
+        if forecast.hours.isEmpty, !hours.isEmpty { return }
+        updatedAt = forecast.fetchedAt
+        apply(forecast.hours, now: now)
     }
 
     private func apply(_ forecast: [WeatherHour], now: Date) {
