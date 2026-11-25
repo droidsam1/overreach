@@ -63,13 +63,39 @@ struct PerformanceProgressView<Plan: View>: View {
             if let series = model.comparableHeartRate {
                 PerformanceSeriesCard(series: series)
             } else {
-                Text("Comparable heart rate needs steady segments with pace, terrain, conditions and sensor data.")
+                Text("Compare steady blocks from both periods using the same heart-rate sensor.")
                     .font(.subheadline).foregroundStyle(.secondary)
             }
+            if !model.runningPulseSensorRows.isEmpty { sensorConfirmation }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Spacing.medium)
         .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.card))
+    }
+
+    private var sensorConfirmation: some View {
+        DisclosureGroup("Confirm heart-rate sensors") {
+            Text("Group runs only when you used the same watch or chest strap.")
+                .font(.footnote).foregroundStyle(.secondary)
+            ForEach(model.runningPulseSensorRows) { row in
+                VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                    NavigationLink(value: PerformanceSession.run(row.run)) {
+                        Text(row.title)
+                    }
+                    Text(row.run.startedAt, format: .dateTime.day().month().year().hour().minute())
+                        .font(.footnote)
+                    Picker("Heart-rate sensor", selection: Binding(
+                        get: { row.selection }, set: { model.choosePulseSensor($0, for: row.id) }
+                    )) {
+                        ForEach(RunningPulseSensor.allCases) { sensor in
+                            Text(sensor.title).tag(sensor)
+                        }
+                    }
+                    .frame(minHeight: 44)
+                }
+                .padding(.vertical, Spacing.xSmall)
+            }
+        }
     }
 
     private var strength: some View {

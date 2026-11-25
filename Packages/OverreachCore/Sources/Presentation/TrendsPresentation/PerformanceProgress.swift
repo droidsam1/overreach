@@ -42,7 +42,7 @@ public struct PerformanceSeries: Identifiable, Sendable {
     public let isEstimated: Bool
     public let points: [PerformancePoint]
     public let best: PerformancePoint?
-    public let comparison: String
+    public internal(set) var comparison: String
     public var trend: String?
     public var context: String?
 }
@@ -222,9 +222,10 @@ struct PerformanceProgress {
 
     func makeSeries(
         _ id: String, title: String, unit: PerformanceSeries.Unit, points: [PerformancePoint],
-        estimated: Bool = false, comparesMedians: Bool = true
+        estimated: Bool = false, comparesMedians: Bool = true, includesPrevious: Bool = false
     ) -> PerformanceSeries {
-        let visible = points.filter { window.includes($0.date) }.sorted { $0.date < $1.date }
+        let visible = points.filter { includesPrevious ? window.contains($0.date) : window.includes($0.date) }
+            .sorted { $0.date < $1.date }
         let best = unit == .heartRate ? nil : visible.min { left, right in
             unit == .elapsedSeconds ? left.value < right.value : left.value > right.value
         }

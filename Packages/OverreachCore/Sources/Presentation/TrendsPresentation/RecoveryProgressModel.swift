@@ -11,6 +11,9 @@ import TrainingServices
 @Observable
 public final class RecoveryProgressModel {
     /// The sections of the screen. Today opens `.recovery` directly and Plan opens `.progress`.
+    public typealias RunningSegmentLoader =
+        @Sendable ([RunActivity]) async -> [ComparableRunningHeartRate.Segment]
+
     public enum Section: String, Hashable, Sendable, CaseIterable {
         case recovery, recentLoad, progress
     }
@@ -63,7 +66,10 @@ public final class RecoveryProgressModel {
     private var trendInputs: TrendInputs?
     private let runChoices: @MainActor () -> [RunMatchPair: RunMatchChoice]
     private var performanceInputs: PerformanceInputs?
-    private let runningSegments: @Sendable ([RunActivity]) async -> [ComparableRunningHeartRate.Segment]
+    private let runningSegments: RunningSegmentLoader
+    private let runningTrack: @Sendable (RunActivity) async -> RunningTrack?
+    private let savePulseSensors: @MainActor ([String: String]) -> Void
+    private var pulseSensors: [String: String]
 
     private struct PerformanceInputs {
         let today: CalendarDay
@@ -71,6 +77,8 @@ public final class RecoveryProgressModel {
         let profile: AthleteProfile?
         let runResults: [PerformanceDistance: [RunningPerformance.BestTime]]
         let runningSegments: [ComparableRunningHeartRate.Segment]
+        let runningBlocks: [RunningBlockComparison.Result]
+        let metrics: [DailyMetrics]
         let sets: [StrengthPerformance.RecordedSet]
         let exercises: [Exercise]
     }
@@ -80,7 +88,8 @@ public final class RecoveryProgressModel {
 
     public var hasRunningPerformance: Bool {
         guard let inputs = performanceInputs else { return false }
-        return inputs.runResults.values.contains { !$0.isEmpty } || !inputs.runningSegments.isEmpty
+        return inputs.runResults.values.contains { !$0.isEmpty }
+            || !inputs.runningSegments.isEmpty || !inputs.runningBlocks.isEmpty
     }
     public var hasStrengthPerformance: Bool { !(performanceInputs?.sets.isEmpty ?? true) }
     public var showsPerformance: Bool { hasRunningPerformance || hasStrengthPerformance }
@@ -93,7 +102,35 @@ public final class RecoveryProgressModel {
 
     public var comparableHeartRate: PerformanceSeries? {
         guard let inputs = performanceInputs else { return nil }
-        return performance(using: inputs).heartRate(inputs.runningSegments, now: inputs.now, calendar: calendar)
+        let performance = performance(using: inputs)
+        let confirmed = inputs.runningBlocks.map { result in
+            result.confirmingSensor(pulseSensor(for: result.run.id).sensorID)
+        }
+        return performance.runningPulse(confirmed, now: inputs.now, calendar: calendar, metrics: inputs.metrics)
+            ?? performance.heartRate(inputs.runningSegments, now: inputs.now, calendar: calendar)
+    }
+
+    public var runningPulseSensorRows: [RunningPulseSensorRow] {
+        guard let inputs = performanceInputs else { return [] }
+        let window = performance(using: inputs).window
+        var seen: Set<String> = []
+        return inputs.runningBlocks.reversed().compactMap { result in
+            let run = result.run
+            guard result.sensorID == nil, window.contains(run.startedAt), seen.insert(run.id).inserted else {
+                return nil
+            }
+            return RunningPulseSensorRow(run: run, selection: pulseSensor(for: run.id))
+        }
+    }
+
+    public func choosePulseSensor(_ sensor: RunningPulseSensor, for runID: String) {
+        guard runningPulseSensorRows.contains(where: { $0.id == runID }) else { return }
+        pulseSensors[runID] = sensor == .unknown ? nil : sensor.rawValue
+        savePulseSensors(pulseSensors)
+    }
+
+    private func pulseSensor(for runID: String) -> RunningPulseSensor {
+        pulseSensors[runID].flatMap(RunningPulseSensor.init(rawValue:)) ?? .unknown
     }
 
     public var strengthPerformanceOptions: [StrengthPerformanceOption] {
@@ -135,7 +172,10 @@ public final class RecoveryProgressModel {
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
         format: Format = Format(), sectionHints: SectionHints = SectionHints(),
         runChoices: @escaping @MainActor () -> [RunMatchPair: RunMatchChoice] = { [:] },
-        runningSegments: @escaping @Sendable ([RunActivity]) async -> [ComparableRunningHeartRate.Segment] = { _ in [] }
+        runningSegments: @escaping RunningSegmentLoader = { _ in [] },
+        runningTrack: @escaping @Sendable (RunActivity) async -> RunningTrack? = { _ in nil },
+        pulseSensors: [String: String] = [:],
+        savePulseSensors: @escaping @MainActor ([String: String]) -> Void = { _ in }
     ) {
         recordLoader = TrainingRecordLoader(
             sources: sources, activity: activity, checkIns: checkIns, workouts: workouts, exercises: exercises,
@@ -149,6 +189,9 @@ public final class RecoveryProgressModel {
         self.sectionHints = sectionHints
         self.runChoices = runChoices
         self.runningSegments = runningSegments
+        self.runningTrack = runningTrack
+        self.pulseSensors = pulseSensors
+        self.savePulseSensors = savePulseSensors
     }
 
     // MARK: Screen state
@@ -218,13 +261,20 @@ public final class RecoveryProgressModel {
         guard activeLoad == loadID else { return }
         let record = snapshot.record
         let runs = performanceRuns(snapshot.runOriginals, now: now)
-        let segments = await runningSegments(runs)
+        async let legacy = runningSegments(runs)
+        let comparison = PerformanceComparison(through: today, days: TrendRange.days90.days, calendar: calendar)
+        let blocks = await Self.loadRunningBlocks(
+            runs.filter { $0.source == .garmin && $0.kind == .training && comparison.contains($0.startedAt) },
+            from: runningTrack
+        )
+        let segments = await legacy
         guard activeLoad == loadID else { return }
         let results = Dictionary(uniqueKeysWithValues: PerformanceDistance.allCases.map { distance in
             (distance, RunningPerformance.bestTimes(for: distance.distance, runs: runs))
         })
         performanceInputs = PerformanceInputs(
             today: today, now: now, profile: profile, runResults: results, runningSegments: segments,
+            runningBlocks: blocks, metrics: snapshot.metrics.value,
             sets: StrengthPerformance.recordedSets(in: record.sessions, through: now),
             exercises: record.exercises
         )
@@ -279,6 +329,19 @@ public final class RecoveryProgressModel {
             default: return true
             }
         }
+    }
+
+    private nonisolated static func loadRunningBlocks(
+        _ runs: [RunActivity], from source: @Sendable (RunActivity) async -> RunningTrack?
+    ) async -> [RunningBlockComparison.Result] {
+        var results: [RunningBlockComparison.Result] = []
+        for run in runs {
+            guard !Task.isCancelled else { break }
+            if let track = await source(run) {
+                results += RunningBlockComparison.observations(for: run, track: track)
+            }
+        }
+        return results
     }
 
     /// Shows the charts for another interval from the data already read.

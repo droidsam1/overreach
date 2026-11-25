@@ -1837,6 +1837,23 @@
         }
       }
     },
+    "Approximate comparison · {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparación aproximada · {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparación aproximada · {1}"
+          }
+        }
+      }
+    },
     "As usual": {
       "extractionState": "manual",
       "localizations": {
@@ -2224,6 +2241,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bíceps"
+          }
+        }
+      }
+    },
+    "Block {1} · {2} measured": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloque {1} · {2} medidos"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloque {1} · {2} medidos"
           }
         }
       }
@@ -2993,19 +3027,19 @@
         }
       }
     },
-    "Comparable heart rate needs steady segments with pace, terrain, conditions and sensor data.": {
+    "Compare steady blocks from both periods using the same heart-rate sensor.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Para comparar la frecuencia cardíaca hacen falta tramos estables con datos de ritmo, terreno, condiciones y sensor."
+            "value": "Compara bloques estables de ambos períodos con el mismo sensor de pulso."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Para comparar a frecuencia cardíaca fan falta treitos estables con datos de ritmo, terreo, condicións e sensor."
+            "value": "Compara bloques estables dos dous períodos co mesmo sensor de pulso."
           }
         }
       }
@@ -3125,6 +3159,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Completei a sesión que escollín"
+          }
+        }
+      }
+    },
+    "Confirm heart-rate sensors": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar sensores de pulso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar sensores de pulso"
           }
         }
       }
@@ -6563,6 +6614,23 @@
         }
       }
     },
+    "Garmin load {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga Garmin {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga Garmin {1}"
+          }
+        }
+      }
+    },
     "Garmin training load": {
       "extractionState": "manual",
       "localizations": {
@@ -6869,6 +6937,23 @@
         }
       }
     },
+    "Group runs only when you used the same watch or chest strap.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agrupa las carreras solo si usaste el mismo reloj o la misma banda pectoral."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agrupa as carreiras só se usaches o mesmo reloxo ou a mesma banda pectoral."
+          }
+        }
+      }
+    },
     "HRV": {
       "extractionState": "manual",
       "localizations": {
@@ -7103,6 +7188,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zona de frecuencia cardíaca"
+          }
+        }
+      }
+    },
+    "Heart-rate sensor": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensor de pulso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensor de pulso"
           }
         }
       }
@@ -13244,6 +13346,40 @@
         }
       }
     },
+    "Pulse trending higher at comparable pace": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El pulso tiende a subir a un ritmo comparable"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O pulso tende a subir a un ritmo comparable"
+          }
+        }
+      }
+    },
+    "Pulse trending lower at comparable pace": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El pulso tiende a bajar a un ritmo comparable"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O pulso tende a baixar a un ritmo comparable"
+          }
+        }
+      }
+    },
     "Push smart, recover smarter: a gym log that explains every target.": {
       "extractionState": "manual",
       "localizations": {
@@ -15607,6 +15743,23 @@
         }
       }
     },
+    "Same chest strap": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Misma banda pectoral"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mesma banda pectoral"
+          }
+        }
+      }
+    },
     "Same exercises, {1} of the working sets, about {2} less load, RPE {3} at most.": {
       "extractionState": "manual",
       "localizations": {
@@ -15620,6 +15773,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Os mesmos exercicios, {1} das series efectivas, un {2} menos de carga e RPE {3} como máximo."
+          }
+        }
+      }
+    },
+    "Same watch optical sensor": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mismo sensor óptico del reloj"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mesmo sensor óptico do reloxo"
           }
         }
       }
@@ -16810,6 +16980,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fases e puntuación do sono"
+          }
+        }
+      }
+    },
+    "Sleep {1} h": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sueño {1} h"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sono {1} h"
           }
         }
       }
@@ -20040,6 +20227,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Exercicio descoñecido: «{1}». O máis parecido: {2}."
+          }
+        }
+      }
+    },
+    "Unknown or different sensor": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensor desconocido o distinto"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensor descoñecido ou distinto"
           }
         }
       }
