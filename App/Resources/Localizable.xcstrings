@@ -6767,6 +6767,23 @@
         }
       }
     },
+    "Forecast unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsión no disponible"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsión non dispoñible"
+          }
+        }
+      }
+    },
     "From {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -9908,6 +9925,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cargando Hoxe…"
+          }
+        }
+      }
+    },
+    "Loading weather": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cargando el tiempo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cargando o tempo"
           }
         }
       }
@@ -22050,6 +22084,23 @@
         }
       }
     },
+    "Weather area not set": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zona del tiempo sin definir"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zona do tempo sen definir"
+          }
+        }
+      }
+    },
     "Weather data from OpenWeather": {
       "extractionState": "manual",
       "localizations": {
@@ -22097,6 +22148,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tempo preto da saída"
+          }
+        }
+      }
+    },
+    "Weather not connected": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiempo sin conectar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo sen conectar"
           }
         }
       }

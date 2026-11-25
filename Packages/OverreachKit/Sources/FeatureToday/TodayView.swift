@@ -136,15 +136,10 @@ public struct TodayView: View {
                         Button {
                             showsForecast = true
                         } label: {
-                            HStack(spacing: Spacing.xSmall) {
-                                Image(systemName: forecastModel.toolbarSymbol)
-                                if let temperature = forecastModel.toolbarTemperature {
-                                    Text(temperature).monospacedDigit()
-                                }
-                            }
+                            TodayWeatherToolbarLabel(model: forecastModel)
                         }
-                        .accessibilityLabel(Text("Weather today"))
-                        .accessibilityValue(Text(verbatim: forecastModel.toolbarTemperature ?? ""))
+                        .accessibilityLabel(Text(verbatim: forecastModel.toolbarAccessibilityLabel))
+                        .accessibilityValue(Text(verbatim: forecastModel.toolbarAccessibilityValue))
                     }
                 }
                 if settingsDestination != nil {

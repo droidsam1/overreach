@@ -6,12 +6,40 @@ import PresentationKit
 @MainActor
 @Observable
 public final class TodayForecastModel {
+    /// What the Today toolbar weather button shows.
+    public enum ToolbarState: Equatable, Sendable {
+        /// No OpenWeather key saved.
+        case notConnected
+        /// A key but no saved area.
+        case needsArea
+        /// A key and an area, and no forecast yet.
+        case loading
+        /// A forecast for the rest of today.
+        case ready
+        /// A key and an area, but the forecast could not be loaded.
+        case unavailable
+    }
+
+    /// The kind of weather, for colouring the symbol. The view maps it to design-system colours.
+    public enum Sky: Equatable, Sendable {
+        case clear
+        case clearNight
+        case partlyCloudy
+        case partlyCloudyNight
+        case cloudy
+        case rain
+        case thunderstorm
+        case snow
+        case fog
+    }
+
     public struct Hour: Identifiable, Sendable {
         public let id: Date
         public let temperature: String?
         public let conditions: String?
         public let precipitation: String?
         public let symbol: String
+        public let sky: Sky?
     }
 
     public struct Window: Identifiable, Sendable {
@@ -42,6 +70,7 @@ public final class TodayForecastModel {
     private let calendar: Calendar
     private let format: Format
     private var loadID = UUID()
+    private var hasLoaded = false
 
     public init(
         source: any WeatherSource, area: WeatherArea? = nil, calendar: Calendar = .current,
@@ -68,6 +97,30 @@ public final class TodayForecastModel {
 
     public var toolbarSymbol: String { hours.first?.symbol ?? "cloud.sun" }
     public var toolbarTemperature: String? { hours.first?.temperature }
+    /// The sky of the first forecast hour, only when the toolbar shows a forecast.
+    public var toolbarSky: Sky? { toolbarState == .ready ? hours.first?.sky : nil }
+
+    public var toolbarState: ToolbarState {
+        guard hasLoaded else { return .loading }
+        guard isConfigured else { return .notConnected }
+        guard area != nil else { return .needsArea }
+        if !hours.isEmpty { return .ready }
+        return isLoading ? .loading : .unavailable
+    }
+
+    public var toolbarAccessibilityLabel: String {
+        toolbarState == .notConnected ? L10n.text("Weather not connected") : L10n.text("Weather today")
+    }
+
+    public var toolbarAccessibilityValue: String {
+        switch toolbarState {
+        case .notConnected: ""
+        case .needsArea: L10n.text("Weather area not set")
+        case .loading: L10n.text("Loading weather")
+        case .unavailable: L10n.text("Forecast unavailable")
+        case .ready: [hours.first?.temperature, hours.first?.conditions].compactMap { $0 }.joined(separator: ", ")
+        }
+    }
 
     public func useCurrentArea() async {
         guard !isLocating else { return }
@@ -106,6 +159,7 @@ public final class TodayForecastModel {
         let configured = await source.isConfigured()
         guard loadID == id else { return }
         isConfigured = configured
+        hasLoaded = true
         guard configured, let area else {
             isLoading = false
             clearHours()
@@ -189,20 +243,23 @@ public final class TodayForecastModel {
             }
         return Hour(
             id: value.date, temperature: temperature, conditions: sky?.text, precipitation: precipitation,
-            symbol: sky?.symbol ?? "cloud"
+            symbol: sky?.symbol ?? "cloud", sky: sky?.kind
         )
     }
 
-    private func sky(_ code: Int?, daylight: Bool?) -> (text: String, symbol: String)? {
+    private func sky(_ code: Int?, daylight: Bool?) -> (text: String, symbol: String, kind: Sky)? {
         guard let code else { return nil }
+        let night = daylight == false
         switch code {
-        case 200...299: return (L10n.text("Thunderstorms"), "cloud.bolt.rain")
-        case 300...599: return (L10n.text("Rain or drizzle"), "cloud.rain")
-        case 600...699: return (L10n.text("Snow"), "cloud.snow")
-        case 700...799: return (L10n.text("Reduced visibility"), "cloud.fog")
-        case 800: return (L10n.text("Clear sky"), daylight == false ? "moon.stars" : "sun.max")
-        case 801...802: return (L10n.text("Partly cloudy"), daylight == false ? "cloud.moon" : "cloud.sun")
-        case 803...804: return (L10n.text("Cloudy"), "cloud")
+        case 200...299: return (L10n.text("Thunderstorms"), "cloud.bolt.rain", .thunderstorm)
+        case 300...599: return (L10n.text("Rain or drizzle"), "cloud.rain", .rain)
+        case 600...699: return (L10n.text("Snow"), "cloud.snow", .snow)
+        case 700...799: return (L10n.text("Reduced visibility"), "cloud.fog", .fog)
+        case 800: return (L10n.text("Clear sky"), night ? "moon.stars" : "sun.max", night ? .clearNight : .clear)
+        case 801...802:
+            return (L10n.text("Partly cloudy"), night ? "cloud.moon" : "cloud.sun",
+                    night ? .partlyCloudyNight : .partlyCloudy)
+        case 803...804: return (L10n.text("Cloudy"), "cloud", .cloudy)
         default: return nil
         }
     }

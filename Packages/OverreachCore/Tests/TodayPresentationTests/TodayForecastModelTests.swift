@@ -146,6 +146,83 @@ struct TodayForecastModelTests {
         #expect(model.updatedAt == nil && model.hours.isEmpty)
     }
 
+    @Test func toolbarStateFollowsKeyAreaAndForecast() async throws {
+        let area = try #require(WeatherArea(latitude: 40, longitude: -3))
+        let forecast = WeatherForecast(
+            hours: [WeatherHour(date: date(10), temperatureCelsius: 14, conditionCode: 801, isDaylight: true)],
+            fetchedAt: date(9)
+        )
+        let now = date(9, minute: 30)
+
+        let source = StoredSource(stored: nil, refreshed: forecast)
+        let model = TodayForecastModel(
+            source: source, calendar: calendar, locate: { area }, storeArea: { _ in }
+        )
+        #expect(model.toolbarState == .loading)
+        await model.load(now: now)
+        #expect(model.toolbarState == .needsArea)
+        #expect(model.toolbarAccessibilityValue == "Weather area not set")
+
+        await model.useCurrentArea()
+        await model.load(now: now)
+        #expect(model.toolbarState == .ready)
+        #expect(model.toolbarSky == .partlyCloudy)
+        #expect(model.toolbarSymbol == "cloud.sun")
+        #expect(model.toolbarAccessibilityLabel == "Weather today")
+        #expect(model.toolbarAccessibilityValue == "14 °C, Partly cloudy")
+
+        await model.removeArea()
+        #expect(model.toolbarState == .needsArea)
+        #expect(model.toolbarSky == nil)
+    }
+
+    @Test func toolbarIsNotConnectedWithoutAKeyWhateverTheAreaIs() async throws {
+        let area = try #require(WeatherArea(latitude: 40, longitude: -3))
+        let model = TodayForecastModel(
+            source: Source(hours: [], configured: false), area: area, locate: { nil }, storeArea: { _ in }
+        )
+        await model.load()
+        #expect(model.toolbarState == .notConnected)
+        #expect(model.toolbarAccessibilityLabel == "Weather not connected")
+        #expect(model.toolbarAccessibilityValue.isEmpty)
+        #expect(model.toolbarSky == nil)
+    }
+
+    @Test func toolbarShowsLoadingThenUnavailableWhenTheForecastIsEmpty() async throws {
+        let area = try #require(WeatherArea(latitude: 40, longitude: -3))
+        let source = StoredSource(stored: nil, refreshed: WeatherForecast(hours: []))
+        let model = TodayForecastModel(source: source, area: area, locate: { nil }, storeArea: { _ in })
+        await source.hold()
+        let loading = Task { await model.load() }
+        while await !source.isWaiting { await Task.yield() }
+        #expect(model.toolbarState == .loading)
+        #expect(model.toolbarAccessibilityValue == "Loading weather")
+        await source.release()
+        await loading.value
+        #expect(model.toolbarState == .unavailable)
+        #expect(model.toolbarAccessibilityValue == "Forecast unavailable")
+    }
+
+    @Test func toolbarSkyDistinguishesRainSnowStormAndNight() async throws {
+        let area = try #require(WeatherArea(latitude: 40, longitude: -3))
+        let cases: [(Int, Bool, TodayForecastModel.Sky)] = [
+            (800, true, .clear), (800, false, .clearNight), (802, false, .partlyCloudyNight),
+            (804, true, .cloudy), (501, true, .rain), (211, true, .thunderstorm), (601, true, .snow),
+            (741, true, .fog),
+        ]
+        for (code, daylight, expected) in cases {
+            let forecast = WeatherForecast(
+                hours: [WeatherHour(date: date(10), conditionCode: code, isDaylight: daylight)], fetchedAt: date(9)
+            )
+            let model = TodayForecastModel(
+                source: StoredSource(stored: nil, refreshed: forecast), area: area, calendar: calendar,
+                locate: { nil }, storeArea: { _ in }
+            )
+            await model.load(now: date(9, minute: 30))
+            #expect(model.toolbarSky == expected)
+        }
+    }
+
     private actor StoredSource: WeatherSource {
         private let stored: WeatherForecast?
         private var refreshed: WeatherForecast
