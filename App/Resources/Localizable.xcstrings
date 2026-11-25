@@ -2415,6 +2415,23 @@
         }
       }
     },
+    "Chance of precipitation {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probabilidad de precipitación {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probabilidade de precipitación {1}"
+          }
+        }
+      }
+    },
     "Change folder…": {
       "extractionState": "manual",
       "localizations": {
@@ -2891,6 +2908,23 @@
         }
       }
     },
+    "Clear or mostly sunny": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Despejado o mayormente soleado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Despexado ou maiormente solleiro"
+          }
+        }
+      }
+    },
     "Clear search and filters": {
       "extractionState": "manual",
       "localizations": {
@@ -2972,6 +3006,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nubes"
+          }
+        }
+      }
+    },
+    "Cloudy": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nublado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nubrado"
           }
         }
       }
@@ -3312,6 +3363,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Conectar Garmin agora"
+          }
+        }
+      }
+    },
+    "Connect OpenWeather to see an hourly forecast for running and walks.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta OpenWeather para ver la previsión por horas para correr y pasear."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta OpenWeather para ver a previsión por horas para correr e pasear."
           }
         }
       }
@@ -6308,6 +6376,23 @@
         }
       }
     },
+    "Finding your area…": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscando tu zona…"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscando a túa zona…"
+          }
+        }
+      }
+    },
     "Finish": {
       "extractionState": "manual",
       "localizations": {
@@ -7409,6 +7494,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Anticoncepción hormonal"
+          }
+        }
+      }
+    },
+    "Hourly forecast": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsión por horas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsión por horas"
           }
         }
       }
@@ -9368,6 +9470,23 @@
         }
       }
     },
+    "Likely dry": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probablemente sin lluvia"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probablemente sen choiva"
+          }
+        }
+      }
+    },
     "Linear load": {
       "extractionState": "manual",
       "localizations": {
@@ -9551,6 +9670,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cargando…"
+          }
+        }
+      }
+    },
+    "Location unavailable. Check location access in iPhone Settings and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ubicación no disponible. Revisa el acceso a la ubicación en Ajustes del iPhone y vuelve a intentarlo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Localización non dispoñible. Revisa o acceso á localización nos Axustes do iPhone e téntao de novo."
           }
         }
       }
@@ -12445,6 +12581,23 @@
         }
       }
     },
+    "Overreach saves a coarse area for the forecast. Update it if you move to another area.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach guarda una zona aproximada para la previsión. Actualízala si te desplazas a otra zona."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach garda unha zona aproximada para a previsión. Actualízaa se te desprazas a outra zona."
+          }
+        }
+      }
+    },
     "Overreach treats rising effort at the same weight and reps as a sign of fatigue.": {
       "extractionState": "manual",
       "localizations": {
@@ -12628,6 +12781,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen dor durante nin despois"
+          }
+        }
+      }
+    },
+    "Partly cloudy": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parcialmente nublado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parcialmente nubrado"
           }
         }
       }
@@ -13720,6 +13890,23 @@
         }
       }
     },
+    "Rain or drizzle": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lluvia o llovizna"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choiva ou orballo"
+          }
+        }
+      }
+    },
     "Raw data, no hidden instructions": {
       "extractionState": "manual",
       "localizations": {
@@ -14260,6 +14447,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Eliminar día de carreira"
+          }
+        }
+      }
+    },
+    "Remove saved area": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar zona guardada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar zona gardada"
           }
         }
       }
@@ -18990,6 +19194,23 @@
         }
       }
     },
+    "The forecast is unavailable. Try refreshing later.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La previsión no está disponible. Intenta actualizarla más tarde."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A previsión non está dispoñible. Tenta actualizala máis tarde."
+          }
+        }
+      }
+    },
     "The key couldn't be saved securely on this iPhone. Try again.": {
       "extractionState": "manual",
       "localizations": {
@@ -20571,6 +20792,23 @@
         }
       }
     },
+    "Use my approximate location": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar mi ubicación aproximada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar a miña localización aproximada"
+          }
+        }
+      }
+    },
     "Use notes for what the numbers miss: pain, technique, sleep or machine settings. They are saved with the session and included in backups.": {
       "extractionState": "manual",
       "localizations": {
@@ -21336,6 +21574,23 @@
         }
       }
     },
+    "Weather data from OpenWeather": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datos meteorológicos de OpenWeather"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datos meteorolóxicos de OpenWeather"
+          }
+        }
+      }
+    },
     "Weather near the start": {
       "extractionState": "manual",
       "localizations": {
@@ -21349,6 +21604,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tempo preto da saída"
+          }
+        }
+      }
+    },
+    "Weather settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes del tiempo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Axustes do tempo"
+          }
+        }
+      }
+    },
+    "Weather today": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El tiempo hoy"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O tempo hoxe"
           }
         }
       }

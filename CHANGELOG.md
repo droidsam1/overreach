@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today can show a local hourly weather forecast and likely dry and sunny periods for running or walks.
 - Recovery & Progress shows observed 1, 5 and 10 km running times, recorded strength results and eligible
   estimated 1RM trends for the last 30 or 90 days. Select a chart point or session row to open its source.
   Plan progress, deloads and rest history remain available from Progress.

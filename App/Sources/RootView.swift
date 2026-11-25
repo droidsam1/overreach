@@ -26,6 +26,7 @@ struct RootView: View {
     }
 
     @State private var todayModel: TodayModel
+    @State private var forecastModel: TodayForecastModel?
     @State private var recoveryModel: RecoveryProgressModel
     @State private var workoutModel: WorkoutModel
     @State private var routinesModel: RoutinesModel
@@ -66,6 +67,7 @@ struct RootView: View {
     init(container: AppContainer) {
         self.container = container
         _todayModel = State(initialValue: container.makeTodayModel())
+        _forecastModel = State(initialValue: container.makeTodayForecastModel())
         _recoveryModel = State(initialValue: container.makeRecoveryProgressModel())
         _workoutModel = State(initialValue: container.makeWorkoutModel())
         _selectedTab = State(initialValue: .today)
@@ -134,6 +136,11 @@ struct RootView: View {
                     onConnectGarmin: { garminModel.start() },
                     recoveryHistory: { PlanProgressView(model: planModel) }
                 )
+                .weatherForecast(forecastModel) {
+                    if let weatherSettings = container.makeWeatherSettingsModel() {
+                        WeatherSettingsView(model: weatherSettings)
+                    }
+                }
                 .startStrength { routine, rotationCap, startsFromRotationHistory in
                     selectedTab = .train
                     Task {
@@ -241,6 +248,7 @@ struct RootView: View {
                 workoutModel.retryDraftAccess()
                 Task { await backupModel.backUpIfConfigured() }
             } else if scenePhase == .active {
+                Task { await forecastModel?.load() }
                 // The watch's workout may have reached Health since the session was saved.
                 Task {
                     await container.reconcileHealthWorkouts()
