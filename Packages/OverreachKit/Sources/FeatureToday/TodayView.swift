@@ -14,6 +14,9 @@ public struct TodayView: View {
     @State private var showsRunOffer = false
     @State private var showsWhy = false
     @State private var showsOptions = false
+    @State private var showsForecast = false
+    private var forecastModel: TodayForecastModel?
+    private var forecastSettings: (() -> AnyView)?
     @State private var painPrompt: RunPainPrompt?
     private let onConnectGarmin: () -> Void
     private let recoveryHistory: (() -> AnyView)?
@@ -69,6 +72,15 @@ public struct TodayView: View {
         return copy
     }
 
+    public func weatherForecast<Settings: View>(
+        _ model: TodayForecastModel?, @ViewBuilder settings: @escaping () -> Settings
+    ) -> TodayView {
+        var copy = self
+        copy.forecastModel = model
+        copy.forecastSettings = { AnyView(settings()) }
+        return copy
+    }
+
     public func startStrength(_ action: @escaping (Routine, RotationAdjustment.Outcome?, Bool) -> Void) -> TodayView {
         var copy = self
         copy.onStartStrength = action
@@ -119,6 +131,22 @@ public struct TodayView: View {
             }
             .navigationTitle("Today")
             .toolbar {
+                if let forecastModel {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            showsForecast = true
+                        } label: {
+                            HStack(spacing: Spacing.xSmall) {
+                                Image(systemName: forecastModel.toolbarSymbol)
+                                if let temperature = forecastModel.toolbarTemperature {
+                                    Text(temperature).monospacedDigit()
+                                }
+                            }
+                        }
+                        .accessibilityLabel(Text("Weather today"))
+                        .accessibilityValue(Text(verbatim: forecastModel.toolbarTemperature ?? ""))
+                    }
+                }
                 if settingsDestination != nil {
                     ToolbarItem(placement: .primaryAction) {
                         Button {
@@ -140,6 +168,11 @@ public struct TodayView: View {
             }
             .navigationDestination(isPresented: showsSettings) {
                 settingsDestination?()
+            }
+            .navigationDestination(isPresented: $showsForecast) {
+                if let forecastModel {
+                    TodayForecastView(model: forecastModel) { forecastSettings?() }
+                }
             }
             .navigationDestination(isPresented: $showsWhy) { whyScreen }
             .navigationDestination(isPresented: $showsOptions) { optionsScreen }
@@ -168,6 +201,7 @@ public struct TodayView: View {
             }
             .onChange(of: model.sectionHintCandidates) { model.updateSectionHints() }
             .task { await reload() }
+            .task { await forecastModel?.load() }
             .refreshable { await reload() }
         }
     }
