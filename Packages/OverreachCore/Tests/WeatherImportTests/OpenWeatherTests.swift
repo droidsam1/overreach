@@ -69,6 +69,23 @@ struct OpenWeatherTests {
         #expect(await fixture.calls == 1)
     }
 
+    @Test func validatingAKeyDoesNotSaveItAndTellsRejectedFromUnavailable() async {
+        let saved = SavedKey()
+        func check(_ response: OpenWeatherService.Response) async -> WeatherKeyCheck {
+            let weather = OpenWeatherService(
+                cacheFile: temporaryCache(), readKey: { nil }, writeKey: { saved.set($0) },
+                request: { _ in response }, now: { Date(timeIntervalSince1970: 1_710_000_000) }
+            )
+            return await weather.validate(key: "candidate")
+        }
+        let body = Data(#"{"data":[{"dt":1700002800,"temp":8}]}"#.utf8)
+        #expect(await check(.data(body)) == .valid)
+        #expect(await check(.rejected) == .rejected)
+        #expect(await check(.unavailable) == .unavailable)
+        #expect(await check(.backOff) == .unavailable)
+        #expect(saved.value == nil)
+    }
+
     private func temporaryCache() -> URL {
         FileManager.default.temporaryDirectory.appending(path: "overreach-weather-test-" + UUID().uuidString)
             .appending(path: "cache.json")
@@ -99,4 +116,11 @@ private actor RequestFixture {
         "pop":0.2,"weather":[{"id":800,"icon":"01d"}]}]}
         """.utf8))
     }
+}
+
+private final class SavedKey: @unchecked Sendable {
+    private let lock = NSLock()
+    private var stored: String?
+    var value: String? { lock.withLock { stored } }
+    func set(_ key: String?) { lock.withLock { stored = key } }
 }

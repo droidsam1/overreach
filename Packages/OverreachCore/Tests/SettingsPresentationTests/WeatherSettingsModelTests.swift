@@ -87,11 +87,19 @@ actor WeatherCredentialsFixture: WeatherCredentials {
     struct Failure: Error {}
 
     private(set) var storedKey: String?
+    private(set) var validatedKeys: [String] = []
     private let failsToSave: Bool
+    private let check: WeatherKeyCheck
 
-    init(key: String? = nil, failsToSave: Bool = false) {
+    init(key: String? = nil, failsToSave: Bool = false, check: WeatherKeyCheck = .valid) {
         self.storedKey = key
         self.failsToSave = failsToSave
+        self.check = check
+    }
+
+    func validate(key: String) async -> WeatherKeyCheck {
+        validatedKeys.append(key)
+        return check
     }
 
     func isConfigured() async -> Bool { storedKey != nil }

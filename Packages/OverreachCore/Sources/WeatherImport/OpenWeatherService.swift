@@ -6,6 +6,8 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
     public enum Response: Sendable {
         case data(Data)
         case backOff
+        /// The provider refused the key (HTTP 401). Backs off like `backOff`.
+        case rejected
         case unavailable
     }
 
@@ -85,6 +87,18 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
         try persist()
     }
 
+    public func validate(key: String) async -> WeatherKeyCheck {
+        let cleaned = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleaned.isEmpty, let area = WeatherArea(latitude: 0, longitude: 0),
+              let url = OpenWeatherTimeline.url(for: area, start: nil, key: cleaned),
+              reserveAttempt(at: now()) else { return .unavailable }
+        switch await request(url) {
+        case let .data(data): return (try? OpenWeatherTimeline.decode(data)) == nil ? .unavailable : .valid
+        case .rejected: return .rejected
+        case .backOff, .unavailable: return .unavailable
+        }
+    }
+
     public func historical(for area: WeatherArea, at date: Date) async -> WeatherHour? {
         let hour = OpenWeatherTimeline.hour(date)
         guard readKey() != nil, hour.isFinite, date < now() else { return nil }
@@ -134,7 +148,7 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
             switch await request(url) {
             case let .data(data):
                 return Reply(hours: (try? OpenWeatherTimeline.decode(data)) ?? [])
-            case .backOff:
+            case .backOff, .rejected:
                 return Reply(shouldBackOff: true)
             case .unavailable:
                 return Reply()

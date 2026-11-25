@@ -35,6 +35,11 @@ public final class WeatherSettingsModel {
 
     public var canCancelReplacing: Bool { connection == .replacing }
 
+    /// A fresh guide that saves the key through the same credentials.
+    public func makeOnboarding() -> WeatherOnboardingModel {
+        WeatherOnboardingModel(credentials: credentials)
+    }
+
     public func load() async {
         isConfigured = await credentials.isConfigured()
         if !isConfigured { isReplacing = false }

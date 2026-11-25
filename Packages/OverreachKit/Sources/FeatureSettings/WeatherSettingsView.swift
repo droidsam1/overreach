@@ -6,6 +6,7 @@ import SwiftUI
 public struct WeatherSettingsView: View {
     let model: WeatherSettingsModel
     @State private var key = ""
+    @State private var onboarding: WeatherOnboardingModel?
 
     public init(model: WeatherSettingsModel) {
         self.model = model
@@ -17,6 +18,13 @@ public struct WeatherSettingsView: View {
                 Text("Weather uses the approximate area and time of eligible outdoor runs.")
                 Text("Set your OpenWeather One Call daily limit to 1,000 or fewer to avoid charges.")
                 if model.showsKeyField {
+                    if model.connection == .disconnected {
+                        Button {
+                            onboarding = model.makeOnboarding()
+                        } label: {
+                            Label("Set up with a guide", systemImage: "list.number")
+                        }
+                    }
                     keyEntry
                 } else {
                     connected
@@ -30,6 +38,9 @@ public struct WeatherSettingsView: View {
         }
         .navigationTitle("Weather")
         .task { await model.load() }
+        .sheet(item: $onboarding, onDismiss: { Task { await model.load() } }) { onboarding in
+            WeatherOnboardingView(model: onboarding)
+        }
     }
 
     private var trimmedKey: String { key.trimmingCharacters(in: .whitespacesAndNewlines) }

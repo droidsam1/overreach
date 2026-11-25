@@ -18,7 +18,8 @@ public enum OpenWeather {
                       let status = (response as? HTTPURLResponse)?.statusCode else { return .unavailable }
                 switch status {
                 case 200: return .data(data)
-                case 401, 403, 429: return .backOff
+                case 401: return .rejected
+                case 403, 429: return .backOff
                 default: return .unavailable
                 }
             }

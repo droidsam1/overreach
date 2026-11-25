@@ -16,7 +16,7 @@ struct TodayForecastView<Settings: View>: View {
                     NavigationLink {
                         settings()
                     } label: {
-                        Label("Weather settings", systemImage: "gearshape")
+                        Label("Set up weather", systemImage: "key")
                     }
                 }
             }

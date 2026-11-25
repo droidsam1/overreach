@@ -46,9 +46,22 @@ public extension WeatherSource {
     func isConfigured() async -> Bool { true }
 }
 
+/// What OpenWeather said about a key that has not been saved yet.
+public enum WeatherKeyCheck: Equatable, Sendable {
+    case valid
+    case rejected
+    case unavailable
+}
+
 /// The UI can replace or remove a credential without reading it back.
 public protocol WeatherCredentials: Sendable {
     func isConfigured() async -> Bool
     func configure(key: String) async throws
     func disconnect() async throws
+    /// Asks OpenWeather whether `key` works, without saving it. The key goes nowhere else.
+    func validate(key: String) async -> WeatherKeyCheck
+}
+
+public extension WeatherCredentials {
+    func validate(key: String) async -> WeatherKeyCheck { .valid }
 }
