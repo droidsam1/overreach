@@ -15,7 +15,6 @@ hybrid athlete. The device and external review steps below have their own accept
 3. [#298](https://github.com/droidsam1/overreach/issues/298) — Train: start screen as hero card with one verb and routine cards.
 4. [#300](https://github.com/droidsam1/overreach/issues/300) — History: cards, summary-first details and shared empty states.
 5. [#299](https://github.com/droidsam1/overreach/issues/299) — Train: exercise cards in the live session, compact rest timer, Today-style finish summary.
-6. [#301](https://github.com/droidsam1/overreach/issues/301) — Plan: two-level layout with hero, week strip and link tiles.
 7. [#302](https://github.com/droidsam1/overreach/issues/302) — Settings, Garmin, Exercises, Onboarding, Ask AI: tone badges and InlineNotice.
 8. [#303](https://github.com/droidsam1/overreach/issues/303) — Recovery & Progress: SignalTrendChart and Why-style signal cards.
 9. [#304](https://github.com/droidsam1/overreach/issues/304) — Plan detail screens: use DesignSystem calendar, bars and charts.

@@ -66,13 +66,52 @@ public struct PlanProgress: Hashable, Sendable {
     }
 }
 
+public struct PlanWeekDay: Identifiable, Hashable, Sendable {
+    public enum Kind: Hashable, Sendable {
+        case strengthDone, runDone, restLogged, plannedStrength, plannedRun, today, empty
+    }
+
+    public let id: CalendarDay
+    public let initial: String
+    public let kind: Kind
+    public let accessibilityLabel: String
+
+    init(_ day: WeekProgress.Day, calendar: Calendar) {
+        id = day.day
+        let date = day.day.startDate(in: calendar)
+        let style = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone)
+        initial = date.formatted(style.weekday(.narrow))
+        let weekday = date.formatted(style.weekday(.wide))
+        let state: String
+        switch day.done {
+        case .strength: (kind, state) = (.strengthDone, L10n.text("Strength done"))
+        case .run: (kind, state) = (.runDone, L10n.text("Run done"))
+        case .both: (kind, state) = (.strengthDone, L10n.text("Strength and run done"))
+        case .restLogged: (kind, state) = (.restLogged, L10n.text("Rest logged"))
+        case .nothing where day.plannedStrength: (kind, state) = (.plannedStrength, L10n.text("Planned"))
+        case .nothing where day.plannedRun: (kind, state) = (.plannedRun, L10n.text("Planned"))
+        case .nothing: (kind, state) = (day.isToday ? .today : .empty, L10n.text("Nothing planned"))
+        }
+        accessibilityLabel = day.isToday
+            ? L10n.format("{1}, today: {2}", weekday, state)
+            : L10n.format("{1}: {2}", weekday, state)
+    }
+}
+
 extension PlanModel {
+    public var weekDays: [PlanWeekDay] {
+        weekProgress?.days.map { PlanWeekDay($0, calendar: calendar) } ?? []
+    }
+
     /// This week's sessions and the block's week, for the top of Plan. `nil` without a plan.
-    public var progress: PlanProgress? {
+    public var progress: PlanProgress? { PlanProgress.make(weekProgress) }
+
+    private var weekProgress: WeekProgress? {
         let goal = profile.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
-        let schedule = PlanProgress.Schedule(
-            strength: goal?.scheduledStrength ?? [], runs: goal?.scheduledRuns ?? [], sessions: weekSessions
+        return WeekProgress.make(
+            .init(strength: goal?.scheduledStrength ?? [], runs: goal?.scheduledRuns ?? [],
+                  sessions: weekSessions, currentBlock: currentBlock),
+            now: now, calendar: calendar
         )
-        return PlanProgress.make(schedule, currentBlock: currentBlock, now: now, calendar: calendar)
     }
 }
