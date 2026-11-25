@@ -25,10 +25,15 @@ hybrid athlete. The device and external review steps below have their own accept
 11. [#306](https://github.com/droidsam1/overreach/issues/306) — VoiceOver labels for Exercises, Onboarding, Settings, Garmin setup and forms.
 12. [#307](https://github.com/droidsam1/overreach/issues/307) — Haptics for save, confirm and check-in feedback.
 13. [#308](https://github.com/droidsam1/overreach/issues/308) — Titles: large on tab roots, inline on pushed screens.
+14. [#347](https://github.com/droidsam1/overreach/issues/347) — Recovery: sleep and training timing card (ADR-0045).
+15. [#348](https://github.com/droidsam1/overreach/issues/348) — AI context: include sleep and training timing.
+16. [#351](https://github.com/droidsam1/overreach/issues/351) — CircadianTiming: regularity from sleep midpoint and wake time.
 
 ## Needs a person or an iPhone
 
 Agents can prepare these but not finish them.
+
+- Validate the circadian timing thresholds on real histories — [#349](https://github.com/droidsam1/overreach/issues/349).
 
 - Validate hybrid planning candidates with historical replay and coach and clinician review before integrating
   automatic planning. [Task 9](design/readiness-and-hybrid-planning.md#9-research-and-validate-hybrid-planning-rules-before-automating-plans)

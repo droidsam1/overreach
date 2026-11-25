@@ -19,6 +19,7 @@ import PresentationKit
 import SettingsPresentation
 import TodayPresentation
 import TrendsPresentation
+import WeatherSource
 import WorkoutPresentation
 
 /// Composition root: the only place that knows the concrete implementations (ADR-0002).
@@ -46,6 +47,14 @@ final class AppContainer {
     let cycleSource: (any CycleSource)?
     /// The person's Garmin account (ADR-0022). Also in `metricsSources`.
     let garmin: (any GarminAccount)?
+    let weather: (any Domain.WeatherSource)?
+    private let weatherCredentials: (any WeatherCredentials)?
+    private var isRefreshingRunWeather = false
+
+    private var runWeather: GarminRunWeather? {
+        guard let weather, let tracks = garmin as? any RunningTrackSource else { return nil }
+        return GarminRunWeather(weather: weather, tracks: tracks)
+    }
     private let recordedStrength: (any RecordedStrengthSource)?
     private let historyRecordedStrength: (any RecordedStrengthSource)?
 
@@ -66,6 +75,8 @@ final class AppContainer {
         activitySources: [any ActivitySource] = [],
         cycleSource: (any CycleSource)? = nil,
         garmin: (any GarminAccount)? = nil,
+        weather: (any Domain.WeatherSource)? = nil,
+        weatherCredentials: (any WeatherCredentials)? = nil,
         recordedStrength: (any RecordedStrengthSource)? = nil,
         historyRecordedStrength: (any RecordedStrengthSource)? = nil
     ) {
@@ -88,6 +99,8 @@ final class AppContainer {
         self.activitySources = activitySources
         self.cycleSource = cycleSource
         self.garmin = garmin
+        self.weather = weather
+        self.weatherCredentials = weatherCredentials
         self.recordedStrength = recordedStrength
         self.historyRecordedStrength = historyRecordedStrength ?? recordedStrength
     }
@@ -97,6 +110,7 @@ final class AppContainer {
     static func live() -> AppContainer {
         let healthKit = HealthKitMetricsSource()
         let garmin = GarminConnect.makeService()
+        let weather = OpenWeather.makeService()
         let sources: [any MetricsSource] = [garmin, healthKit]
         // Garmin's strength records plus other apps' strength workouts in Apple Health (e.g. the Apple Watch), each
         // workout once.
@@ -109,7 +123,7 @@ final class AppContainer {
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store, workoutDraftStore: FileWorkoutDraftStore(),
                 metricsSources: sources, activitySources: [garmin, healthKit],
-                cycleSource: healthKit, garmin: garmin,
+                cycleSource: healthKit, garmin: garmin, weather: weather, weatherCredentials: weather,
                 recordedStrength: recordedStrength, historyRecordedStrength: historyRecordedStrength
             )
         } catch {
@@ -118,7 +132,7 @@ final class AppContainer {
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store,
                 metricsSources: sources, activitySources: [garmin, healthKit],
-                cycleSource: healthKit, garmin: garmin,
+                cycleSource: healthKit, garmin: garmin, weather: weather, weatherCredentials: weather,
                 recordedStrength: recordedStrength, historyRecordedStrength: historyRecordedStrength
             )
         }
@@ -301,10 +315,12 @@ final class AppContainer {
 
     func makeHistoryModel() -> HistoryModel {
         let choices = readActivityMatchChoices()
+        let runWeather = self.runWeather
         let defaults = UserDefaults.standard
         return HistoryModel(
             workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
             profiles: profiles, progression: progression, runSources: metricsSources,
+            runWeather: { run in await runWeather?.weather(for: run) },
             recordedStrength: historyRecordedStrength, activitySources: activitySources,
             companionAnswers: dogWalkAnswers,
             dogRunAnswers: dogRunAnswers,
@@ -351,6 +367,26 @@ final class AppContainer {
 
     func makeTrainingSettingsModel() -> TrainingSettingsModel {
         TrainingSettingsModel(profiles: profiles)
+    }
+
+    func makeWeatherSettingsModel() -> WeatherSettingsModel? {
+        weatherCredentials.map(WeatherSettingsModel.init(credentials:))
+    }
+
+    func refreshRunWeather() async {
+        guard !isRefreshingRunWeather, let runWeather, let garmin = garmin as? any MetricsSource else { return }
+        isRefreshingRunWeather = true
+        defer { isRefreshingRunWeather = false }
+        guard await runWeather.weather.isConfigured() else { return }
+        let end = Date()
+        let start = end.addingTimeInterval(-14 * 86_400)
+        guard let runs = try? await garmin.runs(from: start, to: end) else { return }
+        let recentOutdoor = runs.filter { $0.kind == .training || $0.kind == .race }
+            .sorted { $0.startedAt > $1.startedAt }
+        for run in recentOutdoor.prefix(16) {
+            guard !Task.isCancelled else { return }
+            _ = await runWeather.weather(for: run)
+        }
     }
 
     func makeGarminSetupModel() -> GarminSetupModel {

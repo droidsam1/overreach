@@ -136,6 +136,7 @@ public final class HistoryModel {
     private var walks: [WalkBout] = []
     private var walkLines: [HistoryWalk] = []
     private let runSources: [any MetricsSource]
+    private let runWeather: @Sendable (RunActivity) async -> WeatherHour?
     private var format: Format
     private let clock: @Sendable () -> Date
     private var effortScale = EffortScale.rpe
@@ -165,6 +166,7 @@ public final class HistoryModel {
         profiles: (any ProfileRepository)? = nil,
         progression: (any ProgressionSettingsRepository)? = nil,
         runSources: [any MetricsSource] = [],
+        runWeather: @escaping @Sendable (RunActivity) async -> WeatherHour? = { _ in nil },
         recordedStrength: (any RecordedStrengthSource)? = nil,
         activitySources: [any ActivitySource] = [],
         companionAnswers: DogWalkAnswers? = nil,
@@ -189,6 +191,7 @@ public final class HistoryModel {
         self.companionAnswers = companionAnswers ?? DogWalkAnswers()
         self.dogRunAnswers = dogRunAnswers
         self.runSources = runSources
+        self.runWeather = runWeather
         self.format = format
         self.clock = clock
         self.runChoices = runChoices
@@ -199,6 +202,11 @@ public final class HistoryModel {
             workouts: workouts, activitySources: activitySources, runSources: runSources,
             calendar: calendar, format: format, runChoices: runChoices, clock: clock
         )
+    }
+
+    public func weatherDetails(for run: HistoryRunActivity) async -> [HistoryMetric] {
+        guard let hour = await runWeather(run.original) else { return [] }
+        return HistoryMetric.weather(hour, format: format)
     }
 
     /// The month calendar: strength days, runs and steps (a sub-screen of History).
