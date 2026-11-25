@@ -30,7 +30,7 @@ struct ExerciseSettingsView: View {
     var body: some View {
         Form {
             if let message = model.errorMessage {
-                Text(message).foregroundStyle(.red)
+                InlineNotice(Text(message), tone: .critical)
             }
             Section {
                 Picker("Focus", selection: $model.focus) {
@@ -92,7 +92,7 @@ struct ExerciseSettingsView: View {
             if model.showsRepBlocks {
                 TextField("Rep blocks", text: $model.repBlocksText)
                 if let message = model.repBlocksMessage {
-                    Text(message).font(.footnote).foregroundStyle(.red)
+                    InlineNotice(Text(message), tone: .critical)
                 }
             }
             Picker("Target RPE", selection: $model.targetRPE) {

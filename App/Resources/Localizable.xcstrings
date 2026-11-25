@@ -12394,6 +12394,23 @@
         }
       }
     },
+    "Not connected": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin conexión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen conexión"
+          }
+        }
+      }
+    },
     "Not enough data yet to judge today.": {
       "extractionState": "manual",
       "localizations": {

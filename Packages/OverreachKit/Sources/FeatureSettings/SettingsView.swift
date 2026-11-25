@@ -1,5 +1,6 @@
 import DesignSystem
 import Domain
+import PresentationKit
 import SettingsPresentation
 import SwiftUI
 import UniformTypeIdentifiers
@@ -132,7 +133,7 @@ public struct SettingsView<Library: View>: View {
             ))
             .disabled(!trainingModel.canEditSettings)
             if let error = trainingModel.errorMessage {
-                Label(error, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                InlineNotice(Text(error), tone: .critical)
             }
         } header: {
             Text(trainingModel.sectionTitle)
@@ -214,6 +215,8 @@ public struct SettingsView<Library: View>: View {
                     ProgressView(value: garminModel.progress?.fraction ?? 0) {
                         Text("Syncing…")
                     }
+                } else if let error = garminModel.errorMessage, !garminModel.isPresented {
+                    InlineNotice(Text(error), tone: .critical) { Task { await garminModel.sync() } }
                 } else {
                     Button("Sync now", systemImage: "arrow.triangle.2.circlepath") {
                         Task { await garminModel.sync() }
@@ -222,14 +225,12 @@ public struct SettingsView<Library: View>: View {
                 if let summary = garminModel.summaryText {
                     Text(summary).font(.footnote).foregroundStyle(.secondary)
                 }
-                if let error = garminModel.errorMessage, !garminModel.isPresented {
-                    Label(error, systemImage: "exclamationmark.circle").font(.footnote).foregroundStyle(.red)
-                }
                 Button("Renew key", systemImage: "key.horizontal") { garminModel.start() }
                 Button("Disconnect", systemImage: "xmark.circle", role: .destructive) {
                     isConfirmingDisconnect = true
                 }
             } else {
+                StatusBadge(title: L10n.text("Not connected"), tone: .neutral)
                 Button {
                     garminModel.start()
                 } label: {
@@ -251,8 +252,7 @@ public struct SettingsView<Library: View>: View {
 
     private var connectionStatus: some View {
         VStack(alignment: .leading, spacing: Spacing.xSmall) {
-            Label("Connected", systemImage: "checkmark.circle.fill")
-                .foregroundStyle(.green)
+            StatusBadge(title: L10n.text("Connected"), tone: .positive)
             if let lastSync = garminModel.lastSyncText {
                 Text(lastSync).font(.footnote).foregroundStyle(.secondary)
             }
@@ -317,9 +317,10 @@ public struct SettingsView<Library: View>: View {
                     }
                 }
                 if importModel.skippedLineCount > 0 {
-                    Text("\(importModel.skippedLineCount) lines could not be read and will be skipped.")
-                        .font(.footnote)
-                        .foregroundStyle(.orange)
+                    InlineNotice(
+                        Text("\(importModel.skippedLineCount) lines could not be read and will be skipped."),
+                        tone: .caution
+                    )
                 }
                 Button("Import") { Task { await importModel.confirm() } }
                     .bold()
@@ -337,16 +338,20 @@ public struct SettingsView<Library: View>: View {
                 }
             }
         case let .done(sessions, sets):
-            Label("Imported \(sessions) sessions and \(sets) sets.", systemImage: "checkmark.circle.fill")
-                .foregroundStyle(.green)
+            InlineNotice(Text("Imported \(sessions) sessions and \(sets) sets."), tone: .positive)
             if importModel.lastImportNewExercises > 0 {
-                Text("\(importModel.lastImportNewExercises) new exercises need their muscles. Assign them in Exercises.")
-                    .font(.footnote)
-                    .foregroundStyle(.orange)
+                InlineNotice(
+                    Text(
+                        """
+                        \(importModel.lastImportNewExercises) new exercises need their muscles. \
+                        Assign them in Exercises.
+                        """
+                    ),
+                    tone: .caution
+                )
             }
         case let .failed(message):
-            Label(message, systemImage: "exclamationmark.triangle")
-                .foregroundStyle(.red)
+            InlineNotice(Text(message), tone: .critical)
         }
     }
 }

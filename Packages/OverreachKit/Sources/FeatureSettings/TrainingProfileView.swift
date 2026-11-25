@@ -1,3 +1,4 @@
+import DesignSystem
 import Domain
 import SettingsPresentation
 import SwiftUI
@@ -16,10 +17,10 @@ public struct TrainingProfileView: View {
         Form {
             if let message = model.errorMessage {
                 Section {
-                    Label(message, systemImage: "exclamationmark.circle")
-                    if !model.isLoaded {
-                        Button("Try again") { Task { await model.load() } }
-                    }
+                    InlineNotice(
+                        Text(message), tone: .critical,
+                        retry: model.isLoaded ? nil : { Task { await model.load() } }
+                    )
                 }
             }
             if model.isLoaded {
