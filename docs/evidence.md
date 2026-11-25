@@ -647,6 +647,62 @@ sleep of 0 h or above 18 h are treated as measurement errors and ignored. Sleep 
 separate series, as HRV depends on posture, activity and time of day. An earlier day never stands in for today's
 resting HR or sleep. The ranges are wide engineering limits, not physiological norms. Reviewed 2026-11-21.
 
+## Circadian timing
+
+When the athlete sleeps and trains (ADR-0045). Reviewed 2026-11-25. Timing statistics are associations; none of this
+is a diagnosis. Light is the strongest human zeitgeber, but the app has no light data, so it appears only as advice.
+
+### `sleep-regularity` — limited
+In 60,977 UK Biobank adults with 7 days of accelerometry, a more regular sleep pattern (Sleep Regularity Index) was a
+stronger predictor of all-cause mortality than sleep duration; the most regular quintile had a 22–57 % lower
+cardiometabolic mortality risk than the least regular. After adjusting for duration the link held for cancer and other
+deaths but not for cardiometabolic deaths, and a 2025 cohort found duration and regularity interact. Observational:
+direction of effect is not established.
+→ Flag a bedtime spread (circular SD) above 60 min over ≥ 7 nights. The 60 min threshold is a labelled heuristic;
+the cohort used a regularity index, not bedtime SD. Refs: Windred et al. 2024, Sleep 47(1):zsad253; Sci Rep 2025,
+doi 10.1038/s41598-025-15828-6. Reviewed 2026-11-25.
+
+### `social-jetlag` — limited
+Weekend-vs-weekday shift of sleep midpoint shows small observational associations: with BMI (r ≈ 0.12; 23 % higher
+odds of overweight or obesity), with depressive symptoms (r ≈ 0.05–0.16, high heterogeneity), and no clear link with
+type 2 diabetes in high-quality studies.
+→ Mention a weekend midpoint more than 60 min later than weekdays, without claiming harm. Free days (waking Sat/Sun)
+stand in for the unknown work schedule. Refs: Social jetlag and obesity, meta-analysis, PMID 38072635; Social jet lag
+and mental health, meta-analysis, PMID 40818420; Bouman et al. 2023, J Sleep Res, doi 10.1111/jsr.13770.
+Reviewed 2026-11-25.
+
+### `evening-exercise-sleep` — moderate
+Evening exercise does not generally disrupt sleep in healthy adults. Meta-analyses: high-intensity exercise ending ≥ 2 h
+before bed promotes sleep onset and total sleep time, while ending ≤ 1 h before bed can lengthen sleep latency and
+shorten sleep, and acute evening high-intensity exercise reduces REM a little. Network meta-analysis: no intensity
+disrupted subsequent sleep. A 2025 wearable dose-response study found higher strain ending ≥ 6 h before habitual sleep
+onset linked to earlier sleep onset. Effects are small and heterogeneous, mostly in healthy young and middle-aged adults.
+→ Do not warn about evening training in general. Flag only when ≥ 25 % of hard sessions (≥ 3 recorded) end less than 60 min
+before the usual bedtime, and suggest finishing ≥ 2 h earlier or making that session easier. Refs: Stutz et al. 2019,
+Sports Med 49:269; Frimpong et al. 2021, Sleep Med Rev 60:101535; Nat Sci Sleep 2023 network meta-analysis,
+doi 10.2147/NSS.S388863; Nat Commun 2025, doi 10.1038/s41467-025-58271-x. Reviewed 2026-11-25.
+
+### `exercise-circadian-phase` — moderate (no rule)
+Exercise is a weaker zeitgeber than light but shifts the human clock in a time-dependent way. In a 5-day trial of 52
+sedentary adults, morning exercise advanced dim-light melatonin onset by ≈ 0.6 h and evening exercise produced no
+average shift; later chronotypes advanced with either, earlier chronotypes were delayed by evening exercise (≈ −0.4 h).
+Phase-response curves place the largest advance in the early-to-mid afternoon and morning, and delays late in the
+evening, though results for early evening conflict and samples are small.
+→ No rule: shifting the clock is a goal the athlete sets, and the effect sizes are too small and variable to prescribe.
+Used only to explain why a very late or very early habitual session moves sleep timing. Refs: Thomas et al. 2020,
+JCI Insight 5(3):e134270; Youngstedt et al. 2019, J Physiol 597:2253; Buxton et al. 2003, Am J Physiol Regul Integr
+Comp Physiol 284:R714. Reviewed 2026-11-25.
+
+### `training-time-consistency` — heuristic
+No trial shows that training at the same clock time improves health or recovery. What is supported: time of day does not
+change hypertrophy or strength gains (no evidence for or against any time), and performance is better when training and
+testing times match (Grgic et al. 2019; Sport Med Open 2023 meta-analysis; a 2026 6-week RCT agreed). Zeitgeber theory
+suggests a steady schedule helps, but this is mechanistic.
+→ State a very variable start time (spread > 2 h over ≥ 5 sessions) neutrally, as an observation. Do not rank times of day.
+Refs: Grgic et al. 2019, Chronobiol Int 36(4):449 (PMID 30704301); Best time of day for strength and endurance training,
+Sports Med Open 2023, doi 10.1186/s40798-023-00577-5; Dighriri et al. 2026, Exp Physiol, doi 10.1113/EP093020.
+Reviewed 2026-11-25.
+
 ## Wearable data
 
 How Today presents numbers from the devices (evidence review 2026-11, §5). Only measured values and Overreach's own
