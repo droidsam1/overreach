@@ -12,61 +12,75 @@ public struct PlanProgressView: View {
     }
 
     public var body: some View {
-        Form {
-            if let message = model.errorMessage {
-                InlineNotice(Text(message), tone: .critical) { Task { await model.load() } }
-            }
-            if model.isAnalysing {
-                ProgressView("Loading…")
-            } else if !model.hasProgress {
-                Section {
-                    Text(
-                        "No progress yet. Log workouts or link runs to see recovery, stalled lifts and goal results."
-                    )
-                    .foregroundStyle(.secondary)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.medium) {
+                if let message = model.errorMessage {
+                    InlineNotice(Text(message), tone: .critical) { Task { await model.load() } }
                 }
-            }
-            if !model.importedPlanProgress.isEmpty {
-                Section("Strength plan") {
-                    ForEach(model.importedPlanProgress) { block in
-                        DisclosureGroup {
-                            ForEach(block.weeks) { week in
-                                AdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: Spacing.xSmall) {
-                                    Text(week.title)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                    Text(week.summary).foregroundStyle(.secondary)
+                if model.isAnalysing {
+                    LoadingState("Loading…")
+                } else if !model.hasProgress {
+                    Text("No progress yet. Log workouts or link runs to see recovery, stalled lifts and goal results.")
+                        .foregroundStyle(.secondary)
+                }
+                if !model.importedPlanProgress.isEmpty {
+                    Card {
+                        VStack(alignment: .leading, spacing: Spacing.small) {
+                            SectionHeader(Text("Strength plan"))
+                            ForEach(model.importedPlanProgress) { block in
+                                DisclosureGroup {
+                                    ForEach(block.weeks) { week in
+                                        AdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: Spacing.xSmall) {
+                                            Text(week.title)
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                            Text(week.summary).foregroundStyle(.secondary)
+                                        }
+                                        .accessibilityElement(children: .combine)
+                                    }
+                                } label: {
+                                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                                        Text(block.title).font(.headline)
+                                        Text(block.summary).foregroundStyle(.secondary)
+                                        if let fraction = block.fraction {
+                                            ProgressBar(
+                                                segments: [.init(fraction: fraction, color: WeekDayKind.strengthColor)],
+                                                accessibilityLabel: block.summary, accessibilityValue: ""
+                                            )
+                                            .accessibilityHidden(true)
+                                        }
+                                    }
+                                    .accessibilityElement(children: .combine)
                                 }
-                                .accessibilityElement(children: .combine)
                             }
-                        } label: {
+                        }
+                    }
+                }
+                if model.hasRecoveryHistory {
+                    Card {
+                        VStack(alignment: .leading, spacing: Spacing.small) {
+                            SectionHeader(Text("Recovery periods"))
+                            RecoveryHistoryRows(model: model, showsDeloadHistory: true)
+                        }
+                    }
+                }
+                if !model.liftsToUnblockRows.isEmpty { LiftsToUnblockSection(model: model) }
+                if let progress = model.runningGoalProgress {
+                    NavigationLink {
+                        RunningGoalProgressView(model: model)
+                    } label: {
+                        Card {
                             VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                                Text(block.title).font(.headline)
-                                Text(block.summary).foregroundStyle(.secondary)
+                                SectionHeader(Text("Running goal"))
+                                Text(progress.goal).font(.headline)
+                                Text(progress.status).font(.subheadline).foregroundStyle(.secondary)
                             }
                             .accessibilityElement(children: .combine)
                         }
                     }
+                    .buttonStyle(.plain)
                 }
             }
-            if model.hasRecoveryHistory {
-                Section("Recovery periods") {
-                    RecoveryHistoryRows(model: model, showsDeloadHistory: true)
-                }
-            }
-            if !model.liftsToUnblockRows.isEmpty { LiftsToUnblockSection(model: model) }
-            if let progress = model.runningGoalProgress {
-                Section("Running goal") {
-                    NavigationLink {
-                        RunningGoalProgressView(model: model)
-                    } label: {
-                        VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                            Text(progress.goal).font(.headline)
-                            Text(progress.status).font(.subheadline).foregroundStyle(.secondary)
-                        }
-                        .accessibilityElement(children: .combine)
-                    }
-                }
-            }
+            .padding(Spacing.medium)
         }
         .navigationTitle("Progress")
         #if os(iOS)

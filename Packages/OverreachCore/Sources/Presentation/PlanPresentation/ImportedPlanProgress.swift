@@ -15,16 +15,17 @@ public struct ImportedPlanProgressRow: Identifiable, Hashable, Sendable {
     public let title: String
     public let summary: String
     public let weeks: [Week]
+    public let fraction: Double?
 
     init(block: TrainingBlock, weeks: [PlanWeek], calendar: Calendar) {
         id = block.start
         let style = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).day().month(.abbreviated).year()
         let date = block.start.startDate(in: calendar).formatted(style)
         title = "\(block.name ?? block.focus.displayName) \u{00B7} \(date)"
-        summary = Self.sessionCount(
-            done: weeks.reduce(0) { $0 + $1.done },
-            planned: weeks.reduce(0) { $0 + $1.planned }
-        )
+        let done = weeks.reduce(0) { $0 + $1.done }
+        let planned = weeks.reduce(0) { $0 + $1.planned }
+        summary = Self.sessionCount(done: done, planned: planned)
+        fraction = planned > 0 ? min(1, Double(done) / Double(planned)) : nil
         self.weeks = weeks.reversed().map { week in
             Week(
                 id: week.week,
