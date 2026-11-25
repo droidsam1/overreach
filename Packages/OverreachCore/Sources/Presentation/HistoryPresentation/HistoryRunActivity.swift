@@ -6,6 +6,7 @@ import TrainingServices
 /// Display values for a run in the timeline, calendar and activity detail.
 public struct HistoryRunActivity: Identifiable, Hashable, Sendable {
     let companionKey: DogRunAnswers.Key
+    let original: RunActivity
     public let id: String
     public let title: String
     public let startedAt: Date
@@ -27,6 +28,7 @@ public struct HistoryRunActivity: Identifiable, Hashable, Sendable {
     }
 
     init(_ run: RunActivity, sources: [DataSourceKind], match: RunMatchPair? = nil, format: Format) {
+        original = run
         companionKey = .init(run)
         self.match = match
         id = "\(run.source.rawValue):\(run.id)"

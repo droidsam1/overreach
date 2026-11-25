@@ -43,6 +43,7 @@ struct HistoryRunRow: View {
 
 public struct HistoryRunDetail: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var weather: [HistoryMetric] = []
     let run: HistoryRunActivity
     let history: HistoryModel
 
@@ -70,6 +71,17 @@ public struct HistoryRunDetail: View {
                 }
                 ForEach(run.trainingMetrics) { metric in
                     LabeledContent(metric.label, value: metric.value)
+                }
+            }
+            if !weather.isEmpty {
+                Section {
+                    ForEach(weather) { metric in
+                        LabeledContent(metric.label, value: metric.value)
+                    }
+                } header: {
+                    Text("Weather near the start")
+                } footer: {
+                    Text("Estimated hourly weather from OpenWeather")
                 }
             }
             if !run.movementMetrics.isEmpty {
@@ -104,5 +116,9 @@ public struct HistoryRunDetail: View {
             }
         }
         .navigationTitle(run.title)
+        .task(id: run.id) {
+            let details = await history.weatherDetails(for: run)
+            if !Task.isCancelled { weather = details }
+        }
     }
 }

@@ -10,6 +10,7 @@ let package = Package(
         .library(name: "Analytics", targets: ["Analytics"]),
         .library(name: "StrongImport", targets: ["StrongImport"]),
         .library(name: "GarminImport", targets: ["GarminImport"]),
+        .library(name: "WeatherImport", targets: ["WeatherImport"]),
         .library(name: "Reports", targets: ["Reports"]),
         .library(name: "AIExchange", targets: ["AIExchange"]),
         // Application layer (ADR-0035): reads sources once and answers questions several screens share.
@@ -36,7 +37,10 @@ let package = Package(
         // Strong CSV import (phase 1).
         .target(name: "StrongImport", dependencies: ["Domain"]),
         // Garmin Connect Personal API responses → domain values (ADR-0022). Networking lives in OverreachKit.
-        .target(name: "GarminImport", dependencies: ["Domain"]),
+        .systemLibrary(name: "CZlib", pkgConfig: "zlib", providers: [.apt(["zlib1g-dev"])]),
+        .target(name: "GarminImport", dependencies: ["Domain", "CZlib"]),
+        .target(name: "WeatherImport", dependencies: ["Domain"]),
+        .testTarget(name: "WeatherImportTests", dependencies: ["WeatherImport", "Domain"]),
         // Markdown report shared with ChatGPT/Claude, and context for the in-app assistant.
         .target(name: "Reports", dependencies: ["Domain", "Analytics"]),
         // Versioned messages exchanged with AI chat apps (ADR-0017, docs/ai-exchange.md).

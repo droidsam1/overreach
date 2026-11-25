@@ -74,6 +74,8 @@ targets:
       - package: OverreachKit
         product: GarminSource
       - package: OverreachKit
+        product: WeatherSource
+      - package: OverreachKit
         product: LocalAlerts
       - package: OverreachKit
         product: FeatureToday

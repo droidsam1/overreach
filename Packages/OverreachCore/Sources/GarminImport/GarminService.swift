@@ -36,6 +36,8 @@ public struct GarminCache: Codable, Hashable, Sendable {
     public var walks: [GarminWalk]?
     /// Absent in caches that still need the elapsed-time metadata from the bounded first-sync activity window.
     public var refreshedRunPerformanceMetadata: Bool?
+    /// Nil in caches saved before original activity tracks were downloaded.
+    var runningTracks: [String: GarminTrackCache]?
 
     public init(
         lastSync: Date? = nil, lastSyncedDay: CalendarDay? = nil, metrics: [DailyMetrics] = [],
@@ -49,13 +51,14 @@ public struct GarminCache: Codable, Hashable, Sendable {
         self.strength = strength
         self.walks = walks
         self.refreshedRunPerformanceMetadata = refreshedRunPerformanceMetadata
+        runningTracks = nil
     }
 
     /// Days older than this are dropped: enough for the readiness baselines and a year of trends.
     public static let retentionDays = 400
 
     private enum CodingKeys: String, CodingKey {
-        case lastSync, lastSyncedDay, metrics, runs, strength, walks, refreshedRunPerformanceMetadata
+        case lastSync, lastSyncedDay, metrics, runs, strength, walks, refreshedRunPerformanceMetadata, runningTracks
     }
 
     /// The HRV fields of a cache written before ADR-0025, which kept one value per night in `hrvNightlyAverageMs`,
@@ -75,6 +78,7 @@ public struct GarminCache: Codable, Hashable, Sendable {
         refreshedRunPerformanceMetadata = try container.decodeIfPresent(
             Bool.self, forKey: .refreshedRunPerformanceMetadata
         )
+        runningTracks = try? container.decodeIfPresent([String: GarminTrackCache].self, forKey: .runningTracks)
         var metrics = try container.decodeIfPresent([DailyMetrics].self, forKey: .metrics) ?? []
         let legacy = (try? container.decodeIfPresent([LegacyHRV].self, forKey: .metrics)) ?? []
         // Only Garmin fills this cache, and Garmin only ever reported RMSSD, labelled or not.
@@ -139,7 +143,7 @@ public protocol GarminCacheStore: Sendable {
 
 /// The Garmin account and the Garmin metrics source in one place (ADR-0022). Pure Swift: the iPhone supplies the
 /// Keychain, URLSession and a file; tests supply fakes.
-public actor GarminService: GarminAccount, MetricsSource, ActivitySource, RecordedStrengthSource {
+public actor GarminService: GarminAccount, MetricsSource, ActivitySource, RecordedStrengthSource, RunningTrackSource {
     public nonisolated let kind: DataSourceKind = .garmin
     /// A sync older than this runs again when the app reads metrics (launch, foreground, Today).
     public static let autoSyncInterval: TimeInterval = 30 * 60
@@ -238,6 +242,12 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
         return runs
     }
 
+    /// The existing FIT cache is read locally. Sync and activity-list reads own downloads.
+    public func runningTrack(for run: RunActivity) async -> RunningTrack? {
+        guard run.source == .garmin else { return nil }
+        return await loadCache().runningTracks?[run.id]?.track
+    }
+
     /// Strength workouts recorded on the watch, to pair with logged sessions (`StrengthActivityMatching`).
     public func strengthActivities(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
         await syncIfDue()
@@ -326,8 +336,8 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
                     let decoded = try GarminDecoding.vo2Max(from: data)
                     vo2Max += decoded.records
                     skipped += decoded.skipped
-                case .activitySplits:
-                    break  // never planned: `withLaps` asks for the laps once the runs are known
+                case .activitySplits, .activityFIT:
+                    break  // optional enrichment after the activity list
                 case let .activities(window, start, limit):
                     let decoded = try GarminDecoding.activities(from: data)
                     // Offset pages can overlap when new activities arrive during a sync.
@@ -352,10 +362,14 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
         var runs = GarminMapping.runs(activities)
         let strength = GarminMapping.strengthActivities(activities)
         let walks = GarminMapping.walks(activities)
-        runs = try await withLaps(runs, cached: cache.runs, key: key.value)
-        let updated = cache.merging(
+        let enrichment = try await withLaps(runs, cached: cache.runs, key: key.value)
+        runs = enrichment.runs
+        var updated = cache.merging(
             metrics, runs: runs, strength: strength, walks: walks, range: range, at: clock(), calendar: calendar
         )
+        if !enrichment.reachedRateLimit {
+            updated.runningTracks = await withRunningTracks(updated, today: today, key: key.value)
+        }
         self.cache = updated
         await cacheStore.save(updated)
         await secrets.saveToken(await client.currentToken)
@@ -375,13 +389,14 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
     /// Only a rejected key ends the sync, as for any other request.
     private func withLaps(
         _ runs: [RunActivity], cached: [RunActivity], key: String
-    ) async throws(GarminAccountError) -> [RunActivity] {
+    ) async throws(GarminAccountError) -> (runs: [RunActivity], reachedRateLimit: Bool) {
         let known = Set(cached.filter { $0.laps != nil }.map(\.id))
         let oldest = clock().addingTimeInterval(-Double(GarminSyncPlan.lapRefreshDays) * 86_400)
         let wanted = runs.filter { $0.laps == nil && !known.contains($0.id) && $0.startedAt >= oldest }
             .sorted { $0.startedAt > $1.startedAt }
             .prefix(GarminSyncPlan.maximumLapRequests)
         var laps: [String: [RunLap]] = [:]
+        var reachedRateLimit = false
         for run in wanted {
             do {
                 let data = try await client.dataIfServed(for: .activitySplits(id: run.id), key: key)
@@ -389,14 +404,46 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
             } catch .keyRejected {
                 throw .keyRejected
             } catch {
+                reachedRateLimit = error == .rateLimited
                 break
             }
         }
-        return runs.map { run in
+        let enriched = runs.map { run in
             var run = run
             if let found = laps[run.id] { run.laps = found }
             return run
         }
+        return (enriched, reachedRateLimit)
+    }
+
+    private func withRunningTracks(
+        _ cache: GarminCache, today: CalendarDay, key: String
+    ) async -> [String: GarminTrackCache] {
+        let now = clock()
+        let oldest = today.adding(days: 1 - GarminSyncPlan.trackHistoryDays, calendar: calendar)
+            .startDate(in: calendar)
+        let recent = cache.runs.filter { run in
+            run.startedAt >= oldest && run.startedAt <= now && !run.id.isEmpty
+                && run.id.utf8.allSatisfy { (48...57).contains($0) }
+        }
+        let retainedIDs = Set(recent.map(\.id))
+        var stored = (cache.runningTracks ?? [:]).filter { retainedIDs.contains($0.key) }
+        let wanted = recent.filter { stored[$0.id]?.needsDownload(at: now) != false }
+            .sorted { ($0.startedAt, $0.id) > ($1.startedAt, $1.id) }
+            .prefix(GarminSyncPlan.maximumFITRequests)
+        for run in wanted {
+            do {
+                let data = try await client.dataIfServed(for: .activityFIT(id: run.id), key: key)
+                let decoded = data.flatMap { try? GarminFITArchive.track(from: $0) }
+                let retryAfter = calendar.date(byAdding: .day, value: 7, to: now) ?? now
+                stored[run.id] = decoded.flatMap(GarminTrackCache.init(track:))
+                    ?? GarminTrackCache(retryAfter: retryAfter)
+            } catch {
+                // A request failure ends optional fetches for this sync. Summary data is still saved.
+                break
+            }
+        }
+        return stored
     }
 
     private func loadCache() async -> GarminCache {

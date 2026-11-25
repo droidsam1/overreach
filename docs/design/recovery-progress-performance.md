@@ -24,8 +24,12 @@ Use separate comparable cohorts and let missing inputs leave the comparison unav
 
 ## Garmin block pilot
 
-Use the original activity FIT from the Garmin Personal API. Decode timestamped distance, speed,
-elevation, heart rate and cadence, plus lap triggers and timer events. A run can begin after an
+Use the original activity FIT from the Garmin Personal API. Sync downloads at most two originals
+per sync for known runs in the past 180 days, newest eligible first. It retains only compressed
+decoded track measurements in its local cache. A missing or unreadable original is retried
+after a week. Transient failures defer remaining downloads without discarding summary data.
+Decode timestamped distance, speed, elevation, heart rate and cadence, plus lap triggers and
+timer events. A run can begin after an
 unrecorded walking warm-up. Join automatic laps within a block and use manual laps, sustained
 walks or timer stops as boundaries. Measure the whole block's duration and distance. Use the
 steady portion after the initial heart-rate response for the comparison, including short runs.
@@ -47,17 +51,21 @@ period. Treat the change as descriptive when sleep, recent load or weather diffe
 
 ### Historical weather
 
-Prefer environmental observations in the activity when available. Label device temperature
-separately from ambient temperature. The historical provider remains optional. If enabled in a
-later change, query by coarse area and activity hour, cache by area and UTC hour, and attribute
-the provider. Show temperature, humidity and wind as context. Preserve comparisons when weather
-is missing and keep weather out of the heart-rate calculation.
+Historical weather is optional. With a personal OpenWeather One Call key, send an approximate 0.1° area
+and UTC hour for outdoor Garmin runs with a recorded GPS point. Keep original route samples on the device.
+History shows estimated temperature, humidity, wind and conditions with attribution. Weather remains
+context for interpretation. If it is unavailable, the run detail and performance comparisons still load.
 
-[OpenWeather](https://openweathermap.org/price) charges for historical One Call requests beyond
-its daily allowance. [Open-Meteo](https://open-meteo.com/en/pricing) offers keyless non-commercial
-access with quotas. A live provider remains deferred under the free and unlimited requirement.
-A [Today forecast](https://github.com/droidsam1/overreach/issues/341) can reuse the provider policy
-if the feature proceeds.
+The app shares a persistent budget of 200 requests per UTC day between history and forecasts. It caches
+past hours by area and hour, reuses forecasts for 30 minutes, and checks up to 16 runs from the last
+14 days after a Garmin sync. For older runs, opening a detail fetches weather when it is available.
+OpenWeather's [One Call pricing](https://openweathermap.org/price) includes 1,000 calls per day at no
+charge and bills for excess calls. Its default account ceiling can exceed the free allowance. Set the
+provider-side daily ceiling to 1,000 or fewer when adding the key. The app's limit applies per install.
+
+The app keeps the key in the device Keychain and attributes OpenWeather in the run detail.
+A [Today forecast](https://github.com/droidsam1/overreach/issues/341) can reuse the source and its budget.
+Device temperature and recorded ambient weather are candidates for a later FIT parser extension.
 
 ## Strength coverage
 

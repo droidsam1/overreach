@@ -23,6 +23,7 @@ let package = Package(
         .library(name: "Persistence", targets: ["Persistence"]),
         .library(name: "HealthKitSource", targets: ["HealthKitSource"]),
         .library(name: "GarminSource", targets: ["GarminSource"]),
+        .library(name: "WeatherSource", targets: ["WeatherSource"]),
         .library(name: "AIKit", targets: ["AIKit"]),
         .library(name: "LocalAlerts", targets: ["LocalAlerts"]),
         .library(name: "DesignSystem", targets: ["DesignSystem"]),
@@ -43,6 +44,7 @@ let package = Package(
         // MARK: Data
         .target(name: "Persistence", dependencies: [.product(name: "Domain", package: core)]),
         .target(name: "HealthKitSource", dependencies: [.product(name: "Domain", package: core)]),
+        .target(name: "WeatherSource", dependencies: [.product(name: "WeatherImport", package: core)]),
         .target(name: "GarminSource", dependencies: [
             .product(name: "Domain", package: core),
             .product(name: "GarminImport", package: core),

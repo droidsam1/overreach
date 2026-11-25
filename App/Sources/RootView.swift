@@ -178,6 +178,7 @@ struct RootView: View {
             }
         }
         .preferredColorScheme(appearance.colorScheme)
+        .task { await container.refreshRunWeather() }
         .task {
             await backupModel.load()
             await garminModel.load()
@@ -215,6 +216,7 @@ struct RootView: View {
         .sheet(isPresented: garminSetupInApp) { GarminSetupView(model: garminModel) }
         .onChange(of: garminModel.connection?.lastSync) {
             if recoveryModel.hasLoaded { Task { await recoveryModel.load() } }
+            Task { await container.refreshRunWeather() }
         }
         .onChange(of: garminModel.isConnected) {
             // New Garmin data: Today shows it at once.
@@ -240,6 +242,7 @@ struct RootView: View {
                 workoutModel.retryDraftAccess()
                 Task { await backupModel.backUpIfConfigured() }
             } else if scenePhase == .active {
+                Task { await container.refreshRunWeather() }
                 // The watch's workout may have reached Health since the session was saved.
                 Task {
                     await container.reconcileHealthWorkouts()
@@ -276,6 +279,13 @@ struct RootView: View {
                 Label("Exercises", systemImage: "figure.strengthtraining.traditional")
             }
             .badge(exercisesModel.needsMappingCount)
+            if let weatherModel = container.makeWeatherSettingsModel() {
+                NavigationLink {
+                    WeatherSettingsView(model: weatherModel)
+                } label: {
+                    Label("Weather", systemImage: "cloud.sun")
+                }
+            }
             NavigationLink {
                 TrainingProfileView(model: container.makeTrainingProfileModel()) {
                     Task { await todayModel.load() }
