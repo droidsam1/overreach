@@ -17,7 +17,7 @@ public enum OpenWeatherTimeline {
         if let start {
             guard let timestamp = Int(exactly: hour(start)) else { return nil }
             components.queryItems?.append(URLQueryItem(name: "start", value: String(timestamp)))
-            components.queryItems?.append(URLQueryItem(name: "cnt", value: "1"))
+
         }
         return components.url
     }

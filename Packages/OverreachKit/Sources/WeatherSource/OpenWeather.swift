@@ -15,8 +15,12 @@ public enum OpenWeather {
             writeKey: { try writeKey($0) },
             request: { url in
                 guard let (data, response) = try? await session.data(from: url),
-                      (response as? HTTPURLResponse)?.statusCode == 200 else { return nil }
-                return data
+                      let status = (response as? HTTPURLResponse)?.statusCode else { return .unavailable }
+                switch status {
+                case 200: return .data(data)
+                case 401, 403, 429: return .backOff
+                default: return .unavailable
+                }
             }
         )
     }

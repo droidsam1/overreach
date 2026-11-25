@@ -178,6 +178,7 @@ struct RootView: View {
             }
         }
         .preferredColorScheme(appearance.colorScheme)
+        .task { await container.refreshRunWeather() }
         .task {
             await backupModel.load()
             await garminModel.load()
@@ -241,6 +242,7 @@ struct RootView: View {
                 workoutModel.retryDraftAccess()
                 Task { await backupModel.backUpIfConfigured() }
             } else if scenePhase == .active {
+                Task { await container.refreshRunWeather() }
                 // The watch's workout may have reached Health since the session was saved.
                 Task {
                     await container.reconcileHealthWorkouts()
