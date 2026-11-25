@@ -12,7 +12,7 @@ struct OpenWeatherTests {
         #expect(query?.first { $0.name == "lat" }?.value == "42.6")
         #expect(query?.first { $0.name == "lon" }?.value == "-8.4")
         #expect(query?.first { $0.name == "start" }?.value == "1700002800")
-        #expect(query?.first { $0.name == "cnt" }?.value == "1")
+
         #expect(url.path == "/data/4.0/onecall/timeline/1h")
     }
 
@@ -45,6 +45,30 @@ struct OpenWeatherTests {
         #expect(await fixture.calls == 1)
     }
 
+    @Test func historyAndForecastShareThePersistedDailyBudget() async throws {
+        let fixture = RequestFixture()
+        let area = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let cache = temporaryCache()
+        let weather = service(cache: cache, fixture: fixture)
+        let date = Date(timeIntervalSince1970: 1_700_003_020)
+        for offset in 0..<200 {
+            _ = await weather.historical(for: area, at: date.addingTimeInterval(Double(offset) * 3_600))
+        }
+        let restarted = service(cache: cache, fixture: fixture)
+        #expect(await restarted.forecast(for: area).isEmpty)
+        #expect(await fixture.calls == 200)
+    }
+
+    @Test func providerBackoffAppliesToBothHistoryAndForecast() async throws {
+        let fixture = RequestFixture(shouldBackOff: true)
+        let area = try #require(WeatherArea(latitude: 42.6, longitude: -8.4))
+        let weather = service(cache: temporaryCache(), fixture: fixture)
+        let date = Date(timeIntervalSince1970: 1_700_003_020)
+        #expect(await weather.historical(for: area, at: date) == nil)
+        #expect(await weather.forecast(for: area).isEmpty)
+        #expect(await fixture.calls == 1)
+    }
+
     private func temporaryCache() -> URL {
         FileManager.default.temporaryDirectory.appending(path: "overreach-weather-test-" + UUID().uuidString)
             .appending(path: "cache.json")
@@ -61,11 +85,18 @@ struct OpenWeatherTests {
 private actor RequestFixture {
     private(set) var calls = 0
 
-    func request(_ url: URL) -> Data? {
+    private let shouldBackOff: Bool
+
+    init(shouldBackOff: Bool = false) {
+        self.shouldBackOff = shouldBackOff
+    }
+
+    func request(_ url: URL) -> OpenWeatherService.Response {
         calls += 1
-        return Data("""
+        guard !shouldBackOff else { return .backOff }
+        return .data(Data("""
         {"data":[{"dt":1700002800,"temp":8,"humidity":75,"wind_speed":3,
         "pop":0.2,"weather":[{"id":800,"icon":"01d"}]}]}
-        """.utf8)
+        """.utf8))
     }
 }

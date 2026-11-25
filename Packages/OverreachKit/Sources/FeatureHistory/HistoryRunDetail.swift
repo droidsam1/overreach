@@ -116,6 +116,9 @@ public struct HistoryRunDetail: View {
             }
         }
         .navigationTitle(run.title)
-        .task(id: run.id) { weather = await history.weatherDetails(for: run) }
+        .task(id: run.id) {
+            let details = await history.weatherDetails(for: run)
+            if !Task.isCancelled { weather = details }
+        }
     }
 }

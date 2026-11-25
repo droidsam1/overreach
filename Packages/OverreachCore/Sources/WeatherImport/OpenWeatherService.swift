@@ -3,6 +3,16 @@ import Foundation
 
 /// Shared client for historical and forecast requests, including their persistent per-install budget.
 public actor OpenWeatherService: WeatherSource, WeatherCredentials {
+    public enum Response: Sendable {
+        case data(Data)
+        case backOff
+        case unavailable
+    }
+
+    private struct Reply: Sendable {
+        var hours: [WeatherHour] = []
+        var shouldBackOff = false
+    }
     private enum ClientError: Error {
         case emptyKey
     }
@@ -31,11 +41,12 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
     private let cacheFile: URL
     private let readKey: @Sendable () -> String?
     private let writeKey: @Sendable (String?) throws -> Void
-    private let request: @Sendable (URL) async -> Data?
+    private let request: @Sendable (URL) async -> Response
     private let now: @Sendable () -> Date
     private var cache: Cache
     private var forecasts: [WeatherArea: Forecast] = [:]
-    private var pending: [Query: Task<[WeatherHour], Never>] = [:]
+    private var pending: [Query: Task<Reply, Never>] = [:]
+    private var nextRequestDate: Date?
     private var retryAfter: [Query: Date] = [:]
     private var generation = 0
     private static let dailyLimit = 200
@@ -45,7 +56,7 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
         cacheFile: URL,
         readKey: @escaping @Sendable () -> String?,
         writeKey: @escaping @Sendable (String?) throws -> Void,
-        request: @escaping @Sendable (URL) async -> Data?,
+        request: @escaping @Sendable (URL) async -> Response,
         now: @escaping @Sendable () -> Date = Date.init
     ) {
         self.cacheFile = cacheFile
@@ -111,24 +122,32 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
     }
 
     private func fetch(_ query: Query, start: Date?) async -> [WeatherHour] {
-        if let existing = pending[query] { return await existing.value }
+        if let existing = pending[query] { return await existing.value.hours }
         let date = now()
         retryAfter = retryAfter.filter { $0.value > date }
-        guard retryAfter[query] == nil,
+        guard nextRequestDate.map({ date >= $0 }) ?? true, retryAfter[query] == nil,
               let key = readKey(), let url = OpenWeatherTimeline.url(for: query.area, start: start, key: key),
               reserveAttempt(at: date) else { return [] }
 
         let revision = generation
         let task = Task { [request] in
-            guard let data = await request(url), !Task.isCancelled else { return [WeatherHour]() }
-            return (try? OpenWeatherTimeline.decode(data)) ?? []
+            switch await request(url) {
+            case let .data(data):
+                return Reply(hours: (try? OpenWeatherTimeline.decode(data)) ?? [])
+            case .backOff:
+                return Reply(shouldBackOff: true)
+            case .unavailable:
+                return Reply()
+            }
         }
         pending[query] = task
-        let hours = await task.value
+        let result = await task.value
         guard revision == generation else { return [] }
         pending[query] = nil
-        if hours.isEmpty { retryAfter[query] = date.addingTimeInterval(30 * 60) }
-        return hours
+        let retry = now().addingTimeInterval(30 * 60)
+        if result.hours.isEmpty { retryAfter[query] = retry }
+        if result.shouldBackOff { nextRequestDate = retry }
+        return result.hours
     }
 
     private func reserveAttempt(at date: Date) -> Bool {
@@ -161,5 +180,6 @@ public actor OpenWeatherService: WeatherSource, WeatherCredentials {
         pending.values.forEach { $0.cancel() }
         pending.removeAll()
         retryAfter.removeAll()
+        nextRequestDate = nil
     }
 }
