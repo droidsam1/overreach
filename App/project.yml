@@ -49,6 +49,9 @@ targets:
         NSHealthShareUsageDescription: >-
           Overreach reads your heart rate, HRV, sleep and workouts to recommend how hard to train.
         NSHealthUpdateUsageDescription: Overreach saves your strength workouts to Apple Health.
+        NSLocationDefaultAccuracyReduced: true
+        NSLocationWhenInUseUsageDescription: >-
+          Overreach uses an approximate area to show an hourly forecast for running and walks.
         ITSAppUsesNonExemptEncryption: false
     entitlements:
       path: Overreach.entitlements

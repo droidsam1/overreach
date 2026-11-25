@@ -46,6 +46,29 @@
           }
         }
       }
+    },
+    "NSLocationWhenInUseUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach uses an approximate area to show an hourly forecast for running and walks."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach usa una zona aproximada para mostrar la previsión por horas para correr y pasear."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overreach usa unha zona aproximada para amosar a previsión por horas para correr e pasear."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

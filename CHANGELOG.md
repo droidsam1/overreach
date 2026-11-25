@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Today can show a local hourly weather forecast and likely dry and sunny periods for running or walks.
 - The timing evidence review now covers long-term prevention: exercise hour and disease risk (no preferred time, cohorts
   disagree), weekend-warrior patterns (never a fault), consistent training time (habit, not circadian) and meal timing,
   with a health-lens test in the design note and an ADR-0045 amendment.
