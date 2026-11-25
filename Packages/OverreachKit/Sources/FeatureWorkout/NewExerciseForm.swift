@@ -33,7 +33,7 @@ struct NewExerciseForm: View {
     var body: some View {
         Form {
             if let message = model.errorMessage {
-                Text(message).foregroundStyle(.red)
+                InlineNotice(Text(message), tone: .critical)
             }
             Section {
                 TextField("Name", text: $model.name)

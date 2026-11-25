@@ -179,8 +179,7 @@ struct HistoryCalendarView: View {
 
     @ViewBuilder private var notices: some View {
         if let message = calendar.errorMessage {
-            Label(message, systemImage: "exclamationmark.triangle")
-                .foregroundStyle(.red)
+            InlineNotice(Text(message), tone: .critical) { Task { await calendar.load() } }
         }
         if let warning = calendar.runWarning {
             StatusLabel(title: warning, tone: .caution)

@@ -14,7 +14,7 @@ public struct PlanProgressView: View {
     public var body: some View {
         Form {
             if let message = model.errorMessage {
-                Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                InlineNotice(Text(message), tone: .critical) { Task { await model.load() } }
             }
             if model.isAnalysing {
                 ProgressView("Loading…")

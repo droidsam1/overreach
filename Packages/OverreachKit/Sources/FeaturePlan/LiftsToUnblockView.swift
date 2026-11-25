@@ -43,7 +43,7 @@ private struct LiftToUnblockDetail: View {
         if let row = model.liftsToUnblockRows.first(where: { $0.id == id }) {
             Form {
                 if let message = model.errorMessage {
-                    Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                    InlineNotice(Text(message), tone: .critical)
                 }
                 Section {
                     Text(row.since)
