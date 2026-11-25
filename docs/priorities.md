@@ -12,7 +12,19 @@ hybrid athlete. The device and external review steps below have their own accept
 
 ## Ready to implement
 
-1. [#247](https://github.com/droidsam1/overreach/issues/247) — Audit screens for consistency with Today.
+1. [#296](https://github.com/droidsam1/overreach/issues/296) — DesignSystem: Card, SectionHeader, IconTile, InlineNotice, LoadingState and radius tokens.
+2. [#297](https://github.com/droidsam1/overreach/issues/297) — Train, History, Plan: replace ad-hoc status colours with InlineNotice.
+3. [#298](https://github.com/droidsam1/overreach/issues/298) — Train: start screen as hero card with one verb and routine cards.
+4. [#300](https://github.com/droidsam1/overreach/issues/300) — History: cards, summary-first details and shared empty states.
+5. [#299](https://github.com/droidsam1/overreach/issues/299) — Train: exercise cards in the live session, compact rest timer, Today-style finish summary.
+6. [#301](https://github.com/droidsam1/overreach/issues/301) — Plan: two-level layout with hero, week strip and link tiles.
+7. [#302](https://github.com/droidsam1/overreach/issues/302) — Settings, Garmin, Exercises, Onboarding, Ask AI: tone badges and InlineNotice.
+8. [#303](https://github.com/droidsam1/overreach/issues/303) — Recovery & Progress: SignalTrendChart and Why-style signal cards.
+9. [#304](https://github.com/droidsam1/overreach/issues/304) — Plan detail screens: use DesignSystem calendar, bars and charts.
+10. [#305](https://github.com/droidsam1/overreach/issues/305) — Dynamic Type and touch targets outside Today.
+11. [#306](https://github.com/droidsam1/overreach/issues/306) — VoiceOver labels for Exercises, Onboarding, Settings, Garmin setup and forms.
+12. [#307](https://github.com/droidsam1/overreach/issues/307) — Haptics for save, confirm and check-in feedback.
+13. [#308](https://github.com/droidsam1/overreach/issues/308) — Titles: large on tab roots, inline on pushed screens.
 
 ## Needs a person or an iPhone
 
@@ -32,4 +44,8 @@ Agents can prepare these but not finish them.
   observations.
 - Clinical review of symptom wording —
   [hybrid backlog task 3](design/readiness-and-hybrid-planning.md#3-ask-a-question-that-changes-the-decision).
+- Close the UI consistency epic [#247](https://github.com/droidsam1/overreach/issues/247) once its issues are done:
+  before screenshots (light and dark) need a Mac and simulator and are deferred, they do not block the issues; the
+  owner approves the Train and Plan layouts on the design canvas. The audit is in
+  [ui-consistency-audit.md](design/ui-consistency-audit.md).
 - Release v0.1.0 and the beta guide — [#22](https://github.com/droidsam1/overreach/issues/22).
