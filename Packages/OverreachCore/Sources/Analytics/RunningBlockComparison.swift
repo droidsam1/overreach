@@ -45,11 +45,14 @@ public enum RunningBlockComparison {
         public let routeMatches: Int
     }
 
-    public static func observations(for run: RunActivity, track: RunningTrack) -> [Result] {
+    public static func observations(
+        for run: RunActivity, track: RunningTrack, maxHeartRate: Double? = nil
+    ) -> [Result] {
         guard run.kind == .training else { return [] }
+        let nearMaximum = maxHeartRate.flatMap { (100...250).contains($0) ? $0 * 0.9 : nil }
         let blocks = RunningBlocks.reconstruct(from: track)
         return blocks.enumerated().compactMap { index, block in
-            guard let effort = block.steady else { return nil }
+            guard let effort = block.steady, nearMaximum.map({ effort.heartRateBPM < $0 }) ?? true else { return nil }
             let end = effort.start.addingTimeInterval(effort.durationSeconds)
             let positions = track.samples.filter { $0.date >= effort.start && $0.date <= end }
             let recovery = index > 0 ? block.start.timeIntervalSince(blocks[index - 1].end) : nil
@@ -152,8 +155,6 @@ public enum RunningBlockComparison {
             && abs(leftGrade.lowerBound - rightGrade.lowerBound) <= 1.5
             && abs(leftGrade.upperBound - rightGrade.upperBound) <= 1.5
             && abs(lhs.effort.durationSeconds - rhs.effort.durationSeconds) <= 45
-            && abs(lhs.blockDurationSeconds - rhs.blockDurationSeconds)
-                <= max(90, min(lhs.blockDurationSeconds, rhs.blockDurationSeconds) * 0.25)
     }
 
     private static func span(_ range: ClosedRange<Double>) -> Double {

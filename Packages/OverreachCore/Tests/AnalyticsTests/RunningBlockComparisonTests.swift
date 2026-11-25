@@ -33,7 +33,15 @@ struct RunningBlockComparisonTests {
         #expect(compare(baseline + run("other", day: -2, pulse: 145, sensor: "strap")) == nil)
         #expect(compare(baseline + run("other", day: -2, pulse: 145, grade: 4)) == nil)
         #expect(compare(baseline + run("other", day: -2, pulse: 145, speed: 4)) == nil)
-        #expect(compare(baseline + run("other", day: -2, pulse: 145, duration: 600)) == nil)
+        #expect(compare(baseline + run("other", day: -2, pulse: 145, duration: 165)) == nil)
+    }
+
+    @Test func matchesSteadyWindowsFromDifferentLengthBlocksAndFiltersNearMaximalEfforts() {
+        let baseline = run("earlier", day: -31, pulse: 149, duration: 240)
+        let recent = run("other", day: -2, pulse: 145, duration: 600, maxHeartRate: 185)
+        #expect(compare(baseline + recent)?.summary.delta == -4)
+        #expect(run("near-max", day: -2, pulse: 167, maxHeartRate: 185).isEmpty)
+        #expect(run("unknown-max", day: -2, pulse: 167).count == 1)
     }
 
     @Test func requiresConfirmationWhenTheSensorIsUnknown() {
@@ -55,7 +63,8 @@ struct RunningBlockComparisonTests {
 
     private func run(
         _ id: String, day: Int, pulse: Double, sensor: String? = "watch", longitude: Double = 0,
-        reversed: Bool = false, duration: Int = 260, grade: Double = 1, speed: Double = 10.0 / 3
+        reversed: Bool = false, duration: Int = 260, grade: Double = 1, speed: Double = 10.0 / 3,
+        maxHeartRate: Double? = nil
     ) -> [RunningBlockComparison.Result] {
         let date = today.adding(days: day, calendar: calendar).startDate(in: calendar)
         let run = RunActivity(
@@ -72,7 +81,7 @@ struct RunningBlockComparisonTests {
             )
         }
         return RunningBlockComparison.observations(
-            for: run, track: RunningTrack(samples: points, heartRateSensorID: sensor)
+            for: run, track: RunningTrack(samples: points, heartRateSensorID: sensor), maxHeartRate: maxHeartRate
         )
     }
 }

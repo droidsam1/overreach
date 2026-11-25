@@ -10,10 +10,10 @@ import TrainingServices
 @MainActor
 @Observable
 public final class RecoveryProgressModel {
-    /// The sections of the screen. Today opens `.recovery` directly and Plan opens `.progress`.
     public typealias RunningSegmentLoader =
         @Sendable ([RunActivity]) async -> [ComparableRunningHeartRate.Segment]
 
+    /// The sections of the screen. Today opens `.recovery` directly and Plan opens `.progress`.
     public enum Section: String, Hashable, Sendable, CaseIterable {
         case recovery, recentLoad, progress
     }
@@ -265,7 +265,7 @@ public final class RecoveryProgressModel {
         let comparison = PerformanceComparison(through: today, days: TrendRange.days90.days, calendar: calendar)
         let blocks = await Self.loadRunningBlocks(
             runs.filter { $0.source == .garmin && $0.kind == .training && comparison.contains($0.startedAt) },
-            from: runningTrack
+            from: runningTrack, maxHeartRate: profile?.maxHeartRate
         )
         let segments = await legacy
         guard activeLoad == loadID else { return }
@@ -332,13 +332,13 @@ public final class RecoveryProgressModel {
     }
 
     private nonisolated static func loadRunningBlocks(
-        _ runs: [RunActivity], from source: @Sendable (RunActivity) async -> RunningTrack?
+        _ runs: [RunActivity], from source: @Sendable (RunActivity) async -> RunningTrack?, maxHeartRate: Double?
     ) async -> [RunningBlockComparison.Result] {
         var results: [RunningBlockComparison.Result] = []
         for run in runs {
             guard !Task.isCancelled else { break }
             if let track = await source(run) {
-                results += RunningBlockComparison.observations(for: run, track: track)
+                results += RunningBlockComparison.observations(for: run, track: track, maxHeartRate: maxHeartRate)
             }
         }
         return results
