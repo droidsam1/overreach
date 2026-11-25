@@ -19,6 +19,9 @@ recommendations explainable and its advanced controls easy to find.
   stack with Dynamic Type. Check VoiceOver order and labels, dark mode and Reduce Motion on the
   affected path. [Apple accessibility guidance](https://developer.apple.com/design/human-interface-guidelines/accessibility)
 
+Use large navigation titles at tab roots and inline titles on pushed screens. Train uses an inline
+title during a live session to leave more room for the logger.
+
 | Flow | Default view | Details and exceptions |
 | --- | --- | --- |
 | **Today** | One hero card: readiness ring, verdict, one reason, up to three signal tiles and one button named by its verb. Put **Resume workout** in that button when a session can be resumed. Below it: Your week, at most one prompt and the link tiles. | **Why** holds evidence, trends and sources; tapping a signal tile opens it. With sparse data, hide the tiles without data and offer to connect a source in the prompt. When a source fails, keep available data visible and offer **Try again** in the prompt. |

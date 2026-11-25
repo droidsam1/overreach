@@ -74,6 +74,9 @@ public struct PlanView<Assistant: View, Progress: View>: View {
                 Section { assistant }
             }
             .navigationTitle("Plan")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.large)
+            #endif
             .task { await reload() }
             .onChange(of: suggestedRun, initial: true) { _, draft in
                 guard let draft else { return }
@@ -275,6 +278,9 @@ private struct GoalEditView: View {
             }
         }
         .navigationTitle("Goal")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
     }
 }
 
@@ -318,6 +324,9 @@ private struct PriorityLiftsView: View {
         }
         .searchable(text: $model.priorityLiftSearch)
         .navigationTitle("Priority lifts")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
     }
 }
 

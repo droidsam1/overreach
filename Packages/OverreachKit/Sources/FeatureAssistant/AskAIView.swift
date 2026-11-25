@@ -107,6 +107,9 @@ public struct AskAIView: View {
             answerSection
         }
         .navigationTitle("Ask AI")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .task { await model.prepare() }
         .fileImporter(isPresented: $isPickingFile, allowedContentTypes: [.json, .plainText, .text]) { result in
             readPicked(result)
@@ -231,6 +234,9 @@ struct PlanImportPreviewView: View {
                 }
             }
             .navigationTitle("AI plan")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { model.cancel() }

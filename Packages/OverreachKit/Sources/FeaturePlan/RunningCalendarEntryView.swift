@@ -59,6 +59,9 @@ struct RunningCalendarEntryView: View {
             }
             .disabled(draft.isSuggestedRunMove)
             .navigationTitle("Running day")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {

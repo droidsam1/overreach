@@ -81,6 +81,9 @@ public struct TrendsView<Progress: View>: View {
         }
         .onChange(of: model.sectionHintCandidates) { updateSectionHints() }
         .navigationTitle("Recovery & Progress")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.large)
+        #endif
     }
 }
 

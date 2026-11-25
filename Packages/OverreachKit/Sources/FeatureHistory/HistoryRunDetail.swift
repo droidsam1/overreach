@@ -116,6 +116,9 @@ public struct HistoryRunDetail: View {
             }
         }
         .navigationTitle(run.title)
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .task(id: run.id) {
             let details = await history.weatherDetails(for: run)
             if !Task.isCancelled { weather = details }

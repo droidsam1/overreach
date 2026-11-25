@@ -43,6 +43,9 @@ struct StrengthMatchReviewLink: View {
                     }
                 }
                 .navigationTitle("Review strength matches")
+                #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+                #endif
             }
         }
     }

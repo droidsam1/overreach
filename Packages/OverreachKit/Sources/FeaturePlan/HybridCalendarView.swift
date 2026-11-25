@@ -42,6 +42,9 @@ struct HybridCalendarView: View {
             }
         }
         .navigationTitle("Hybrid calendar")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Menu {
@@ -159,6 +162,9 @@ struct StrengthCalendarEntryView: View {
                 }
             }
             .navigationTitle("Strength day")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {

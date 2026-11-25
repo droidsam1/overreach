@@ -36,6 +36,9 @@ struct RestTimerView: View {
                     }
                 }
                 .navigationTitle("Rest timer")
+                #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+                #endif
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Done") { isShowingDetails = false }

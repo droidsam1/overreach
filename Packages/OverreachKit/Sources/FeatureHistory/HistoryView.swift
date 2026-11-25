@@ -56,6 +56,9 @@ public struct HistoryView: View {
                 .background(.bar)
             }
             .navigationTitle("History")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.large)
+            #endif
             .task { await model.load() }
         }
     }
@@ -319,6 +322,9 @@ public struct SessionDetailView: View {
             }
         }
         .navigationTitle(detail.name)
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
     }
 }
 

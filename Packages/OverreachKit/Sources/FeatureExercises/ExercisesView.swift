@@ -42,6 +42,9 @@ public struct ExercisesView: View {
             }
         }
         .navigationTitle("Exercises")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .searchable(text: $model.searchText)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -284,6 +287,9 @@ private struct MergeTargetList: View {
             }
         }
         .navigationTitle("Merge into")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .searchable(text: $model.mergeSearchText)
     }
 }

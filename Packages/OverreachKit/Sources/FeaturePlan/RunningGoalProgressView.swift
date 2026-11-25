@@ -39,6 +39,9 @@ struct RunningGoalProgressView: View {
             }
         }
         .navigationTitle("Running goal progress")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .sheet(item: $selected) { row in RunningPainView(model: model, row: row) }
     }
 }
@@ -83,6 +86,9 @@ private struct RunningPainView: View {
                 }
             }
             .navigationTitle("Pain report")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
