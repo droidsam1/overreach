@@ -5,9 +5,14 @@ import PresentationKit
 
 extension SessionReportContent {
     init(_ report: SessionReport) {
+        let totals = [
+            report.duration.map { SummaryMetric(label: L10n.text("Duration"), value: $0) },
+            report.workingSets.map { SummaryMetric(label: L10n.text("Sets"), value: String($0)) },
+            report.volume.map { SummaryMetric(label: L10n.text("Volume"), value: $0) }
+        ].compactMap { $0 }
         self.init(
             title: report.title, headline: report.headline, adherence: report.adherence,
-            comparison: report.comparison, muscles: report.muscles,
+            comparison: report.comparison, muscles: report.muscles, totals: totals,
             rows: report.rows.map { row in
                 Row(id: row.id, name: row.name, outcome: Outcome(row.outcome), outcomeText: row.outcomeText,
                     details: row.details)

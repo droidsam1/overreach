@@ -213,6 +213,7 @@ private struct SessionList: View {
     @State private var drag: ReorderDrag<DraftExercise.ID>?
     /// Whether the cards were opened by holding an exercise, so letting go closes them again.
     @State private var isHoldReordering = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -241,7 +242,7 @@ private struct SessionList: View {
                 if let dropped { proxy.scrollTo(dropped.id, anchor: .top) }
             }
         }
-        .animation(.default, value: isReordering)
+        .animation(reduceMotion ? nil : .default, value: isReordering)
         // Confirms the long press switched to reordering, and each place passed while dragging.
         .haptic(.modeChanged, trigger: isReordering) { _, isOn in isOn }
         .haptic(.selected, trigger: drag?.target) { old, new in old != nil && new != nil }
@@ -280,67 +281,27 @@ private struct SessionList: View {
                     .foregroundStyle(.tint)
             }
             ForEach($model.exercises) { $exercise in
+                let tone: StatusTone? = exercise.isComplete ? .done : nil
+                let middle = CardRowBackground(tone: tone, position: .middle)
                 Section {
-                    TargetSummaryView(summary: model.targetSummary(for: exercise))
-                    if let offer = model.progressionOffer(for: exercise.id) {
-                        Button {
-                            model.clearProgressionSaveError()
-                            progressionExercise = exercise.id
-                        } label: {
-                            VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                                Label("Choose progression", systemImage: "chart.line.uptrend.xyaxis")
-                                Text(offer.lastSession)
-                                    .font(.caption.monospacedDigit())
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                    ForEach($exercise.sets) { $set in
-                        SetRow(
-                            number: exercise.number(of: set.id), set: $set,
-                            showsRepsInReserve: model.showsRepsInReserve, weightUnit: model.weightUnit
-                        ) { isDone in
-                            model.setDone(isDone, set: set.id, in: exercise.id)
-                        }
-                            .swipeActions {
-                                Button("Delete", role: .destructive) {
-                                    model.removeSet(set.id, from: exercise.id)
-                                }
-                            }
-                    }
-                    // Both adds sit under the sets they extend, so neither hides in a menu.
-                    AdaptiveStack {
-                        Button {
-                            model.addSet(to: exercise.id)
-                        } label: {
-                            Label("Add set", systemImage: "plus")
-                                .frame(minHeight: 44)
-                                .contentShape(Rectangle())
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        Button {
-                            model.addWarmUp(to: exercise.id)
-                        } label: {
-                            Label(exercise.addWarmUpTitle, systemImage: "flame")
-                                .frame(minHeight: 44)
-                                .contentShape(Rectangle())
-                        }
-                    }
-                    .buttonStyle(.borderless)
-                    TextField("Notes", text: $exercise.notes, axis: .vertical)
-                        .lineLimit(1...4)
-                } header: {
                     HStack {
                         // Holding the name and dragging reorders (`reordersOnLongPress`); the menu moves it too.
-                        Text(exercise.name)
-                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                            .contentShape(Rectangle())
-                            .reorderHandle(exercise.id)
-                            .id(exercise.id)
-                            .accessibilityHint("Touch and hold, then drag, to reorder")
-                            .accessibilityAction(named: "Reorder exercises") {
-                                if model.exercises.count > 1 { isReordering = true }
+                        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                            Text(exercise.name).font(.headline)
+                            if exercise.isComplete {
+                                StatusLabel(title: L10n.text("Done"), tone: .done).font(.footnote)
                             }
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .contentShape(Rectangle())
+                        .reorderHandle(exercise.id)
+                        .id(exercise.id)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityAddTraits(.isHeader)
+                        .accessibilityHint("Touch and hold, then drag, to reorder")
+                        .accessibilityAction(named: "Reorder exercises") {
+                            if model.exercises.count > 1 { isReordering = true }
+                        }
                         Menu {
                             Picker("Exercise focus", selection: Binding(
                                 get: { exercise.declaredFocus },
@@ -368,8 +329,65 @@ private struct SessionList: View {
                                 .frame(minWidth: 44, minHeight: 44)
                                 .contentShape(Rectangle())
                         }
+                        .buttonStyle(.borderless)
                         .accessibilityLabel("Exercise options")
                     }
+                    .listRowBackground(CardRowBackground(tone: tone, position: .first))
+                    .listRowSeparator(.hidden, edges: .top)
+                    TargetSummaryView(summary: model.targetSummary(for: exercise))
+                        .listRowBackground(middle)
+                    if let offer = model.progressionOffer(for: exercise.id) {
+                        Button {
+                            model.clearProgressionSaveError()
+                            progressionExercise = exercise.id
+                        } label: {
+                            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                                Label("Choose progression", systemImage: "chart.line.uptrend.xyaxis")
+                                Text(offer.lastSession)
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .listRowBackground(middle)
+                    }
+                    ForEach($exercise.sets) { $set in
+                        SetRow(
+                            number: exercise.number(of: set.id), set: $set,
+                            showsRepsInReserve: model.showsRepsInReserve, weightUnit: model.weightUnit
+                        ) { isDone in
+                            model.setDone(isDone, set: set.id, in: exercise.id)
+                        }
+                            .listRowBackground(middle)
+                            .swipeActions {
+                                Button("Delete", role: .destructive) {
+                                    model.removeSet(set.id, from: exercise.id)
+                                }
+                            }
+                    }
+                    // Both adds sit under the sets they extend, so neither hides in a menu.
+                    AdaptiveStack {
+                        Button {
+                            model.addSet(to: exercise.id)
+                        } label: {
+                            Label("Add set", systemImage: "plus")
+                                .frame(minHeight: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        Button {
+                            model.addWarmUp(to: exercise.id)
+                        } label: {
+                            Label(exercise.addWarmUpTitle, systemImage: "flame")
+                                .frame(minHeight: 44)
+                                .contentShape(Rectangle())
+                        }
+                    }
+                    .buttonStyle(.borderless)
+                    .listRowBackground(middle)
+                    TextField("Notes", text: $exercise.notes, axis: .vertical)
+                        .lineLimit(1...4)
+                        .listRowBackground(CardRowBackground(tone: tone, position: .last))
+                        .listRowSeparator(.hidden, edges: .bottom)
                 } footer: {
                     // Optional advice comes after the first exercise's sets, not before them.
                     if exercise.id == model.exercises.first?.id, let tip = model.generalWarmUpTip {

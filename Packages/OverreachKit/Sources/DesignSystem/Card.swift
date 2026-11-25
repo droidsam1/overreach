@@ -15,7 +15,7 @@ public struct Card<Content: View>: View {
         @ViewBuilder content: () -> Content
     ) {
         self.init(
-            surface: tone.map { AnyShapeStyle($0.surface) } ?? AnyShapeStyle(.background.secondary),
+            surface: cardSurface(tone),
             border: tone?.border ?? .clear, radius: radius, padding: padding, content: content
         )
     }
@@ -110,4 +110,33 @@ public struct IconTile: View {
             .background(color.opacity(0.15), in: .rect(cornerRadius: Radius.tile))
             .accessibilityHidden(true)
     }
+}
+
+/// A section card that retains separate list rows for swipe actions and editable controls.
+public struct CardRowBackground: View {
+    public enum Position {
+        case first, middle, last
+    }
+
+    private let tone: StatusTone?
+    private let position: Position
+
+    public init(tone: StatusTone? = nil, position: Position) {
+        self.tone = tone
+        self.position = position
+    }
+
+    public var body: some View {
+        let top = position == .first ? Radius.card : 0
+        let bottom = position == .last ? Radius.card : 0
+        UnevenRoundedRectangle(
+            topLeadingRadius: top, bottomLeadingRadius: bottom,
+            bottomTrailingRadius: bottom, topTrailingRadius: top
+        )
+        .fill(cardSurface(tone))
+    }
+}
+
+private func cardSurface(_ tone: StatusTone?) -> AnyShapeStyle {
+    tone.map { AnyShapeStyle($0.surface) } ?? AnyShapeStyle(.background.secondary)
 }

@@ -1,4 +1,5 @@
 import DesignSystem
+import PresentationKit
 import SwiftUI
 import TodayPresentation
 
@@ -8,8 +9,6 @@ struct TodayDoneSummary: View {
     let done: TodayDone
     let tone: StatusTone
 
-    @Environment(\.dynamicTypeSize) private var typeSize
-
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.medium) {
             ForEach(done.sessions) { session in
@@ -17,50 +16,14 @@ struct TodayDoneSummary: View {
                     if done.sessions.count > 1 {
                         Text(verbatim: session.title).font(.subheadline.weight(.semibold))
                     }
-                    totals(session)
+                    SummaryTiles(Self.totals(session))
                     ForEach(session.records, id: \.self) { record in
-                        recordRow(record)
+                        TrainingRecordRow(record, tone: tone)
                     }
                 }
             }
             if !done.tomorrow.isEmpty { tomorrow }
         }
-    }
-
-    @ViewBuilder private func totals(_ session: TodayDone.Session) -> some View {
-        let values = Self.totals(session)
-        if !values.isEmpty {
-            // Side by side; stacked at accessibility text sizes so labels and values are not cut.
-            if typeSize.isAccessibilitySize {
-                VStack(spacing: Spacing.small) { totalTiles(values) }
-            } else {
-                HStack(spacing: Spacing.small) { totalTiles(values) }
-            }
-        }
-    }
-
-    private func totalTiles(_ values: [Total]) -> some View {
-        ForEach(Array(values.enumerated()), id: \.offset) { _, total in
-            VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                Text(total.label).font(.caption).foregroundStyle(.secondary)
-                Text(verbatim: total.value).font(.title3.weight(.heavy)).minimumScaleFactor(0.7)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(Spacing.small + Spacing.xSmall)
-            .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.tile))
-            .accessibilityElement(children: .combine)
-        }
-    }
-
-    private func recordRow(_ record: String) -> some View {
-        Label {
-            Text(verbatim: record).font(.subheadline)
-        } icon: {
-            Image(systemName: "trophy.fill").foregroundStyle(tone.accent).accessibilityHidden(true)
-        }
-        .padding(Spacing.small + Spacing.xSmall)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tone.accent.opacity(0.12), in: .rect(cornerRadius: Radius.tile))
     }
 
     private var tomorrow: some View {
@@ -75,19 +38,14 @@ struct TodayDoneSummary: View {
         .accessibilityElement(children: .combine)
     }
 
-    struct Total {
-        let label: LocalizedStringKey
-        let value: String
-    }
-
     /// At most three: duration, then sets and volume for strength or distance and pace for a run.
-    static func totals(_ session: TodayDone.Session) -> [Total] {
-        var values: [Total] = []
-        if let duration = session.duration { values.append(Total(label: "Duration", value: duration)) }
-        if let sets = session.sets { values.append(Total(label: "Sets", value: String(sets))) }
-        if let volume = session.volume { values.append(Total(label: "Volume", value: volume)) }
-        if let distance = session.distance { values.append(Total(label: "Distance", value: distance)) }
-        if let pace = session.pace { values.append(Total(label: "Pace", value: pace)) }
+    static func totals(_ session: TodayDone.Session) -> [SummaryMetric] {
+        var values: [SummaryMetric] = []
+        if let duration = session.duration { values.append(.init(label: L10n.text("Duration"), value: duration)) }
+        if let sets = session.sets { values.append(.init(label: L10n.text("Sets"), value: String(sets))) }
+        if let volume = session.volume { values.append(.init(label: L10n.text("Volume"), value: volume)) }
+        if let distance = session.distance { values.append(.init(label: L10n.text("Distance"), value: distance)) }
+        if let pace = session.pace { values.append(.init(label: L10n.text("Pace"), value: pace)) }
         return Array(values.prefix(3))
     }
 }
