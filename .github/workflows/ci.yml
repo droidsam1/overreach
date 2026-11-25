@@ -19,6 +19,8 @@ jobs:
         run: python3 scripts/check-repo.py
       - name: Test priority selection
         run: python3 scripts/test-priority-queue.py
+      - name: Test agent tools
+        run: python3 scripts/test-agent-tools.py
       - name: Check that no other PR claims this task
         if: github.event_name == 'pull_request'
         env:

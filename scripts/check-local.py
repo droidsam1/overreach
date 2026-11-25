@@ -211,6 +211,8 @@ def main():
     if paths & {"scripts/priority_queue.py", "scripts/claim-task.py", "scripts/check-task-claim.py",
                 "scripts/test-priority-queue.py"}:
         statuses.append(run_check("priority-queue", [sys.executable, "scripts/test-priority-queue.py"], logs))
+    if paths & {"scripts/session-usage.py", "scripts/watch-prs.py", "scripts/test-agent-tools.py"}:
+        statuses.append(run_check("agent-tools", [sys.executable, "scripts/test-agent-tools.py"], logs))
     # Its own PASS/WARN/FAIL lines: another agent working on the same task stops this one early.
     statuses.append(subprocess.run([sys.executable, "scripts/check-task-claim.py"], cwd=ROOT).returncode)
     if translation_check:

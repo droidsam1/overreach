@@ -79,6 +79,13 @@ Stored data and Localization cost the most rework when missed. iPhone flows and 
 
 ## Working in parallel
 
+- Group dependent changes with one owner. Start with at most two subagents for independent workstreams.
+- Give each subagent a fresh context and the smallest capable model available. Include the issue, worktree, owned
+  files, interface, checks and handoff. Use a lightweight model for bounded edits and checks when the runner
+  supports model selection. Escalate for harder work or failed acceptance checks.
+- Subagents hand off the PR, SHA, checks and blockers. The coordinator monitors CI and merges using
+  [watch-prs.py](scripts/watch-prs.py) for one or more PRs.
+
 Several agents work at once, each in its own branch or worktree.
 
 - **Next task.** In a fresh checkout of `origin/main`, use `python3 scripts/claim-task.py --next --dry-run` to find
