@@ -63,6 +63,7 @@ public struct PriorityLiftRow: Identifiable, Hashable, Sendable {
 @MainActor
 @Observable
 public final class PlanModel {
+    public private(set) var savedChangeCount = 0
     public private(set) var profile = AthleteProfile()
     public private(set) var currentBlock: TrainingBlock?
     public private(set) var suggestion: BlockSuggestion?
@@ -313,6 +314,7 @@ public final class PlanModel {
                 discipline: period.discipline
             ))
             try await profiles.save(updated)
+            savedChangeCount += 1
             await load()
         } catch {
             errorMessage = L10n.text("Could not save your plan. Try again.")
@@ -405,6 +407,7 @@ public final class PlanModel {
         defer { isSavingProfile = false }
         do {
             try await profiles.save(updated)
+            savedChangeCount += 1
             profile = updated
             await load()
         } catch {
@@ -499,6 +502,7 @@ extension PlanModel {
         defer { isApplyingLiftChange = false }
         do {
             try await progression.save(settings, for: exerciseID)
+            savedChangeCount += 1
             changedLifts.insert(exerciseID)
             errorMessage = nil
         } catch {
@@ -543,6 +547,7 @@ extension PlanModel {
             goal.setRunningSchedule(schedule)
             updated.goal = goal
             try await profiles.save(updated)
+            savedChangeCount += 1
             profile = updated
             errorMessage = nil
             return true
@@ -689,6 +694,7 @@ extension PlanModel {
             guard var goal = updated.goal, goal.kind == .hybrid, change(&goal) else { return false }
             updated.goal = goal
             try await profiles.save(updated)
+            savedChangeCount += 1
             profile = updated
             errorMessage = nil
             return true

@@ -912,10 +912,12 @@ public final class WorkoutModel {
         return SessionReport(review: review, effortScale: effortScale, format: format)
     }
 
-    public func discard() {
+    @discardableResult
+    public func discard() -> Bool {
         let mayHavePendingRestAlert = pendingDraft?.rest != nil || isDraftUnreadable
-        guard !isPreparingSession, !isSavingSession, !isRecoveringDraft, clearStoredDraft() else { return }
+        guard !isPreparingSession, !isSavingSession, !isRecoveringDraft, clearStoredDraft() else { return false }
         close(cancelPendingRestAlert: mayHavePendingRestAlert)
+        return true
     }
 
     private func close(cancelPendingRestAlert: Bool = false) {
