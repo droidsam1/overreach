@@ -61,6 +61,61 @@ public final class RecoveryProgressModel {
     private let format: Format
     private var activeLoad: UUID?
     private var trendInputs: TrendInputs?
+    private let runChoices: @MainActor () -> [RunMatchPair: RunMatchChoice]
+    private var performanceInputs: PerformanceInputs?
+    private let runningSegments: @Sendable ([RunActivity]) async -> [ComparableRunningHeartRate.Segment]
+
+    private struct PerformanceInputs {
+        let today: CalendarDay
+        let now: Date
+        let profile: AthleteProfile?
+        let runResults: [PerformanceDistance: [RunningPerformance.BestTime]]
+        let runningSegments: [ComparableRunningHeartRate.Segment]
+        let sets: [StrengthPerformance.RecordedSet]
+        let exercises: [Exercise]
+    }
+
+    public var performanceRange = TrendRange.days90
+    public var performanceDistance = PerformanceDistance.fiveKilometers
+
+    public var hasRunningPerformance: Bool {
+        guard let inputs = performanceInputs else { return false }
+        return inputs.runResults.values.contains { !$0.isEmpty } || !inputs.runningSegments.isEmpty
+    }
+    public var hasStrengthPerformance: Bool { !(performanceInputs?.sets.isEmpty ?? true) }
+    public var showsPerformance: Bool { hasRunningPerformance || hasStrengthPerformance }
+
+    public var runningPerformance: [PerformanceSeries] {
+        guard let inputs = performanceInputs else { return [] }
+        let results = inputs.runResults[performanceDistance] ?? []
+        return performance(using: inputs).running(results)
+    }
+
+    public var comparableHeartRate: PerformanceSeries? {
+        guard let inputs = performanceInputs else { return nil }
+        return performance(using: inputs).heartRate(inputs.runningSegments, now: inputs.now, calendar: calendar)
+    }
+
+    public var strengthPerformanceOptions: [StrengthPerformanceOption] {
+        guard let inputs = performanceInputs else { return [] }
+        return performance(using: inputs).strengthOptions(inputs.sets, exercises: inputs.exercises)
+    }
+
+    public func strengthPerformance(for option: StrengthPerformanceOption) -> [PerformanceSeries] {
+        guard let inputs = performanceInputs else { return [] }
+        return performance(using: inputs).strengthSeries(
+            option, profile: inputs.profile, now: inputs.now, calendar: calendar
+        )
+    }
+
+    private func performance(using inputs: PerformanceInputs) -> PerformanceProgress {
+        var displayFormat = format
+        if let profile = inputs.profile { displayFormat.weightUnit = profile.weightUnit }
+        return PerformanceProgress(
+            window: PerformanceComparison(through: inputs.today, days: performanceRange.days, calendar: calendar),
+            format: displayFormat
+        )
+    }
 
     /// What the charts are drawn from, kept so changing the interval does not read the sources again.
     private struct TrendInputs {
@@ -78,7 +133,9 @@ public final class RecoveryProgressModel {
         recordedStrength: (any RecordedStrengthSource)? = nil, routines: (any RoutineRepository)? = nil,
         progression: (any ProgressionSettingsRepository)? = nil, cycle: (any CycleSource)? = nil,
         readinessSettings: ReadinessRules.Settings = ReadinessRules.Settings(), calendar: Calendar = .current,
-        format: Format = Format(), sectionHints: SectionHints = SectionHints()
+        format: Format = Format(), sectionHints: SectionHints = SectionHints(),
+        runChoices: @escaping @MainActor () -> [RunMatchPair: RunMatchChoice] = { [:] },
+        runningSegments: @escaping @Sendable ([RunActivity]) async -> [ComparableRunningHeartRate.Segment] = { _ in [] }
     ) {
         recordLoader = TrainingRecordLoader(
             sources: sources, activity: activity, checkIns: checkIns, workouts: workouts, exercises: exercises,
@@ -90,6 +147,8 @@ public final class RecoveryProgressModel {
         self.calendar = calendar
         self.format = format
         self.sectionHints = sectionHints
+        self.runChoices = runChoices
+        self.runningSegments = runningSegments
     }
 
     // MARK: Screen state
@@ -106,9 +165,11 @@ public final class RecoveryProgressModel {
     }
     /// Recent load needs something logged to compare: a session, a run or everyday movement.
     public var showsRecentLoad: Bool { showsLoadTrends || SectionAvailability.recentLoad(rows: loadRows.count) }
-    /// Progress needs a goal or a lift trained in two sessions.
+    /// Progress needs a performance observation, a goal, or a lift trained in two sessions.
     public var showsProgress: Bool {
-        SectionAvailability.progress(hasGoal: hasGoal, sessionsOfMostTrainedLift: sessionsOfMostTrainedLift)
+        showsPerformance || SectionAvailability.progress(
+            hasGoal: hasGoal, sessionsOfMostTrainedLift: sessionsOfMostTrainedLift
+        )
     }
     /// The one line shown instead of the sections while none has data.
     public var unlockHint: String? {
@@ -156,6 +217,17 @@ public final class RecoveryProgressModel {
         let connected = await garminConnection != nil
         guard activeLoad == loadID else { return }
         let record = snapshot.record
+        let runs = performanceRuns(snapshot.runOriginals, now: now)
+        let segments = await runningSegments(runs)
+        guard activeLoad == loadID else { return }
+        let results = Dictionary(uniqueKeysWithValues: PerformanceDistance.allCases.map { distance in
+            (distance, RunningPerformance.bestTimes(for: distance.distance, runs: runs))
+        })
+        performanceInputs = PerformanceInputs(
+            today: today, now: now, profile: profile, runResults: results, runningSegments: segments,
+            sets: StrengthPerformance.recordedSets(in: record.sessions, through: now),
+            exercises: record.exercises
+        )
         let readiness = ReadinessAssessment.assess(
             today: today, history: record.metrics, checkIn: snapshot.checkIn, profile: profile, cycle: record.cycle,
             settings: readinessSettings, calendar: calendar
@@ -192,6 +264,21 @@ public final class RecoveryProgressModel {
         isGarminConnected = connected
         wearsGarmin = profile?.wearables.contains(.garmin) ?? false
         hasLoaded = true
+    }
+
+    private func performanceRuns(_ originals: [RunActivity], now: Date) -> [RunActivity] {
+        let resolved = RunDeduplication.resolve(originals, choices: runChoices())
+        let ambiguous = resolved.candidates.filter { !$0.isSeparate }
+        let garmin = Set(ambiguous.map(\.pair.garminID))
+        let health = Set(ambiguous.map(\.pair.appleHealthID))
+        return resolved.runs.map(\.activity).filter { run in
+            guard run.startedAt <= now else { return false }
+            switch run.source {
+            case .garmin: return !garmin.contains(run.id)
+            case .appleHealth: return !health.contains(run.id)
+            default: return true
+            }
+        }
     }
 
     /// Shows the charts for another interval from the data already read.

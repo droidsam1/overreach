@@ -123,6 +123,7 @@ public struct HealthKitMetricsSource: MetricsSource, ActivitySource, CycleSource
                 let distance = workout.statistics(for: HKQuantityType(.distanceWalkingRunning))?.sumQuantity()
                 let ascent = workout.metadata?[HKMetadataKeyElevationAscended] as? HKQuantity
                 let descent = workout.metadata?[HKMetadataKeyElevationDescended] as? HKQuantity
+                let indoor = workout.metadata?[HKMetadataKeyIndoorWorkout] as? Bool
                 return RunActivity(
                     id: workout.uuid.uuidString,
                     source: .appleHealth,
@@ -133,7 +134,9 @@ public struct HealthKitMetricsSource: MetricsSource, ActivitySource, CycleSource
                     averageHeartRate: heartRate?.averageQuantity()?.doubleValue(for: bpm),
                     maxHeartRate: heartRate?.maximumQuantity()?.doubleValue(for: bpm),
                     elevationGainMeters: ascent?.doubleValue(for: .meter()),
-                    elevationLossMeters: descent?.doubleValue(for: .meter())
+                    elevationLossMeters: descent?.doubleValue(for: .meter()),
+                    elapsedSeconds: workout.endDate.timeIntervalSince(workout.startDate),
+                    kind: indoor.map { $0 ? .treadmill : .training }
                 )
             }
     }

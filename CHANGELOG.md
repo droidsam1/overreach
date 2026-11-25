@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Recovery & Progress shows observed 1, 5 and 10 km running times, recorded strength results and eligible
+  estimated 1RM trends for the last 30 or 90 days. Select a chart point or session row to open its source.
+  Plan progress, deloads and rest history remain available from Progress.
 - Today asks how the legs respond to a warm-up after a recent run when the next rotation slot works the legs.
   The answer can keep the session lighter, offer torso or leave the leg session pending.
 - Plan shows the pending strength routine and recent recorded runs in the hybrid calendar, marking run days

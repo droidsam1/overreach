@@ -197,7 +197,8 @@ public enum SessionReviewer {
         var found: SessionRecord?
         for set in done.sets {
             guard let weight = set.weightKg, weight > 0, let reps = set.reps else { continue }
-            let atWeight = earlierSets.filter { abs(($0.weightKg ?? 0) - weight) < 0.001 }.compactMap(\.reps)
+            let atWeight = earlierSets.filter { StrengthPerformance.sameLoad($0.weightKg ?? 0, weight) }
+                .compactMap(\.reps)
             guard let previous = atWeight.max(), reps > previous else { continue }
             if case let .repsAtWeight(bestWeight, _, _) = found, bestWeight >= weight { continue }
             found = .repsAtWeight(weightKg: weight, reps: reps, previousReps: previous)

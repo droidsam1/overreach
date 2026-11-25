@@ -85,7 +85,11 @@ public enum RunDeduplication {
         run.elevationGainMeters = run.elevationGainMeters ?? other.elevationGainMeters
         run.elevationLossMeters = run.elevationLossMeters ?? other.elevationLossMeters
         run.averageCadence = run.averageCadence ?? other.averageCadence
-        if run.distanceMeters <= 0 { run.distanceMeters = other.distanceMeters }
+        if run.distanceMeters <= 0 {
+            run.distanceMeters = other.distanceMeters
+            // A measured time and its distance have to come from the same recording.
+            run.elapsedSeconds = nil
+        }
         return run
     }
 }

@@ -41,12 +41,17 @@ struct HistoryRunRow: View {
     }
 }
 
-struct HistoryRunDetail: View {
+public struct HistoryRunDetail: View {
     @Environment(\.dismiss) private var dismiss
     let run: HistoryRunActivity
     let history: HistoryModel
 
-    var body: some View {
+    public init(run: HistoryRunActivity, history: HistoryModel) {
+        self.run = run
+        self.history = history
+    }
+
+    public var body: some View {
         List {
             Section {
                 LabeledContent("Date") {

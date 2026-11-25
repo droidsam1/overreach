@@ -311,6 +311,25 @@ struct GarminLapTests {
         #expect(laps.last?.distanceMeters == 412.6)
     }
 
+    @Test func activityAndLapKeepWallClockTimeSeparateFromTimerTime() throws {
+        let activities = #"""
+        [
+          {"activityId": 42, "activityType": {"typeKey": "running"}, "eventType": {"typeKey": "race"},
+           "startTimeGMT": "2026-01-07 09:35:24", "duration": 300, "elapsedDuration": 360, "distance": 1000},
+          {"activityId": 43, "activityType": {"typeKey": "treadmill_running"},
+           "startTimeGMT": "2026-01-08 09:35:24", "duration": 400, "elapsedDuration": 400, "distance": 1000}
+        ]
+        """#
+        let runs = GarminMapping.runs(try GarminDecoding.activities(from: Data(activities.utf8)).records)
+        #expect(runs.map(\.durationSeconds) == [300, 400])
+        #expect(runs.map(\.elapsedSeconds) == [360, 400])
+        #expect(runs.map(\.kind) == [.race, .treadmill])
+        let body = #"{"lapDTOs": [{"distance": 1000, "duration": 300, "elapsedDuration": 360}]}"#
+        let lap = try #require(GarminDecoding.laps(from: Data(body.utf8)).first)
+        #expect(lap.durationSeconds == 300)
+        #expect(lap.elapsedSeconds == 360)
+    }
+
     @Test func lapsWithoutADistanceOrATimeAreDropped() throws {
         let body = #"""
         {"lapDTOs": [{"distance": 0, "duration": 60}, {"distance": 500}, {"distance": 500, "duration": 150}]}
@@ -338,5 +357,7 @@ struct GarminLapTests {
         let old = #"{"id":"1","source":"garmin","startedAt":0,"durationSeconds":60,"distanceMeters":100}"#
         let run = try JSONDecoder().decode(RunActivity.self, from: Data(old.utf8))
         #expect(run.laps == nil)
+        #expect(run.elapsedSeconds == nil)
+        #expect(run.kind == nil)
     }
 }

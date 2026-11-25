@@ -229,19 +229,26 @@ struct SessionRow: View {
 }
 
 /// One session's sets, with an Edit button. Reads the session from the model so it reflects saved edits.
-struct SessionDetailView: View {
+public struct SessionDetailView: View {
     @Bindable var model: HistoryModel
     let sessionID: UUID
+    let highlightedSetID: UUID?
     @State private var editor: SessionEditorModel?
 
-    init(model: HistoryModel, sessionID: UUID) {
+    public init(model: HistoryModel, sessionID: UUID, highlightedSetID: UUID? = nil) {
         self.model = model
         self.sessionID = sessionID
+        self.highlightedSetID = highlightedSetID
     }
 
-    var body: some View {
+    public var body: some View {
         if let detail = model.detail(for: sessionID) {
-            content(detail)
+            ScrollViewReader { scroll in
+                content(detail)
+                    .onAppear {
+                        if let highlightedSetID { scroll.scrollTo(highlightedSetID, anchor: .center) }
+                    }
+            }
                 .toolbar {
                     Button("View summary", systemImage: "list.bullet.clipboard") {
                         Task { await model.showReport(for: sessionID) }
@@ -296,6 +303,9 @@ struct SessionDetailView: View {
                             }
                         }
                         .accessibilityElement(children: .combine)
+                        .accessibilityAddTraits(set.id == highlightedSetID ? .isSelected : [])
+                        .listRowBackground(set.id == highlightedSetID ? Color.accentColor.opacity(0.12) : nil)
+                        .id(set.id)
                     }
                     if let notes = entry.notes {
                         Text(notes).font(.footnote).foregroundStyle(.secondary)

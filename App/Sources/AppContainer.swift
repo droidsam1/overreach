@@ -254,7 +254,8 @@ final class AppContainer {
         RecoveryProgressModel(
             sources: metricsSources, activity: activitySources, checkIns: checkIns, garmin: garmin,
             profiles: profiles, workouts: workouts, exercises: exercises, recordedStrength: recordedStrength,
-            routines: routines, progression: progression, cycle: cycleSource, sectionHints: sectionHints
+            routines: routines, progression: progression, cycle: cycleSource, sectionHints: sectionHints,
+            runChoices: { self.readActivityMatchChoices().runs }
         )
     }
 
