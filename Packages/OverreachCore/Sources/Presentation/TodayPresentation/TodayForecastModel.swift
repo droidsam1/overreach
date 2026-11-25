@@ -8,7 +8,7 @@ import PresentationKit
 public final class TodayForecastModel {
     /// What the Today toolbar weather button shows.
     public enum ToolbarState: Equatable, Sendable {
-        /// No OpenWeather key saved.
+        /// The selected provider is not set up (no key, or Open-Meteo not confirmed).
         case notConnected
         /// A key but no saved area.
         case needsArea
@@ -85,7 +85,15 @@ public final class TodayForecastModel {
         self.storeArea = storeArea
     }
 
-    public static let attributionURL = URL(string: "https://openweathermap.org/")
+    /// The provider behind the forecast on screen, for the attribution link and its limits.
+    public private(set) var provider: WeatherProvider = .openMeteo
+    public var attributionTitle: String { provider.attributionTitle }
+    public var attributionURL: URL? { provider.attributionURL }
+    /// Shown under the forecast when the provider only gives 3-hour steps.
+    public var resolutionNote: String? {
+        provider == .openWeatherFree ? L10n.text("This forecast has 3-hour steps.") : nil
+    }
+
     /// "Updated 14:05" for the forecast on screen, nil when its age is unknown.
     public var updatedText: String? {
         guard let updatedAt, !hours.isEmpty else { return nil }
@@ -157,7 +165,13 @@ public final class TodayForecastModel {
         let id = UUID()
         loadID = id
         let configured = await source.isConfigured()
+        let active = await source.provider()
         guard loadID == id else { return }
+        if active != provider {
+            // Another provider's hours must not linger under this one's attribution.
+            provider = active
+            clearHours()
+        }
         isConfigured = configured
         hasLoaded = true
         guard configured, let area else {
@@ -197,7 +211,7 @@ public final class TodayForecastModel {
         }
         var seen: Set<Date> = []
         let remaining = forecast.sorted { $0.date < $1.date }.filter {
-            $0.date.addingTimeInterval(3_600) > now && $0.date < today.end && seen.insert($0.date).inserted
+            $0.date.addingTimeInterval($0.duration) > now && $0.date < today.end && seen.insert($0.date).inserted
         }
         hours = remaining.map(hour)
         let periods = periods(in: remaining, now: now, end: today.end)
@@ -221,7 +235,7 @@ public final class TodayForecastModel {
         var windows: [Window] = []
         for hour in hours {
             let start = max(now, hour.date)
-            let stop = min(end, hour.date.addingTimeInterval(3_600))
+            let stop = min(end, hour.date.addingTimeInterval(hour.duration))
             guard start < stop else { continue }
             if let previous = windows.last, previous.end == start {
                 windows[windows.count - 1] = Window(start: previous.start, end: stop)

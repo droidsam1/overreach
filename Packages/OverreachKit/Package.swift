@@ -44,7 +44,10 @@ let package = Package(
         // MARK: Data
         .target(name: "Persistence", dependencies: [.product(name: "Domain", package: core)]),
         .target(name: "HealthKitSource", dependencies: [.product(name: "Domain", package: core)]),
-        .target(name: "WeatherSource", dependencies: [.product(name: "WeatherImport", package: core)]),
+        .target(name: "WeatherSource", dependencies: [
+            .product(name: "Domain", package: core),
+            .product(name: "WeatherImport", package: core),
+        ]),
         .target(name: "GarminSource", dependencies: [
             .product(name: "Domain", package: core),
             .product(name: "GarminImport", package: core),

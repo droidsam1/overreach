@@ -44,6 +44,7 @@ struct HistoryRunRow: View {
 public struct HistoryRunDetail: View {
     @Environment(\.dismiss) private var dismiss
     @State private var weather: [HistoryMetric] = []
+    @State private var attribution = ""
     let run: HistoryRunActivity
     let history: HistoryModel
 
@@ -81,7 +82,7 @@ public struct HistoryRunDetail: View {
                 } header: {
                     Text("Weather near the start")
                 } footer: {
-                    Text("Estimated hourly weather from OpenWeather")
+                    Text(verbatim: attribution)
                 }
             }
             if !run.movementMetrics.isEmpty {
@@ -118,7 +119,11 @@ public struct HistoryRunDetail: View {
         .navigationTitle(run.title)
         .task(id: run.id) {
             let details = await history.weatherDetails(for: run)
-            if !Task.isCancelled { weather = details }
+            let credit = await history.weatherAttribution()
+            if !Task.isCancelled {
+                weather = details
+                attribution = credit
+            }
         }
     }
 }

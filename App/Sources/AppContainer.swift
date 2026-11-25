@@ -49,6 +49,7 @@ final class AppContainer {
     let garmin: (any GarminAccount)?
     let weather: (any Domain.WeatherSource)?
     private let weatherCredentials: (any WeatherCredentials)?
+    private let weatherSelection: (any WeatherProviderSelection)?
     private var isRefreshingRunWeather = false
 
     private var runWeather: GarminRunWeather? {
@@ -77,6 +78,7 @@ final class AppContainer {
         garmin: (any GarminAccount)? = nil,
         weather: (any Domain.WeatherSource)? = nil,
         weatherCredentials: (any WeatherCredentials)? = nil,
+        weatherSelection: (any WeatherProviderSelection)? = nil,
         recordedStrength: (any RecordedStrengthSource)? = nil,
         historyRecordedStrength: (any RecordedStrengthSource)? = nil
     ) {
@@ -101,6 +103,7 @@ final class AppContainer {
         self.garmin = garmin
         self.weather = weather
         self.weatherCredentials = weatherCredentials
+        self.weatherSelection = weatherSelection
         self.recordedStrength = recordedStrength
         self.historyRecordedStrength = historyRecordedStrength ?? recordedStrength
     }
@@ -110,7 +113,7 @@ final class AppContainer {
     static func live() -> AppContainer {
         let healthKit = HealthKitMetricsSource()
         let garmin = GarminConnect.makeService()
-        let weather = OpenWeather.makeService()
+        let weather = WeatherSetup.make()
         let sources: [any MetricsSource] = [garmin, healthKit]
         // Garmin's strength records plus other apps' strength workouts in Apple Health (e.g. the Apple Watch), each
         // workout once.
@@ -123,7 +126,8 @@ final class AppContainer {
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store, workoutDraftStore: FileWorkoutDraftStore(),
                 metricsSources: sources, activitySources: [garmin, healthKit],
-                cycleSource: healthKit, garmin: garmin, weather: weather, weatherCredentials: weather,
+                cycleSource: healthKit, garmin: garmin, weather: weather.source,
+                weatherCredentials: weather.credentials, weatherSelection: weather.selection,
                 recordedStrength: recordedStrength, historyRecordedStrength: historyRecordedStrength
             )
         } catch {
@@ -132,7 +136,8 @@ final class AppContainer {
                 workouts: store, exercises: store, checkIns: store, progression: store, profiles: store,
                 routines: store,
                 metricsSources: sources, activitySources: [garmin, healthKit],
-                cycleSource: healthKit, garmin: garmin, weather: weather, weatherCredentials: weather,
+                cycleSource: healthKit, garmin: garmin, weather: weather.source,
+                weatherCredentials: weather.credentials, weatherSelection: weather.selection,
                 recordedStrength: recordedStrength, historyRecordedStrength: historyRecordedStrength
             )
         }
@@ -316,11 +321,13 @@ final class AppContainer {
     func makeHistoryModel() -> HistoryModel {
         let choices = readActivityMatchChoices()
         let runWeather = self.runWeather
+        let weather = self.weather
         let defaults = UserDefaults.standard
         return HistoryModel(
             workouts: workouts, exercises: exercises, routines: routines, backup: backup, health: health,
             profiles: profiles, progression: progression, runSources: metricsSources,
             runWeather: { run in await runWeather?.weather(for: run) },
+            weatherProvider: { await weather?.provider() ?? .openWeatherOneCall },
             recordedStrength: historyRecordedStrength, activitySources: activitySources,
             companionAnswers: dogWalkAnswers,
             dogRunAnswers: dogRunAnswers,
@@ -370,7 +377,7 @@ final class AppContainer {
     }
 
     func makeWeatherSettingsModel() -> WeatherSettingsModel? {
-        weatherCredentials.map(WeatherSettingsModel.init(credentials:))
+        weatherCredentials.map { WeatherSettingsModel(credentials: $0, selection: weatherSelection) }
     }
 
     func refreshRunWeather() async {

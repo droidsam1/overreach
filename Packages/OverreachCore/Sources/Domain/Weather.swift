@@ -20,11 +20,17 @@ public struct WeatherHour: Equatable, Codable, Sendable {
     public let conditionCode: Int?
     public let precipitationProbability: Double?
     public let isDaylight: Bool?
+    /// How long the values hold from `date`, in seconds. Nil means one hour; a 3-hour provider step says 10 800.
+    public let durationSeconds: TimeInterval?
 
+    /// How long the values hold from `date`.
+    public var duration: TimeInterval { durationSeconds ?? 3_600 }
+
+    /// `conditionCode` is an OpenWeather condition id whatever the provider; other providers map their own codes to it.
     public init(
         date: Date, temperatureCelsius: Double? = nil, humidityPercent: Double? = nil,
         windMetersPerSecond: Double? = nil, conditionCode: Int? = nil,
-        precipitationProbability: Double? = nil, isDaylight: Bool? = nil
+        precipitationProbability: Double? = nil, isDaylight: Bool? = nil, durationSeconds: TimeInterval? = nil
     ) {
         self.date = date
         self.temperatureCelsius = temperatureCelsius
@@ -33,6 +39,7 @@ public struct WeatherHour: Equatable, Codable, Sendable {
         self.conditionCode = conditionCode
         self.precipitationProbability = precipitationProbability
         self.isDaylight = isDaylight
+        self.durationSeconds = durationSeconds
     }
 }
 
@@ -47,8 +54,34 @@ public struct WeatherForecast: Equatable, Sendable {
     }
 }
 
+/// Where the forecast and the weather of past runs come from.
+public enum WeatherProvider: String, CaseIterable, Codable, Sendable {
+    /// No key, no account; free for non-commercial use with attribution.
+    case openMeteo
+    /// The user's own OpenWeather key with a One Call subscription (hourly, history).
+    case openWeatherOneCall
+    /// The user's own free OpenWeather key: 3-hour steps, no history.
+    case openWeatherFree
+
+    public var isOpenWeather: Bool { self != .openMeteo }
+    public var hasHistory: Bool { self != .openWeatherFree }
+}
+
+/// Which provider is active and whether it can be used, kept by the app. Switching clears the stored forecast and
+/// keeps any saved OpenWeather key.
+public protocol WeatherProviderSelection: Sendable {
+    func selectedProvider() async -> WeatherProvider
+    func select(_ provider: WeatherProvider) async
+    /// Whether `provider` can serve requests now: Open-Meteo once the person confirmed it, OpenWeather with a key.
+    func isReady(_ provider: WeatherProvider) async -> Bool
+    /// The person agreed to send the coarse area to Open-Meteo.
+    func confirmOpenMeteo() async
+}
+
 public protocol WeatherSource: Sendable {
     func isConfigured() async -> Bool
+    /// The provider answering requests, for attribution and limitations.
+    func provider() async -> WeatherProvider
     func historical(for area: WeatherArea, at date: Date) async -> WeatherHour?
     func forecast(for area: WeatherArea) async -> [WeatherHour]
     /// The stored forecast for `area` whatever its age, without any request. Nil when none is stored.
@@ -58,20 +91,27 @@ public protocol WeatherSource: Sendable {
     func forecast(for area: WeatherArea, forceRefresh: Bool) async -> WeatherForecast
     /// Forgets the stored forecast for `area`.
     func discardForecast(for area: WeatherArea) async
+    /// Forgets every stored forecast.
+    func discardAllForecasts() async
 }
 
 public extension WeatherSource {
     func isConfigured() async -> Bool { true }
+    func provider() async -> WeatherProvider { .openWeatherOneCall }
     func cachedForecast(for area: WeatherArea) async -> WeatherForecast? { nil }
     func forecast(for area: WeatherArea, forceRefresh: Bool) async -> WeatherForecast {
         WeatherForecast(hours: await forecast(for: area))
     }
     func discardForecast(for area: WeatherArea) async {}
+    func discardAllForecasts() async {}
 }
 
 /// What OpenWeather said about a key that has not been saved yet.
 public enum WeatherKeyCheck: Equatable, Sendable {
+    /// Works with One Call (hourly and history).
     case valid
+    /// A real key without a One Call subscription: only the free 3-hour forecast works.
+    case validFree
     case rejected
     case unavailable
 }
