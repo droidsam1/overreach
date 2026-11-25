@@ -22,6 +22,43 @@ Comparable HR needs a steady post-warm-up segment with adequate HR, comparable p
 environment, and a known sensor. Coverage can be missing even when a watch supplies a plausible average HR.
 Use separate comparable cohorts and let missing inputs leave the comparison unavailable.
 
+## Garmin block pilot
+
+Use the original activity FIT from the Garmin Personal API. Decode timestamped distance, speed,
+elevation, heart rate and cadence, plus lap triggers and timer events. A run can begin after an
+unrecorded walking warm-up. Join automatic laps within a block and use manual laps, sustained
+walks or timer stops as boundaries. Measure the whole block's duration and distance. Use the
+steady portion after the initial heart-rate response for the comparison, including short runs.
+The initial heuristic allows two- to three-minute windows after 45 seconds of running. It
+favors longer eligible windows and breaks ties by earliest start. Pulse does not rank candidates.
+
+Compare pace, duration and the slope profile. Nearby GPS samples in the same direction increase
+confidence when routes overlap. Other routes remain eligible with comparable difficulty. Cadence
+helps distinguish running from walking and provides context. Consider block order and recovery
+before the block. Keep sensor identity independent of the activity recorder. If the FIT does
+not identify the heart-rate source, offer a user confirmation and keep unknowns visible.
+Summarize at most one comparable observation per session and keep the three-session gate per
+period. Treat the change as descriptive when sleep, recent load or weather differ or are unknown.
+
+- [Decode FIT and reconstruct blocks](https://github.com/droidsam1/overreach/issues/337)
+- [Sync the original Garmin activity](https://github.com/droidsam1/overreach/issues/338)
+- [Surface comparable blocks and trends](https://github.com/droidsam1/overreach/issues/339)
+- [Historical weather context](https://github.com/droidsam1/overreach/issues/340)
+
+### Historical weather
+
+Prefer environmental observations in the activity when available. Label device temperature
+separately from ambient temperature. The historical provider remains optional. If enabled in a
+later change, query by coarse area and activity hour, cache by area and UTC hour, and attribute
+the provider. Show temperature, humidity and wind as context. Preserve comparisons when weather
+is missing and keep weather out of the heart-rate calculation.
+
+[OpenWeather](https://openweathermap.org/price) charges for historical One Call requests beyond
+its daily allowance. [Open-Meteo](https://open-meteo.com/en/pricing) offers keyless non-commercial
+access with quotas. A live provider remains deferred under the free and unlimited requirement.
+A [Today forecast](https://github.com/droidsam1/overreach/issues/341) can reuse the provider policy
+if the feature proceeds.
+
 ## Strength coverage
 
 | Source | Available | Limits |
