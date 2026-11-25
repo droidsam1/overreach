@@ -24,8 +24,9 @@ day gaps. Today only assesses the run when that projection has a heavy slot due 
 missing offer leaves the observed workout's suitability unassessed.
 
 A separate synthetic control puts the same run 20 hours before C and D with a stable projection, no previous
-heavy leg bout input and unknown readiness. The current rule reports close timing in both and offers a swap
-only for C. The control isolates the effect of close timing once a dated heavy slot exists.
+heavy leg bout input and unknown readiness. Before [#316](https://github.com/droidsam1/overreach/pull/316),
+the rule reported close timing in both and offered a swap for C. The current rule treats close timing as
+context, recommends keeping C in its planned slot and makes no offer for D.
 
 The athlete separately described two short running blocks followed by heavy, sore legs and a completed
 strength session. Keep this as a reported case with unknown timing and no linked recording. Validate that a
