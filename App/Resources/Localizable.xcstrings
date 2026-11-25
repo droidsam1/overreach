@@ -2908,6 +2908,23 @@
         }
       }
     },
+    "Clear sky": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cielo despejado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ceo despexado"
+          }
+        }
+      }
+    },
     "Clearer advice": {
       "extractionState": "manual",
       "localizations": {
@@ -2938,6 +2955,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pechar"
+          }
+        }
+      }
+    },
+    "Clouds": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nubes"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nubes"
           }
         }
       }
@@ -3125,6 +3159,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Completei a sesión que escollín"
+          }
+        }
+      }
+    },
+    "Conditions": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Condiciones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Condicións"
           }
         }
       }
@@ -3516,6 +3567,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non se puido comprobar o adestramento gardado. Téntao de novo."
+          }
+        }
+      }
+    },
+    "Could not clear the weather connection.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo quitar la conexión meteorológica."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido eliminar a conexión meteorolóxica."
           }
         }
       }
@@ -4111,6 +4179,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non se puideron gardar os axustes."
+          }
+        }
+      }
+    },
+    "Could not save the weather key.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo guardar la clave meteorológica."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non se puido gardar a clave meteorolóxica."
           }
         }
       }
@@ -5016,6 +5101,23 @@
         }
       }
     },
+    "Disconnect weather": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconectar el servicio meteorológico"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desconectar o servizo meteorolóxico"
+          }
+        }
+      }
+    },
     "Discuss it with an AI app": {
       "extractionState": "manual",
       "localizations": {
@@ -5284,6 +5386,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dobre progresión"
+          }
+        }
+      }
+    },
+    "Drizzle": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Llovizna"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orballo"
           }
         }
       }
@@ -5828,6 +5947,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "1RM estimada"
+          }
+        }
+      }
+    },
+    "Estimated hourly weather from OpenWeather": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiempo estimado por hora de OpenWeather"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo estimado por hora de OpenWeather"
           }
         }
       }
@@ -7409,6 +7545,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Como medir o esforzo"
+          }
+        }
+      }
+    },
+    "Humidity": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Humedad"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Humidade"
           }
         }
       }
@@ -12054,6 +12207,40 @@
         }
       }
     },
+    "OpenWeather": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenWeather"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenWeather"
+          }
+        }
+      }
+    },
+    "OpenWeather API key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave de API de OpenWeather"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave da API de OpenWeather"
+          }
+        }
+      }
+    },
     "Opens in the browser": {
       "extractionState": "manual",
       "localizations": {
@@ -13516,6 +13703,23 @@
         }
       }
     },
+    "Rain": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lluvia"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chuvia"
+          }
+        }
+      }
+    },
     "Raw data, no hidden instructions": {
       "extractionState": "manual",
       "localizations": {
@@ -13903,6 +14107,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vermello"
+          }
+        }
+      }
+    },
+    "Reduced visibility": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visibilidad reducida"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Visibilidade reducida"
           }
         }
       }
@@ -15658,6 +15879,23 @@
         }
       }
     },
+    "Save weather key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar la clave meteorológica"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gardar a clave meteorolóxica"
+          }
+        }
+      }
+    },
     "Save without counting them": {
       "extractionState": "manual",
       "localizations": {
@@ -16147,6 +16385,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Configurar"
+          }
+        }
+      }
+    },
+    "Set your OpenWeather One Call daily limit to 1,000 or fewer to avoid charges.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fija un límite diario de 1000 consultas o menos en OpenWeather One Call para evitar cargos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fixa un límite diario de 1000 consultas ou menos en OpenWeather One Call para evitar cargos."
           }
         }
       }
@@ -16861,6 +17116,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "O sono, as medicións cardíacas e como te sentes poden axudar a interpretar os cambios no teu adestramento."
+          }
+        }
+      }
+    },
+    "Snow": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nieve"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neve"
           }
         }
       }
@@ -18480,6 +18752,23 @@
         }
       }
     },
+    "Temperature": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temperatura"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temperatura"
+          }
+        }
+      }
+    },
     "Tempo run": {
       "extractionState": "manual",
       "localizations": {
@@ -19139,6 +19428,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carreira a ritmo limiar"
+          }
+        }
+      }
+    },
+    "Thunderstorms": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tormentas eléctricas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tormentas eléctricas"
           }
         }
       }
@@ -21013,6 +21319,57 @@
         }
       }
     },
+    "Weather": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiempo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo"
+          }
+        }
+      }
+    },
+    "Weather near the start": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiempo cerca de la salida"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo preto da saída"
+          }
+        }
+      }
+    },
+    "Weather uses the approximate area and time of eligible outdoor runs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El servicio meteorológico usa la zona aproximada y la hora de las carreras al aire libre compatibles."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O servizo meteorolóxico usa a zona aproximada e a hora das carreiras ao aire libre compatibles."
+          }
+        }
+      }
+    },
     "Week starting": {
       "extractionState": "manual",
       "localizations": {
@@ -21468,6 +21825,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Por que «{1}»?"
+          }
+        }
+      }
+    },
+    "Wind": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Viento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vento"
           }
         }
       }

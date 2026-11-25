@@ -215,6 +215,7 @@ struct RootView: View {
         .sheet(isPresented: garminSetupInApp) { GarminSetupView(model: garminModel) }
         .onChange(of: garminModel.connection?.lastSync) {
             if recoveryModel.hasLoaded { Task { await recoveryModel.load() } }
+            Task { await container.refreshRunWeather() }
         }
         .onChange(of: garminModel.isConnected) {
             // New Garmin data: Today shows it at once.
@@ -276,6 +277,13 @@ struct RootView: View {
                 Label("Exercises", systemImage: "figure.strengthtraining.traditional")
             }
             .badge(exercisesModel.needsMappingCount)
+            if let weatherModel = container.makeWeatherSettingsModel() {
+                NavigationLink {
+                    WeatherSettingsView(model: weatherModel)
+                } label: {
+                    Label("Weather", systemImage: "cloud.sun")
+                }
+            }
             NavigationLink {
                 TrainingProfileView(model: container.makeTrainingProfileModel()) {
                     Task { await todayModel.load() }
