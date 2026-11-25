@@ -67,6 +67,7 @@ struct HistoryWalkRow: View {
                 }
                 .frame(minHeight: 44)
             }
+            .buttonStyle(.borderless)
         }
     }
 

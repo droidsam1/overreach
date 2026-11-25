@@ -31,7 +31,10 @@ struct HistorySummaryTile: View {
     let value: Text
 
     var body: some View {
-        Card(radius: Radius.tile, padding: Spacing.small) {
+        Card(
+            surface: AnyShapeStyle(Color.secondary.opacity(0.12)),
+            radius: Radius.tile, padding: Spacing.small
+        ) {
             VStack(alignment: .leading, spacing: Spacing.xSmall) {
                 Text(label).font(.caption).foregroundStyle(.secondary)
                 value.font(.title3.weight(.heavy)).monospacedDigit()
