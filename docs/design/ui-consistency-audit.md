@@ -91,7 +91,7 @@ Epic: [#247](https://github.com/droidsam1/overreach/issues/247). Order is the or
 5. [#299](https://github.com/droidsam1/overreach/issues/299) Live session cards, rest timer, finish summary.
 6. [#301](https://github.com/droidsam1/overreach/issues/301) Plan two-level layout.
 7. [#302](https://github.com/droidsam1/overreach/issues/302) Status colours in Settings, Garmin, Exercises, Onboarding, Ask AI.
-8. [#303](https://github.com/droidsam1/overreach/issues/303) Recovery & Progress charts and cards (after #127).
+8. [#303](https://github.com/droidsam1/overreach/issues/303) Recovery & Progress charts and cards.
 9. [#304](https://github.com/droidsam1/overreach/issues/304) Plan detail screens (after #301).
 10. [#305](https://github.com/droidsam1/overreach/issues/305) Dynamic Type and touch targets (X8, X10).
 11. [#306](https://github.com/droidsam1/overreach/issues/306) VoiceOver labels (X9).
