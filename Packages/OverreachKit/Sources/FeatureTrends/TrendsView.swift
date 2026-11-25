@@ -196,9 +196,9 @@ private struct ReadingCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xSmall) {
-            HStack(alignment: .firstTextBaseline) {
+            AdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: Spacing.xSmall) {
                 Text(reading.title).font(.headline)
-                Spacer()
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 Text(reading.value)
                     .font(.headline)
                     .foregroundStyle(reading.isAvailable ? .primary : .secondary)

@@ -15,6 +15,9 @@ public struct GarminSetupView: View {
     @State private var appeared = false
     @Environment(\.openURL) private var openURL
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
+    @ScaledMetric(relativeTo: .largeTitle) private var heroSize: CGFloat = 72
+    @ScaledMetric(relativeTo: .headline) private var instructionBadgeSize: CGFloat = 28
 
     public init(model: GarminSetupModel) {
         self.model = model
@@ -127,15 +130,12 @@ public struct GarminSetupView: View {
             Text("The app checks it with Garmin, saves it in your Keychain and imports your last 60 days.")
                 .font(.title3).foregroundStyle(.secondary).multilineTextAlignment(.center)
             VStack(alignment: .leading, spacing: Spacing.small) {
-                Text("Expiry you chose").font(.headline)
-                Picker("Expiry you chose", selection: $model.lifetime) {
-                    Text("30 days").tag(GarminKeyLifetime.days30)
-                    Text("90 days").tag(GarminKeyLifetime.days90)
-                    Text("180 days").tag(GarminKeyLifetime.days180)
-                    Text("1 year").tag(GarminKeyLifetime.oneYear)
+                if typeSize.isAccessibilitySize {
+                    lifetimePicker.pickerStyle(.menu)
+                } else {
+                    Text("Expiry you chose").font(.headline)
+                    lifetimePicker.pickerStyle(.segmented)
                 }
-                .pickerStyle(.segmented)
-                .disabled(!model.canPaste)
                 Text("Used only to remind you before the key expires.")
                     .font(.caption).foregroundStyle(.secondary)
             }
@@ -151,7 +151,7 @@ public struct GarminSetupView: View {
                     .buttonBorderShape(.capsule)
                     .controlSize(.large)
                     .labelStyle(.titleAndIcon)
-                    HStack {
+                    AdaptiveStack {
                         TextField("Or type it here", text: $typedKey)
                             .textFieldStyle(.roundedBorder)
                             .font(.body.monospaced())
@@ -161,9 +161,14 @@ public struct GarminSetupView: View {
                             #endif
                             .submitLabel(.go)
                             .onSubmit { submitTypedKey() }
-                        Button("Connect", action: submitTypedKey)
-                            .buttonStyle(.bordered)
-                            .disabled(typedKey.isEmpty)
+                        Button(action: submitTypedKey) {
+                            Text("Connect")
+                                .frame(minHeight: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .disabled(typedKey.isEmpty)
                     }
                 }
             }
@@ -172,6 +177,16 @@ public struct GarminSetupView: View {
             }
             privacyNote
         }
+    }
+
+    private var lifetimePicker: some View {
+        Picker("Expiry you chose", selection: $model.lifetime) {
+            Text("30 days").tag(GarminKeyLifetime.days30)
+            Text("90 days").tag(GarminKeyLifetime.days90)
+            Text("180 days").tag(GarminKeyLifetime.days180)
+            Text("1 year").tag(GarminKeyLifetime.oneYear)
+        }
+        .disabled(!model.canPaste)
     }
 
     private var syncing: some View {
@@ -271,7 +286,7 @@ public struct GarminSetupView: View {
 
     private func hero(_ symbol: String) -> some View {
         Image(systemName: symbol)
-            .font(.system(size: 72, weight: .semibold))
+            .font(.system(size: heroSize, weight: .semibold))
             .symbolRenderingMode(.hierarchical)
             .foregroundStyle(.tint)
             .symbolEffect(.bounce, options: .nonRepeating, value: model.step)
@@ -291,7 +306,7 @@ public struct GarminSetupView: View {
             Text(verbatim: "\(number)")
                 .font(.headline.monospacedDigit())
                 .foregroundStyle(.white)
-                .frame(width: 28, height: 28)
+                .frame(width: instructionBadgeSize, height: instructionBadgeSize)
                 .background(Circle().fill(.tint))
                 .accessibilityHidden(true)
             Text(text)
