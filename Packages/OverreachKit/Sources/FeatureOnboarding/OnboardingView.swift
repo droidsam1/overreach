@@ -95,6 +95,7 @@ public struct OnboardingView: View {
             } label: {
                 Label("Setup options", systemImage: "ellipsis.circle")
                     .labelStyle(.iconOnly)
+                    .accessibilityLabel(Text("Setup options"))
             }
         }
     }

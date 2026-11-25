@@ -131,6 +131,7 @@ public struct ChoiceCard: View {
                         detail.font(.subheadline).foregroundStyle(.secondary)
                     }
                 }
+                .accessibilityElement(children: .combine)
                 Spacer(minLength: 0)
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.title2)

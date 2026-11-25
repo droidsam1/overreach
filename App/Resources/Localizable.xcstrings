@@ -188,6 +188,23 @@
         }
       }
     },
+    "1 session": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 sesión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 sesión"
+          }
+        }
+      }
+    },
     "1 year": {
       "extractionState": "manual",
       "localizations": {
@@ -6189,6 +6206,23 @@
         }
       }
     },
+    "Exercise name": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre del ejercicio"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome do exercicio"
+          }
+        }
+      }
+    },
     "Exercise options": {
       "extractionState": "manual",
       "localizations": {
@@ -6814,6 +6848,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Garmin non responde agora mesmo. Téntao de novo máis tarde; non se perdeu nada."
+          }
+        }
+      }
+    },
+    "Garmin key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave de Garmin"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave de Garmin"
           }
         }
       }
@@ -15569,6 +15620,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rutina"
+          }
+        }
+      }
+    },
+    "Routine name": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre de la rutina"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome da rutina"
           }
         }
       }
@@ -24562,6 +24630,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} carreiras · {2} km"
+          }
+        }
+      }
+    },
+    "{1} sessions": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} sesiones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} sesións"
           }
         }
       }

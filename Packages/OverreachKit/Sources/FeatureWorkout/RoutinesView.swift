@@ -137,6 +137,7 @@ struct RoutineEditorView: View {
                 }
                 Section {
                     TextField("Name", text: $model.name)
+                        .accessibilityLabel(Text("Routine name"))
                     Picker("Focus", selection: $model.focus) {
                         Text("Auto").tag(TrainingFocus?.none)
                         ForEach(model.focusOptions) { option in
@@ -201,7 +202,9 @@ private struct PlanCheckView: View {
             Label {
                 Text(check.text).font(.subheadline.weight(.semibold))
             } icon: {
-                Image(systemName: "lightbulb.fill").foregroundStyle(.orange)
+                Image(systemName: "lightbulb.fill")
+                    .foregroundStyle(.orange)
+                    .accessibilityHidden(true)
             }
             Text(check.reason)
                 .font(.footnote)

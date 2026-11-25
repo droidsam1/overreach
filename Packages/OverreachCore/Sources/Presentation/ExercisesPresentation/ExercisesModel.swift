@@ -12,6 +12,10 @@ public struct ExerciseRow: Identifiable, Hashable, Sendable {
     public let muscles: String
     public let needsMuscles: Bool
     public let sessionCount: Int
+
+    public var sessionCountAccessibilityText: String {
+        sessionCount == 1 ? L10n.text("1 session") : L10n.format("{1} sessions", sessionCount.formatted())
+    }
 }
 
 /// The exercise list and muscle mapping (issue #13). Imported exercises that are not in the catalog have no

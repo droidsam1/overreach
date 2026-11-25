@@ -37,6 +37,7 @@ struct NewExerciseForm: View {
             }
             Section {
                 TextField("Name", text: $model.name)
+                    .accessibilityLabel(Text("Exercise name"))
                     .focused($isNameFocused)
                     .submitLabel(.done)
                 if let existing = model.existing, let existingNotice = model.existingNotice {
