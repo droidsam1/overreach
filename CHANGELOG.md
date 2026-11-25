@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Weather has a provider picker: Open-Meteo (no key, account or card; the default for new installs), OpenWeather One
+  Call or an OpenWeather free key (3-hour steps, no past-run weather). Each option lists its setup, card, resolution,
+  past-run and terms limits, has its own onboarding, links its attribution on Today and History, and switching clears
+  the saved forecast but keeps the OpenWeather key. Installs with an OpenWeather key keep it (#372, #373, #374).
 - Weather settings show a masked "API key saved" state with Replace key and Disconnect, and a four-step guide to
   getting an OpenWeather key that checks it before saving (#362, #363).
 - The Today weather button is grey until weather is set up, then shows a coloured condition icon with the

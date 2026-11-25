@@ -12,7 +12,7 @@ struct TodayForecastView<Settings: View>: View {
                 forecast
             } else {
                 Section {
-                    Text("Connect OpenWeather to see an hourly forecast for running and walks.")
+                    Text("Choose a weather provider to see a forecast for running and walks.")
                     NavigationLink {
                         settings()
                     } label: {
@@ -43,9 +43,12 @@ struct TodayForecastView<Settings: View>: View {
                 Section("Hourly forecast") {
                     ForEach(model.hours) { hour in hourRow(hour) }
                 }
-                if let url = TodayForecastModel.attributionURL {
-                    Section {
-                        Link("Weather data from OpenWeather", destination: url)
+                Section {
+                    if let note = model.resolutionNote {
+                        Text(verbatim: note).foregroundStyle(.secondary)
+                    }
+                    if let url = model.attributionURL {
+                        Link(destination: url) { Text(verbatim: model.attributionTitle) }
                     }
                 }
             }

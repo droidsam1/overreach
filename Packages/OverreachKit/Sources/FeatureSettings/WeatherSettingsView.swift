@@ -14,26 +14,30 @@ public struct WeatherSettingsView: View {
 
     public var body: some View {
         Form {
+            if model.canChooseProvider {
+                providerPicker
+            }
             Section {
                 Text("Weather uses the approximate area and time of eligible outdoor runs.")
-                Text("Set your OpenWeather One Call daily limit to 1,000 or fewer to avoid charges.")
-                if model.showsKeyField {
-                    if model.connection == .disconnected {
-                        Button {
-                            onboarding = model.makeOnboarding()
-                        } label: {
-                            Label("Set up with a guide", systemImage: "list.number")
-                        }
+                ForEach(model.limitations) { limitation in
+                    LabeledContent {
+                        Text(verbatim: limitation.detail).multilineTextAlignment(.trailing)
+                    } label: {
+                        Text(verbatim: limitation.title)
                     }
-                    keyEntry
-                } else {
-                    connected
-                }
-                if let error = model.errorMessage {
-                    Text(error).foregroundStyle(.secondary)
                 }
             } header: {
-                Text("OpenWeather")
+                Text("What to expect")
+            }
+            if model.showsKeySection {
+                keySection
+            } else {
+                openMeteoSection
+            }
+            if let url = model.attributionURL {
+                Section {
+                    Link(destination: url) { Text(verbatim: model.attributionTitle) }
+                }
             }
         }
         .navigationTitle("Weather")
@@ -43,6 +47,75 @@ public struct WeatherSettingsView: View {
             onDismiss: { Task { await model.load() } },
             content: { onboarding in WeatherOnboardingView(model: onboarding) }
         )
+    }
+
+    private var providerPicker: some View {
+        Section {
+            ForEach(model.providerOptions) { option in
+                Button {
+                    Task { await model.selectProvider(option.provider) }
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                            Text(verbatim: option.title).foregroundStyle(.primary)
+                            Text(verbatim: option.summary).font(.footnote).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if option.isSelected {
+                            Image(systemName: "checkmark").foregroundStyle(StatusTone.positive.color)
+                        }
+                    }
+                }
+                .accessibilityAddTraits(option.isSelected ? .isSelected : [])
+            }
+        } header: {
+            Text("Provider")
+        } footer: {
+            Text("Switching provider clears the saved forecast. A saved OpenWeather key stays until you disconnect.")
+        }
+    }
+
+    @ViewBuilder private var openMeteoSection: some View {
+        Section {
+            if model.needsOpenMeteoConfirmation {
+                Button {
+                    onboarding = model.makeOnboarding()
+                } label: {
+                    Label("Use Open-Meteo", systemImage: "checkmark.shield")
+                }
+            } else {
+                Label("Open-Meteo is connected", systemImage: "checkmark.circle.fill")
+                    .foregroundStyle(StatusTone.positive.color)
+            }
+        }
+    }
+
+    @ViewBuilder private var keySection: some View {
+        Section {
+            if model.provider == .openWeatherOneCall {
+                Text("Set your OpenWeather One Call daily limit to 1,000 or fewer to avoid charges.")
+            }
+            if let note = model.modeNote {
+                Text(verbatim: note).foregroundStyle(.secondary)
+            }
+            if model.showsKeyField {
+                if model.connection == .disconnected {
+                    Button {
+                        onboarding = model.makeOnboarding()
+                    } label: {
+                        Label("Set up with a guide", systemImage: "list.number")
+                    }
+                }
+                keyEntry
+            } else {
+                connected
+            }
+            if let error = model.errorMessage {
+                Text(error).foregroundStyle(.secondary)
+            }
+        } header: {
+            Text("OpenWeather")
+        }
     }
 
     private var trimmedKey: String { key.trimmingCharacters(in: .whitespacesAndNewlines) }

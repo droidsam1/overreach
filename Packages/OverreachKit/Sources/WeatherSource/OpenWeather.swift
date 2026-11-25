@@ -4,26 +4,30 @@ import WeatherImport
 
 public enum OpenWeather {
     public static func makeService() -> OpenWeatherService {
-        let root = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        let cache = root.appending(path: "OverreachWeather").appending(path: "cache.json")
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.timeoutIntervalForRequest = 10
-        let session = URLSession(configuration: configuration)
-        return OpenWeatherService(
-            cacheFile: cache,
+        OpenWeatherService(
+            cacheFile: cacheFolder().appending(path: "cache.json"),
             readKey: { readKey() },
             writeKey: { try writeKey($0) },
-            request: { url in
-                guard let (data, response) = try? await session.data(from: url),
-                      let status = (response as? HTTPURLResponse)?.statusCode else { return .unavailable }
-                switch status {
-                case 200: return .data(data)
-                case 401: return .rejected
-                case 403, 429: return .backOff
-                default: return .unavailable
-                }
-            }
+            request: request
         )
+    }
+
+    static func cacheFolder() -> URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appending(path: "OverreachWeather")
+    }
+
+    static let request: @Sendable (URL) async -> OpenWeatherService.Response = { url in
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.timeoutIntervalForRequest = 10
+        guard let (data, response) = try? await URLSession(configuration: configuration).data(from: url),
+              let status = (response as? HTTPURLResponse)?.statusCode else { return .unavailable }
+        switch status {
+        case 200: return .data(data)
+        case 401: return .rejected
+        case 403, 429: return .backOff
+        default: return .unavailable
+        }
     }
 
     private static func keychainQuery() -> [String: Any] {

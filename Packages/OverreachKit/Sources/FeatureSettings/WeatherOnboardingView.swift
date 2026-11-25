@@ -50,6 +50,13 @@ struct WeatherOnboardingView: View {
             .buttonStyle(.bordered)
         case .pasteAndSave:
             keyEntry
+        case .confirmOpenMeteo:
+            Button("Use Open-Meteo") { Task { await model.confirmOpenMeteo() } }
+                .buttonStyle(.borderedProminent)
+                .disabled(!model.canConfirm)
+            if let url = model.attributionURL {
+                Link(destination: url) { Text(verbatim: model.attributionTitle) }
+            }
         }
     }
 
@@ -85,6 +92,9 @@ struct WeatherOnboardingView: View {
                 Image(systemName: "checkmark.circle.fill").foregroundStyle(StatusTone.positive.color)
             }
             .accessibilityElement(children: .combine)
+            if let note = model.note {
+                Text(verbatim: note).foregroundStyle(.secondary)
+            }
         case let .failed(message):
             Label {
                 Text(verbatim: message)
