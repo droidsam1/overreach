@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- The timing evidence review now covers long-term prevention: exercise hour and disease risk (no preferred time, cohorts
+  disagree), weekend-warrior patterns (never a fault), consistent training time (habit, not circadian) and meal timing,
+  with a health-lens test in the design note and an ADR-0045 amendment.
 - Evidence review of sleep and training timing (zeitgebers): regular sleep, social jetlag, evening exercise and
   exercise phase shifts, with five register entries, ADR-0045 and a design note. `CircadianTiming` computes usual
   bedtime, wake and training times and returns neutral insights; it is not yet shown in the app (#347).
