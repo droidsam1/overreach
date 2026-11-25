@@ -19,6 +19,8 @@ The goal is a better environment for the next agent run, not a judgement of the 
      session's cost and where it went: re-reading context, cache writes or output.
    - When logs are out of reach, use the trail in git and GitHub: fix-up and "make mergeable" commits, merge
      commits, reverts, `gh pr view --comments`, `gh run list --status failure`.
+   For Codex delegation cost, run `python3 scripts/session-usage.py --thread <ID>`. Compare cached input, new
+   input, output, models and CI commands by agent. Use recorded token counts as usage indicators, not a bill.
    Done when you can name, for each session, what it set out to do and where it lost time.
 3. Find candidates in each category. Cite the evidence (session and turn, or commit) for every one.
    - **Navigation** — the agent searched for a file, command or doc. Fix: a pointer in `AGENTS.md` or a doc.
