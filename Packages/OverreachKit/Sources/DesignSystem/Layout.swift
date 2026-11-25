@@ -74,16 +74,20 @@ public struct ListEmptyState: View {
     private let query: String
     private let title: LocalizedStringKey
     private let systemImage: String
+    private let description: Text?
 
-    public init(query: String, title: LocalizedStringKey, systemImage: String) {
+    public init(
+        query: String = "", title: LocalizedStringKey, systemImage: String, description: Text? = nil
+    ) {
         self.query = query
         self.title = title
         self.systemImage = systemImage
+        self.description = description
     }
 
     public var body: some View {
         if query.isEmpty {
-            ContentUnavailableView(title, systemImage: systemImage)
+            ContentUnavailableView(title, systemImage: systemImage, description: description)
         } else {
             ContentUnavailableView.search(text: query)
         }

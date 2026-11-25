@@ -29,8 +29,8 @@ public struct LinkTile: View {
         }
         .frame(maxWidth: .infinity, minHeight: max(height, 44), alignment: .leading)
         .padding(Spacing.small + Spacing.xSmall)
-        .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
-        .contentShape(.rect(cornerRadius: Radius.card))
+        .background(.background.secondary, in: .rect(cornerRadius: Radius.tile))
+        .contentShape(.rect(cornerRadius: Radius.tile))
         .accessibilityElement(children: .combine)
     }
 }

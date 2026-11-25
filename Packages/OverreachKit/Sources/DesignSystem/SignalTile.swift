@@ -48,13 +48,13 @@ public struct SignalTile<Accessory: View>: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Spacing.small + Spacing.xSmall)
-            .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.card))
+            .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.tile))
             .overlay {
                 if emphasized {
-                    RoundedRectangle(cornerRadius: Radius.card).stroke(tone.accent, lineWidth: 1.5)
+                    RoundedRectangle(cornerRadius: Radius.tile).stroke(tone.accent, lineWidth: 1.5)
                 }
             }
-            .contentShape(.rect(cornerRadius: Radius.card))
+            .contentShape(.rect(cornerRadius: Radius.tile))
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)

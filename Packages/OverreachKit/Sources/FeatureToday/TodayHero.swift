@@ -28,8 +28,8 @@ struct ToneButtonStyle: ButtonStyle {
             .padding(.horizontal, Spacing.medium)
             .padding(.vertical, Spacing.small)
             .frame(maxWidth: .infinity, minHeight: 48)
-            .background(tone.accent.opacity(configuration.isPressed ? 0.8 : 1), in: .rect(cornerRadius: Radius.card))
-            .contentShape(.rect(cornerRadius: Radius.card))
+            .background(tone.accent.opacity(configuration.isPressed ? 0.8 : 1), in: .rect(cornerRadius: Radius.tile))
+            .contentShape(.rect(cornerRadius: Radius.tile))
             .opacity(isEnabled ? 1 : 0.5)
     }
 }
@@ -54,19 +54,17 @@ struct TodayHero<Action: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.medium) {
-            summary
-            if let done {
-                TodayDoneSummary(done: done, tone: tone)
-            } else {
-                signals
-                action
+        Card(tone: tone) {
+            VStack(alignment: .leading, spacing: Spacing.medium) {
+                summary
+                if let done {
+                    TodayDoneSummary(done: done, tone: tone)
+                } else {
+                    signals
+                    action
+                }
             }
         }
-        .padding(Spacing.medium)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tone.surface, in: .rect(cornerRadius: HeroMetrics.radius))
-        .overlay { RoundedRectangle(cornerRadius: HeroMetrics.radius).stroke(tone.border, lineWidth: 1) }
         .haptic(.completed, trigger: celebrates) { _, new in new }
         .onAppear(perform: celebrateFirstTime)
     }
@@ -138,21 +136,20 @@ struct TodayHero<Action: View>: View {
 /// A card of the same size while Today loads, so the screen does not jump when the verdict arrives.
 struct TodayHeroPlaceholder: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.medium) {
-            HStack(alignment: .top, spacing: Spacing.medium) {
-                Circle().frame(width: 88, height: 88)
-                VStack(alignment: .leading, spacing: Spacing.small) {
-                    Text(verbatim: String(repeating: "•", count: 6))
-                    Text(verbatim: String(repeating: "•", count: 20)).font(.title2.weight(.heavy))
-                    Text(verbatim: String(repeating: "•", count: 48)).font(.subheadline)
+        Card(tone: .neutral) {
+            VStack(alignment: .leading, spacing: Spacing.medium) {
+                HStack(alignment: .top, spacing: Spacing.medium) {
+                    Circle().frame(width: 88, height: 88)
+                    VStack(alignment: .leading, spacing: Spacing.small) {
+                        Text(verbatim: String(repeating: "•", count: 6))
+                        Text(verbatim: String(repeating: "•", count: 20)).font(.title2.weight(.heavy))
+                        Text(verbatim: String(repeating: "•", count: 48)).font(.subheadline)
+                    }
                 }
+                RoundedRectangle(cornerRadius: Radius.tile).frame(height: 96)
+                RoundedRectangle(cornerRadius: Radius.tile).frame(height: 48)
             }
-            RoundedRectangle(cornerRadius: Radius.card).frame(height: 96)
-            RoundedRectangle(cornerRadius: Radius.card).frame(height: 48)
         }
-        .padding(Spacing.medium)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(StatusTone.neutral.surface, in: .rect(cornerRadius: HeroMetrics.radius))
         .redacted(reason: .placeholder)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text("Loading Today…"))
@@ -161,8 +158,6 @@ struct TodayHeroPlaceholder: View {
 }
 
 enum HeroMetrics {
-    /// Corner radius of the hero card (spec: 24).
-    static let radius: CGFloat = 24
     /// `UserDefaults` key of the last day the done state was celebrated (per device, not in backups).
     static let celebratedDayKey = "today.donecelebrated.day"
 }

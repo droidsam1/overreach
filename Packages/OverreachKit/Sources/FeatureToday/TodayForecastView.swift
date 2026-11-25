@@ -30,7 +30,7 @@ struct TodayForecastView<Settings: View>: View {
         if model.area != nil {
             if model.hours.isEmpty {
                 if model.isLoading {
-                    ProgressView("Loading…")
+                    LoadingState("Loading…")
                 } else {
                     Text("The forecast is unavailable. Try refreshing later.")
                 }
@@ -54,7 +54,7 @@ struct TodayForecastView<Settings: View>: View {
                 Label("Use my approximate location", systemImage: "location")
             }
             .disabled(model.isLocating)
-            if model.isLocating { ProgressView("Finding your area…") }
+            if model.isLocating { LoadingState("Finding your area…") }
             if model.locationUnavailable {
                 Text("Location unavailable. Check location access in iPhone Settings and try again.")
                     .foregroundStyle(.secondary)

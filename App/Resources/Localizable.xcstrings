@@ -3078,23 +3078,6 @@
         }
       }
     },
-    "Coming in phase %lld.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Llegará en la fase %lld."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chegará na fase %lld."
-          }
-        }
-      }
-    },
     "Coming months": {
       "extractionState": "manual",
       "localizations": {
@@ -6049,6 +6032,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Equipamento"
+          }
+        }
+      }
+    },
+    "Error": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erro"
           }
         }
       }
@@ -18650,6 +18650,23 @@
         }
       }
     },
+    "Success": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correcto"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Correcto"
+          }
+        }
+      }
+    },
     "Suggested for {1}:": {
       "extractionState": "manual",
       "localizations": {
@@ -21672,6 +21689,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quecemento: {1} series de poucas repeticións, de lixeiro a preto do peso de hoxe, para comezar as series de traballo preparado pero fresco. Non contan para o teu progreso. ({2})"
+          }
+        }
+      }
+    },
+    "Warning": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aviso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aviso"
           }
         }
       }

@@ -457,7 +457,7 @@ public struct TodayView: View {
         case .continueWorkout, .train:
             actionButton(Text(title), symbol: "dumbbell", prominent: true, action: onOpenTrain)
         case .loading:
-            ProgressView("Loading Today…")
+            LoadingState("Loading Today…")
         case let .startStrength(routine):
             actionButton(Text(title), symbol: "dumbbell", prominent: true) {
                 startRecommendedStrength(routine)
@@ -533,7 +533,16 @@ public struct TodayView: View {
     }
 
     /// A deload proposal with its reasons and the plan, or the deload week in progress.
-    private func deload(_ advice: DeloadAdvice, primaryTitle: String? = nil) -> some View {
+    @ViewBuilder private func deload(_ advice: DeloadAdvice, primaryTitle: String? = nil) -> some View {
+        if let primaryTitle {
+            deloadContent(advice, primaryTitle: primaryTitle)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            Card(radius: Radius.tile) { deloadContent(advice, primaryTitle: nil) }
+        }
+    }
+
+    private func deloadContent(_ advice: DeloadAdvice, primaryTitle: String?) -> some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
             switch advice.state {
             case let .proposed(explanation):
@@ -571,11 +580,6 @@ public struct TodayView: View {
                 }
                 .buttonStyle(.bordered)
             }
-        }
-        .padding(primaryTitle == nil ? Spacing.medium : 0)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background {
-            if primaryTitle == nil { RoundedRectangle(cornerRadius: Radius.card).fill(.background.secondary) }
         }
     }
 
@@ -879,9 +883,9 @@ struct PreviewMetricsSource: MetricsSource {
         .preferredColorScheme(.dark)
 }
 
-#Preview("Green · Large text in dark mode") {
+#Preview("Green · Largest text in dark mode") {
     TodayView(model: TodayModel(sources: [PreviewMetricsSource(recentHRV: 43)]))
-        .environment(\.dynamicTypeSize, .accessibility3)
+        .environment(\.dynamicTypeSize, .accessibility5)
         .preferredColorScheme(.dark)
 }
 #endif

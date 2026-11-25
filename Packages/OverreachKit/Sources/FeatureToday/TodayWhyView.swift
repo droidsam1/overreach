@@ -150,7 +150,7 @@ struct TodayWhyView<Extra: View>: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(Spacing.small + Spacing.xSmall)
-                    .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.card))
+                    .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.tile))
                     .accessibilityElement(children: .combine)
                 }
             }
@@ -184,7 +184,7 @@ struct TodayWhyView<Extra: View>: View {
         }
         .padding(.horizontal, Spacing.medium)
         .padding(.vertical, Spacing.xSmall)
-        .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.card))
+        .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.tile))
     }
 
     private func detail(_ row: TodayWhy.Row) -> some View {
@@ -252,14 +252,11 @@ extension View {
 private extension View {
     /// The card style of the Why screen: the neutral tile, or an accent border for a reason.
     func whyCard(tone: StatusTone = .neutral) -> some View {
-        padding(Spacing.medium)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.card))
-            .overlay {
-                if tone != .neutral {
-                    RoundedRectangle(cornerRadius: Radius.card).stroke(tone.accent.opacity(0.6), lineWidth: 1)
-                }
-            }
+        Card(
+            surface: AnyShapeStyle(Color.secondary.opacity(0.12)),
+            border: tone == .neutral ? .clear : tone.accent.opacity(0.6),
+            radius: Radius.tile
+        ) { self }
     }
 
     @ViewBuilder func inlineNavigationTitle() -> some View {

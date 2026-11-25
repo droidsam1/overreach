@@ -12,22 +12,21 @@ hybrid athlete. The device and external review steps below have their own accept
 
 ## Ready to implement
 
-1. [#296](https://github.com/droidsam1/overreach/issues/296) — DesignSystem: Card, SectionHeader, IconTile, InlineNotice, LoadingState and radius tokens.
-2. [#297](https://github.com/droidsam1/overreach/issues/297) — Train, History, Plan: replace ad-hoc status colours with InlineNotice.
-3. [#298](https://github.com/droidsam1/overreach/issues/298) — Train: start screen as hero card with one verb and routine cards.
-4. [#300](https://github.com/droidsam1/overreach/issues/300) — History: cards, summary-first details and shared empty states.
-5. [#299](https://github.com/droidsam1/overreach/issues/299) — Train: exercise cards in the live session, compact rest timer, Today-style finish summary.
-6. [#301](https://github.com/droidsam1/overreach/issues/301) — Plan: two-level layout with hero, week strip and link tiles.
-7. [#302](https://github.com/droidsam1/overreach/issues/302) — Settings, Garmin, Exercises, Onboarding, Ask AI: tone badges and InlineNotice.
-8. [#303](https://github.com/droidsam1/overreach/issues/303) — Recovery & Progress: SignalTrendChart and Why-style signal cards.
-9. [#304](https://github.com/droidsam1/overreach/issues/304) — Plan detail screens: use DesignSystem calendar, bars and charts.
-10. [#305](https://github.com/droidsam1/overreach/issues/305) — Dynamic Type and touch targets outside Today.
-11. [#306](https://github.com/droidsam1/overreach/issues/306) — VoiceOver labels for Exercises, Onboarding, Settings, Garmin setup and forms.
-12. [#307](https://github.com/droidsam1/overreach/issues/307) — Haptics for save, confirm and check-in feedback.
-13. [#308](https://github.com/droidsam1/overreach/issues/308) — Titles: large on tab roots, inline on pushed screens.
-14. [#347](https://github.com/droidsam1/overreach/issues/347) — Recovery: sleep and training timing card (ADR-0045).
-15. [#348](https://github.com/droidsam1/overreach/issues/348) — AI context: include sleep and training timing.
-16. [#351](https://github.com/droidsam1/overreach/issues/351) — CircadianTiming: regularity from sleep midpoint and wake time.
+1. [#297](https://github.com/droidsam1/overreach/issues/297) — Train, History, Plan: replace ad-hoc status colours with InlineNotice.
+2. [#298](https://github.com/droidsam1/overreach/issues/298) — Train: start screen as hero card with one verb and routine cards.
+3. [#300](https://github.com/droidsam1/overreach/issues/300) — History: cards, summary-first details and shared empty states.
+4. [#299](https://github.com/droidsam1/overreach/issues/299) — Train: exercise cards in the live session, compact rest timer, Today-style finish summary.
+5. [#301](https://github.com/droidsam1/overreach/issues/301) — Plan: two-level layout with hero, week strip and link tiles.
+6. [#302](https://github.com/droidsam1/overreach/issues/302) — Settings, Garmin, Exercises, Onboarding, Ask AI: tone badges and InlineNotice.
+7. [#303](https://github.com/droidsam1/overreach/issues/303) — Recovery & Progress: SignalTrendChart and Why-style signal cards.
+8. [#304](https://github.com/droidsam1/overreach/issues/304) — Plan detail screens: use DesignSystem calendar, bars and charts.
+9. [#305](https://github.com/droidsam1/overreach/issues/305) — Dynamic Type and touch targets outside Today.
+10. [#306](https://github.com/droidsam1/overreach/issues/306) — VoiceOver labels for Exercises, Onboarding, Settings, Garmin setup and forms.
+11. [#307](https://github.com/droidsam1/overreach/issues/307) — Haptics for save, confirm and check-in feedback.
+12. [#308](https://github.com/droidsam1/overreach/issues/308) — Titles: large on tab roots, inline on pushed screens.
+13. [#347](https://github.com/droidsam1/overreach/issues/347) — Recovery: sleep and training timing card (ADR-0045).
+14. [#348](https://github.com/droidsam1/overreach/issues/348) — AI context: include sleep and training timing.
+15. [#351](https://github.com/droidsam1/overreach/issues/351) — CircadianTiming: regularity from sleep midpoint and wake time.
 
 ## Needs a person or an iPhone
 

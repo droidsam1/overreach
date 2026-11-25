@@ -74,13 +74,13 @@ public struct AnswerScale: View {
             .frame(maxWidth: .infinity, minHeight: 64)
             .padding(.vertical, Spacing.small)
             .background(
-                isSelected ? tone.surface : Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.card)
+                isSelected ? tone.surface : Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.tile)
             )
             .overlay {
-                RoundedRectangle(cornerRadius: Radius.card)
+                RoundedRectangle(cornerRadius: Radius.tile)
                     .strokeBorder(isSelected ? tone.accent : .clear, lineWidth: 2)
             }
-            .contentShape(.rect(cornerRadius: Radius.card))
+            .contentShape(.rect(cornerRadius: Radius.tile))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(option.label)
