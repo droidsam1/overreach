@@ -69,6 +69,8 @@ public struct SessionDetail: Sendable {
     public let name: String
     public let startedAt: Date
     public let durationSeconds: TimeInterval?
+    public let workingSets: String
+    public let volume: String
     public let focus: String?
     public let notes: String?
     public let entries: [Entry]
@@ -461,6 +463,8 @@ public final class HistoryModel {
             name: session.name,
             startedAt: session.startedAt,
             durationSeconds: session.durationSeconds,
+            workingSets: detailsSummary.workingSets.formatted(.number.locale(format.locale)),
+            volume: format.weight(detailsSummary.tonnageKg, maxFractionDigits: 0),
             focus: session.focus?.displayName,
             notes: session.notes,
             entries: session.entries.map { entry in

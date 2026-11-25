@@ -7,6 +7,10 @@ public struct HistoryWalk: Identifiable, Sendable {
     let sources: [DataSourceKind]
     public let title = L10n.text("Walking")
     public let detail: String
+    public let distance: String?
+
+    public var startedAt: Date { walk.start }
+    public var durationSeconds: TimeInterval { walk.durationSeconds }
 
     public var id: WalkKey { WalkKey(walk) }
     public var sourceText: String { sources.map(\.displayName).joined(separator: " · ") }
@@ -14,6 +18,7 @@ public struct HistoryWalk: Identifiable, Sendable {
     init(_ walk: WalkBout, sources: [DataSourceKind], calendar: Calendar, format: Format) {
         self.walk = walk
         self.sources = sources
+        distance = walk.distanceMeters.map { format.number($0 / 1_000, maxFractionDigits: 2) + " km" }
         let style = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
         let when = walk.start.formatted(style.day().month().year().hour().minute())
         let minutes = format.number((walk.durationSeconds / 60).rounded(), maxFractionDigits: 0)

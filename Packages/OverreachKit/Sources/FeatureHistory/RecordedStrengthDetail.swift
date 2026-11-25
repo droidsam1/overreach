@@ -32,18 +32,16 @@ struct RecordedStrengthDetail: View {
 
     var body: some View {
         List {
+            HistorySummaryCard(date: recording.startedAt) {
+                HistorySummaryTile(
+                    label: "Duration",
+                    value: Text(Duration.seconds(recording.durationSeconds),
+                                format: .units(allowed: [.hours, .minutes], width: .abbreviated))
+                )
+            }
             Section {
-                LabeledContent("Date") {
-                    Text(recording.startedAt, format: .dateTime.weekday().day().month().year().hour().minute())
-                }
-                LabeledContent("Duration") {
-                    Text(
-                        Duration.seconds(recording.durationSeconds),
-                        format: .units(allowed: [.hours, .minutes], width: .abbreviated)
-                    )
-                }
-            } footer: {
                 Text(recording.subtitle)
+                    .foregroundStyle(.secondary)
             }
             RecordedStrengthMetrics(recording: recording)
             Section {
