@@ -418,6 +418,28 @@ struct GarminServiceTests {
         #expect(try await service.runs(from: .distantPast, to: .distantFuture) == [newerRun])
     }
 
+    @Test func aCacheWithoutElapsedMetadataRefreshesActivityHistoryOnce() async throws {
+        let garmin = FakeGarmin()
+        let cache = MemoryCache()
+        let today = CalendarDay(fixtureNow, calendar: utcCalendar)
+        await cache.save(GarminCache(lastSync: fixtureNow, lastSyncedDay: today))
+        let service = makeService(garmin: garmin, cache: cache)
+        try await service.connect(key: "valid-key-0123456789", lifetime: .oneYear)
+
+        _ = try await service.sync { _ in }
+        let initial = await garmin.requests.filter { $0.path.hasPrefix("/activitylist-service") }
+        let historyStart = today.adding(days: 1 - GarminSyncPlan.firstSyncDays, calendar: utcCalendar)
+        #expect(initial.first?.path.contains("startDate=\(historyStart)") == true)
+        let stored = try #require(await cache.cache)
+        #expect(stored.refreshedRunPerformanceMetadata == true)
+        #expect(stored.runs.first { $0.id == "10000004" }?.elapsedSeconds == 1625.702)
+
+        _ = try await service.sync { _ in }
+        let activityRequests = await garmin.requests.filter { $0.path.hasPrefix("/activitylist-service") }
+        let recentStart = today.adding(days: 1 - GarminSyncPlan.activityRefetchDays, calendar: utcCalendar)
+        #expect(activityRequests.last?.path.contains("startDate=\(recentStart)") == true)
+    }
+
     @Test func lapsAreFetchedForRecentRunsOnlyOnceAndKeptAcrossSyncs() async throws {
         let garmin = FakeGarmin()
         let cache = MemoryCache()
@@ -548,7 +570,7 @@ actor ProgressRecorder {
     }
 }
 
-/// The key is personal (Supplemental Terms §1, ADR-0022): it lives only in the secret store and goes only to the
+/// The key is personal (Supplemental Terms Â§1, ADR-0022): it lives only in the secret store and goes only to the
 /// token endpoint. These tests fail if any other path starts carrying it.
 @Suite("The Garmin key never leaves secure storage")
 struct GarminKeyContainmentTests {

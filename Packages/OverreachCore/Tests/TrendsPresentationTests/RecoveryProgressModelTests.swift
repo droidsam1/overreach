@@ -34,6 +34,17 @@ private struct WalksSource: ActivitySource {
     }
 }
 
+private actor EditableRunsSource: MetricsSource {
+    nonisolated let kind = DataSourceKind.appleHealth
+    private var activities: [RunActivity]
+
+    init(_ activities: [RunActivity]) { self.activities = activities }
+    func isAvailable() async -> Bool { true }
+    func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics] { [] }
+    func runs(from start: Date, to end: Date) async throws -> [RunActivity] { activities }
+    func replace(with activities: [RunActivity]) { self.activities = activities }
+}
+
 private enum SourceError: Error, LocalizedError {
     case offline
     var errorDescription: String? { "Offline" }
@@ -183,6 +194,33 @@ struct RecoveryProgressModelTests {
 
         let movement = model.loadRows.first { $0.kind == .movement }
         #expect(movement?.details.contains("Walking today: 60 min. Usually 30 min a day.") == true)
+    }
+
+    @Test func runningProgressRefreshesAndRetainsTheSourceSession() async {
+        let recent = RunActivity(
+            id: "recent", source: .appleHealth, startedAt: now.addingTimeInterval(-86_400),
+            durationSeconds: 1_400, distanceMeters: 5_000, elapsedSeconds: 1_500, kind: .training
+        )
+        let previous = RunActivity(
+            id: "previous", source: .appleHealth, startedAt: now.addingTimeInterval(-35 * 86_400),
+            durationSeconds: 1_600, distanceMeters: 5_000, elapsedSeconds: 1_600, kind: .training
+        )
+        let source = EditableRunsSource([recent, previous, recent])
+        let model = RecoveryProgressModel(sources: [source], calendar: calendar)
+        model.performanceRange = .days30
+        await model.load(now: now)
+        let initial = model.runningPerformance.first { $0.id == "training" }
+        #expect(model.showsProgress)
+        #expect(initial?.best?.id == .run(recent))
+        #expect(initial?.best?.valueText == "25:00")
+        #expect(initial?.comparison == "Median change −1:40 · Sessions this period 1 · Previous period 1")
+        #expect(model.comparableHeartRate == nil)
+
+        await source.replace(with: [previous])
+        await model.load(now: now)
+        #expect(model.runningPerformance.first { $0.id == "training" }?.best == nil)
+        model.performanceRange = .days90
+        #expect(model.runningPerformance.first { $0.id == "training" }?.best?.id == .run(previous))
     }
 
     @Test func withoutTrainingTheLoadSectionIsEmpty() async {

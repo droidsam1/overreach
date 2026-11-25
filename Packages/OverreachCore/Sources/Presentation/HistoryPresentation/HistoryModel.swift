@@ -302,6 +302,11 @@ public final class HistoryModel {
         dogRunAnswers.record(withDog, for: run.companionKey, linked: run.match)
     }
 
+    public func runDetail(for run: RunActivity) -> HistoryRunActivity {
+        let id = "\(run.source.rawValue):\(run.id)"
+        return runLines.first { $0.id == id } ?? HistoryRunActivity(run, sources: [run.source], format: format)
+    }
+
     private func resolveRuns() {
         let result = RunDeduplication.resolve(runOriginals, choices: runChoices)
         runLines = result.runs

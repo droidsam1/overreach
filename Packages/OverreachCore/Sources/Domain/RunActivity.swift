@@ -8,6 +8,10 @@ public enum DataSourceKind: String, Codable, Sendable, CaseIterable {
 /// A run, imported from Apple Health or Garmin Connect. All metrics beyond the basics are optional
 /// because they depend on the watch model and the source.
 public struct RunActivity: Identifiable, Hashable, Codable, Sendable {
+    public enum Kind: String, Hashable, Codable, Sendable, CaseIterable {
+        case race, training, treadmill, unknown
+    }
+
     /// Identifier from the source (e.g. Garmin activity id or HealthKit UUID string).
     public let id: String
     public var source: DataSourceKind
@@ -32,6 +36,9 @@ public struct RunActivity: Identifiable, Hashable, Codable, Sendable {
     public var runWalk: RunWalkSplits?
     /// Each lap's values, oldest first. nil: not fetched yet. Empty: the source has none for this run.
     public var laps: [RunLap]?
+    /// Wall-clock time from start to finish, including pauses.
+    public var elapsedSeconds: Double?
+    public var kind: Kind?
 
     public init(
         id: String,
@@ -51,7 +58,9 @@ public struct RunActivity: Identifiable, Hashable, Codable, Sendable {
         lapCount: Int? = nil,
         movingDurationSeconds: Double? = nil,
         runWalk: RunWalkSplits? = nil,
-        laps: [RunLap]? = nil
+        laps: [RunLap]? = nil,
+        elapsedSeconds: Double? = nil,
+        kind: Kind? = nil
     ) {
         self.id = id
         self.source = source
@@ -71,6 +80,8 @@ public struct RunActivity: Identifiable, Hashable, Codable, Sendable {
         self.movingDurationSeconds = movingDurationSeconds
         self.runWalk = runWalk
         self.laps = laps
+        self.elapsedSeconds = elapsedSeconds
+        self.kind = kind
     }
 
     /// Average pace in seconds per kilometre, if distance is known.

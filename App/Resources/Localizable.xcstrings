@@ -2993,6 +2993,23 @@
         }
       }
     },
+    "Comparable heart rate needs steady segments with pace, terrain, conditions and sensor data.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para comparar la frecuencia cardíaca hacen falta tramos estables con datos de ritmo, terreno, condiciones y sensor."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para comparar a frecuencia cardíaca fan falta treitos estables con datos de ritmo, terreo, condicións e sensor."
+          }
+        }
+      }
+    },
     "Compare with an easy strength option": {
       "extractionState": "manual",
       "localizations": {
@@ -4608,6 +4625,23 @@
         }
       }
     },
+    "Declining": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En descenso"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En descenso"
+          }
+        }
+      }
+    },
     "Deep {1} h · REM {2} h (watch estimate)": {
       "extractionState": "manual",
       "localizations": {
@@ -5777,6 +5811,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Equipamento"
+          }
+        }
+      }
+    },
+    "Estimated 1RM": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1RM estimada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1RM estimada"
           }
         }
       }
@@ -7022,6 +7073,23 @@
         }
       }
     },
+    "Heart rate at comparable pace": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frecuencia cardíaca a ritmo comparable"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frecuencia cardíaca a ritmo comparable"
+          }
+        }
+      }
+    },
     "Heart rate zone": {
       "extractionState": "manual",
       "localizations": {
@@ -7035,6 +7103,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zona de frecuencia cardíaca"
+          }
+        }
+      }
+    },
+    "Heaviest at {1} reps": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mayor carga a {1} rep."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maior carga a {1} rep."
+          }
+        }
+      }
+    },
+    "Heaviest set": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serie con mayor carga"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serie con maior carga"
           }
         }
       }
@@ -7821,6 +7923,23 @@
         }
       }
     },
+    "Improving": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En mejora"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En mellora"
+          }
+        }
+      }
+    },
     "In Strong: Settings → Export data. Re-importing the same file does not create duplicates.": {
       "extractionState": "manual",
       "localizations": {
@@ -7851,6 +7970,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "No teu rango"
+          }
+        }
+      }
+    },
+    "Insufficient evidence for a trend": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datos insuficientes para determinar una tendencia"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datos insuficientes para determinar unha tendencia"
           }
         }
       }
@@ -9028,6 +9164,23 @@
         }
       }
     },
+    "Lift": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejercicio"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercicio"
+          }
+        }
+      }
+    },
     "Lifts to unblock": {
       "extractionState": "manual",
       "localizations": {
@@ -9691,6 +9844,40 @@
         }
       }
     },
+    "Median cadence {1} steps/min": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cadencia mediana de {1} pasos/min"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cadencia mediana de {1} pasos/min"
+          }
+        }
+      }
+    },
+    "Median change {1} · {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambio de mediana {1} · {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambio de mediana {1} · {2}"
+          }
+        }
+      }
+    },
     "Meets your goal": {
       "extractionState": "manual",
       "localizations": {
@@ -9925,6 +10112,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "A maioría calcula ~1 repetición de menos, máis aínda en series longas e con cargas lixeiras. Se dubidas entre dous valores, escolle o de máis repeticións en reserva. (evidencia moderada)"
+          }
+        }
+      }
+    },
+    "Most reps at {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más repeticiones con {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máis repeticións con {1}"
           }
         }
       }
@@ -11119,6 +11323,23 @@
         }
       }
     },
+    "No results in this period": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin resultados en este período"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen resultados neste período"
+          }
+        }
+      }
+    },
     "No run matches to review": {
       "extractionState": "manual",
       "localizations": {
@@ -12003,6 +12224,23 @@
         }
       }
     },
+    "Outdoor training": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrenamiento al aire libre"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adestramento ao aire libre"
+          }
+        }
+      }
+    },
     "Overreach": {
       "extractionState": "manual",
       "localizations": {
@@ -12428,6 +12666,23 @@
         }
       }
     },
+    "Plan progress and recovery history": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progreso del plan e historial de recuperación"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progreso do plan e historial de recuperación"
+          }
+        }
+      }
+    },
     "Plan with your AI": {
       "extractionState": "manual",
       "localizations": {
@@ -12577,6 +12832,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ademais Body Battery, estrés, SpO2 e respiración."
+          }
+        }
+      }
+    },
+    "Possible plateau": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posible estancamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posible estancamento"
           }
         }
       }
@@ -13393,6 +13665,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non sabemos canto corriches ultimamente."
+          }
+        }
+      }
+    },
+    "Record": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marca"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marca"
+          }
+        }
+      }
+    },
+    "Recorded max single": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repetición máxima registrada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repetición máxima rexistrada"
+          }
+        }
+      }
+    },
+    "Recorded race": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrera registrada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carreira rexistrada"
           }
         }
       }
@@ -14451,6 +14774,23 @@
         }
       }
     },
+    "Result": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resultado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resultado"
+          }
+        }
+      }
+    },
     "Resume workout": {
       "extractionState": "manual",
       "localizations": {
@@ -14842,6 +15182,40 @@
         }
       }
     },
+    "Run type": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo de carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo de carreira"
+          }
+        }
+      }
+    },
+    "Run type unknown": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo de carrera desconocido"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo de carreira descoñecido"
+          }
+        }
+      }
+    },
     "Run {1} km in {2}": {
       "extractionState": "manual",
       "localizations": {
@@ -14957,6 +15331,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Correr e camiñar"
+          }
+        }
+      }
+    },
+    "Running best times": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mejores tiempos de carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mellores tempos de carreira"
           }
         }
       }
@@ -15637,6 +16028,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sesións"
+          }
+        }
+      }
+    },
+    "Sessions this period {1} · Previous period {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesiones en este período {1} · Período anterior {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sesións neste período {1} · Período anterior {2}"
           }
         }
       }
@@ -17354,6 +17762,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Forza gravada no reloxo pero non na app? Rexístraa desde Historial coas horas do reloxo."
+          }
+        }
+      }
+    },
+    "Strength records": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marcas de fuerza"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marcas de forza"
           }
         }
       }
@@ -19347,6 +19772,23 @@
         }
       }
     },
+    "Treadmill": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cinta"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cinta"
+          }
+        }
+      }
+    },
     "Trends": {
       "extractionState": "manual",
       "localizations": {
@@ -20176,6 +20618,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ver progreso"
+          }
+        }
+      }
+    },
+    "View sessions": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver sesiones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver sesións"
           }
         }
       }
@@ -21077,6 +21536,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Con {1}?"
+          }
+        }
+      }
+    },
+    "Within normal variability": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dentro de la variabilidad habitual"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dentro da variabilidade habitual"
           }
         }
       }
@@ -22849,6 +23325,23 @@
         }
       }
     },
+    "{1} km": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} km"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} km"
+          }
+        }
+      }
+    },
     "{1} km easy": {
       "extractionState": "manual",
       "localizations": {
@@ -23151,6 +23644,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non se puideron ler {1} rexistros de Garmin. Pode que Garmin cambiase algo; o resto importouse."
+          }
+        }
+      }
+    },
+    "{1} reps": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} rep."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} rep."
+          }
+        }
+      }
+    },
+    "{1} reps at {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} rep. con {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} rep. con {2}"
           }
         }
       }
@@ -23478,6 +24005,57 @@
         }
       }
     },
+    "{1} · Observed at {2} m": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · Observado a {2} m"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · Observado a {2} m"
+          }
+        }
+      }
+    },
+    "{1} · RPE {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · RPE {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · RPE {2}"
+          }
+        }
+      }
+    },
+    "{1} · Time upper bounds": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · Límites superiores de tiempo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · Límites superiores de tempo"
+          }
+        }
+      }
+    },
     "{1} · by {2}": {
       "extractionState": "manual",
       "localizations": {
@@ -23576,6 +24154,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} · semana {2} de {3}"
+          }
+        }
+      }
+    },
+    "{1} · {2}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · {2}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · {2}"
           }
         }
       }
@@ -23767,6 +24362,23 @@
         }
       }
     },
+    "{1}–{2} /km": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}–{2} /km"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1}–{2} /km"
+          }
+        }
+      }
+    },
     "~{1} min": {
       "extractionState": "manual",
       "localizations": {
@@ -23848,6 +24460,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "−15 s"
+          }
+        }
+      }
+    },
+    "≤ {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≤ {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≤ {1}"
           }
         }
       }

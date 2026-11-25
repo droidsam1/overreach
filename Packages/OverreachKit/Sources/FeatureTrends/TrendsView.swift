@@ -32,7 +32,8 @@ public struct TrendsView<Progress: View>: View {
             switch section {
             case .recovery: RecoveryDetail(model: model, onConnectGarmin: onConnectGarmin, linksToRecentLoad: true)
             case .recentLoad: RecentLoadDetail(model: model, onConnectGarmin: onConnectGarmin)
-            case .progress: progress
+            case .progress:
+                PerformanceProgressView(model: model, plan: progress)
             case nil: sections
             }
         }
@@ -65,7 +66,7 @@ public struct TrendsView<Progress: View>: View {
                 }
                 RecentLoadLink(model: model, onConnectGarmin: onConnectGarmin)
                 if model.showsProgress, Progress.self != EmptyView.self {
-                    NavigationLink(destination: progress) {
+                    NavigationLink(destination: PerformanceProgressView(model: model, plan: progress)) {
                         SectionRow(
                             title: "Progress", systemImage: "chart.line.uptrend.xyaxis", summary: progressSummary
                         )
@@ -80,7 +81,6 @@ public struct TrendsView<Progress: View>: View {
         }
         .onChange(of: model.sectionHintCandidates) { updateSectionHints() }
         .navigationTitle("Recovery & Progress")
-        .navigationBarTitleDisplayModeInline()
     }
 }
 

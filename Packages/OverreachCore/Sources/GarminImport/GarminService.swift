@@ -34,10 +34,13 @@ public struct GarminCache: Codable, Hashable, Sendable {
     /// Walking and hiking activities (ADR-0010). `nil` in a cache written before walks were imported: the next sync
     /// then fetches the activities of the whole first-sync window again, so the walking baseline has its history.
     public var walks: [GarminWalk]?
+    /// Absent in caches that still need the elapsed-time metadata from the bounded first-sync activity window.
+    public var refreshedRunPerformanceMetadata: Bool?
 
     public init(
         lastSync: Date? = nil, lastSyncedDay: CalendarDay? = nil, metrics: [DailyMetrics] = [],
-        runs: [RunActivity] = [], strength: [RecordedStrengthActivity] = [], walks: [GarminWalk]? = []
+        runs: [RunActivity] = [], strength: [RecordedStrengthActivity] = [], walks: [GarminWalk]? = [],
+        refreshedRunPerformanceMetadata: Bool? = nil
     ) {
         self.lastSync = lastSync
         self.lastSyncedDay = lastSyncedDay
@@ -45,13 +48,14 @@ public struct GarminCache: Codable, Hashable, Sendable {
         self.runs = runs
         self.strength = strength
         self.walks = walks
+        self.refreshedRunPerformanceMetadata = refreshedRunPerformanceMetadata
     }
 
     /// Days older than this are dropped: enough for the readiness baselines and a year of trends.
     public static let retentionDays = 400
 
     private enum CodingKeys: String, CodingKey {
-        case lastSync, lastSyncedDay, metrics, runs, strength, walks
+        case lastSync, lastSyncedDay, metrics, runs, strength, walks, refreshedRunPerformanceMetadata
     }
 
     /// The HRV fields of a cache written before ADR-0025, which kept one value per night in `hrvNightlyAverageMs`,
@@ -68,6 +72,9 @@ public struct GarminCache: Codable, Hashable, Sendable {
         runs = try container.decodeIfPresent([RunActivity].self, forKey: .runs) ?? []
         strength = try container.decodeIfPresent([RecordedStrengthActivity].self, forKey: .strength) ?? []
         walks = try container.decodeIfPresent([GarminWalk].self, forKey: .walks)
+        refreshedRunPerformanceMetadata = try container.decodeIfPresent(
+            Bool.self, forKey: .refreshedRunPerformanceMetadata
+        )
         var metrics = try container.decodeIfPresent([DailyMetrics].self, forKey: .metrics) ?? []
         let legacy = (try? container.decodeIfPresent([LegacyHRV].self, forKey: .metrics)) ?? []
         // Only Garmin fills this cache, and Garmin only ever reported RMSSD, labelled or not.
@@ -100,6 +107,7 @@ public struct GarminCache: Codable, Hashable, Sendable {
         merged.runs = Self.merge(self.runs, runs, id: \.id).filter { $0.startedAt >= oldestDate }
         merged.strength = Self.merge(self.strength, strength, id: \.id).filter { $0.startedAt >= oldestDate }
         merged.walks = Self.merge(self.walks ?? [], walks, id: \.id).filter { $0.walk.start >= oldestDate }
+        merged.refreshedRunPerformanceMetadata = true
         merged.lastSync = date
         merged.lastSyncedDay = max(range.upperBound, lastSyncedDay ?? range.upperBound)
         return merged
@@ -282,8 +290,9 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
         let cache = await loadCache()
         let today = CalendarDay(clock(), calendar: calendar)
         let range = GarminSyncPlan.range(lastSynced: cache.lastSyncedDay, today: today, calendar: calendar)
-        // A cache from before walks were imported fetches the activities of the first-sync window once more.
-        let activityDays = cache.walks == nil ? GarminSyncPlan.firstSyncDays : GarminSyncPlan.activityRefetchDays
+        // Fetch the bounded activity history once more when an older cache lacks newly imported fields.
+        let needsHistory = cache.walks == nil || cache.refreshedRunPerformanceMetadata != true
+        let activityDays = needsHistory ? GarminSyncPlan.firstSyncDays : GarminSyncPlan.activityRefetchDays
         var requests = GarminSyncPlan.requests(for: range, activityDays: activityDays, calendar: calendar)
         var done = 0
         progress(GarminSyncProgress(completed: 0, total: requests.count))

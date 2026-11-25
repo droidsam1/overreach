@@ -302,6 +302,17 @@ reducing volume and load and raising RIR while keeping frequency and exercises (
 → The planned interval (default 6 weeks) adds one point to a deload proposal; it never triggers one alone.
 Refs: Rogerson et al. 2024, Sports Med Open 10:22. Reviewed 2026-11-20.
 
+### `performance-trend-pilot` — heuristic
+
+Grgic et al. (2020) found that repeatability of measured 1RM varied by protocol. Across the reviewed studies,
+the coefficient of variation had a median of 4.2% and a range of 0.5–12.1%. Ritti-Dias et al. (2011) measured
+bench and squat over four sessions and found a familiarization effect in participants without resistance training
+experience. These studies cover measured 1RM. The thresholds for effort-adjusted estimates in the app are
+product heuristics, with repeatability assessed from the athlete's own comparable sessions.
+[Grgic 2020](https://pubmed.ncbi.nlm.nih.gov/32681399/) ·
+[Ritti-Dias 2011](https://pubmed.ncbi.nlm.nih.gov/21522076/) ·
+[Coverage, thresholds and synthetic replay](design/recovery-progress-performance.md)
+
 ## Warm-up
 
 ### `warm-up-general` — moderate
@@ -738,3 +749,11 @@ Start with completed comparable work that the athlete reports tolerating. Compar
 distance and intensity separately from hard lifting sets and impact work. Change one running demand
 at a time as a candidate default. Hold progression when the decision depends on missing exposure
 or symptom information. [Evidence and replay cases](evidence-readiness-and-hybrid.md#candidate-hybrid-planning-rules)
+
+### `comparable-running-heart-rate` — limited
+
+Exercise heart rate at a standardized submaximal running speed can track aerobic changes, with mixed results
+across protocols. Absolute bpm changes require repeatable conditions and do not by themselves establish improved
+fitness. The pilot filters warm-up, steady effort, pace, grade, duration, conditions and sensor, then compares
+equal periods with at least three sessions each. Numeric eligibility thresholds are product heuristics.
+[Systematic review](https://pubmed.ncbi.nlm.nih.gov/36332619/)

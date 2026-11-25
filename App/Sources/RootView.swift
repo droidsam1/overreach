@@ -104,6 +104,24 @@ struct RootView: View {
             onConnectGarmin: { garminModel.start() },
             progress: { PlanProgressView(model: planModel) }
         )
+        .navigationDestination(for: PerformanceSession.self) { session in
+            performanceSession(session)
+                .task { await historyModel.load() }
+                .onDisappear { Task { await recoveryModel.load() } }
+        }
+    }
+
+    @ViewBuilder private func performanceSession(_ session: PerformanceSession) -> some View {
+        switch session {
+        case let .run(run):
+            HistoryRunDetail(run: historyModel.runDetail(for: run), history: historyModel)
+        case let .strength(sessionID, setID):
+            if historyModel.isLoading && historyModel.session(id: sessionID) == nil {
+                ProgressView("Loading…")
+            } else {
+                SessionDetailView(model: historyModel, sessionID: sessionID, highlightedSetID: setID)
+            }
+        }
     }
 
     var body: some View {
@@ -195,6 +213,9 @@ struct RootView: View {
         }
         // The Garmin setup from Settings or Today. One model, shown over whatever is on screen.
         .sheet(isPresented: garminSetupInApp) { GarminSetupView(model: garminModel) }
+        .onChange(of: garminModel.connection?.lastSync) {
+            if recoveryModel.hasLoaded { Task { await recoveryModel.load() } }
+        }
         .onChange(of: garminModel.isConnected) {
             // New Garmin data: Today shows it at once.
             Task { await todayModel.load() }
@@ -205,11 +226,13 @@ struct RootView: View {
         }
         .onChange(of: trainingSettingsModel.weightUnit) {
             Task { await todayModel.load() }
+            Task { await recoveryModel.load() }
         }
         .onChange(of: importModel.state) {
             // New exercises from an import need muscles: refresh the badge.
             if case .done = importModel.state {
                 Task { await exercisesModel.load() }
+                Task { await recoveryModel.load() }
             }
         }
         .onChange(of: scenePhase) {
@@ -218,7 +241,10 @@ struct RootView: View {
                 Task { await backupModel.backUpIfConfigured() }
             } else if scenePhase == .active {
                 // The watch's workout may have reached Health since the session was saved.
-                Task { await container.reconcileHealthWorkouts() }
+                Task {
+                    await container.reconcileHealthWorkouts()
+                    if recoveryModel.hasLoaded { await recoveryModel.load() }
+                }
             }
         }
         .alert("Restore your data?", isPresented: $backupModel.isOfferingRestore) {

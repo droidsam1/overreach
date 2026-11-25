@@ -120,6 +120,7 @@ public enum GarminDecoding {
                 return nil
             }
             let type = item["activityType"] as? [String: Any]
+            let eventType = item["eventType"] as? [String: Any]
             return GarminActivity(
                 id: id,
                 typeKey: type?["typeKey"] as? String,
@@ -140,7 +141,9 @@ public enum GarminDecoding {
                 steps: nonNegative(item["steps"]).map { Int($0) },
                 lapCount: positive(item["lapCount"]).map { Int($0) },
                 movingDurationSeconds: positive(item["movingDuration"]),
-                runWalk: runWalk(item["splitSummaries"])
+                runWalk: runWalk(item["splitSummaries"]),
+                elapsedSeconds: positive(item["elapsedDuration"]),
+                eventTypeKey: eventType?["typeKey"] as? String
             )
         }
     }
@@ -163,7 +166,8 @@ public enum GarminDecoding {
                 maxHeartRate: positive(item["maxHR"]),
                 averageCadence: positive(item["averageRunCadence"]),
                 elevationGainMeters: nonNegative(item["elevationGain"]),
-                elevationLossMeters: nonNegative(item["elevationLoss"])
+                elevationLossMeters: nonNegative(item["elevationLoss"]),
+                elapsedSeconds: positive(item["elapsedDuration"])
             )
         }
     }

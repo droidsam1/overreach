@@ -89,10 +89,18 @@ public enum GarminMapping {
                 anaerobicTrainingEffect: activity.anaerobicTrainingEffect,
                 lapCount: activity.lapCount,
                 movingDurationSeconds: activity.movingDurationSeconds,
-                runWalk: activity.runWalk
+                runWalk: activity.runWalk,
+                elapsedSeconds: activity.elapsedSeconds,
+                kind: runKind(activity)
             )
         }
         .sorted { ($0.startedAt, $0.id) < ($1.startedAt, $1.id) }
+    }
+
+    private static func runKind(_ activity: GarminActivity) -> RunActivity.Kind {
+        if activity.typeKey == "treadmill_running" || activity.typeKey == "virtual_running" { return .treadmill }
+        if activity.eventTypeKey == "race" { return .race }
+        return .training
     }
 
     /// Strength workouts recorded on the watch. They are paired with logged sessions by `StrengthActivityMatching`

@@ -147,6 +147,8 @@ public struct GarminActivity: Hashable, Sendable {
     public var lapCount: Int?
     public var movingDurationSeconds: Double?
     public var runWalk: RunWalkSplits?
+    public var elapsedSeconds: Double?
+    public var eventTypeKey: String?
 
     public init(
         id: String,
@@ -168,7 +170,9 @@ public struct GarminActivity: Hashable, Sendable {
         steps: Int? = nil,
         lapCount: Int? = nil,
         movingDurationSeconds: Double? = nil,
-        runWalk: RunWalkSplits? = nil
+        runWalk: RunWalkSplits? = nil,
+        elapsedSeconds: Double? = nil,
+        eventTypeKey: String? = nil
     ) {
         self.id = id
         self.typeKey = typeKey
@@ -190,6 +194,8 @@ public struct GarminActivity: Hashable, Sendable {
         self.lapCount = lapCount
         self.movingDurationSeconds = movingDurationSeconds
         self.runWalk = runWalk
+        self.elapsedSeconds = elapsedSeconds
+        self.eventTypeKey = eventTypeKey
     }
 
     public var isRun: Bool { typeKey?.contains("run") ?? false }
