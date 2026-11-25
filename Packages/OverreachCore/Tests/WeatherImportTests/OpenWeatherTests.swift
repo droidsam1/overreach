@@ -77,7 +77,8 @@ struct OpenWeatherTests {
         let first = await service(cache: cache, fixture: fixture, clock: clock).forecast(for: area, forceRefresh: false)
         #expect(first.fetchedAt == clock.date)
         clock.advance(10 * 60)
-        let second = await service(cache: cache, fixture: fixture, clock: clock).forecast(for: area, forceRefresh: false)
+        let reopened = service(cache: cache, fixture: fixture, clock: clock)
+        let second = await reopened.forecast(for: area, forceRefresh: false)
         #expect(second == first)
         #expect(await fixture.calls == 1)
     }
@@ -89,7 +90,8 @@ struct OpenWeatherTests {
         let clock = Clock()
         _ = await service(cache: cache, fixture: fixture, clock: clock).forecast(for: area)
         clock.advance(31 * 60)
-        let renewed = await service(cache: cache, fixture: fixture, clock: clock).forecast(for: area, forceRefresh: false)
+        let reopened = service(cache: cache, fixture: fixture, clock: clock)
+        let renewed = await reopened.forecast(for: area, forceRefresh: false)
         #expect(await fixture.calls == 2)
         #expect(renewed.fetchedAt == clock.date)
     }

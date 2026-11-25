@@ -66,18 +66,14 @@ public final class WeatherOnboardingModel: Identifiable {
         switch step {
         case .why:
             L10n.text(
-                "Overreach asks OpenWeather for the forecast and for the weather of your runs. The free tier is enough. Your key stays on this device and is only sent to OpenWeather."
+                "Overreach needs your own OpenWeather key for the forecast. It is free, stays on this device and only goes to OpenWeather."
             )
         case .account:
             L10n.text("Create a free OpenWeather account, then subscribe to One Call API 3.0 from the API page.")
         case .limit:
-            L10n.text(
-                "In your OpenWeather account, set the One Call API 3.0 daily call limit to 1,000 or fewer to avoid charges."
-            )
+            L10n.text("In OpenWeather, set the One Call API 3.0 daily limit to 1,000 or fewer to avoid charges.")
         case .key:
-            L10n.text(
-                "Copy your key from the API keys tab of your OpenWeather account, paste it here and save it. Overreach checks it with OpenWeather first."
-            )
+            L10n.text("Copy the key from the API keys tab of your account, paste it here and save. Overreach checks it first.")
         }
     }
 
@@ -124,7 +120,7 @@ public final class WeatherOnboardingModel: Identifiable {
             }
         case .rejected:
             outcome = .failed(message: L10n.text(
-                "OpenWeather did not accept this key. Check that you copied all of it and that your account is subscribed to One Call API 3.0."
+                "OpenWeather rejected this key. Check you copied all of it and subscribed to One Call API 3.0."
             ))
         case .unavailable:
             outcome = .failed(message: L10n.text("Could not reach OpenWeather. Check your connection and try again."))

@@ -3656,6 +3656,23 @@
         }
       }
     },
+    "Copy the key from the API keys tab of your account, paste it here and save. Overreach checks it first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copia la clave de la pestaña API keys de tu cuenta, pégala aquí y guárdala. Overreach la comprueba antes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copia a clave da lapela API keys da túa conta, pégaa aquí e gárdaa. Overreach comprébaa antes."
+          }
+        }
+      }
+    },
     "Copy the reply format": {
       "extractionState": "manual",
       "localizations": {
@@ -3669,23 +3686,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Copiar o formato de resposta"
-          }
-        }
-      }
-    },
-    "Copy your key from the API keys tab of your OpenWeather account, paste it here and save it. Overreach checks it with OpenWeather first.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Copia tu clave de la pestaña API keys de tu cuenta de OpenWeather, pégala aquí y guárdala. Overreach la comprueba antes con OpenWeather."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Copia a túa clave da lapela API keys da túa conta de OpenWeather, pégaa aquí e gárdaa. Overreach comprébaa antes con OpenWeather."
           }
         }
       }
@@ -8433,6 +8433,23 @@
         }
       }
     },
+    "In OpenWeather, set the One Call API 3.0 daily limit to 1,000 or fewer to avoid charges.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En OpenWeather, fija el límite diario de One Call API 3.0 en 1000 o menos para evitar cargos."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En OpenWeather, fixa o límite diario de One Call API 3.0 en 1000 ou menos para evitar cargos."
+          }
+        }
+      }
+    },
     "In Strong: Settings → Export data. Re-importing the same file does not create duplicates.": {
       "extractionState": "manual",
       "localizations": {
@@ -8446,23 +8463,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "En Strong: Axustes → Exportar datos. Importar outra vez o mesmo ficheiro non crea duplicados."
-          }
-        }
-      }
-    },
-    "In your OpenWeather account, set the One Call API 3.0 daily call limit to 1,000 or fewer to avoid charges.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "En tu cuenta de OpenWeather, fija el límite diario de llamadas de One Call API 3.0 en 1000 o menos para evitar cargos."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Na túa conta de OpenWeather, fixa o límite diario de chamadas de One Call API 3.0 en 1000 ou menos para evitar cargos."
           }
         }
       }
@@ -12683,19 +12683,19 @@
         }
       }
     },
-    "OpenWeather did not accept this key. Check that you copied all of it and that your account is subscribed to One Call API 3.0.": {
+    "OpenWeather rejected this key. Check you copied all of it and subscribed to One Call API 3.0.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "OpenWeather no aceptó esta clave. Comprueba que la copiaste entera y que tu cuenta está suscrita a One Call API 3.0."
+            "value": "OpenWeather rechazó esta clave. Comprueba que la copiaste entera y que te suscribiste a One Call API 3.0."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "OpenWeather non aceptou esta clave. Comproba que a copiaches enteira e que a túa conta está subscrita a One Call API 3.0."
+            "value": "OpenWeather rexeitou esta clave. Comproba que a copiaches enteira e que te subscribiches a One Call API 3.0."
           }
         }
       }
@@ -12904,19 +12904,19 @@
         }
       }
     },
-    "Overreach asks OpenWeather for the forecast and for the weather of your runs. The free tier is enough. Your key stays on this device and is only sent to OpenWeather.": {
+    "Overreach needs your own OpenWeather key for the forecast. It is free, stays on this device and only goes to OpenWeather.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Overreach pide a OpenWeather la previsión y el tiempo de tus carreras. El plan gratuito basta. Tu clave se queda en este dispositivo y solo se envía a OpenWeather."
+            "value": "Overreach necesita tu propia clave de OpenWeather para la previsión. Es gratis, se queda en este dispositivo y solo va a OpenWeather."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Overreach pide a OpenWeather a previsión e o tempo das túas carreiras. O plan gratuíto abonda. A túa clave queda neste dispositivo e só se envía a OpenWeather."
+            "value": "Overreach necesita a túa propia clave de OpenWeather para a previsión. É gratis, queda neste dispositivo e só vai a OpenWeather."
           }
         }
       }
