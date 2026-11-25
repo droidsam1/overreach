@@ -1,8 +1,13 @@
 import Foundation
 
+/// Detailed samples already downloaded for the original recording, read from the device-local source cache.
+public protocol RunningTrackSource: Sendable {
+    func runningTrack(for run: RunActivity) async -> RunningTrack?
+}
+
 /// Time-stamped measurements from one recorded running activity.
-public struct RunningTrack: Equatable, Sendable {
-    public struct Sample: Equatable, Sendable {
+public struct RunningTrack: Codable, Equatable, Sendable {
+    public struct Sample: Codable, Equatable, Sendable {
         public let date: Date
         public let distanceMeters: Double?
         public let speedMetersPerSecond: Double?
@@ -28,11 +33,11 @@ public struct RunningTrack: Equatable, Sendable {
         }
     }
 
-    public enum BoundaryKind: Equatable, Sendable {
+    public enum BoundaryKind: String, Codable, Equatable, Sendable {
         case manualLap, automaticLap, timerStart, timerStop
     }
 
-    public struct Boundary: Equatable, Sendable {
+    public struct Boundary: Codable, Equatable, Sendable {
         public let date: Date
         public let kind: BoundaryKind
 

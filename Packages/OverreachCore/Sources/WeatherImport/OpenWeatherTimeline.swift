@@ -39,7 +39,6 @@ public enum OpenWeatherTimeline {
             )
         }.sorted { $0.date < $1.date }
     }
-
 }
 
 private struct Timeline: Decodable {

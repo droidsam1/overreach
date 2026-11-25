@@ -43,6 +43,7 @@ actor FakeGarmin: GarminTransport {
             let page = activityPages.first(where: { request.path.contains("?start=\($0.key)&") }) {
             return GarminHTTPResponse(status: 200, body: page.value)
         }
+        if request.path.hasPrefix("/download-service/files/activity/") { return GarminHTTPResponse(status: 404) }
         let name: String? = switch request.path {
         case let path where path.hasPrefix("/hrv-service"): "hrv-daily-range"
         case let path where path.hasPrefix("/sleep-service"): "sleep-summaries-range"
@@ -351,8 +352,10 @@ struct GarminServiceTests {
         #expect(summary.runs == 4)
         #expect(summary.strengthWorkouts == 9)
         #expect(summary.skippedRecords == 0)
-        let dataRequests = await garmin.requests.filter { $0.method == "GET" && !$0.path.hasSuffix("/splits") }
-        #expect(dataRequests.count == 6)  // 60 days: HRV, summaries, VO2max, activities and two sleep windows
+        let dataRequests = await garmin.requests.filter {
+            $0.method == "GET" && !$0.path.hasSuffix("/splits") && !$0.path.hasPrefix("/download-service/")
+        }
+        #expect(dataRequests.count == 6)  // HRV, summaries, VO2max, activities and two sleep windows
         let stored = try #require(await cache.cache)
         #expect(stored.lastSyncedDay == CalendarDay(year: 2026, month: 1, day: 8))
         #expect(stored.lastSync == fixtureNow)
@@ -523,7 +526,8 @@ struct GarminServiceTests {
         clock.advance(GarminService.autoSyncInterval + 1)
         _ = try await service.dailyMetrics(in: day...day)
         let later = await garmin.requests.dropFirst(afterFirst).filter { $0.method == "GET" }
-        #expect(later.count == 5)  // only the last days again: one request per endpoint
+        let summaries = later.filter { !$0.path.hasPrefix("/download-service/") }
+        #expect(summaries.count == 5)  // only the last days again: one request per endpoint
         #expect(later.first?.path == "/hrv-service/hrv/daily/2026-01-07/2026-01-08")
     }
 
