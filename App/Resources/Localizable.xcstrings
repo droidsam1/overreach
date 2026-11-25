@@ -630,6 +630,23 @@
         }
       }
     },
+    "API key saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave de API guardada"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clave da API gardada"
+          }
+        }
+      }
+    },
     "About Apple Health data": {
       "extractionState": "manual",
       "localizations": {
@@ -14770,6 +14787,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Substituír exercicio"
+          }
+        }
+      }
+    },
+    "Replace key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sustituir clave"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Substituír a clave"
           }
         }
       }
