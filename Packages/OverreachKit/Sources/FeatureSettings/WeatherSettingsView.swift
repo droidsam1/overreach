@@ -4,12 +4,14 @@ import SettingsPresentation
 import SwiftUI
 
 public struct WeatherSettingsView: View {
-    let model: WeatherSettingsModel
+    // The parent builds a model in its body; @State keeps the first one so a parent refresh cannot swap it for an
+    // unloaded copy (the picker looked unchanged until the screen was reopened).
+    @State private var model: WeatherSettingsModel
     @State private var key = ""
     @State private var onboarding: WeatherOnboardingModel?
 
     public init(model: WeatherSettingsModel) {
-        self.model = model
+        _model = State(initialValue: model)
     }
 
     public var body: some View {

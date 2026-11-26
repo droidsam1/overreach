@@ -110,7 +110,8 @@ extension PlanModel {
         let goal = profile.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         return WeekProgress.make(
             .init(strength: goal?.scheduledStrength ?? [], runs: goal?.scheduledRuns ?? [],
-                  sessions: weekSessions, currentBlock: currentBlock),
+                  sessions: weekSessions, recordedRuns: recentRuns, restDays: profile.restDays,
+                  currentBlock: currentBlock),
             now: now, calendar: calendar
         )
     }

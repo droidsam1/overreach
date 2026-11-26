@@ -71,6 +71,12 @@ struct WeekProgressTests {
         #expect(week.days[3].plannedRun && week.days[4].plannedStrength)
     }
 
+    @Test func pastDaysWithoutTrainingAreRest() throws {
+        let week = try #require(progress(.init(sessions: [session(legs, on: 17)])))
+
+        #expect(week.days.map(\.done) == [.restLogged, .strength, .nothing, .nothing, .nothing, .nothing, .nothing])
+    }
+
     @Test func aPlanWithABlockReportsItsWeek() throws {
         let block = TrainingBlock(focus: .strength, start: day(9), plannedWeeks: 4, isDeclared: true, name: nil)
         let week = try #require(progress(.init(blockWeek: (planned: 3, done: 1), currentBlock: block)))
