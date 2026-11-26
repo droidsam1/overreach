@@ -50,8 +50,6 @@ public struct WorkoutView: View {
             .navigationTitle("Train")
             .inlineTitle(model.isSessionActive)
             .toolbar { toolbar }
-            .haptic(.completed, trigger: model.summary?.id) { _, new in new != nil }
-            .haptic(.completed, trigger: discardCount)
             .sheet(isPresented: $isPickingExercise) {
                 ExercisePicker(
                     items: model.exerciseChoices.map(PickerItem.init),
@@ -115,6 +113,8 @@ public struct WorkoutView: View {
                 }
             }
         }
+        .haptic(.completed, trigger: model.summary?.id) { _, new in new != nil }
+        .haptic(.completed, trigger: discardCount)
     }
 
     @ToolbarContentBuilder
