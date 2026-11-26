@@ -87,8 +87,10 @@ private struct ExerciseRowLink: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
             }
+            .accessibilityElement(children: .combine)
         }
         .badge(row.sessionCount)
+        .accessibilityValue(row.sessionCountAccessibilityText)
     }
 }
 
@@ -247,10 +249,13 @@ struct ExerciseEditorView: View {
 
     private func suggestionRow(_ suggestion: SuggestionRow) -> some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
-            Text(suggestion.name)
-            Text(suggestion.muscles)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                Text(suggestion.name)
+                Text(suggestion.muscles)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            .accessibilityElement(children: .combine)
             AdaptiveStack(spacing: Spacing.small) {
                 Button("Copy muscles") { model.copyMuscles(from: suggestion.id) }
                 if model.canMerge {
@@ -279,6 +284,7 @@ private struct MergeTargetList: View {
                     Text(target.name).foregroundStyle(.primary)
                     Text(target.muscles).font(.footnote).foregroundStyle(.secondary)
                 }
+                .accessibilityElement(children: .combine)
             }
         }
         .overlay {

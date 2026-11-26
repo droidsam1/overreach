@@ -29,6 +29,7 @@ public struct GarminSetupView: View {
                 if let counter = model.stepCounterText {
                     VStack(spacing: Spacing.small) {
                         PageDots(count: 3, index: model.step.rawValue)
+                            .accessibilityHidden(true)
                         Text(counter).font(.caption).foregroundStyle(.secondary)
                     }
                 }
@@ -85,7 +86,10 @@ public struct GarminSetupView: View {
     private var intro: some View {
         VStack(spacing: Spacing.large) {
             hero("applewatch.radiowaves.left.and.right")
-            Text("Connect Garmin").font(.largeTitle.bold()).multilineTextAlignment(.center)
+            Text("Connect Garmin")
+                .font(.largeTitle.bold())
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
             Text("Bring in what Apple Health doesn't get from your watch, so Today can judge your recovery better.")
                 .font(.title3).foregroundStyle(.secondary).multilineTextAlignment(.center)
             card {
@@ -109,7 +113,10 @@ public struct GarminSetupView: View {
     private var createKey: some View {
         VStack(spacing: Spacing.large) {
             hero("key.horizontal.fill")
-            Text("Create your key").font(.largeTitle.bold()).multilineTextAlignment(.center)
+            Text("Create your key")
+                .font(.largeTitle.bold())
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
             Text("Garmin gives each person a personal key to their own data. It takes a minute in Garmin Connect.")
                 .font(.title3).foregroundStyle(.secondary).multilineTextAlignment(.center)
             card {
@@ -126,14 +133,17 @@ public struct GarminSetupView: View {
     private var pasteKey: some View {
         VStack(spacing: Spacing.large) {
             hero(model.isChecking ? "checkmark.shield" : "doc.on.clipboard.fill")
-            Text("Paste your key").font(.largeTitle.bold()).multilineTextAlignment(.center)
+            Text("Paste your key")
+                .font(.largeTitle.bold())
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
             Text("The app checks it with Garmin, saves it in your Keychain and imports your last 60 days.")
                 .font(.title3).foregroundStyle(.secondary).multilineTextAlignment(.center)
             VStack(alignment: .leading, spacing: Spacing.small) {
                 if typeSize.isAccessibilitySize {
                     lifetimePicker.pickerStyle(.menu)
                 } else {
-                    Text("Expiry you chose").font(.headline)
+                    Text("Expiry you chose").font(.headline).accessibilityHidden(true)
                     lifetimePicker.pickerStyle(.segmented)
                 }
                 Text("Used only to remind you before the key expires.")
@@ -153,6 +163,7 @@ public struct GarminSetupView: View {
                     .labelStyle(.titleAndIcon)
                     AdaptiveStack {
                         TextField("Or type it here", text: $typedKey)
+                            .accessibilityLabel(Text("Garmin key"))
                             .textFieldStyle(.roundedBorder)
                             .font(.body.monospaced())
                             .autocorrectionDisabled()
@@ -193,13 +204,18 @@ public struct GarminSetupView: View {
         VStack(spacing: Spacing.large) {
             hero("arrow.triangle.2.circlepath")
                 .symbolEffect(.rotate, options: .repeating, isActive: !reduceMotion)
-            Text("Key saved").font(.largeTitle.bold())
-            if let progress = model.progress {
-                ProgressView(value: progress.fraction)
-                    .progressViewStyle(.linear)
-            } else {
-                ProgressView()
+            Text("Key saved")
+                .font(.largeTitle.bold())
+                .accessibilityAddTraits(.isHeader)
+            Group {
+                if let progress = model.progress {
+                    ProgressView(value: progress.fraction)
+                        .progressViewStyle(.linear)
+                } else {
+                    ProgressView()
+                }
             }
+            .accessibilityHidden(true)
             Group {
                 if let progressText = model.progressText {
                     Text(progressText)
@@ -216,7 +232,10 @@ public struct GarminSetupView: View {
     private var done: some View {
         VStack(spacing: Spacing.large) {
             hero(model.errorMessage == nil ? "checkmark.seal.fill" : "exclamationmark.arrow.triangle.2.circlepath")
-            Text("Garmin connected").font(.largeTitle.bold()).multilineTextAlignment(.center)
+            Text("Garmin connected")
+                .font(.largeTitle.bold())
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
             if let summary = model.summaryText {
                 Text(summary).font(.title3).multilineTextAlignment(.center)
             }

@@ -123,6 +123,7 @@ struct TourPageView: View {
                         .accessibilityHidden(true)
                     Text(content.title)
                         .font(.largeTitle.bold())
+                        .accessibilityAddTraits(.isHeader)
                         .multilineTextAlignment(.center)
                     Text(content.body)
                         .font(.title3)

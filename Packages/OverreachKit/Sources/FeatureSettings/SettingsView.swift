@@ -206,14 +206,7 @@ public struct SettingsView<Library: View>: View {
     private var garminSection: some View {
         Section {
             if garminModel.isConnected {
-                Label("Connected", systemImage: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-                if let lastSync = garminModel.lastSyncText {
-                    Text(lastSync).font(.footnote).foregroundStyle(.secondary)
-                }
-                if let expiry = garminModel.expiryText {
-                    Text(expiry).font(.footnote).foregroundStyle(.secondary)
-                }
+                connectionStatus
                 if let warning = garminModel.expiryWarning {
                     StatusLabel(title: warning, tone: .caution).font(.footnote)
                 }
@@ -254,6 +247,20 @@ public struct SettingsView<Library: View>: View {
         } footer: {
             Text("Uses Garmin's official Personal API with your own key. Not affiliated with Garmin.")
         }
+    }
+
+    private var connectionStatus: some View {
+        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+            Label("Connected", systemImage: "checkmark.circle.fill")
+                .foregroundStyle(.green)
+            if let lastSync = garminModel.lastSyncText {
+                Text(lastSync).font(.footnote).foregroundStyle(.secondary)
+            }
+            if let expiry = garminModel.expiryText {
+                Text(expiry).font(.footnote).foregroundStyle(.secondary)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private var backupSection: some View {
