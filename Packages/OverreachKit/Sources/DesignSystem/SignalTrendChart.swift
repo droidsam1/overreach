@@ -36,8 +36,25 @@ public struct SignalTrendChart: View {
         values.compactMap { $0 }.count >= 2
     }
 
-    private var points: [(index: Int, value: Double)] {
-        values.enumerated().compactMap { index, value in value.map { (index, $0) } }
+    private struct Point {
+        let index: Int
+        let value: Double
+        let segment: Int
+    }
+
+    private var points: [Point] {
+        var segment = 0
+        return values.enumerated().compactMap { index, value in
+            guard let value else {
+                segment += 1
+                return nil
+            }
+            return Point(index: index, value: value, segment: segment)
+        }
+    }
+
+    private var xDomain: ClosedRange<Double> {
+        -0.5...(Double(values.count) - 0.5)
     }
 
     private func isOutside(_ value: Double) -> Bool {
@@ -70,7 +87,7 @@ public struct SignalTrendChart: View {
         Chart {
             if let band {
                 RectangleMark(
-                    xStart: .value("Start", 0), xEnd: .value("End", max(values.count - 1, 1)),
+                    xStart: .value("Start", xDomain.lowerBound), xEnd: .value("End", xDomain.upperBound),
                     yStart: .value("Low", band.lowerBound), yEnd: .value("High", band.upperBound)
                 )
                 .foregroundStyle(Color.secondary.opacity(0.18))
@@ -78,14 +95,17 @@ public struct SignalTrendChart: View {
             ForEach(points, id: \.index) { point in
                 switch style {
                 case .line:
-                    LineMark(x: .value("Day", point.index), y: .value("Value", point.value))
+                    LineMark(
+                        x: .value("Day", Double(point.index)), y: .value("Value", point.value),
+                        series: .value("Segment", point.segment)
+                    )
                         .foregroundStyle(Color.secondary)
                         .interpolationMethod(.monotone)
-                    PointMark(x: .value("Day", point.index), y: .value("Value", point.value))
+                    PointMark(x: .value("Day", Double(point.index)), y: .value("Value", point.value))
                         .symbolSize(isOutside(point.value) ? 40 : 10)
                         .foregroundStyle(isOutside(point.value) ? tone.accent : Color.secondary)
                 case .bars:
-                    BarMark(x: .value("Day", point.index), y: .value("Value", point.value))
+                    BarMark(x: .value("Day", Double(point.index)), y: .value("Value", point.value))
                         .foregroundStyle(isOutside(point.value) ? tone.accent : Color.secondary)
                 }
             }
@@ -93,6 +113,7 @@ public struct SignalTrendChart: View {
         .chartLegend(.hidden)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
+        .chartXScale(domain: xDomain)
         .chartYScale(domain: yDomain)
     }
 
@@ -119,9 +140,14 @@ public struct SignalTrendChart: View {
     .preferredColorScheme(.dark)
 }
 
-#Preview("Gaps") {
-    SignalTrendChart(values: [50, nil, 49, nil, nil, 53, 52], band: 46...56, tone: .caution)
-        .padding()
+#Preview("Gaps and personal band at largest text size") {
+    SignalTrendChart(
+        values: [nil, 48, 49, nil, nil, 39, 52, nil], band: 46...56, tone: .caution, size: .full,
+        startLabel: "1 Nov", endLabel: "8 Nov"
+    )
+    .padding()
+    .environment(\.dynamicTypeSize, .accessibility5)
+    .preferredColorScheme(.dark)
 }
 
 #Preview("Empty and single point") {

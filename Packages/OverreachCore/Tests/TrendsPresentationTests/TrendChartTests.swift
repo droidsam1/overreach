@@ -67,6 +67,8 @@ struct TrendChartTests {
         let days = [1, 2, 5, 6, 7].map { offset in day(-offset) { $0.restingHeartRate = 52 } }
         let chart = try #require(await model(days: days).recoveryCharts.first { $0.kind == .restingHeartRate })
         #expect(chart.segments.map(\.count) == [3, 2])
+        #expect(chart.values.count == 30)
+        #expect(Array(chart.values.suffix(8)) == [52, 52, 52, nil, nil, 52, 52, nil])
         #expect(chart.summary.contains("5 of 30 days have a reading"))
         let today = CalendarDay(now, calendar: calendar)
         #expect(chart.dateDomain?.lowerBound == today.adding(days: -29, calendar: calendar).startDate(in: calendar))

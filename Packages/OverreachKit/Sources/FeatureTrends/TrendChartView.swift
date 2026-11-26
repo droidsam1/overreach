@@ -1,4 +1,3 @@
-import Charts
 import DesignSystem
 import SwiftUI
 import TrendsPresentation
@@ -42,61 +41,27 @@ private struct TrendChartView: View {
     let chart: TrendChart
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
-            AdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: Spacing.xSmall) {
-                Text(chart.title).font(.headline)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Text(chart.unit).font(.caption).foregroundStyle(.secondary)
-            }
-            Text(chart.interval).font(.caption).foregroundStyle(.secondary)
-            if chart.hasData {
-                if let domain = chart.dateDomain {
-                    plot.chartXScale(domain: domain).frame(height: 160).accessibilityHidden(true)
-                } else {
-                    plot.frame(height: 160).accessibilityHidden(true)
+        Card {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                SectionHeader(Text(chart.title)) {
+                    Text(chart.unit).font(.caption).foregroundStyle(.secondary)
+                }
+                Text(chart.interval).font(.caption).foregroundStyle(.secondary)
+                SignalTrendChart(
+                    values: chart.values, band: chart.band, tone: .caution,
+                    style: chart.style == .bars ? .bars : .line, size: .full,
+                    startLabel: chart.startLabel, endLabel: chart.endLabel
+                )
+                if let label = chart.bandLabel, SignalTrendChart.hasData(chart.values) {
+                    Text(label).font(.caption).foregroundStyle(.secondary)
+                }
+                Text(chart.summary).font(.subheadline).foregroundStyle(.secondary)
+                if let note = chart.partialWeekLabel {
+                    Text(note).font(.subheadline).foregroundStyle(.secondary)
                 }
             }
-            if let label = chart.bandLabel, chart.band != nil {
-                Text(label).font(.caption).foregroundStyle(.secondary)
-            }
-            Text(chart.summary).font(.subheadline).foregroundStyle(.secondary)
-            if let note = chart.partialWeekLabel {
-                Text(note).font(.subheadline).foregroundStyle(.secondary)
-            }
         }
-        .padding(Spacing.medium)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background.secondary, in: .rect(cornerRadius: Radius.tile))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(chart.title))
-        .accessibilityValue(Text([chart.summary, chart.partialWeekLabel].compactMap { $0 }.joined(separator: " ")))
-    }
-
-    private var plot: some View {
-        Chart {
-            if let band = chart.band {
-                RuleMark(y: .value("Usual low", band.lowerBound))
-                    .foregroundStyle(.secondary)
-                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
-                RuleMark(y: .value("Usual high", band.upperBound))
-                    .foregroundStyle(.secondary)
-                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
-            }
-            ForEach(Array(chart.segments.enumerated()), id: \.offset) { index, segment in
-                ForEach(segment, id: \.day) { point in
-                    if chart.style == .bars {
-                        BarMark(x: .value("Week starting", point.label), y: .value(chart.title, point.value))
-                    } else {
-                        LineMark(
-                            x: .value("Day", point.day), y: .value(chart.title, point.value),
-                            series: .value("Run", index)
-                        )
-                        PointMark(x: .value("Day", point.day), y: .value(chart.title, point.value))
-                            .symbolSize(20)
-                    }
-                }
-            }
-        }
-        .chartYScale(domain: .automatic(includesZero: chart.style == .bars))
+        .accessibilityLabel(Text([chart.summary, chart.partialWeekLabel].compactMap { $0 }.joined(separator: " ")))
     }
 }

@@ -97,7 +97,7 @@ struct TodayWhyView<Extra: View>: View {
             .accessibilityAddTraits(.isHeader)
             if let value = card.gaugeValue {
                 RangeGauge(
-                    value: value, scale: 0...2, usual: 0.8...1.3, tone: tone,
+                    value: value, scale: WeeklyLoadScale.scale, usual: WeeklyLoadScale.usual, tone: tone,
                     accessibilityLabel: spoken(signal)
                 )
             } else {
