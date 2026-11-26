@@ -52,6 +52,9 @@ public enum StarterRequest: String, CaseIterable, Sendable {
 public final class AskAIModel {
     public private(set) var period = ContextPeriod.twelveWeeks
     public private(set) var request: StarterRequest?
+    public private(set) var includesHealth = false
+    public private(set) var includesCycle = false
+    public private(set) var availability = ""
     /// The text to share or copy; `nil` until prepared.
     public private(set) var message: String?
     /// The same context as a `.json` file, for chat apps that take attachments.
@@ -65,6 +68,7 @@ public final class AskAIModel {
     public let requestOptions = StarterRequest.allCases.map { Option(value: $0, name: $0.displayName) }
 
     private var json: String?
+    private var context: ContextPack?
     private let recordLoader: TrainingRecordLoader
     private let activityMatchChoices: @MainActor () -> ActivityMatchChoices
     private let profiles: any ProfileRepository
@@ -113,6 +117,21 @@ public final class AskAIModel {
         render()
     }
 
+    public func setIncludesHealth(_ includesHealth: Bool) {
+        self.includesHealth = includesHealth
+        exportSelection()
+    }
+
+    public func setIncludesCycle(_ includesCycle: Bool) {
+        self.includesCycle = includesCycle
+        exportSelection()
+    }
+
+    public func setAvailability(_ availability: String) {
+        self.availability = availability
+        render()
+    }
+
     /// Reads the data of the period and prepares the message and the file.
     public func prepare() async {
         isPreparing = true
@@ -122,41 +141,48 @@ public final class AskAIModel {
         let today = CalendarDay(now, calendar: calendar)
         let first = today.adding(days: 1 - period.weeks * 7, calendar: calendar)
         let start = first.startDate(in: calendar)
+        let profile = try? await profiles.profile()
+        let snapshot = await recordLoader.load(now: now, profile: profile, exportFrom: first, calendar: calendar)
+        guard !snapshot.localReadFailed else {
+            clearPreparedData()
+            return
+        }
+        let assessment = snapshot.assessment(profile: profile, now: now, calendar: calendar)
+        let record = snapshot.record
+        let choices = activityMatchChoices()
+        let runs = RunDeduplication.resolve(snapshot.runOriginals, choices: choices.runs).runs
+        let strength = StrengthActivityMatching.resolve(
+            sessions: snapshot.allSessions, activities: snapshot.strengthOriginals, choices: choices.strength
+        ).matches
+        let input = ContextInput(
+            sessions: snapshot.allSessions.filter { $0.startedAt >= start },
+            earlierSessions: snapshot.allSessions.filter { $0.startedAt < start },
+            exercises: record.exercises,
+            settings: record.settings,
+            routines: record.routines,
+            profile: profile,
+            checkIns: snapshot.allCheckIns.filter { $0.day >= first },
+            dailyMetrics: snapshot.metricsBySource.filter { $0.day >= first },
+            runs: runs.map(\.activity).filter { (start...now).contains($0.startedAt) },
+            today: .init(
+                assessment, training: snapshot.dayTraining(profile: profile, now: now, calendar: calendar)
+            ),
+            appVersion: appVersion
+        )
+        context = ContextPackBuilder.build(
+            input, period: first...today, now: now, calendar: calendar, matchedStrength: strength
+        )
+        exportSelection()
+    }
+
+    private func exportSelection() {
+        guard let context else { return }
+        let pack = context.selectingHealthData(health: includesHealth, cycle: includesCycle)
         do {
-            let profile = try? await profiles.profile()
-            let snapshot = await recordLoader.load(now: now, profile: profile, exportFrom: first, calendar: calendar)
-            guard !snapshot.localReadFailed else {
-                clearPreparedData()
-                return
-            }
-            let assessment = snapshot.assessment(profile: profile, now: now, calendar: calendar)
-            let record = snapshot.record
-            let choices = activityMatchChoices()
-            let runs = RunDeduplication.resolve(snapshot.runOriginals, choices: choices.runs).runs
-            let strength = StrengthActivityMatching.resolve(
-                sessions: snapshot.allSessions, activities: snapshot.strengthOriginals, choices: choices.strength
-            ).matches
-            let input = ContextInput(
-                sessions: snapshot.allSessions.filter { $0.startedAt >= start },
-                earlierSessions: snapshot.allSessions.filter { $0.startedAt < start },
-                exercises: record.exercises,
-                settings: record.settings,
-                routines: record.routines,
-                profile: profile,
-                checkIns: snapshot.allCheckIns.filter { $0.day >= first },
-                dailyMetrics: snapshot.metricsBySource.filter { $0.day >= first },
-                runs: runs.map(\.activity).filter { (start...now).contains($0.startedAt) },
-                today: .init(
-                    assessment, training: snapshot.dayTraining(profile: profile, now: now, calendar: calendar)
-                ),
-                appVersion: appVersion
-            )
-            let pack = ContextPackBuilder.build(
-                input, period: first...today, now: now, calendar: calendar, matchedStrength: strength
-            )
             let data = try ContextMessage.json(pack)
-            let url = directory.appendingPathComponent("overreach-context-\(today).json")
+            let url = directory.appendingPathComponent("overreach-context-\(pack.period.to).json")
             try data.write(to: url, options: .atomic)
+            errorMessage = nil
             json = String(decoding: data, as: UTF8.self)
             fileURL = url
             summary = L10n.format(
@@ -170,6 +196,7 @@ public final class AskAIModel {
     }
 
     private func clearPreparedData() {
+        context = nil
         json = nil
         message = nil
         fileURL = nil
@@ -178,6 +205,15 @@ public final class AskAIModel {
     }
 
     private func render() {
-        message = json.map { ContextMessage.text(json: $0, request: request?.text) }
+        message = json.map { json in
+            guard request == .nextBlock else { return ContextMessage.text(json: json, request: request?.text) }
+            let available = availability.trimmingCharacters(in: .whitespacesAndNewlines)
+            var instructions = [PlanMessage.formatGuide]
+            if !available.isEmpty {
+                instructions.append(L10n.format("My training availability is {1}.", available))
+            }
+            instructions.append(StarterRequest.nextBlock.text)
+            return ContextMessage.text(json: json, request: instructions.joined(separator: "\n\n"))
+        }
     }
 }

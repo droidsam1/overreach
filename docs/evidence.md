@@ -183,6 +183,10 @@ configurable 10–20 weekly fractional sets range (heuristic within the evidence
 Refs: Pelland et al. 2026, Sports Med 56(2):481–505 (meta-regressions, 67 studies); Remmert et al. 2025 (SportRxiv
 preprint). Reviewed 2026-11-20 (`docs/evidence-review-2026-11.md`).
 
+### `plan-duration-estimate` — heuristic
+The import preview budgets 30 seconds per working set plus the app's standard rest between sets of each exercise.
+The estimate excludes warm-ups, time between exercises and equipment waits. The time limit comes from the user.
+
 ### `effective-set-threshold` — heuristic
 A working set counts toward weekly volume from RPE 6 (≈ 4 RIR), or when no RPE is logged. Hypertrophy improves
 gradually as sets end closer to failure, with no cliff at a given RIR, and strength gains are similar across a wide

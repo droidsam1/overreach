@@ -215,6 +215,12 @@ public final class PlanImportModel {
         let style = Date.FormatStyle(locale: format.locale, calendar: calendar, timeZone: calendar.timeZone)
         let start = block.start.startDate(in: calendar).formatted(style.day().month(.abbreviated).year())
         var parts = [L10n.format("{1} weeks from {2}", block.plannedWeeks ?? 0, start)]
+        if !block.routineIDs.isEmpty {
+            let sessions = block.plannedSessionsPerWeek
+            let schedule = sessions == 1
+                ? L10n.text("1 session per week") : L10n.format("{1} sessions per week", sessions)
+            parts.append(schedule)
+        }
         if block.name != nil {
             parts.insert(block.focus.displayName, at: 0)
         }
@@ -254,6 +260,13 @@ public final class PlanImportModel {
     private func text(_ warning: PlanWarning) -> String {
         switch warning {
         case let .ignoredField(path): L10n.format("Ignored: {1}. The app does not use this field.", path)
+        case let .sessionDuration(routine, minutes, limit):
+            L10n.format(
+                "“{1}” takes about {2} min with standard rests. Your limit is {3} min.", routine, minutes, limit
+            )
+        case let .weeklyVolume(block, muscle, sets, guide):
+            L10n.format("“{1}” reaches {2} weekly fractional sets for {3}. The guide is {4}.",
+                        block, format.number(sets), muscle.displayName, format.number(guide))
         }
     }
 

@@ -15,7 +15,15 @@ read it.
 
 ## `overreach.context` v1 — app → AI
 
-Shared from **Plan → Ask AI**. It is raw data with no instructions. Its top-level fields:
+Shared from **Plan → Ask AI**. The JSON attachment contains the context data.
+For **Plan my next block**, the shareable text also includes the reply schema, an example, the request and any
+training availability the user enters. Health data and the cycle tracking setting are separate opt-ins, both off
+by default. Without health data, the export excludes profile biometrics, check-ins, daily metrics, the daily
+assessment, strength watch summaries, and heart rate, load and training effect from runs. The daily assessment is also excluded when cycle tracking is configured and the cycle setting
+is kept private. Training notes are
+included and can contain information the user entered manually.
+
+The context's top-level fields:
 
 | Field | Content |
 |---|---|
@@ -121,6 +129,7 @@ it as a file. The app shows what would change and saves nothing until the user c
 | `name` | Required. |
 | `focus` | Optional: `strength`, `hypertrophy`, `mixed` or `endurance`. |
 | `exercises` | Required. Names in order. They are matched to the catalog by name or alias, ignoring case, accents and extra spaces. |
+| `maxDurationMinutes` | Optional session time budget, 1–1440 minutes. Used in the import preview. |
 | `prescriptions` | Optional. `exercise` (one of the routine's exercises) and `scheme` (as in exercise settings). In sessions started from this routine, that scheme replaces the exercise's own. This is how one lift can be 5 × 3 in a strength block and 3 × 8–12 in a hypertrophy block. The app still sets the load from recent sessions. |
 
 An `id` taken from the context pack (`routines[].id`) updates that routine.
@@ -180,10 +189,13 @@ The format is also a JSON Schema (draft 2020-12): [`schemas/overreach.plan.v1.sc
 - **Correction.** The app writes a correction in English for the user to paste back into the chat. Each point
   names the field path (`exerciseSettings[0].scheme.sets is 30; expected 1 to 10`). Broken JSON gets its line,
   column, what was expected and the line itself, with hints for trailing commas, curly quotes and truncated text.
+- **Workload.** The preview warns when estimated working sets and standard rests exceed the routine's time budget.
+  It also flags the highest weekly fractional set totals in each block above the app's 20-set guide. It uses the
+  routine rotation and the settings that would apply after import. See `docs/evidence.md` for the duration
+  heuristic and volume dose-response.
+
 - **Ignored fields.** Fields the format does not have, or that the scheme type does not use (e.g. `reps` in a
   double progression), are listed as warnings. They do not block the import, and the correction can ask the AI to
   remove them.
 - **Versions.** A newer version is refused with a request to update the app. Every version documented here stays
   readable.
-
-Still to come: adjustments from HRV, resting heart rate and sleep, with the readiness rules of phase 2.

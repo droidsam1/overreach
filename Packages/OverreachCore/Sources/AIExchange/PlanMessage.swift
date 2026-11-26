@@ -32,6 +32,8 @@ public struct PlanMessage: Codable, Hashable, Sendable {
         public var exercises: [String]?
         /// Sets and reps for exercises of this routine only, e.g. heavier work in a strength block.
         public var prescriptions: [PrescriptionProposal]?
+        /// Optional time budget to check in the import preview.
+        public var maxDurationMinutes: Int?
     }
 
     /// A scheme for one exercise of one routine. It wins over the exercise's own settings in that routine.
@@ -73,7 +75,7 @@ public struct PlanMessage: Codable, Hashable, Sendable {
     /// Fields of each object, as in the schema. A test keeps them in line with `jsonSchema`.
     static let fields: [String: Set<String>] = [
         "plan": ["format", "version", "routines", "exerciseSettings", "blocks", "startDate"],
-        "routine": ["id", "name", "focus", "exercises", "prescriptions"],
+        "routine": ["id", "name", "focus", "exercises", "prescriptions", "maxDurationMinutes"],
         "prescription": ["exercise", "scheme"],
         "block": ["name", "focus", "weeks", "routines", "sessionsPerWeek"],
         "exerciseSettings": ["exercise", "focus", "scheme", "incrementKg", "isMainLift"],
@@ -172,6 +174,12 @@ extension PlanMessage {
                     "type": "string",
                     "minLength": 1
                   }
+                },
+                "maxDurationMinutes": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1440,
+                  "description": "Optional session time limit in minutes, checked in the import preview."
                 },
                 "prescriptions": {
                   "type": "array",
@@ -415,6 +423,7 @@ extension PlanMessage {
         routine needs different sets and reps (e.g. a strength block).
         - For a multi-week plan, list "blocks" in order; each one rotates through its routines.
         - Prescribe effort (targetRPE), not fixed loads: the app sets each load from my recent sessions.
+        - If I give a session time limit, set "maxDurationMinutes" on each affected routine.
         - Leave out anything that should not change.
         - If I send you a correction from Overreach, fix every point and send the whole JSON again.
         """

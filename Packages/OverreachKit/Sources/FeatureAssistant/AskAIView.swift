@@ -53,6 +53,29 @@ public struct AskAIView: View {
                         Text(option.name).tag(StarterRequest?.some(option.value))
                     }
                 }
+                if model.request == .nextBlock {
+                    TextField("Training availability", text: Binding(
+                        get: { model.availability },
+                        set: {
+                            model.setAvailability($0)
+                            didCopy = false
+                        }
+                    ))
+                }
+                Toggle("Include health data", isOn: Binding(
+                    get: { model.includesHealth },
+                    set: {
+                        model.setIncludesHealth($0)
+                        didCopy = false
+                    }
+                ))
+                Toggle("Include cycle tracking setting", isOn: Binding(
+                    get: { model.includesCycle },
+                    set: {
+                        model.setIncludesCycle($0)
+                        didCopy = false
+                    }
+                ))
             } header: {
                 Text("Prepare your report")
             } footer: {
