@@ -35,7 +35,22 @@ public struct UpNextRow: Hashable, Sendable {
 public final class RoutinesModel {
     public private(set) var routines: [Routine] = []
     public private(set) var catalog: [Exercise] = []
-    public private(set) var errorMessage: String?
+    private enum Failure {
+        case load, changePlan, delete, save
+    }
+
+    private var failure: Failure?
+    public var canRetryLoad: Bool { failure == .load }
+
+    public var errorMessage: String? {
+        switch failure {
+        case .load: L10n.text("Could not load your routines.")
+        case .changePlan: L10n.text("Could not change the plan. Try again.")
+        case .delete: L10n.text("Could not delete the routine.")
+        case .save: L10n.text("Could not save the routine.")
+        case nil: nil
+        }
+    }
     /// The plan's next session; `nil` without a plan running today.
     public private(set) var upNext: UpNextRow?
     /// Proposed changes to the running block (missed sessions, a break, an illness).
@@ -124,9 +139,9 @@ public final class RoutinesModel {
         do {
             catalog = try await exerciseRepository.allExercises()
             routines = try await repository.allRoutines()
-            errorMessage = nil
+            failure = nil
         } catch {
-            errorMessage = L10n.text("Could not load your routines.")
+            failure = .load
         }
         await loadUpNext()
     }
@@ -141,7 +156,7 @@ public final class RoutinesModel {
             )
             try await profiles.save(profile)
         } catch {
-            errorMessage = L10n.text("Could not change the plan. Try again.")
+            failure = .changePlan
             return
         }
         await backup?.backUpIfConfigured(now: clock())
@@ -207,7 +222,7 @@ public final class RoutinesModel {
             routines.removeAll { $0.id == routineID }
             await backup?.backUpIfConfigured(now: clock())
         } catch {
-            errorMessage = L10n.text("Could not delete the routine.")
+            failure = .delete
         }
     }
 
@@ -216,7 +231,7 @@ public final class RoutinesModel {
         do {
             try await repository.save(routine)
         } catch {
-            errorMessage = L10n.text("Could not save the routine.")
+            failure = .save
             return false
         }
         await load()
