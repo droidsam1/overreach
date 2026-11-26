@@ -1,3 +1,4 @@
+import DesignSystem
 import Foundation
 import HistoryPresentation
 import SwiftUI
@@ -12,7 +13,7 @@ struct StrengthMatchReviewLink: View {
 
     var body: some View {
         if !reviews.isEmpty {
-            NavigationLink("Review strength matches") {
+            NavigationLink {
                 List {
                     ForEach(reviews) { review in
                         Section {
@@ -46,7 +47,11 @@ struct StrengthMatchReviewLink: View {
                 #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
                 #endif
+            } label: {
+                MatchReviewCard(title: "Review strength matches", symbol: "dumbbell.fill", count: reviews.count)
             }
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         }
     }
 

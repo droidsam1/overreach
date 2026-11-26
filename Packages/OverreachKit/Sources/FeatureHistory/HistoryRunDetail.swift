@@ -55,18 +55,15 @@ public struct HistoryRunDetail: View {
 
     public var body: some View {
         List {
-            Section {
-                LabeledContent("Date") {
-                    Text(run.startedAt, format: .dateTime.weekday().day().month().year().hour().minute())
+            HistorySummaryCard(date: run.startedAt) {
+                HistorySummaryTile(label: "Distance", value: Text(run.distance))
+                HistorySummaryTile(label: "Duration", value: Text(run.duration))
+                if let pace = run.pace {
+                    HistorySummaryTile(label: "Pace", value: Text(pace))
                 }
-                LabeledContent("Sources", value: run.sourceText)
             }
             Section {
-                LabeledContent("Distance", value: run.distance)
-                LabeledContent("Duration", value: run.duration)
-                if let pace = run.pace {
-                    LabeledContent("Pace", value: pace)
-                }
+                LabeledContent("Sources", value: run.sourceText)
                 if let heartRate = run.heartRate {
                     LabeledContent("Average heart rate", value: heartRate)
                 }
