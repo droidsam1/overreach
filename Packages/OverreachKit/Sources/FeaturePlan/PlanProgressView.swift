@@ -69,6 +69,9 @@ public struct PlanProgressView: View {
             }
         }
         .navigationTitle("Progress")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .task { await model.load() }
         .refreshable { await model.load() }
     }

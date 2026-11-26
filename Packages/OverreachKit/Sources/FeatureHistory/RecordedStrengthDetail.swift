@@ -55,6 +55,9 @@ struct RecordedStrengthDetail: View {
             }
         }
         .navigationTitle(recording.title)
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .sheet(item: $editor) { editor in
             SessionEditorView(model: editor) { saved in
                 model.didSave(saved, fromRecording: recording.recordingID)

@@ -47,6 +47,9 @@ struct SessionEditorView: View {
                 }
             }
             .navigationTitle("Edit session")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar { toolbar }
             .keyboardDoneButton()
             .interactiveDismissDisabled(model.hasChanges)

@@ -35,6 +35,9 @@ struct RunMatchReviewLink: View {
                     }
                 }
                 .navigationTitle("Review run matches")
+                #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+                #endif
             }
         }
     }

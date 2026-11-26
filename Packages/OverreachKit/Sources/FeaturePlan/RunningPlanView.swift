@@ -30,6 +30,9 @@ struct RunningPlanView: View {
             }
         }
         .navigationTitle("Running goal")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .onAppear { model.resetRunningPlanEditor() }
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {

@@ -41,6 +41,9 @@ public struct WeatherSettingsView: View {
             }
         }
         .navigationTitle("Weather")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .task { await model.load() }
         .sheet(
             item: $onboarding,

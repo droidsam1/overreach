@@ -161,6 +161,9 @@ struct RoutineEditorView: View {
             .environment(\.editMode, .constant(.active))
             #endif
             .navigationTitle(model.title)
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

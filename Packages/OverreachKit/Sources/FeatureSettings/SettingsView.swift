@@ -71,6 +71,9 @@ public struct SettingsView<Library: View>: View {
             }
         }
         .navigationTitle("Settings")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .navigationDestination(isPresented: $showsStrongImport) {
             strongImport
         }
@@ -157,6 +160,9 @@ public struct SettingsView<Library: View>: View {
             }
         }
         .navigationTitle("Import from Strong")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .task { await importModel.loadDefaultWeightUnit() }
     }
 

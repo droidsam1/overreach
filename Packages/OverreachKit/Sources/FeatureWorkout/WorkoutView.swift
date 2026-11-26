@@ -457,6 +457,9 @@ private struct ProgressionPicker: View {
                 }
             }
             .navigationTitle("Choose progression")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
             .inlineTitle(true)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -561,7 +564,7 @@ extension View {
     @ViewBuilder
     fileprivate func inlineTitle(_ isInline: Bool) -> some View {
         #if os(iOS)
-        navigationBarTitleDisplayMode(isInline ? .inline : .automatic)
+        navigationBarTitleDisplayMode(isInline ? .inline : .large)
         #else
         self
         #endif

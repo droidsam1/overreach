@@ -22,10 +22,9 @@ hybrid athlete. The device and external review steps below have their own accept
 9. [#304](https://github.com/droidsam1/overreach/issues/304) — Plan detail screens: use DesignSystem calendar, bars and charts.
 11. [#306](https://github.com/droidsam1/overreach/issues/306) — VoiceOver labels for Exercises, Onboarding, Settings, Garmin setup and forms.
 12. [#307](https://github.com/droidsam1/overreach/issues/307) — Haptics for save, confirm and check-in feedback.
-13. [#308](https://github.com/droidsam1/overreach/issues/308) — Titles: large on tab roots, inline on pushed screens.
-14. [#347](https://github.com/droidsam1/overreach/issues/347) — Recovery: sleep and training timing card (ADR-0045).
-15. [#348](https://github.com/droidsam1/overreach/issues/348) — AI context: include sleep and training timing.
-16. [#351](https://github.com/droidsam1/overreach/issues/351) — CircadianTiming: regularity from sleep midpoint and wake time.
+13. [#347](https://github.com/droidsam1/overreach/issues/347) — Recovery: sleep and training timing card (ADR-0045).
+14. [#348](https://github.com/droidsam1/overreach/issues/348) — AI context: include sleep and training timing.
+15. [#351](https://github.com/droidsam1/overreach/issues/351) — CircadianTiming: regularity from sleep midpoint and wake time.
 
 ## Needs a person or an iPhone
 

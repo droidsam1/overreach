@@ -130,6 +130,9 @@ public struct TodayView: View {
                 .padding(Spacing.medium)
             }
             .navigationTitle("Today")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.large)
+            #endif
             .toolbar {
                 if let forecastModel {
                     ToolbarItem(placement: .primaryAction) {
@@ -186,6 +189,9 @@ public struct TodayView: View {
                     .padding(Spacing.medium)
                 }
                 .navigationTitle("Run details")
+                #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+                #endif
             }
             .sheet(item: $painPrompt) { prompt in RunPainSheet(model: model, prompt: prompt) }
             .sheet(item: $checkInSheet) { sheet in
@@ -286,6 +292,9 @@ public struct TodayView: View {
             .padding(Spacing.medium)
         }
         .navigationTitle("Other options")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
     }
 
     /// The one secondary prompt under the hero (ADR-0041).
@@ -769,6 +778,9 @@ public struct TodayView: View {
             .padding(Spacing.medium)
         }
         .navigationTitle("Run details")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
     }
 
     @ViewBuilder private func runAdjustmentAnswers(_ adjustment: RunningOption.Adjustment) -> some View {

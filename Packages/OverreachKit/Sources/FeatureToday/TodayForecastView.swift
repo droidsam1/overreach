@@ -22,6 +22,9 @@ struct TodayForecastView<Settings: View>: View {
             }
         }
         .navigationTitle("Weather today")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
         .task { await model.load() }
         .refreshable { await model.load(forceRefresh: true) }
     }
