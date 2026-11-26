@@ -9,7 +9,8 @@ import Foundation
 ///   session of its routine was logged that day.
 /// - Rest entries and postponed runs are not planned sessions, so a missed day never shows as a failure.
 /// - Without dated entries the current block's weekly target counts.
-/// - A day with rest logged counts as a completed day, never as a missed one. There is no streak.
+/// - A past day with neither strength nor a run counts as rest, as does one with rest logged: a completed day,
+///   never a missed one. There is no streak.
 public struct WeekProgress: Hashable, Sendable {
     /// What a day got done.
     public enum Done: Hashable, Sendable {
@@ -76,10 +77,10 @@ public struct WeekProgress: Hashable, Sendable {
     public let runsDone: Int
     public let block: BlockWeek?
 
-    /// Whether anything was planned or done this week, rest included.
-    public var hasActivity: Bool {
-        sessionsPlanned > 0 || block != nil || days.contains { $0.done != .nothing || $0.isPlanned }
-    }
+    /// Whether anything was planned or done this week, logged rest included. Days that are rest only because
+    /// nothing happened do not count.
+    public var hasActivity: Bool { hasEntries }
+    private let hasEntries: Bool
 
     public static func make(_ inputs: Inputs, now: Date, calendar: Calendar = .current) -> WeekProgress? {
         let today = CalendarDay(now, calendar: calendar)
@@ -118,7 +119,8 @@ public struct WeekProgress: Hashable, Sendable {
             case (true, true): .both
             case (true, false): .strength
             case (false, true): .run
-            case (false, false): rests.contains(day) ? .restLogged : .nothing
+            // A past day with no training is a rest day, logged or not.
+            case (false, false): rests.contains(day) || day < today ? .restLogged : .nothing
             }
             return Day(
                 day: day, isToday: day == today, done: outcome,
@@ -127,11 +129,15 @@ public struct WeekProgress: Hashable, Sendable {
                 isDeload: inputs.deloadDays.contains(day)
             )
         }
+        let blockWeek = inputs.currentBlock.flatMap { Self.blockWeek($0, today: today, calendar: calendar) }
         let progress = WeekProgress(
             days: days, sessionsPlanned: planned, sessionsDone: done,
             strengthPlanned: plannedStrength.count, strengthDone: strengthDone,
             runsPlanned: plannedRuns.count, runsDone: runsDone,
-            block: inputs.currentBlock.flatMap { blockWeek($0, today: today, calendar: calendar) }
+            block: blockWeek,
+            hasEntries: planned > 0 || blockWeek != nil
+                || weekDays.contains { sessionDays.contains($0) || runDays.contains($0) || rests.contains($0) }
+                || days.contains(where: \.isPlanned)
         )
         return progress.hasActivity ? progress : nil
     }

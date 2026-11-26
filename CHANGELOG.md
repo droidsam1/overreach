@@ -242,6 +242,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings → Appearance: light, dark or the same as the iPhone (the default).
 
 ### Fixed
+- Plan's week now shows recorded runs and logged rest like Today, and a past day with no training counts as a
+  rest day in both. The weather provider picker updates as soon as you pick one.
 - Settings opens an editable training profile with a Save button for your goal, personal context, walking routine,
   dog name and devices.
 - Today's **Recovery** tile switches to the Recovery tab, like History, instead of pushing a copy of it inside Today.
