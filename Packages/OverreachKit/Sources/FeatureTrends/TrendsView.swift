@@ -124,7 +124,7 @@ private struct SectionRow: View {
         }
         .padding(Spacing.medium)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
+        .background(.background.secondary, in: .rect(cornerRadius: Radius.tile))
         .accessibilityElement(children: .combine)
     }
 }
@@ -219,7 +219,7 @@ private struct ReadingCard: View {
         }
         .padding(Spacing.medium)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
+        .background(.background.secondary, in: .rect(cornerRadius: Radius.tile))
     }
 }
 
@@ -244,7 +244,7 @@ private struct RecentLoadDetail: View {
                     }
                     .padding(Spacing.medium)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
+                    .background(.background.secondary, in: .rect(cornerRadius: Radius.tile))
                     .accessibilityElement(children: .combine)
                 }
                 if model.showsLoadTrends { TrendSection(model: model, charts: model.weeklyCharts) }

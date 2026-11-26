@@ -12,7 +12,6 @@ hybrid athlete. The device and external review steps below have their own accept
 
 ## Ready to implement
 
-1. [#296](https://github.com/droidsam1/overreach/issues/296) — DesignSystem: Card, SectionHeader, IconTile, InlineNotice, LoadingState and radius tokens.
 2. [#297](https://github.com/droidsam1/overreach/issues/297) — Train, History, Plan: replace ad-hoc status colours with InlineNotice.
 3. [#298](https://github.com/droidsam1/overreach/issues/298) — Train: start screen as hero card with one verb and routine cards.
 4. [#300](https://github.com/droidsam1/overreach/issues/300) — History: cards, summary-first details and shared empty states.

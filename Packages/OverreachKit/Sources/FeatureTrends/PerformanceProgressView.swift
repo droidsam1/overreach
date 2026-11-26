@@ -70,7 +70,7 @@ struct PerformanceProgressView<Plan: View>: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Spacing.medium)
-        .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.card))
+        .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.tile))
     }
 
     private var sensorConfirmation: some View {
@@ -171,7 +171,7 @@ private struct PerformanceSeriesCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Spacing.medium)
-        .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.card))
+        .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.tile))
     }
 
     private var chart: some View {

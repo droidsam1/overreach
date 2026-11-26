@@ -66,7 +66,7 @@ private struct TrendChartView: View {
         }
         .padding(Spacing.medium)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
+        .background(.background.secondary, in: .rect(cornerRadius: Radius.tile))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(chart.title))
         .accessibilityValue(Text([chart.summary, chart.partialWeekLabel].compactMap { $0 }.joined(separator: " ")))

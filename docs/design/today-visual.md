@@ -16,8 +16,15 @@ Dark values are from the mock-ups; light values are chosen in #212 with the same
 | Symbol | ✓ | – | ✕ | ✓ | ? |
 
 Other colours: page `#0E1013`, card `#1A1D22`, inner tile `#2A2E35`, secondary text `#A1A7B0`. Kinds: strength violet
-`#A78BFA`, run blue `#5AA9FF`, sleep teal `#2DD4BF`, rest green. Card radius 24, tile radius 16, padding 16–20,
-gap 14 between blocks. Typography: system font; "Today" large title, verdict title2 heavy, values title3 heavy.
+`#A78BFA`, run blue `#5AA9FF`, sleep teal `#2DD4BF`, rest green. Typography uses the system font, with a large title for "Today", heavy title2 for the verdict and
+heavy title3 for values.
+
+| Role | DesignSystem token | Points |
+| --- | --- | --- |
+| Hero and week card corners | `Radius.card` | 24 |
+| Compact card and tile corners | `Radius.tile` | 16 |
+| Card padding | `Spacing.medium` by default | 16 |
+| Gap between blocks | `Spacing.large` | 24 |
 
 ## Hero
 

@@ -140,9 +140,9 @@ public struct ChoiceCard: View {
             }
             .padding(Spacing.medium)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.background.secondary, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+            .background(.background.secondary, in: RoundedRectangle(cornerRadius: Radius.tile, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
+                RoundedRectangle(cornerRadius: Radius.tile, style: .continuous)
                     .strokeBorder(isSelected ? AnyShapeStyle(.tint) : AnyShapeStyle(.clear), lineWidth: 2)
             )
             .scaleEffect(isSelected && !reduceMotion ? 1.02 : 1)
@@ -154,6 +154,56 @@ public struct ChoiceCard: View {
 }
 
 #if DEBUG
+#Preview("Cards and states · Light") {
+    CardsAndStatesGallery().preferredColorScheme(.light)
+}
+
+#Preview("Cards and states · Dark") {
+    CardsAndStatesGallery().preferredColorScheme(.dark)
+}
+
+#Preview("Cards and states · Largest text") {
+    CardsAndStatesGallery()
+        .environment(\.dynamicTypeSize, .accessibility5)
+        .preferredColorScheme(.dark)
+}
+
+private struct CardsAndStatesGallery: View {
+    var body: some View {
+        ScrollView {
+            VStack(spacing: Spacing.large) {
+                Card {
+                    SectionHeader(Text("Your week")) {
+                        Text("Week 2 of 4").font(.footnote).foregroundStyle(.secondary)
+                    }
+                }
+                Card(tone: .caution) {
+                    VStack(alignment: .leading, spacing: Spacing.medium) {
+                        SectionHeader(Text("Today's session")) {
+                            Button("Options") {}
+                                .frame(minHeight: 44)
+                        }
+                        HStack(spacing: Spacing.small) {
+                            IconTile(symbolName: "figure.run", color: WeekDayKind.runColor)
+                            Text("Easy run")
+                        }
+                    }
+                }
+                InlineNotice(Text("Could not load workouts."), tone: .critical, retry: {})
+                InlineNotice(Text("Showing previously synced data."), tone: .caution)
+                LoadingState("Loading…")
+                LoadingState()
+                ListEmptyState(
+                    title: "No workouts yet", systemImage: "dumbbell",
+                    description: Text("Your logged workouts will appear here.")
+                )
+                ListEmptyState(query: "Tempo", title: "No workouts yet", systemImage: "dumbbell")
+            }
+            .padding(Spacing.medium)
+        }
+    }
+}
+
 #Preview("Visual Today · Light") {
     VisualTodayGallery().preferredColorScheme(.light)
 }

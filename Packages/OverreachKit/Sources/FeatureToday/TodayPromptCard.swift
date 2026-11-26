@@ -11,31 +11,30 @@ struct TodayPromptCard<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
-            HStack(alignment: .top, spacing: Spacing.small) {
-                VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                    title.font(.headline).accessibilityAddTraits(.isHeader)
-                    if let detail {
-                        detail.font(.subheadline).foregroundStyle(.secondary)
+        Card(radius: Radius.tile) {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                HStack(alignment: .top, spacing: Spacing.small) {
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        title.font(.headline).accessibilityAddTraits(.isHeader)
+                        if let detail {
+                            detail.font(.subheadline).foregroundStyle(.secondary)
+                        }
                     }
-                }
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
 
-                Button(action: dismiss) {
-                    Image(systemName: "xmark")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 44, height: 44)
-                        .contentShape(.rect)
+                    Button(action: dismiss) {
+                        Image(systemName: "xmark")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 44, height: 44)
+                            .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Dismiss")
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Dismiss")
+                content()
             }
-            content()
         }
-        .padding(Spacing.medium)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background.secondary, in: .rect(cornerRadius: Radius.card))
         .accessibilityElement(children: .contain)
     }
 }

@@ -47,7 +47,7 @@ struct TodayDoneSummary: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Spacing.small + Spacing.xSmall)
-            .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.card))
+            .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.tile))
             .accessibilityElement(children: .combine)
         }
     }
@@ -60,7 +60,7 @@ struct TodayDoneSummary: View {
         }
         .padding(Spacing.small + Spacing.xSmall)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tone.accent.opacity(0.12), in: .rect(cornerRadius: Radius.card))
+        .background(tone.accent.opacity(0.12), in: .rect(cornerRadius: Radius.tile))
     }
 
     private var tomorrow: some View {

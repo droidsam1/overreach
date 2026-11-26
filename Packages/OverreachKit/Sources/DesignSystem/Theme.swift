@@ -10,7 +10,8 @@ public enum Spacing {
 }
 
 public enum Radius {
-    public static let card: CGFloat = 16
+    public static let card: CGFloat = 24
+    public static let tile: CGFloat = 16
 }
 
 /// Semantic look of a status, independent of what the status means.
@@ -162,8 +163,8 @@ public struct BrandButtonStyle: ButtonStyle {
                         }
                     }
             }
-            .clipShape(.rect(cornerRadius: Radius.card))
-            .contentShape(.rect(cornerRadius: Radius.card))
+            .clipShape(.rect(cornerRadius: Radius.tile))
+            .contentShape(.rect(cornerRadius: Radius.tile))
             .opacity(isEnabled ? 1 : 0.5)
     }
 }

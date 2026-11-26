@@ -223,7 +223,7 @@ public struct ReorderCardList<Item: Identifiable, Card: View>: View where Item.I
                     let shift = drag?.shift(of: item.id) ?? 0
                     card(item)
                         .padding(Spacing.medium)
-                        .background(.quaternary, in: RoundedRectangle(cornerRadius: Radius.card))
+                        .background(.quaternary, in: RoundedRectangle(cornerRadius: Radius.tile))
                         .contentShape(Rectangle())
                         .scaleEffect(isDragged ? 1.03 : 1)
                         .shadow(color: .black.opacity(isDragged ? 0.25 : 0), radius: isDragged ? 10 : 0, y: 4)

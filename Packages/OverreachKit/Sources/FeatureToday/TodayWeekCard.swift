@@ -16,26 +16,25 @@ struct TodayWeekCard: View {
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.medium) {
-            if let week {
-                header(week)
-                WeekStrip(days: week.days.map(Self.day))
-                progress(week)
-                if let session = week.session {
-                    Divider()
-                    sessionRow(
-                        Row(kind: session.kind, title: session.title, detail: session.detail,
-                            originalTitle: session.originalTitle, tag: session.tag),
-                        action: session.kind == .run ? openRun : openStrength
-                    )
+        Card {
+            VStack(alignment: .leading, spacing: Spacing.medium) {
+                if let week {
+                    header(week)
+                    WeekStrip(days: week.days.map(Self.day))
+                    progress(week)
+                    if let session = week.session {
+                        Divider()
+                        sessionRow(
+                            Row(kind: session.kind, title: session.title, detail: session.detail,
+                                originalTitle: session.originalTitle, tag: session.tag),
+                            action: session.kind == .run ? openRun : openStrength
+                        )
+                    }
+                } else {
+                    plainRows
                 }
-            } else {
-                plainRows
             }
         }
-        .padding(Spacing.medium)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background.secondary, in: .rect(cornerRadius: HeroMetrics.radius))
     }
 
     /// Today's rows without the week: the planned strength session and runs.
@@ -49,11 +48,9 @@ struct TodayWeekCard: View {
     }
 
     private func header(_ week: TodayWeek) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text("Your week").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
-            Spacer()
+        SectionHeader(Text("Your week"), font: .title3.weight(.semibold)) {
             if let block = week.blockTitle {
-                Text(verbatim: block).font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.trailing)
+                Text(verbatim: block).font(.footnote).foregroundStyle(.secondary)
             }
         }
     }
@@ -87,12 +84,7 @@ struct TodayWeekCard: View {
         let color = kind == .run ? WeekDayKind.runColor : WeekDayKind.strengthColor
         return Button(action: action) {
             HStack(spacing: Spacing.small + Spacing.xSmall) {
-                Image(systemName: kind == .run ? "figure.run" : "dumbbell.fill")
-                    .font(.title3)
-                    .foregroundStyle(color)
-                    .frame(width: 44, height: 44)
-                    .background(color.opacity(0.15), in: .rect(cornerRadius: Radius.card))
-                    .accessibilityHidden(true)
+                IconTile(symbolName: kind == .run ? "figure.run" : "dumbbell.fill", color: color)
                 // At accessibility text sizes the tag moves under the text, which keeps the width.
                 if typeSize.isAccessibilitySize {
                     VStack(alignment: .leading, spacing: Spacing.xSmall) {
