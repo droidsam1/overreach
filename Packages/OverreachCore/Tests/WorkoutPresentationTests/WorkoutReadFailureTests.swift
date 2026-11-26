@@ -24,6 +24,7 @@ struct WorkoutReadFailureTests {
         await model.add(bench)
 
         #expect(model.exercises.count == 1)
+        #expect(!model.canRetryFinish)
         #expect(model.errorMessage == "Could not read your history, so these targets may be off.")
     }
 }

@@ -144,6 +144,7 @@ struct WorkoutDraftTests {
         first.exercises[0].sets[0].isDone = true
 
         #expect(await !first.finish())
+        #expect(first.canRetryFinish)
         #expect(first.isSessionActive)
         #expect(draft.data != nil)
 

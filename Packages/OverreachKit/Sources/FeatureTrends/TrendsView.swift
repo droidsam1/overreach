@@ -1,4 +1,5 @@
 import DesignSystem
+import PresentationKit
 import SwiftUI
 import TrendsPresentation
 
@@ -73,7 +74,7 @@ public struct TrendsView<Progress: View>: View {
                     }
                 }
                 if let hint = model.unlockHint {
-                    Text(hint).font(.subheadline).foregroundStyle(.secondary)
+                    ListEmptyState(title: "No data yet", systemImage: "chart.xyaxis.line", description: Text(hint))
                 }
             }
             .buttonStyle(.plain)
@@ -172,18 +173,20 @@ private struct RecoveryDetail: View {
             VStack(alignment: .leading, spacing: Spacing.medium) {
                 SourceStatus(model: model, onConnectGarmin: onConnectGarmin)
                 if !model.hasLoaded {
-                    ProgressView("Loading…")
-                }
-                if model.hasNoReadings {
-                    Text("No recovery readings yet. Connect Apple Health or Garmin to see them here.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    LoadingState("Loading…")
                 }
                 if linksToRecentLoad {
                     RecentLoadLink(model: model, onConnectGarmin: onConnectGarmin)
                 }
-                ForEach(model.readings) { reading in
-                    ReadingCard(reading: reading)
+                if model.hasNoReadings {
+                    ListEmptyState(
+                        title: "No readings yet", systemImage: "heart.text.square",
+                        description: Text("Connect Apple Health or Garmin to see recovery readings.")
+                    )
+                } else {
+                    ForEach(model.readings) { reading in
+                        ReadingCard(reading: reading)
+                    }
                 }
                 if model.showsRecoveryTrends { TrendSection(model: model, charts: model.recoveryCharts) }
             }
@@ -198,31 +201,28 @@ private struct ReadingCard: View {
     let reading: RecoveryReading
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.xSmall) {
-            AdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: Spacing.xSmall) {
-                Text(reading.title).font(.headline)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Text(reading.value)
-                    .font(.headline)
-                    .foregroundStyle(reading.isAvailable ? .primary : .secondary)
-            }
-            Text(reading.summary).font(.subheadline).foregroundStyle(.secondary)
-            if !reading.details.isEmpty {
-                DisclosureGroup("Source and coverage") {
-                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                        ForEach(reading.details, id: \.self) { Text($0) }
-                    }
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, Spacing.xSmall)
+        Card {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                SectionHeader(Text(reading.title)) {
+                    Text(reading.value)
+                        .font(.title3.weight(.heavy))
+                        .foregroundStyle(reading.isAvailable ? .primary : .secondary)
                 }
-                .font(.subheadline)
+                Text(reading.summary).font(.subheadline).foregroundStyle(.secondary)
+                if !reading.details.isEmpty {
+                    DisclosureGroup("Source and coverage") {
+                        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                            ForEach(reading.details, id: \.self) { Text($0) }
+                        }
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, Spacing.xSmall)
+                    }
+                    .font(.subheadline)
+                }
             }
         }
-        .padding(Spacing.medium)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background.secondary, in: .rect(cornerRadius: Radius.tile))
     }
 }
 
@@ -234,21 +234,19 @@ private struct RecentLoadDetail: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.medium) {
                 SourceStatus(model: model, onConnectGarmin: onConnectGarmin)
+                if !model.hasLoaded {
+                    LoadingState("Loading…")
+                } else if !model.showsRecentLoad {
+                    ListEmptyState(
+                        title: "No data yet", systemImage: "chart.bar",
+                        description: Text("Log a workout to see how your recent load compares.")
+                    )
+                }
+                if let load = model.weeklyLoad {
+                    WeeklyLoadCard(load: load)
+                }
                 ForEach(model.loadRows) { row in
-                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                        Text(row.title).font(.headline)
-                        Text(row.value).font(.title3.weight(.semibold))
-                        if let comparison = row.comparison {
-                            Text(comparison).font(.subheadline).foregroundStyle(.secondary)
-                        }
-                        ForEach(row.details, id: \.self) {
-                            Text($0).font(.footnote).foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(Spacing.medium)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(.background.secondary, in: .rect(cornerRadius: Radius.tile))
-                    .accessibilityElement(children: .combine)
+                    LoadCard(row: row)
                 }
                 if model.showsLoadTrends { TrendSection(model: model, charts: model.weeklyCharts) }
             }
@@ -256,6 +254,56 @@ private struct RecentLoadDetail: View {
         }
         .navigationTitle("Recent load")
         .navigationBarTitleDisplayModeInline()
+    }
+}
+
+private struct WeeklyLoadCard: View {
+    let load: WeeklyLoadReading
+
+    private var tone: StatusTone {
+        switch load.zone {
+        case .below: .neutral
+        case .usual: .positive
+        case .above: .caution
+        }
+    }
+
+    var body: some View {
+        Card(tone: tone) {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                SectionHeader(Text("Load")) {
+                    Text(load.value).font(.title3.weight(.heavy))
+                }
+                RangeGauge(
+                    value: load.ratio, scale: WeeklyLoadScale.scale, usual: WeeklyLoadScale.usual,
+                    tone: tone, accessibilityLabel: load.status
+                )
+                .accessibilityHidden(true)
+                Text(load.status).font(.subheadline)
+                Text(load.usualRange).font(.footnote).foregroundStyle(.secondary)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private struct LoadCard: View {
+    let row: RecentLoadRow
+
+    var body: some View {
+        Card {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                Text(row.title).font(.headline).accessibilityAddTraits(.isHeader)
+                Text(row.value).font(.title3.weight(.heavy))
+                if let comparison = row.comparison {
+                    Text(comparison).font(.subheadline).foregroundStyle(.secondary)
+                }
+                ForEach(row.details, id: \.self) {
+                    Text($0).font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 

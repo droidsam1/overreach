@@ -24,13 +24,14 @@ extension TodayModel {
     func quickCheckInOptions() -> [Option<Int>] { QuickCheckIn.options }
 
     /// Saves the answer over today's check-in (every other field stays), then reloads so the verdict can change.
-    func saveQuickCheckIn(_ answer: Int, now: Date) async {
+    func saveQuickCheckIn(_ answer: Int, now: Date) async -> Bool {
         guard let sheet = makeCheckInModel(now: now), QuickCheckIn.options.contains(where: { $0.value == answer })
-        else { return }
+        else { return false }
         sheet.energy = answer
         let saved = await sheet.save()
         // An unchanged answer has nothing to save; a failed save keeps the prompt as it was.
-        guard saved || !sheet.canSave else { return }
+        guard saved || !sheet.canSave else { return false }
         await load(now: now)
+        return saved
     }
 }

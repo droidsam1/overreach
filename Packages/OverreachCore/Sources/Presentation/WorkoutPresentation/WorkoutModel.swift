@@ -313,7 +313,22 @@ public final class WorkoutModel {
     public var exercises: [DraftExercise] = [] {
         didSet { saveDraft() }
     }
-    public private(set) var errorMessage: String?
+    private enum Failure {
+        case loadExercises, saveFocus, saveSession, loadHistory
+    }
+
+    private var failure: Failure?
+    public var canRetryFinish: Bool { failure == .saveSession }
+
+    public var errorMessage: String? {
+        switch failure {
+        case .loadExercises: L10n.text("Could not load exercises.")
+        case .saveFocus: L10n.text("Could not save the exercise focus. Try again.")
+        case .saveSession: L10n.text("Could not save the session. It is still open.")
+        case .loadHistory: L10n.text("Could not read your history, so these targets may be off.")
+        case nil: nil
+        }
+    }
     public private(set) var isSavingProgression = false
     public private(set) var progressionSaveError: String?
     /// The summary of the session just finished; set it to `nil` to dismiss it.
@@ -419,7 +434,7 @@ public final class WorkoutModel {
         do {
             catalog = try await exerciseRepository.allExercises()
         } catch {
-            errorMessage = L10n.text("Could not load exercises.")
+            failure = .loadExercises
         }
         await loadProfilePreferences()
     }
@@ -468,7 +483,7 @@ public final class WorkoutModel {
         rotationCap = nil
         startsFromRotationHistory = false
         exercises = []
-        errorMessage = nil
+        failure = nil
         draftNotice = nil
         sessionID = UUID()
         startedAt = clock()
@@ -609,7 +624,7 @@ public final class WorkoutModel {
                 try await progression.save(updated, for: exercise.id)
             }
         } catch {
-            errorMessage = L10n.text("Could not save the exercise focus. Try again.")
+            failure = .saveFocus
             return
         }
         await applySettingsChanges()
@@ -886,7 +901,7 @@ public final class WorkoutModel {
             try await workouts.save(finished)
         } catch {
             isSavingSession = false
-            errorMessage = L10n.text("Could not save the session. It is still open.")
+            failure = .saveSession
             return false
         }
 
@@ -914,10 +929,12 @@ public final class WorkoutModel {
         return SessionReport(review: review, effortScale: effortScale, format: format)
     }
 
-    public func discard() {
+    @discardableResult
+    public func discard() -> Bool {
         let mayHavePendingRestAlert = pendingDraft?.rest != nil || isDraftUnreadable
-        guard !isPreparingSession, !isSavingSession, !isRecoveringDraft, clearStoredDraft() else { return }
+        guard !isPreparingSession, !isSavingSession, !isRecoveringDraft, clearStoredDraft() else { return false }
         close(cancelPendingRestAlert: mayHavePendingRestAlert)
+        return true
     }
 
     private func close(cancelPendingRestAlert: Bool = false) {
@@ -925,7 +942,7 @@ public final class WorkoutModel {
         sessionID = nil
         rest.stop(cancelPendingAlert: cancelPendingRestAlert)
         exercises = []
-        errorMessage = nil
+        failure = nil
     }
 
     // MARK: Draft recovery
@@ -1041,6 +1058,6 @@ public final class WorkoutModel {
     }
 
     private func warnAboutTargets() {
-        errorMessage = L10n.text("Could not read your history, so these targets may be off.")
+        failure = .loadHistory
     }
 }

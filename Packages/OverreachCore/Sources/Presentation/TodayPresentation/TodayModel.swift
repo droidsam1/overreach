@@ -725,9 +725,10 @@ public final class TodayModel {
 
     /// Saves the one-tap answer and reloads. When the answer changes the decision (`quickCheckInNeedsDetails`),
     /// the view opens the full check-in next.
-    public func answerQuickCheckIn(_ answer: Int, now: Date = .now) async {
+    @discardableResult
+    public func answerQuickCheckIn(_ answer: Int, now: Date = .now) async -> Bool {
         quickCheckInNeedsDetails = QuickCheckIn.needsDetails(answer, settings: readinessSettings)
-        await saveQuickCheckIn(answer, now: now)
+        return await saveQuickCheckIn(answer, now: now)
     }
 
     /// The check-in sheet for today. After it saves, call `load()` to update the light.

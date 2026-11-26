@@ -20,6 +20,7 @@ public final class RecoveryProgressModel {
 
     public private(set) var readings: [RecoveryReading] = []
     public private(set) var loadRows: [RecentLoadRow] = []
+    public private(set) var weeklyLoad: WeeklyLoadReading?
     /// The interval of the trend charts, shared by the Recovery and Recent load details.
     public private(set) var trendRange = TrendRange.days30
     public private(set) var recoveryCharts: [TrendChart] = []
@@ -289,6 +290,9 @@ public final class RecoveryProgressModel {
         readings = RecoveryReadings(calendar: calendar, format: format)
             .readings(readiness: readiness, history: record.metrics, today: today)
         loadRows = RecentLoad(calendar: calendar, format: format).rows(record: record, today: today)
+        weeklyLoad = profile.flatMap {
+            record.weeklyLoad(profile: $0, today: today, calendar: calendar)
+        }.map { WeeklyLoadReading($0, format: format) }
         var hrvSeries: HRVSeriesID?
         if case let .hrv(series?)? = readiness.hrvInput?.input { hrvSeries = series }
         if hrvSeries == nil {

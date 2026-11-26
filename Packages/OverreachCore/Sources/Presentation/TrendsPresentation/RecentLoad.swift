@@ -20,6 +20,37 @@ public struct RecentLoadRow: Identifiable, Hashable, Sendable {
     public var id: Kind { kind }
 }
 
+/// The effort-weighted weekly comparison, separate from the totals for each discipline.
+public struct WeeklyLoadReading: Hashable, Sendable {
+    public enum Zone: Hashable, Sendable { case below, usual, above }
+
+    public let ratio: Double
+    public let value: String
+    public let zone: Zone
+    public let status: String
+    public let usualRange: String
+
+    init(_ load: WeeklyLoadChange, format: Format) {
+        ratio = load.ratio
+        value = format.fixed(ratio, digits: 2)
+        let usual = WeeklyLoadScale.usual
+        if ratio < usual.lowerBound {
+            zone = .below
+            status = L10n.text("Below your usual range")
+        } else if ratio > usual.upperBound {
+            zone = .above
+            status = L10n.text("Above your usual week")
+        } else {
+            zone = .usual
+            status = L10n.text("Within your usual range")
+        }
+        usualRange = L10n.format(
+            "Usual range {1}–{2}",
+            format.number(usual.lowerBound), format.number(usual.upperBound)
+        )
+    }
+}
+
 /// Recent load by discipline from the shared training record: logged strength, runs once each, everyday movement.
 struct RecentLoad {
     let calendar: Calendar

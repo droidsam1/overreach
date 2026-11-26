@@ -8,6 +8,7 @@ import TodayPresentation
 public struct TodayView: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var model: TodayModel
+    @State private var savedCheckInCount = 0
     @State private var savingEnergy: Int?
     @State private var checkInSheet: CheckInModel?
     @State private var showsRun = false
@@ -133,6 +134,7 @@ public struct TodayView: View {
             #if os(iOS)
             .navigationBarTitleDisplayMode(.large)
             #endif
+            .haptic(.completed, trigger: savedCheckInCount)
             .toolbar {
                 if let forecastModel {
                     ToolbarItem(placement: .primaryAction) {
@@ -196,6 +198,7 @@ public struct TodayView: View {
             .sheet(item: $painPrompt) { prompt in RunPainSheet(model: model, prompt: prompt) }
             .sheet(item: $checkInSheet) { sheet in
                 CheckInView(model: sheet) {
+                    savedCheckInCount += 1
                     model.recordWarmUpQuestionSaved(sheet)
                     Task { await model.load() }
                 }
@@ -358,12 +361,13 @@ public struct TodayView: View {
                 options: model.quickCheckIn.map {
                     AnswerOption(id: String($0.value), symbolName: energySymbol($0.value), label: $0.name)
                 },
-                selectedID: (savingEnergy ?? model.checkIn?.energy).map { String($0) }
+                selectedID: (savingEnergy ?? model.checkIn?.energy).map { String($0) },
+                playsSelectionFeedback: false
             ) { id in
                 guard savingEnergy == nil, let answer = Int(id) else { return }
                 savingEnergy = answer
                 Task {
-                    await model.answerQuickCheckIn(answer)
+                    if await model.answerQuickCheckIn(answer) { savedCheckInCount += 1 }
                     if model.quickCheckInNeedsDetails || model.checkIn?.energy != answer {
                         let sheet = model.makeCheckInModel()
                         sheet?.energy = answer

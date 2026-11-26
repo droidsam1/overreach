@@ -99,6 +99,19 @@ public struct TrainingRecord: Sendable {
 }
 
 extension TrainingRecord {
+    /// The same effort-weighted load used in the deload assessment, when comparable weeks are available.
+    public func weeklyLoad(
+        profile: AthleteProfile, today: CalendarDay, calendar: Calendar
+    ) -> WeeklyLoadChange? {
+        let range = today.adding(days: Workload.usualStartOffset, calendar: calendar)...today
+        let training = sessions.filter { range.contains(CalendarDay($0.startedAt, calendar: calendar)) }
+        let loads = training.compactMap { Workload.strengthLoad($0, calendar: calendar) }
+        // A partly recorded week could look easy simply because its sessions lack effort data.
+        guard loads.count == training.count else { return nil }
+        let walking = EverydayMovement.walkingLoads(activity, in: range, profile: profile, calendar: calendar)
+        return Workload.weeklyLoadChange(loads: loads, on: today, calendar: calendar, walking: walking)
+    }
+
     fileprivate func recoveryPeriods(
         profile: AthleteProfile, today: CalendarDay, calendar: Calendar
     ) -> [DetectedDeload] {
@@ -166,7 +179,7 @@ public enum DeloadAssessment: Hashable, Sendable {
             today: today, history: record.metrics, checkIns: record.checkIns, settings: readinessSettings,
             cycle: record.cycle, calendar: calendar
         )
-        let weeklyLoad = weeklyLoad(record: record, profile: profile, today: today, calendar: calendar)
+        let weeklyLoad = record.weeklyLoad(profile: profile, today: today, calendar: calendar)
         let currentExerciseIDs = LiftStatus.currentExerciseIDs(
             sessions: sessions, routines: record.routines, profile: profile, now: now, calendar: calendar
         )
@@ -191,17 +204,5 @@ public enum DeloadAssessment: Hashable, Sendable {
             return .confirmBreak(pending)
         }
         return .proposed(proposal, walkingIncluded: (weeklyLoad?.walkingLastWeek ?? 0) > 0, lastRecovery: last)
-    }
-
-    private static func weeklyLoad(
-        record: TrainingRecord, profile: AthleteProfile, today: CalendarDay, calendar: Calendar
-    ) -> WeeklyLoadChange? {
-        let range = today.adding(days: Workload.usualStartOffset, calendar: calendar)...today
-        let training = record.sessions.filter { range.contains(CalendarDay($0.startedAt, calendar: calendar)) }
-        let loads = training.compactMap { Workload.strengthLoad($0, calendar: calendar) }
-        // A partly recorded week could look easy simply because its sessions lack effort data.
-        guard loads.count == training.count else { return nil }
-        let walking = EverydayMovement.walkingLoads(record.activity, in: range, profile: profile, calendar: calendar)
-        return Workload.weeklyLoadChange(loads: loads, on: today, calendar: calendar, walking: walking)
     }
 }

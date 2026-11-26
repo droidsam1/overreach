@@ -77,6 +77,7 @@ public struct PlanView<Assistant: View, Progress: View>: View {
             #if os(iOS)
             .navigationBarTitleDisplayMode(.large)
             #endif
+            .haptic(.completed, trigger: model.savedChangeCount)
             .task { await reload() }
             .onChange(of: suggestedRun, initial: true) { _, draft in
                 guard let draft else { return }

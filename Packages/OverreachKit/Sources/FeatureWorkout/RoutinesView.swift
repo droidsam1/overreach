@@ -6,9 +6,10 @@ import WorkoutPresentation
 
 // Views only: layout, styling and navigation. Rules and texts come from `WorkoutPresentation` (ADR-0014).
 
-/// What the Train tab shows when no session is open: start an empty session or one from a routine.
+/// What Train shows before a workout starts.
 struct StartSessionView: View {
     @Environment(\.dynamicTypeSize) private var typeSize
+
     let routines: RoutinesModel
     let notice: String?
     let onStartEmpty: () -> Void
@@ -16,108 +17,158 @@ struct StartSessionView: View {
     let onEdit: (UUID) -> Void
 
     var body: some View {
-        List {
-            if let notice {
-                StatusLabel(title: notice, tone: .positive)
-            }
-            if let message = routines.errorMessage {
-                InlineNotice(Text(message), tone: .critical) { Task { await routines.load() } }
-            }
-            if let next = routines.upNext {
-                Section {
-                    Button {
-                        onStart(next.routine)
-                    } label: {
-                        AdaptiveStack(spacing: Spacing.medium) {
-                            Image(systemName: "calendar.badge.clock")
-                                .font(.title2)
-                                .foregroundStyle(Color.accentColor)
-                                .accessibilityHidden(true)
-                            VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                                Text(next.title).font(.headline).foregroundStyle(.primary)
-                                Text(next.detail).font(.subheadline).foregroundStyle(.secondary)
-                                if let progress = next.weekProgress {
-                                    Text(progress).font(.subheadline.monospacedDigit()).foregroundStyle(.secondary)
-                                }
-                                Text(next.exerciseList)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            Image(systemName: "play.circle.fill")
-                                .font(.title)
-                                .foregroundStyle(Color.accentColor)
-                                .accessibilityHidden(true)
-                        }
-                        .contentShape(.rect)
-                    }
-                    .buttonStyle(.borderless)
-                    .accessibilityHint("Starts this session")
-                } header: {
-                    Text("Up next in your plan")
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.large) {
+                notices
+                if let next = routines.upNext {
+                    nextSession(next)
+                }
+                if emptySessionIsPrimary {
+                    emptySession
+                    routineCards
+                } else {
+                    routineCards
+                    emptySession
                 }
             }
-            Section {
-                Button("Start empty session", systemImage: "plus.circle.fill", action: onStartEmpty)
-            } footer: {
-                Text("Targets come from your history.")
-            }
-            if !routines.planChecks.isEmpty {
-                Section("Plan check") {
-                    ForEach(routines.planChecks) { check in
-                        PlanCheckView(check: check) {
-                            Task { await routines.accept(check) }
-                        }
-                    }
-                }
-            }
-            Section {
-                ForEach(routines.rows) { row in
-                    routineRow(row)
-                }
-            } header: {
-                Text("Routines")
-            } footer: {
-                if routines.showsEmptyHint {
-                    Text("Create one with +, or save a past session as a routine from History.")
-                }
-            }
+            .padding(Spacing.medium)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .refreshable { await routines.load() }
     }
 
-    private func routineRow(_ row: RoutineRow) -> some View {
-        AdaptiveStack {
-            Button {
-                onStart(row.routine)
-            } label: {
-                VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                    Text(row.name).font(.headline).foregroundStyle(.primary)
-                    Text(row.exerciseList)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
-                    if let focus = row.focus {
-                        Text(focus).font(.caption).foregroundStyle(.secondary)
+    @ViewBuilder private var notices: some View {
+        if notice != nil || routines.errorMessage != nil {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                if let notice {
+                    StatusLabel(title: notice, tone: .positive)
+                }
+                if let message = routines.errorMessage {
+                    InlineNotice(
+                        Text(verbatim: message), tone: .critical,
+                        retry: routines.canRetryLoad ? { Task { await routines.load() } } : nil
+                    )
+                }
+            }
+        }
+    }
+
+    private func nextSession(_ next: UpNextRow) -> some View {
+        Card {
+            VStack(alignment: .leading, spacing: Spacing.medium) {
+                AdaptiveStack(verticalAlignment: .top, spacing: Spacing.medium) {
+                    IconTile(symbolName: "calendar.badge.clock", color: .accentColor)
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        Text("Up next in your plan").font(.subheadline).foregroundStyle(.secondary)
+                        SectionHeader(Text(verbatim: next.title), font: .title2.weight(.bold))
+                        Text(next.detail).font(.subheadline).foregroundStyle(.secondary)
                     }
                 }
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                .contentShape(.rect)
-            }
-            .buttonStyle(.borderless)
-            Menu {
-                Button("Edit", systemImage: "pencil") { onEdit(row.id) }
-                Button("Delete", systemImage: "trash", role: .destructive) {
-                    Task { await routines.delete(row.id) }
+                if let progress = next.weekProgress {
+                    Text(progress).font(.subheadline.monospacedDigit())
                 }
-            } label: {
-                Image(systemName: "ellipsis.circle")
-                    .frame(minWidth: 44, minHeight: 44)
-                    .contentShape(Rectangle())
+                if !next.exerciseList.isEmpty {
+                    Text(next.exerciseList).font(.subheadline).foregroundStyle(.secondary)
+                }
+                Button { onStart(next.routine) } label: {
+                    Label("Start workout", systemImage: "play.fill")
+                }
+                .buttonStyle(BrandButtonStyle())
             }
-            .buttonStyle(.borderless)
-            .accessibilityLabel("Routine options")
+        }
+    }
+
+    @ViewBuilder private var routineCards: some View {
+        if !routines.routines.isEmpty || !routines.planChecks.isEmpty || routines.showsEmptyHint {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                SectionHeader(Text("Routines"), font: .title3.weight(.semibold))
+                ForEach(routines.rows) { row in
+                    routineCard(row)
+                }
+                if routines.showsEmptyHint {
+                    Text("Create one with +, or save a past session as a routine from History.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                if !routines.planChecks.isEmpty {
+                    Card {
+                        DisclosureGroup("Plan check") {
+                            VStack(alignment: .leading, spacing: Spacing.medium) {
+                                ForEach(routines.planChecks) { check in
+                                    PlanCheckView(check: check) {
+                                        Task { await routines.accept(check) }
+                                    }
+                                }
+                            }
+                            .padding(.top, Spacing.small)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func routineCard(_ row: RoutineRow) -> some View {
+        Card {
+            AdaptiveStack {
+                Button {
+                    onStart(row.routine)
+                } label: {
+                    AdaptiveStack(verticalAlignment: .top, spacing: Spacing.small) {
+                        IconTile(symbolName: "play.fill", color: .accentColor)
+                        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                            Text(row.name).font(.headline).foregroundStyle(.primary)
+                            if !row.exerciseList.isEmpty {
+                                Text(row.exerciseList)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
+                            }
+                            if let focus = row.focus {
+                                Text(focus).font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Starts this session")
+                Menu {
+                    Button("Edit", systemImage: "pencil") { onEdit(row.id) }
+                    Button("Delete", systemImage: "trash", role: .destructive) {
+                        Task { await routines.delete(row.id) }
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel("Routine options")
+            }
+        }
+    }
+
+    private var emptySessionIsPrimary: Bool {
+        routines.upNext == nil && routines.routines.isEmpty
+    }
+
+    private var emptySession: some View {
+        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+            if emptySessionIsPrimary {
+                Button(action: onStartEmpty) {
+                    Label("Start empty session", systemImage: "plus.circle.fill")
+                }
+                .buttonStyle(BrandButtonStyle())
+            } else {
+                Button(action: onStartEmpty) {
+                    Label("Start empty session", systemImage: "plus.circle.fill")
+                        .frame(minHeight: 44)
+                        .contentShape(.rect)
+                }
+                .buttonStyle(.borderless)
+            }
+            Text("Targets come from your history.").font(.footnote).foregroundStyle(.secondary)
         }
     }
 }
