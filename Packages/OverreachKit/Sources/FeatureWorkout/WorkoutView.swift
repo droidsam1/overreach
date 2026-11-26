@@ -461,7 +461,7 @@ private struct ProgressionPicker: View {
                     ProgressView("Saving progression…")
                 }
                 if let message = model.progressionSaveError {
-                    Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                    InlineNotice(Text(message), tone: .critical)
                 }
             }
             .navigationTitle("Choose progression")

@@ -78,8 +78,7 @@ public struct HistoryView: View {
                 lastTimeCard(last)
             }
             if let message = model.errorMessage {
-                Label(message, systemImage: "exclamationmark.triangle")
-                    .foregroundStyle(.red)
+                InlineNotice(Text(message), tone: .critical) { Task { await model.load() } }
             }
             if let warning = model.runWarning {
                 StatusLabel(title: warning, tone: .caution)
@@ -313,9 +312,7 @@ public struct SessionDetailView: View {
                         Text(notes).font(.footnote).foregroundStyle(.secondary)
                     }
                     if !entry.countsForProgression {
-                        Label("Unfinished: not counted for progression", systemImage: "flag")
-                            .font(.footnote)
-                            .foregroundStyle(.orange)
+                        InlineNotice(Text("Unfinished: not counted for progression"), tone: .caution)
                     }
                 }
             }

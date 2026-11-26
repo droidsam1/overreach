@@ -183,7 +183,7 @@ struct RoutineEditorView: View {
         NavigationStack {
             Form {
                 if let message = model.errorMessage {
-                    Text(message).foregroundStyle(.red)
+                    InlineNotice(Text(message), tone: .critical)
                 }
                 Section {
                     TextField("Name", text: $model.name)
@@ -252,13 +252,7 @@ private struct PlanCheckView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
-            Label {
-                Text(check.text).font(.subheadline.weight(.semibold))
-            } icon: {
-                Image(systemName: "lightbulb.fill")
-                    .foregroundStyle(.orange)
-                    .accessibilityHidden(true)
-            }
+            InlineNotice(Text(check.text), tone: .caution)
             Text(check.reason)
                 .font(.footnote)
                 .foregroundStyle(.secondary)

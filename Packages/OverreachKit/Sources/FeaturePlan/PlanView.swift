@@ -34,7 +34,7 @@ public struct PlanView<Assistant: View, Progress: View>: View {
         NavigationStack {
             Form {
                 if let message = model.errorMessage {
-                    Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                    InlineNotice(Text(message), tone: .critical) { Task { await reload() } }
                 }
                 if model.isAnalysing {
                     HStack {
@@ -220,7 +220,7 @@ private struct GoalEditView: View {
     var body: some View {
         Form {
             if let message = model.errorMessage {
-                Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                InlineNotice(Text(message), tone: .critical)
             }
             Section {
                 Picker("Goal", selection: Binding(
