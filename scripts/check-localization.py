@@ -22,7 +22,7 @@ UI_ROOTS = [
     ROOT / "Packages/OverreachKit/Sources/DesignSystem",
     *sorted((ROOT / "Packages/OverreachKit/Sources").glob("Feature*")),
 ]
-UI_SKIPPED_FILES = {"AppContainer.swift", "OverreachApp.swift", "StrongHistoryImporter.swift"}
+UI_SKIPPED_FILES = {"AppContainer.swift", "AppContainer+UITesting.swift", "OverreachApp.swift", "StrongHistoryImporter.swift"}
 
 LITERAL = re.compile(r'"(?:[^"\\\n]|\\.)*"')
 MULTILINE = re.compile(r'"""\n(.*?)\n\s*"""', re.S)
