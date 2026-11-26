@@ -1,3 +1,4 @@
+import DesignSystem
 import Domain
 import PlanPresentation
 import SwiftUI
@@ -18,7 +19,7 @@ struct RunningCalendarEntryView: View {
         NavigationStack {
             Form {
                 if let message = model.errorMessage {
-                    Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                    InlineNotice(Text(message), tone: .critical)
                 }
                 Section {
                     DatePicker("Date", selection: $draft.date, displayedComponents: .date)
@@ -33,8 +34,7 @@ struct RunningCalendarEntryView: View {
                 }
                 if let notice = model.sessionCeilingNotice(for: draft) {
                     Section {
-                        Label(notice.explanation.text, systemImage: "exclamationmark.triangle")
-                            .foregroundStyle(.orange)
+                        InlineNotice(Text(notice.explanation.text), tone: .caution)
                         Text(notice.explanation.evidence).font(.caption).foregroundStyle(.secondary)
                         Button(notice.shortenTitle) { draft = notice.shortened }
                     }

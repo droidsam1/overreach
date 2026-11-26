@@ -1,3 +1,4 @@
+import DesignSystem
 import PlanPresentation
 import SwiftUI
 
@@ -8,7 +9,7 @@ struct RunningPlanView: View {
     var body: some View {
         Form {
             if let error = model.errorMessage {
-                Label(error, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                InlineNotice(Text(error), tone: .critical)
             }
             Section {
                 Toggle("Set a running goal", isOn: $model.runningDraft.enabled)
