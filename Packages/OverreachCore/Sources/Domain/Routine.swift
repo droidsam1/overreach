@@ -5,10 +5,12 @@ import Foundation
 public struct RoutinePrescription: Hashable, Codable, Sendable {
     public var exerciseID: UUID
     public var scheme: ProgressionScheme
+    public var restSeconds: Int?
 
-    public init(exerciseID: UUID, scheme: ProgressionScheme) {
+    public init(exerciseID: UUID, scheme: ProgressionScheme, restSeconds: Int? = nil) {
         self.exerciseID = exerciseID
         self.scheme = scheme
+        self.restSeconds = restSeconds
     }
 }
 
@@ -38,16 +40,17 @@ public struct Routine: Identifiable, Hashable, Codable, Sendable {
 
     /// The scheme this routine prescribes for an exercise, if any.
     public func prescription(for exerciseID: UUID) -> ProgressionScheme? {
-        prescriptions.first { $0.exerciseID == exerciseID }?.scheme
+        prescriptionDetails(for: exerciseID)?.scheme
+    }
+
+    public func prescriptionDetails(for exerciseID: UUID) -> RoutinePrescription? {
+        prescriptions.first { $0.exerciseID == exerciseID }
     }
 
     /// Keeps one prescription per exercise (the last wins), only for exercises of the routine.
     public mutating func setPrescriptions(_ list: [RoutinePrescription]) {
-        var byExercise: [UUID: ProgressionScheme] = [:]
-        for prescription in list { byExercise[prescription.exerciseID] = prescription.scheme }
-        prescriptions = exerciseIDs.compactMap { id in
-            byExercise[id].map { RoutinePrescription(exerciseID: id, scheme: $0) }
-        }
+        let byExercise = Dictionary(list.map { ($0.exerciseID, $0) }, uniquingKeysWith: { _, last in last })
+        prescriptions = exerciseIDs.compactMap { byExercise[$0] }
     }
 
     /// A routine with the name, focus and exercise order of a past session.

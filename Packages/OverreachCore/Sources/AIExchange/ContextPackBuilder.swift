@@ -93,7 +93,10 @@ public enum ContextPackBuilder {
                 .init(id: routine.id.uuidString, name: routine.name, focus: routine.focus?.rawValue,
                       exercises: routine.exerciseIDs.map(name),
                       prescriptions: routine.prescriptions.isEmpty ? nil : routine.prescriptions.map { item in
-                          .init(exercise: name(item.exerciseID), scheme: scheme(item.scheme))
+                          .init(
+                              exercise: name(item.exerciseID), scheme: scheme(item.scheme),
+                              restSeconds: item.restSeconds
+                          )
                       })
             },
             sessions: sessions.map { session in

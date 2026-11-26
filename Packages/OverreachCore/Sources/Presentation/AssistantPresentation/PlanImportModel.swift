@@ -185,7 +185,16 @@ public final class PlanImportModel {
     private func makePreview(_ planned: PlanImport) -> Preview {
         Preview(
             routines: planned.routines.map { change in
-                let names = change.exercises.map(\.displayName).joined(separator: ", ")
+                let names = change.exercises.map { exercise in
+                    guard let prescription = change.routine.prescriptionDetails(for: exercise.id) else {
+                        return exercise.displayName
+                    }
+                    var detail = scheme(prescription.scheme)
+                    if let rest = prescription.restSeconds {
+                        detail += " · " + L10n.format("rest {1}", format.minutesAndSeconds(rest))
+                    }
+                    return "\(exercise.displayName) (\(detail))"
+                }.joined(separator: ", ")
                 return RoutineRow(
                     id: change.routine.id,
                     name: change.routine.name,
@@ -260,9 +269,13 @@ public final class PlanImportModel {
     private func text(_ warning: PlanWarning) -> String {
         switch warning {
         case let .ignoredField(path): L10n.format("Ignored: {1}. The app does not use this field.", path)
+        case let .unreducedDeload(block):
+            L10n.format(
+                "Deload “{1}” has no reduction in weekly working sets or RPE compared with the previous block.", block
+            )
         case let .sessionDuration(routine, minutes, limit):
             L10n.format(
-                "“{1}” takes about {2} min with standard rests. Your limit is {3} min.", routine, minutes, limit
+                "“{1}” takes about {2} min including rests. Your limit is {3} min.", routine, minutes, limit
             )
         case let .weeklyVolume(block, muscle, sets, guide):
             L10n.format("“{1}” reaches {2} weekly fractional sets for {3}. The guide is {4}.",

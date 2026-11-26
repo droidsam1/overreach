@@ -112,7 +112,7 @@ struct AskAIModelTests {
         model.setAvailability("Mondays and Fridays, 45 minutes")
         #expect(try #require(model.message).contains(PlanMessage.jsonSchema))
         #expect(try #require(model.message).contains("Mondays and Fridays, 45 minutes"))
-        #expect(try #require(model.message).hasSuffix("```\n\nHelp me plan my next training block."))
+        #expect(try #require(model.message).hasSuffix("Help me plan my next training block."))
 
         model.setRequest(nil)
         #expect(try #require(model.message).hasSuffix("```"))

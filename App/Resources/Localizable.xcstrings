@@ -5254,6 +5254,23 @@
         }
       }
     },
+    "Deload “{1}” has no reduction in weekly working sets or RPE compared with the previous block.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La descarga «{1}» no reduce las series de trabajo semanales ni el RPE frente al bloque anterior."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A descarga «{1}» non reduce as series de traballo semanais nin o RPE fronte ao bloque anterior."
+          }
+        }
+      }
+    },
     "Deloads and rest periods": {
       "extractionState": "manual",
       "localizations": {
@@ -16372,6 +16389,23 @@
         }
       }
     },
+    "Routine rest {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descanso de la rutina de {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descanso da rutina de {1}"
+          }
+        }
+      }
+    },
     "Routine “{1}” gives sets and reps for “{2}”, which it does not include.": {
       "extractionState": "manual",
       "localizations": {
@@ -25042,6 +25076,23 @@
         }
       }
     },
+    "rest {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "descanso de {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "descanso de {1}"
+          }
+        }
+      }
+    },
     "rest {1}–{2}": {
       "extractionState": "manual",
       "localizations": {
@@ -26606,19 +26657,19 @@
         }
       }
     },
-    "“{1}” takes about {2} min with standard rests. Your limit is {3} min.": {
+    "“{1}” takes about {2} min including rests. Your limit is {3} min.": {
       "extractionState": "manual",
       "localizations": {
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "«{1}» dura unos {2} min con los descansos habituales. Tu límite es de {3} min."
+            "value": "«{1}» dura unos {2} min con los descansos. Tu límite es de {3} min."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "«{1}» dura uns {2} min cos descansos habituais. O teu límite é de {3} min."
+            "value": "«{1}» dura uns {2} min cos descansos. O teu límite é de {3} min."
           }
         }
       }

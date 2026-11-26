@@ -22,6 +22,7 @@ public enum PlanIssue: Hashable, Sendable {
 public enum PlanWarning: Hashable, Sendable {
     /// A field the format does not have, or one that does not apply (e.g. `reps` in a double progression).
     case ignoredField(String)
+    case unreducedDeload(block: String)
     case sessionDuration(routine: String, minutes: Int, limit: Int)
     case weeklyVolume(block: String, muscle: MuscleGroup, sets: Double, guide: Double)
 }
@@ -313,8 +314,10 @@ public enum PlanImporter {
     static func explanation(of warning: PlanWarning) -> String {
         switch warning {
         case let .ignoredField(path): "\(path) is not part of the format and was ignored."
+        case let .unreducedDeload(block):
+            "Deload \"\(block)\" does not reduce weekly working sets or average RPE versus the previous block."
         case let .sessionDuration(routine, minutes, limit):
-            "Routine \"\(routine)\" takes about \(minutes) minutes with standard rests, "
+            "Routine \"\(routine)\" takes about \(minutes) minutes including rests, "
                 + "above the \(limit)-minute limit."
         case let .weeklyVolume(block, muscle, sets, guide):
             "Block \"\(block)\" reaches \(sets) weekly fractional sets for \(muscle.rawValue), "
@@ -379,8 +382,13 @@ extension PlanImporter {
                 issues.append(.invalidValue(field: "\(path).scheme", value: "missing", expected: "a scheme"))
                 continue
             }
+            if let rest = proposal.restSeconds, !(1...900).contains(rest) {
+                issues.append(.invalidValue(field: "\(path).restSeconds", value: "\(rest)", expected: "1 to 900"))
+            }
             if let parsed = scheme(proposed, field: "\(path).scheme", issues: &issues) {
-                result.append(RoutinePrescription(exerciseID: exercise.id, scheme: parsed))
+                result.append(RoutinePrescription(
+                    exerciseID: exercise.id, scheme: parsed, restSeconds: proposal.restSeconds
+                ))
             }
         }
         return issues.count == before ? result : nil

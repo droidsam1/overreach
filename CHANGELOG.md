@@ -8,7 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 - AI plan previews show weekly session counts, flag routines over their time budget, and flag blocks with high weekly
-  volume. The next-block request shares the reply template and optional availability with the context. Health data
+  volume. Per-exercise rest intervals from the plan drive the workout timer, and marked deloads are checked against
+  the previous block. The next-block request shares the reply template and optional availability with the context. Health data
   and the cycle tracking setting are opt-in (#34).
 - Weather has a provider picker: Open-Meteo (no key, account or card; the default for new installs), OpenWeather One
   Call or an OpenWeather free key (3-hour steps, no past-run weather). Each option lists its setup, card, resolution,

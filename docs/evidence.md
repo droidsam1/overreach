@@ -184,7 +184,8 @@ Refs: Pelland et al. 2026, Sports Med 56(2):481–505 (meta-regressions, 67 stud
 preprint). Reviewed 2026-11-20 (`docs/evidence-review-2026-11.md`).
 
 ### `plan-duration-estimate` — heuristic
-The import preview budgets 30 seconds per working set plus the app's standard rest between sets of each exercise.
+The import preview budgets 30 seconds per working set plus the prescribed rest between sets of each exercise,
+or the app's standard rest where no interval is set.
 The estimate excludes warm-ups, time between exercises and equipment waits. The time limit comes from the user.
 
 ### `effective-set-threshold` — heuristic

@@ -5,7 +5,15 @@ import Foundation
 /// Estimates the prescribed workload before the plan is saved.
 enum PlanWorkload {
     static let volumeEvidence = EvidenceReference(key: "volume-dose-response", level: .strong)
+    static let deloadEvidence = EvidenceReference(key: "deload-design", level: .limited)
     static let timeEvidence = EvidenceReference(key: "plan-duration-estimate", level: .heuristic)
+
+    private struct Workload {
+        var seconds = 0.0
+        var volume: [MuscleGroup: Double] = [:]
+        var workingSets = 0.0
+        var totalRPE = 0.0
+    }
 
     static func warnings(
         for message: PlanMessage, planned: PlanImport, existing: [Routine], exercises: [Exercise],
@@ -21,37 +29,58 @@ enum PlanWorkload {
         let proposals = zip(message.routines ?? [], planned.routines)
         let durationWarnings: [PlanWarning] = proposals.compactMap { proposal, change in
             guard let limit = proposal.maxDurationMinutes else { return nil }
-            let session = workload(change.routine, focus: nil, catalog: catalog, settings: effectiveSettings)
+            let session = workload(change.routine, catalog: catalog, settings: effectiveSettings)
             guard session.seconds > Double(limit) * 60 else { return nil }
             let minutes = Int(min((session.seconds / 60).rounded(.up), Double(Int32.max)))
             return .sessionDuration(routine: change.routine.name, minutes: minutes, limit: limit)
         }
-        return durationWarnings + planned.blocks.flatMap { block in
+        var blockWarnings: [PlanWarning] = []
+        var previous: (weeklySets: Double, averageRPE: Double)?
+        for (proposal, block) in zip(message.blocks ?? [], planned.blocks) {
             let rotation = block.routineIDs.compactMap { routines[$0] }.map {
-                workload($0, focus: block.focus, catalog: catalog, settings: effectiveSettings).volume
+                workload($0, catalog: catalog, settings: effectiveSettings)
             }
-            return volumeWarnings(block, rotation: rotation)
+            blockWarnings += volumeWarnings(block, rotation: rotation.map(\.volume))
+            let current = weeklyEffort(rotation, sessions: block.plannedSessionsPerWeek)
+            if proposal.isDeload == true, let previous, let current,
+               current.weeklySets >= previous.weeklySets, current.averageRPE >= previous.averageRPE {
+                blockWarnings.append(.unreducedDeload(block: block.name ?? block.focus.rawValue))
+            }
+            previous = current
         }
+        return durationWarnings + blockWarnings
     }
 
     private static func workload(
-        _ routine: Routine, focus: TrainingFocus?, catalog: [UUID: Exercise], settings: [UUID: ProgressionSettings]
-    ) -> (seconds: Double, volume: [MuscleGroup: Double]) {
-        var seconds = 0.0
-        var volume: [MuscleGroup: Double] = [:]
+        _ routine: Routine, catalog: [UUID: Exercise], settings: [UUID: ProgressionSettings]
+    ) -> Workload {
+        var result = Workload()
         for id in routine.exerciseIDs {
             guard let exercise = catalog[id] else { continue }
             let stored = settings[id]
-            let focus = stored?.focus ?? routine.focus ?? focus
+            let focus = stored?.focus ?? routine.focus
+            let prescription = routine.prescriptionDetails(for: id)
             let scheme = ProgressionTargets.settings(
-                for: exercise, stored: stored, focus: focus, prescription: routine.prescription(for: id)
+                for: exercise, stored: stored, focus: focus, prescription: prescription?.scheme
             ).scheme
-            let rest = FocusPrescription.for(focus ?? .hypertrophy).defaultRestSeconds
-            seconds += 30 * Double(scheme.sets) + Double(rest) * Double(scheme.sets - 1)
+            let rest = prescription?.restSeconds ?? FocusPrescription.for(focus ?? .hypertrophy).defaultRestSeconds
+            let sets = Double(scheme.sets)
+            result.seconds += 30 * sets + Double(rest) * (sets - 1)
+            result.workingSets += sets
+            result.totalRPE += scheme.targetRPE * sets
             guard scheme.targetRPE >= StrengthMetrics.minimumEffectiveSetRPE else { continue }
-            StrengthMetrics.addEffectiveSets(Double(scheme.sets), for: exercise, to: &volume)
+            StrengthMetrics.addEffectiveSets(sets, for: exercise, to: &result.volume)
         }
-        return (seconds, volume)
+        return result
+    }
+
+    private static func weeklyEffort(
+        _ rotation: [Workload], sessions: Int
+    ) -> (weeklySets: Double, averageRPE: Double)? {
+        let sets = rotation.reduce(0) { $0 + $1.workingSets }
+        guard sets > 0 else { return nil }
+        let averageRPE = rotation.reduce(0) { $0 + $1.totalRPE } / sets
+        return (sets * Double(sessions) / Double(rotation.count), averageRPE)
     }
 
     private static func volumeWarnings(_ block: TrainingBlock, rotation: [[MuscleGroup: Double]]) -> [PlanWarning] {

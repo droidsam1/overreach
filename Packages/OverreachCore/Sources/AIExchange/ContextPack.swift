@@ -184,6 +184,7 @@ public struct ContextPack: Codable, Hashable, Sendable {
     public struct Prescription: Codable, Hashable, Sendable {
         public var exercise: String
         public var scheme: Scheme
+        public var restSeconds: Int?
     }
 
     public struct Session: Codable, Hashable, Sendable {

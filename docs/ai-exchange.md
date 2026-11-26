@@ -130,7 +130,7 @@ it as a file. The app shows what would change and saves nothing until the user c
 | `focus` | Optional: `strength`, `hypertrophy`, `mixed` or `endurance`. |
 | `exercises` | Required. Names in order. They are matched to the catalog by name or alias, ignoring case, accents and extra spaces. |
 | `maxDurationMinutes` | Optional session time budget, 1–1440 minutes. Used in the import preview. |
-| `prescriptions` | Optional. `exercise` (one of the routine's exercises) and `scheme` (as in exercise settings). In sessions started from this routine, that scheme replaces the exercise's own. This is how one lift can be 5 × 3 in a strength block and 3 × 8–12 in a hypertrophy block. The app still sets the load from recent sessions. |
+| `prescriptions` | Optional. `exercise` (one of the routine's exercises), `scheme` (as in exercise settings) and optional `restSeconds` (1–900). In sessions started from this routine, that scheme replaces the exercise's own. This is how one lift can be 5 × 3 in a strength block and 3 × 8–12 in a hypertrophy block. The app still sets the load from recent sessions. |
 
 An `id` taken from the context pack (`routines[].id`) updates that routine.
 
@@ -156,6 +156,7 @@ on `startDate` (`YYYY-MM-DD`), or on the day of the import.
 | `weeks` | Required, 1–52. |
 | `routines` | Optional. Routine `id`s or names, from this plan or already in the app, in rotation order. |
 | `sessionsPerWeek` | Optional, 1–14. Strength sessions planned each week; absent = one per routine. |
+| `isDeload` | Optional preview check. When true, the preview compares weekly sets and average RPE with the preceding block. The routines carry the actual reduction. |
 
 - **Saved as declared blocks** in the profile (ADR-0013). Blocks that start before the plan are kept, and declared
   blocks from the plan's start on are replaced. Focus checks treat a matching streak as intentional.
@@ -189,9 +190,11 @@ The format is also a JSON Schema (draft 2020-12): [`schemas/overreach.plan.v1.sc
 - **Correction.** The app writes a correction in English for the user to paste back into the chat. Each point
   names the field path (`exerciseSettings[0].scheme.sets is 30; expected 1 to 10`). Broken JSON gets its line,
   column, what was expected and the line itself, with hints for trailing commas, curly quotes and truncated text.
-- **Workload.** The preview warns when estimated working sets and standard rests exceed the routine's time budget.
+- **Workload.** The preview warns when estimated working sets and their rest intervals exceed the routine's time budget.
   It also flags the highest weekly fractional set totals in each block above the app's 20-set guide. It uses the
-  routine rotation and the settings that would apply after import. See `docs/evidence.md` for the duration
+  routine rotation and the settings that would apply after import. If a marked deload and its preceding block both
+  have enough prescription data to estimate workload, the preview flags a deload that reduces neither estimated
+  working sets per week nor average set RPE. See `docs/evidence.md` for the duration
   heuristic and volume dose-response.
 
 - **Ignored fields.** Fields the format does not have, or that the scheme type does not use (e.g. `reps` in a
