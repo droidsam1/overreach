@@ -1,6 +1,7 @@
 import DesignSystem
 import Domain
 import OnboardingPresentation
+import PresentationKit
 import SwiftUI
 
 // Views only: layout, styling and static copy. Steps and rules come from `OnboardingPresentation` (ADR-0014).
@@ -57,7 +58,7 @@ public struct OnboardingView: View {
         NavigationStack {
             Form {
                 if let message = model.errorMessage {
-                    Text(message).foregroundStyle(.red)
+                    InlineNotice(Text(message), tone: .critical)
                 }
                 switch model.step {
                 case .goal: goalStep
@@ -154,20 +155,17 @@ public struct OnboardingView: View {
             Text("Pick all that apply. The app only shows what your devices measure.")
         }
         Section {
-            Button {
-                askedForHealth = true
-                onConnectHealth()
-            } label: {
-                Label(
-                    askedForHealth ? "Apple Health requested" : "Allow Apple Health",
-                    systemImage: askedForHealth ? "checkmark.circle.fill" : "heart.text.square.fill"
-                )
+            if askedForHealth {
+                StatusBadge(title: L10n.text("Apple Health requested"), tone: .neutral)
+            } else {
+                Button("Allow Apple Health", systemImage: "heart.text.square.fill") {
+                    askedForHealth = true
+                    onConnectHealth()
+                }
             }
-            .disabled(askedForHealth)
             if model.offersGarminSetup {
                 if isGarminConnected {
-                    Label("Garmin connected", systemImage: "checkmark.seal.fill")
-                        .foregroundStyle(.green)
+                    StatusBadge(title: L10n.text("Garmin connected"), tone: .positive)
                         .transition(.scale.combined(with: .opacity))
                 } else {
                     Button(action: onConnectGarmin) {

@@ -184,7 +184,8 @@ public struct GarminSetupView: View {
                 }
             }
             if let error = model.errorMessage {
-                errorLabel(error)
+                InlineNotice(Text(error), tone: .critical)
+                    .accessibilityAddTraits(.updatesFrequently)
             }
             privacyNote
         }
@@ -240,15 +241,12 @@ public struct GarminSetupView: View {
                 Text(summary).font(.title3).multilineTextAlignment(.center)
             }
             if let notice = model.driftNotice {
-                Label(notice, systemImage: "exclamationmark.triangle").font(.footnote).foregroundStyle(.orange)
+                InlineNotice(Text(notice), tone: .caution)
             }
-            if let error = model.errorMessage {
-                errorLabel(error)
-                Button("Try again", systemImage: "arrow.clockwise") {
-                    Task { await model.sync() }
-                }
-                .buttonStyle(.bordered)
-                .disabled(model.isSyncing)
+            if model.isSyncing {
+                LoadingState("Syncing…")
+            } else if let error = model.errorMessage {
+                InlineNotice(Text(error), tone: .critical) { Task { await model.sync() } }
             }
             card {
                 FeatureHighlightRow(
@@ -339,14 +337,6 @@ public struct GarminSetupView: View {
         )
         .font(.footnote)
         .foregroundStyle(.secondary)
-    }
-
-    private func errorLabel(_ message: String) -> some View {
-        Label(message, systemImage: "exclamationmark.circle.fill")
-            .font(.callout)
-            .foregroundStyle(.red)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityAddTraits(.updatesFrequently)
     }
 
     private func primaryButton(

@@ -19,7 +19,7 @@ public struct ExercisesView: View {
     public var body: some View {
         List {
             if let message = model.errorMessage {
-                Text(message).foregroundStyle(.red)
+                InlineNotice(Text(message), tone: .critical) { Task { await model.load() } }
             }
             if !model.needsMappingRows.isEmpty {
                 Section {
@@ -57,7 +57,7 @@ public struct ExercisesView: View {
         .overlay {
             if model.showsLoadingIndicator {
                 ProgressView()
-            } else if model.showsNoResults {
+            } else if model.showsNoResults && model.errorMessage == nil {
                 ListEmptyState(query: model.searchText, title: "No exercises", systemImage: "dumbbell")
             }
         }
@@ -78,8 +78,7 @@ private struct ExerciseRowLink: View {
                 Text(row.name)
                 Group {
                     if row.needsMuscles {
-                        Label("No muscles assigned", systemImage: "exclamationmark.circle")
-                            .foregroundStyle(.orange)
+                        StatusLabel(title: L10n.text("No muscles assigned"), tone: .caution)
                     } else {
                         Text(row.muscles)
                     }
@@ -146,7 +145,7 @@ struct ExerciseEditorView: View {
     private var form: some View {
         Form {
             if let message = model.errorMessage {
-                Text(message).foregroundStyle(.red)
+                InlineNotice(Text(message), tone: .critical)
             }
             if model.canEditNames {
                 namesSection
@@ -240,7 +239,7 @@ struct ExerciseEditorView: View {
             TextField("Name", text: $model.name)
             TextField("Other names", text: $model.aliasesText)
             if let message = model.nameMessage {
-                Text(message).font(.footnote).foregroundStyle(.red)
+                InlineNotice(Text(message), tone: .critical)
             }
         } footer: {
             Text("Separate other names with commas. Search and imports use them too.")

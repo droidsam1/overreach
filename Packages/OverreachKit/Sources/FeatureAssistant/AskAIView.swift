@@ -59,7 +59,7 @@ public struct AskAIView: View {
                 Text("It goes after the data. You can change it or write your own in the chat.")
             }
             if let message = model.errorMessage {
-                Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                InlineNotice(Text(message), tone: .critical) { Task { await model.prepare() } }
             }
             Section {
                 if let message = model.message {
@@ -126,10 +126,10 @@ public struct AskAIView: View {
             }
             Button("Import reply file…", systemImage: "folder") { isPickingFile = true }
             if let result = importer.resultMessage {
-                Label(result, systemImage: "checkmark.circle").foregroundStyle(.green)
+                InlineNotice(Text(result), tone: .positive)
             }
             if let message = importer.errorMessage {
-                Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                InlineNotice(Text(message), tone: .critical)
             }
         } header: {
             Text("Import the reply")
@@ -175,10 +175,10 @@ struct PlanImportPreviewView: View {
                     if !preview.issues.isEmpty || !preview.warnings.isEmpty {
                         Section {
                             ForEach(preview.issues, id: \.self) { issue in
-                                Label(issue, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                                InlineNotice(Text(issue), tone: .critical)
                             }
                             ForEach(preview.warnings, id: \.self) { warning in
-                                Label(warning, systemImage: "info.circle").foregroundStyle(.orange)
+                                InlineNotice(Text(warning), tone: .caution)
                             }
                             if let correction = preview.correction {
                                 Button {
