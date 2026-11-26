@@ -6,9 +6,15 @@ import PresentationKit
 extension SessionReportContent {
     /// The report right after finishing a session: it leads with the saved confirmation and the records.
     init(_ report: SessionReport) {
+        let totals = [
+            report.duration.map { SummaryMetric(label: L10n.text("Duration"), value: $0) },
+            report.workingSets.map { SummaryMetric(label: L10n.text("Sets"), value: String($0)) },
+            report.volume.map { SummaryMetric(label: L10n.text("Volume"), value: $0) }
+        ].compactMap { $0 }
         self.init(
             title: report.title, headline: report.headline, adherence: report.adherence,
-            comparison: report.comparison, muscles: report.muscles, achievements: report.achievements,
+            comparison: report.comparison, muscles: report.muscles, totals: totals,
+            achievements: report.achievements,
             isJustSaved: true,
             rows: report.rows.map { row in
                 Row(id: row.id, name: row.name, outcome: Outcome(row.outcome), outcomeText: row.outcomeText,

@@ -1,12 +1,12 @@
 import SwiftUI
 
 /// What `SessionReportSheet` shows, as display values (the features map their report into it).
-public struct SessionReportContent: Hashable {
-    public enum Outcome: Hashable {
+public struct SessionReportContent: Hashable, Sendable {
+    public enum Outcome: Hashable, Sendable {
         case above, onTarget, below, unfinished, noTarget
     }
 
-    public struct Row: Identifiable, Hashable {
+    public struct Row: Identifiable, Hashable, Sendable {
         public let id: UUID
         public let name: String
         public let outcome: Outcome
@@ -24,6 +24,7 @@ public struct SessionReportContent: Hashable {
 
     public let title: String
     public let headline: String
+    public let totals: [SummaryMetric]
     public let adherence: String?
     public let comparison: String?
     public let muscles: String?
@@ -36,10 +37,12 @@ public struct SessionReportContent: Hashable {
 
     public init(
         title: String, headline: String, adherence: String?, comparison: String?, muscles: String?,
-        achievements: [String] = [], isJustSaved: Bool = false, rows: [Row], shareText: String
+        totals: [SummaryMetric] = [], achievements: [String] = [], isJustSaved: Bool = false,
+        rows: [Row], shareText: String
     ) {
         self.title = title
         self.headline = headline
+        self.totals = totals
         self.adherence = adherence
         self.comparison = comparison
         self.muscles = muscles
@@ -62,27 +65,9 @@ public struct SessionReportSheet: View {
     public var body: some View {
         NavigationStack {
             List {
-                Section {
-                    if content.isJustSaved {
-                        Label("Workout saved to History", systemImage: "checkmark.circle.fill")
-                            .font(.headline)
-                            .foregroundStyle(.green)
-                    }
-                    ForEach(content.achievements, id: \.self) { achievement in
-                        Label(achievement, systemImage: "trophy.fill")
-                    }
-                    Text(content.headline).font(.headline.monospacedDigit())
-                    if let adherence = content.adherence {
-                        Label(adherence, systemImage: "target")
-                    }
-                    if let comparison = content.comparison {
-                        Label(comparison, systemImage: "chart.line.uptrend.xyaxis")
-                    }
-                    if let muscles = content.muscles {
-                        Label(muscles, systemImage: "figure.strengthtraining.traditional")
-                            .font(.footnote)
-                    }
-                }
+                summary
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets())
                 Section("Exercises") {
                     ForEach(content.rows) { row in
                         VStack(alignment: .leading, spacing: Spacing.xSmall) {
@@ -113,6 +98,38 @@ public struct SessionReportSheet: View {
         }
     }
 
+    private var summary: some View {
+        Card(tone: content.isJustSaved ? .done : nil) {
+            VStack(alignment: .leading, spacing: Spacing.medium) {
+                if content.isJustSaved {
+                    AdaptiveStack(spacing: Spacing.medium) {
+                        ReadinessRing(tone: .done, size: 54, accessibilityLabel: "")
+                            .accessibilityHidden(true)
+                        SectionHeader(Text("Workout saved to History"), font: .title2.weight(.bold))
+                    }
+                }
+                if content.totals.isEmpty {
+                    Text(content.headline).font(.headline.monospacedDigit())
+                } else {
+                    SummaryTiles(content.totals)
+                }
+                ForEach(content.achievements, id: \.self) { achievement in
+                    TrainingRecordRow(achievement)
+                }
+                if let adherence = content.adherence {
+                    Label(adherence, systemImage: "target")
+                }
+                if let comparison = content.comparison {
+                    Label(comparison, systemImage: "chart.line.uptrend.xyaxis")
+                }
+                if let muscles = content.muscles {
+                    Label(muscles, systemImage: "figure.strengthtraining.traditional")
+                        .font(.footnote)
+                }
+            }
+        }
+    }
+
     private func symbol(for outcome: SessionReportContent.Outcome) -> String {
         switch outcome {
         case .above: "arrow.up.circle.fill"
@@ -125,8 +142,8 @@ public struct SessionReportSheet: View {
 
     private func color(for outcome: SessionReportContent.Outcome) -> Color {
         switch outcome {
-        case .above, .onTarget: .green
-        case .below, .unfinished: .orange
+        case .above, .onTarget: StatusTone.positive.accent
+        case .below, .unfinished: StatusTone.caution.accent
         case .noTarget: .secondary
         }
     }

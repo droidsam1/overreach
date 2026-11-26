@@ -12,7 +12,6 @@ hybrid athlete. The device and external review steps below have their own accept
 
 ## Ready to implement
 
-5. [#299](https://github.com/droidsam1/overreach/issues/299) — Train: exercise cards in the live session, compact rest timer, Today-style finish summary.
 7. [#302](https://github.com/droidsam1/overreach/issues/302) — Settings, Garmin, Exercises, Onboarding, Ask AI: tone badges and InlineNotice.
 9. [#304](https://github.com/droidsam1/overreach/issues/304) — Plan detail screens: use DesignSystem calendar, bars and charts.
 13. [#347](https://github.com/droidsam1/overreach/issues/347) — Recovery: sleep and training timing card (ADR-0045).

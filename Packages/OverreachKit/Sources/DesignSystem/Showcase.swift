@@ -310,4 +310,26 @@ private let galleryAnswers = [
     AnswerOption(id: "5", symbolName: "sun.max", label: "Great"),
 ]
 
+private let finishedWorkoutExample = SessionReportContent(
+    title: "Push A", headline: "58 min · 18 working sets · 6,240 kg", adherence: nil, comparison: nil, muscles: nil,
+    totals: [.init(label: "Duration", value: "58 min"), .init(label: "Sets", value: "18"),
+             .init(label: "Volume", value: "6,240 kg")],
+    achievements: ["Bench Press: New best estimated 1RM: 82.5 kg."], isJustSaved: true,
+    rows: [.init(id: UUID(), name: "Bench Press", outcome: .onTarget, outcomeText: "On target: 75 kg × 10/10/9",
+                 details: ["Next time: 77.5 kg × 9/9/9"])], shareText: "Push A"
+)
+
+#Preview("Finished workout · Light") {
+    SessionReportSheet(content: finishedWorkoutExample).preferredColorScheme(.light)
+}
+
+#Preview("Finished workout · Dark") {
+    SessionReportSheet(content: finishedWorkoutExample).preferredColorScheme(.dark)
+}
+
+#Preview("Finished workout · AX5") {
+    SessionReportSheet(content: finishedWorkoutExample)
+        .environment(\.dynamicTypeSize, .accessibility5)
+}
+
 #endif

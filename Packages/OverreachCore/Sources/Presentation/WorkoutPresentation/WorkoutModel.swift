@@ -70,6 +70,8 @@ public struct DraftExercise: Identifiable, Hashable, Codable, Sendable {
     /// The sets that count: everything except warm-ups.
     public var workingSets: [DraftSet] { sets.filter { !$0.isWarmUp } }
 
+    public var isComplete: Bool { !sets.isEmpty && sets.allSatisfy(\.isDone) }
+
     /// One line for the compact card shown while the exercise is dragged to a new place.
     public var collapsedSummary: String { L10n.format("Sets: {1}", workingSets.count) }
 

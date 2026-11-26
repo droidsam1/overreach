@@ -122,6 +122,26 @@ struct WarmUpLoggingTests {
         #expect(saved.entries.first?.sets.map(\.kind) == [.warmup, .warmup, .working])
     }
 
+    @Test func anExerciseIsCompleteAfterAllItsSetsAreDone() async {
+        let (model, _) = await makeModel()
+        await model.add(exerciseID: bench.id)
+        let exercise = model.exercises[0]
+        #expect(!exercise.isComplete)
+
+        for set in exercise.workingSets {
+            model.setDone(true, set: set.id, in: exercise.id)
+        }
+        #expect(!model.exercises[0].isComplete)
+
+        for set in exercise.sets where set.isWarmUp {
+            model.setDone(true, set: set.id, in: exercise.id)
+        }
+        #expect(model.exercises[0].isComplete)
+
+        model.addSet(to: exercise.id)
+        #expect(!model.exercises[0].isComplete)
+    }
+
     @Test func addingASetCopiesTheLastWorkingSet() async {
         let (model, _) = await makeModel()
         await model.add(exerciseID: bench.id)
