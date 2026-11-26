@@ -1463,23 +1463,6 @@
         }
       }
     },
-    "All training days": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Todos los días de entrenamiento"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Todos os días de adestramento"
-          }
-        }
-      }
-    },
     "Allow Apple Health": {
       "extractionState": "manual",
       "localizations": {
@@ -21757,23 +21740,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Seguinte rutina do plan · {1}"
-          }
-        }
-      }
-    },
-    "Upcoming sessions": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Próximas sesiones"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Próximas sesións"
           }
         }
       }
