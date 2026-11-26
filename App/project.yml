@@ -121,11 +121,27 @@ targets:
       - package: OverreachCore
         product: OnboardingPresentation
 
+  OverreachUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: Overreach
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Overreach
+
 schemes:
   Overreach:
     build:
       targets:
         Overreach: all
+    test:
+      config: Debug
+      targets:
+        - OverreachUITests
     run:
       config: Debug
     archive:

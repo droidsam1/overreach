@@ -120,10 +120,12 @@ private struct ReorderModifier<ID: Hashable & Sendable>: ViewModifier {
                 frames = newFrames
                 refresh()
             }
+            // With nothing to reorder the gesture would only compete with the buttons of the list.
             .simultaneousGesture(
                 DragGesture(minimumDistance: 0, coordinateSpace: .named(reorderSpace))
                     .onChanged(changed)
-                    .onEnded(ended)
+                    .onEnded(ended),
+                including: frames.isEmpty ? .subviews : .all
             )
             .onDisappear { finish(commit: false) }
     }

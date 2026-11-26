@@ -70,6 +70,14 @@ jobs:
             -scheme Overreach \
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO
+      - name: UI tests (simulator)
+        run: |
+          xcodebuild test \
+            -project App/Overreach.xcodeproj \
+            -derivedDataPath build \
+            -scheme Overreach \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            CODE_SIGNING_ALLOWED=NO
       - name: Check the app contains its languages
         run: |
           app=build/Build/Products/Debug-iphonesimulator/Overreach.app

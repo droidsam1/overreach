@@ -143,7 +143,7 @@ final class AppContainer {
         }
     }
 
-    private static var appVersion: String? {
+    static var appVersion: String? {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
     }
 
