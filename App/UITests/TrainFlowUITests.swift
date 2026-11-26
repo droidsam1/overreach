@@ -11,7 +11,9 @@ final class TrainFlowUITests: XCTestCase {
         app = XCUIApplication()
         app.launchArguments = ["-ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        app.tabBars.buttons["Train"].tap()
+        let train = app.tabBars.buttons["Train"]
+        XCTAssertTrue(train.waitForExistence(timeout: 10))
+        train.tap()
     }
 
     /// Regression: with no exercise yet, "Add exercise" did nothing.
