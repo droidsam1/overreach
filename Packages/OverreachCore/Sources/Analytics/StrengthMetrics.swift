@@ -32,6 +32,8 @@ public enum StrengthMetrics {
         return total
     }
 
+    public static let minimumEffectiveSetRPE = 6.0
+
     /// Effective sets per muscle group in a session.
     ///
     /// A working set counts if its RPE is at least `minimumRPE` (default 6, about 4 reps in reserve), or if it has no
@@ -42,7 +44,7 @@ public enum StrengthMetrics {
     public static func effectiveSets(
         in session: StrengthSession,
         exercises: [UUID: Exercise],
-        minimumRPE: Double = 6
+        minimumRPE: Double = minimumEffectiveSetRPE
     ) -> [MuscleGroup: Double] {
         var result: [MuscleGroup: Double] = [:]
         for entry in session.entries {
@@ -53,14 +55,19 @@ public enum StrengthMetrics {
                 return rpe >= minimumRPE
             }.count
             guard counted > 0 else { continue }
-            let sets = Double(counted)
-            for muscle in exercise.primaryMuscles {
-                result[muscle, default: 0] += sets
-            }
-            for muscle in exercise.secondaryMuscles where !exercise.primaryMuscles.contains(muscle) {
-                result[muscle, default: 0] += sets * 0.5
-            }
+            addEffectiveSets(Double(counted), for: exercise, to: &result)
         }
         return result
+    }
+
+    public static func addEffectiveSets(
+        _ sets: Double, for exercise: Exercise, to volume: inout [MuscleGroup: Double]
+    ) {
+        for muscle in exercise.primaryMuscles {
+            volume[muscle, default: 0] += sets
+        }
+        for muscle in exercise.secondaryMuscles where !exercise.primaryMuscles.contains(muscle) {
+            volume[muscle, default: 0] += sets * 0.5
+        }
     }
 }

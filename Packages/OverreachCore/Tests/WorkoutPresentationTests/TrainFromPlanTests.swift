@@ -28,7 +28,9 @@ struct TrainFromPlanTests {
 
     private var heavyUpper: Routine {
         Routine(name: "Upper (strength)", focus: .strength, exerciseIDs: [bench.id, row.id], prescriptions: [
-            RoutinePrescription(exerciseID: bench.id, scheme: .rpeBased(sets: 5, reps: 3, targetRPE: 8)),
+            RoutinePrescription(
+                exerciseID: bench.id, scheme: .rpeBased(sets: 5, reps: 3, targetRPE: 8), restSeconds: 120
+            ),
         ])
     }
 
@@ -46,6 +48,9 @@ struct TrainFromPlanTests {
         #expect(load > 60)  // three reps at RPE 8 are heavier than twelve
         #expect(benchDraft.isPrescribedByRoutine)
         #expect(benchDraft.summary.focusLine.hasSuffix("sets and reps from the routine"))
+        let workingSet = try #require(benchDraft.workingSets.first)
+        model.setDone(true, set: workingSet.id, in: benchDraft.id)
+        #expect(model.rest.state(at: now)?.remaining == "2:00")
 
         let rowDraft = try #require(model.exercises.first { $0.exercise.id == row.id })
         #expect(!rowDraft.isPrescribedByRoutine)

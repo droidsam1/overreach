@@ -39,6 +39,7 @@ public struct DraftExercise: Identifiable, Hashable, Codable, Sendable {
     public var isFocusInferred: Bool
     /// Suggested rest between working sets for the focus, in seconds.
     public var restSeconds: ClosedRange<Int>
+    var prescribedRestSeconds: Int?
     /// Stored settings behind the target (`nil` = defaults), to notice when they change.
     var appliedSettings: ProgressionSettings?
     /// Scheme behind the target, for the numbers in its explanation.
@@ -164,10 +165,12 @@ extension DraftExercise {
     }
 
     public func summary(format: Format) -> TargetSummary {
-        let rest = L10n.format(
-            "rest {1}–{2}", format.minutesAndSeconds(restSeconds.lowerBound),
-            format.minutesAndSeconds(restSeconds.upperBound)
-        )
+        let rest = if let prescribedRestSeconds {
+            L10n.format("rest {1}", format.minutesAndSeconds(prescribedRestSeconds))
+        } else {
+            L10n.format("rest {1}–{2}", format.minutesAndSeconds(restSeconds.lowerBound),
+                        format.minutesAndSeconds(restSeconds.upperBound))
+        }
         var focusLine: String
         if let focus {
             focusLine = focus.displayName + (isFocusInferred ? " " + L10n.text("(detected)") : "") + " · " + rest
@@ -672,7 +675,8 @@ public final class WorkoutModel {
         }
         let declaredFocus = stored?.focus ?? sessionFocus
         // A routine's prescription wins in that routine; the engine still sets the load from history.
-        let prescribed = sessionRoutine?.prescription(for: exercise.id)
+        let prescription = sessionRoutine?.prescriptionDetails(for: exercise.id)
+        let prescribed = prescription?.scheme
         let settings = ProgressionTargets.settings(for: exercise, stored: stored, focus: declaredFocus,
                                                    prescription: prescribed, weightUnit: weightUnit)
         let inferredFocus = FocusClassifier.dominant(history.indices.suffix(3).compactMap { index in
@@ -706,6 +710,7 @@ public final class WorkoutModel {
             id: id, exercise: exercise, target: target, status: lift.status, sets: sets, focus: focus,
             isFocusInferred: declaredFocus == nil && focus != nil,
             restSeconds: FocusPrescription.for(focus ?? .hypertrophy).restSeconds,
+            prescribedRestSeconds: prescription?.restSeconds,
             appliedSettings: stored,
             scheme: settings.scheme,
             warmUpPlan: plan,

@@ -36,6 +36,35 @@ public struct ContextPack: Codable, Hashable, Sendable {
     /// Formats the app can import back. Optional, added after v1 shipped.
     public var imports: [ImportFormat]?
 
+    /// Removes structured health and cycle fields before preparing a shareable copy.
+    public func selectingHealthData(health: Bool, cycle: Bool) -> Self {
+        var copy = self
+        if !cycle, copy.athlete.cycleTracking != nil {
+            copy.athlete.cycleTracking = nil
+            // The assessment can include cycle-adjusted baselines and reasons.
+            copy.today = nil
+        }
+        if !health {
+            copy.athlete.sex = nil
+            copy.athlete.birthYear = nil
+            copy.athlete.bodyMassKg = nil
+            copy.athlete.maxHeartRate = nil
+            copy.athlete.restingHeartRate = nil
+            copy.dailyMetrics = []
+            copy.checkIns = []
+            copy.today = nil
+            for index in copy.sessions.indices { copy.sessions[index].watch = nil }
+            for index in copy.runs.indices {
+                copy.runs[index].averageHeartRate = nil
+                copy.runs[index].maxHeartRate = nil
+                copy.runs[index].trainingLoad = nil
+                copy.runs[index].aerobicTrainingEffect = nil
+                copy.runs[index].anaerobicTrainingEffect = nil
+            }
+        }
+        return copy
+    }
+
     public struct ImportFormat: Codable, Hashable, Sendable {
         public var format: String
         public var version: Int
@@ -155,6 +184,7 @@ public struct ContextPack: Codable, Hashable, Sendable {
     public struct Prescription: Codable, Hashable, Sendable {
         public var exercise: String
         public var scheme: Scheme
+        public var restSeconds: Int?
     }
 
     public struct Session: Codable, Hashable, Sendable {

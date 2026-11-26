@@ -94,6 +94,53 @@ struct PlanBlocksTests {
         #expect(planned.blocks.first?.routineIDs == [existing.id])
     }
 
+    @Test func flagsSessionTimeAndPeakWeeklyVolumeWithoutBlocking() throws {
+        let plan = """
+            {"format": "overreach.plan", "version": 1,
+             "routines": [{"id": "a", "name": "Legs", "focus": "strength", "maxDurationMinutes": 20,
+                           "exercises": ["Squat (Barbell)"],
+                           "prescriptions": [{"exercise": "Squat (Barbell)", "restSeconds": 120,
+                                              "scheme": {"type": "linearLoad", "sets": 10, "reps": 5}}]},
+                          {"id": "b", "name": "Upper", "exercises": ["Bench Press (Barbell)"]}],
+             "blocks": [{"name": "Build", "focus": "strength", "weeks": 2,
+                         "routines": ["b", "a", "a"], "sessionsPerWeek": 4}]}
+            """
+        let planned = try importing(plan)
+        #expect(planned.canImport)
+        #expect(planned.warnings.contains(.sessionDuration(routine: "Legs", minutes: 23, limit: 20)))
+        #expect(planned.warnings.contains(.weeklyVolume(block: "Build", muscle: .quadriceps, sets: 30, guide: 20)))
+        #expect(PlanImporter.correctionPrompt(for: [], warnings: planned.warnings).contains("20-minute limit"))
+    }
+
+    @Test func aDeloadMustReduceWorkingSetsOrEffortToAvoidAWarning() throws {
+        let plan = """
+            {"format": "overreach.plan", "version": 1,
+             "routines": [{"id": "a", "name": "Legs", "exercises": ["Squat (Barbell)"]}],
+             "blocks": [
+                {"focus": "strength", "weeks": 4, "routines": ["a"], "sessionsPerWeek": 3},
+                {"name": "Same", "focus": "strength", "weeks": 1, "routines": ["a"],
+                 "sessionsPerWeek": 3, "isDeload": true},
+                {"name": "Lighter", "focus": "strength", "weeks": 1, "routines": ["a"],
+                 "sessionsPerWeek": 2, "isDeload": true}
+             ]}
+            """
+        let planned = try importing(plan)
+        #expect(planned.canImport)
+        #expect(planned.warnings == [.unreducedDeload(block: "Same")])
+    }
+
+    @Test func rejectsAnInvalidSessionTimeLimit() throws {
+        let plan = """
+            {"format": "overreach.plan", "version": 1,
+             "routines": [{"name": "Legs", "maxDurationMinutes": 0, "exercises": ["Squat (Barbell)"]}]}
+            """
+        let planned = try importing(plan)
+        #expect(!planned.canImport)
+        #expect(planned.issues.contains(.invalidValue(
+            field: "routines[0].maxDurationMinutes", value: "0", expected: "1 to 1440"
+        )))
+    }
+
     @Test func explainsWhatIsWrongWithBlocksAndPrescriptions() throws {
         let plan = """
             {"format": "overreach.plan", "version": 1, "startDate": "next monday",

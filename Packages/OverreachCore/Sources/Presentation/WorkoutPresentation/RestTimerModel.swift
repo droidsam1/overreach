@@ -83,7 +83,8 @@ public final class RestTimerModel {
 
     /// Starts the suggested rest for the exercise's focus, replacing any rest in progress.
     func start(after setID: DraftSet.ID, of exercise: DraftExercise) {
-        let duration = FocusPrescription.for(exercise.focus ?? .hypertrophy).defaultRestSeconds
+        let duration = exercise.prescribedRestSeconds
+            ?? FocusPrescription.for(exercise.focus ?? .hypertrophy).defaultRestSeconds
         let draft = RestTimerDraft(
             setID: setID, exerciseID: exercise.id, endsAt: clock().addingTimeInterval(TimeInterval(duration)),
             durationSeconds: duration
@@ -95,10 +96,14 @@ public final class RestTimerModel {
         let prescription = FocusPrescription.for(exercise.focus ?? .hypertrophy)
         let range = prescription.restSeconds
         let evidence = prescription.restEvidence
-        let suggestion = L10n.format(
-            "Suggested {1}–{2} · {3} ({4})", format.minutesAndSeconds(range.lowerBound),
-            format.minutesAndSeconds(range.upperBound), evidence.level.displayName, evidence.key
-        )
+        let suggestion = if let seconds = exercise.prescribedRestSeconds {
+            L10n.format("Routine rest {1}", format.minutesAndSeconds(seconds))
+        } else {
+            L10n.format(
+                "Suggested {1}–{2} · {3} ({4})", format.minutesAndSeconds(range.lowerBound),
+                format.minutesAndSeconds(range.upperBound), evidence.level.displayName, evidence.key
+            )
+        }
         running = Running(draft: draft, exerciseName: exercise.name, suggestion: suggestion)
         if draft.endsAt > clock() {
             scheduleAlert()

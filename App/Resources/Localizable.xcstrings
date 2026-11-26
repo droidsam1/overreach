@@ -205,6 +205,23 @@
         }
       }
     },
+    "1 session per week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 sesión por semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 sesión por semana"
+          }
+        }
+      }
+    },
     "1 year": {
       "extractionState": "manual",
       "localizations": {
@@ -5237,6 +5254,23 @@
         }
       }
     },
+    "Deload “{1}” has no reduction in weekly working sets or RPE compared with the previous block.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La descarga «{1}» no reduce las series de trabajo semanales ni el RPE frente al bloque anterior."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A descarga «{1}» non reduce as series de traballo semanais nin o RPE fronte ao bloque anterior."
+          }
+        }
+      }
+    },
     "Deloads and rest periods": {
       "extractionState": "manual",
       "localizations": {
@@ -8654,6 +8688,40 @@
         }
       }
     },
+    "Include cycle tracking setting": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Incluir el ajuste de seguimiento del ciclo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Incluír o axuste de seguimento do ciclo"
+          }
+        }
+      }
+    },
+    "Include health data": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Incluir datos de salud"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Incluír datos de saúde"
+          }
+        }
+      }
+    },
     "Insufficient evidence for a trend": {
       "extractionState": "manual",
       "localizations": {
@@ -11064,6 +11132,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "O movemento está limitado"
+          }
+        }
+      }
+    },
+    "My training availability is {1}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mi disponibilidad para entrenar es {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A miña dispoñibilidade para adestrar é {1}."
           }
         }
       }
@@ -16304,6 +16389,23 @@
         }
       }
     },
+    "Routine rest {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descanso de la rutina de {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descanso da rutina de {1}"
+          }
+        }
+      }
+    },
     "Routine “{1}” gives sets and reps for “{2}”, which it does not include.": {
       "extractionState": "manual",
       "localizations": {
@@ -21285,6 +21387,23 @@
         }
       }
     },
+    "Training availability": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disponibilidad para entrenar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dispoñibilidade para adestrar"
+          }
+        }
+      }
+    },
     "Training blocks": {
       "extractionState": "manual",
       "localizations": {
@@ -24957,6 +25076,23 @@
         }
       }
     },
+    "rest {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "descanso de {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "descanso de {1}"
+          }
+        }
+      }
+    },
     "rest {1}–{2}": {
       "extractionState": "manual",
       "localizations": {
@@ -25773,6 +25909,23 @@
         }
       }
     },
+    "{1} sessions per week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} sesiones por semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} sesións por semana"
+          }
+        }
+      }
+    },
     "{1} sessions with {2} will use {3}. {2} is removed and its name is kept as an alias, so importing it again maps to {3}.": {
       "extractionState": "manual",
       "localizations": {
@@ -26483,6 +26636,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "“{1}” xa o usa {2}."
+          }
+        }
+      }
+    },
+    "“{1}” reaches {2} weekly fractional sets for {3}. The guide is {4}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«{1}» llega a {2} series fraccionadas semanales para {3}. La referencia es {4}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«{1}» chega a {2} series fraccionadas semanais para {3}. A referencia é {4}."
+          }
+        }
+      }
+    },
+    "“{1}” takes about {2} min including rests. Your limit is {3} min.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«{1}» dura unos {2} min con los descansos. Tu límite es de {3} min."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«{1}» dura uns {2} min cos descansos. O teu límite é de {3} min."
           }
         }
       }

@@ -74,7 +74,14 @@ struct AskAIModelTests {
         await model.prepare()
         let linked = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
         #expect(linked.runs.isEmpty)
-        #expect(linked.sessions.first?.watch?.averageHeartRate == 125)
+        #expect(linked.sessions.first?.watch == nil)
+        #expect(linked.today == nil)
+        model.setIncludesHealth(true)
+        let withHealth = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
+        #expect(withHealth.sessions.first?.watch?.averageHeartRate == 125)
+        model.setIncludesHealth(false)
+        let withoutHealth = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
+        #expect(withoutHealth.sessions.first?.watch == nil)
 
         choices = ActivityMatchChoices(runs: [runPair: .separate], strength: [liftPair: .separate])
         await model.prepare()
@@ -102,7 +109,10 @@ struct AskAIModelTests {
         await model.prepare()
 
         model.setRequest(.nextBlock)
-        #expect(try #require(model.message).hasSuffix("```\n\nHelp me plan my next training block."))
+        model.setAvailability("Mondays and Fridays, 45 minutes")
+        #expect(try #require(model.message).contains(PlanMessage.jsonSchema))
+        #expect(try #require(model.message).contains("Mondays and Fridays, 45 minutes"))
+        #expect(try #require(model.message).hasSuffix("Help me plan my next training block."))
 
         model.setRequest(nil)
         #expect(try #require(model.message).hasSuffix("```"))

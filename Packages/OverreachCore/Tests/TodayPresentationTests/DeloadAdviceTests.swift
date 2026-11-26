@@ -369,6 +369,7 @@ struct DeloadAdviceTests {
             workouts: store, exercises: store, progression: store, profiles: store, routines: store,
             checkIns: checkIns, sources: [source], clock: { fixedNow }, calendar: calendar, directory: directory
         )
+        assistant.setIncludesHealth(true)
         await assistant.setPeriod(.fourWeeks)
         let url = try #require(assistant.fileURL)
         let data = try Data(contentsOf: url)

@@ -18,10 +18,13 @@ public enum PlanIssue: Hashable, Sendable {
     case prescriptionOutsideRoutine(routine: String, exercise: String)
 }
 
-/// Something in an AI reply that the app leaves out without stopping the import.
+/// An import preview note that does not block the import.
 public enum PlanWarning: Hashable, Sendable {
     /// A field the format does not have, or one that does not apply (e.g. `reps` in a double progression).
     case ignoredField(String)
+    case unreducedDeload(block: String)
+    case sessionDuration(routine: String, minutes: Int, limit: Int)
+    case weeklyVolume(block: String, muscle: MuscleGroup, sets: Double, guide: Double)
 }
 
 /// What importing an AI reply would change, computed before anything is saved.
@@ -119,6 +122,11 @@ public enum PlanImporter {
                 result.settings.append(change)
             }
         }
+        if result.issues.isEmpty {
+            result.warnings += PlanWorkload.warnings(
+                for: message, planned: result, existing: routines, exercises: exercises, settings: settings
+            )
+        }
         if (message.routines ?? []).isEmpty && (message.exerciseSettings ?? []).isEmpty
             && (message.blocks ?? []).isEmpty {
             result.issues.append(.empty)
@@ -136,6 +144,10 @@ public enum PlanImporter {
         guard !name.isEmpty else {
             issues.append(.unnamedRoutine(index: index))
             return nil
+        }
+        if let limit = proposal.maxDurationMinutes, !(1...1440).contains(limit) {
+            issues.append(.invalidValue(field: "routines[\(index)].maxDurationMinutes",
+                                        value: "\(limit)", expected: "1 to 1440"))
         }
         let explicitID = proposal.id?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let key = explicitID.isEmpty ? ExerciseLookup.normalize(name) : explicitID
@@ -283,14 +295,14 @@ public enum PlanImporter {
     public static func correctionPrompt(for issues: [PlanIssue], warnings: [PlanWarning] = []) -> String {
         var lines: [String] = []
         if issues.isEmpty {
-            lines.append("Overreach can import your plan (overreach.plan v1), but it ignored some fields. Please send "
-                + "the whole JSON again without them, or with the information in supported fields:")
+            lines.append("Overreach can import your plan (overreach.plan v1). Please review these warnings and "
+                + "send the whole revised JSON:")
         } else {
             lines.append("Overreach could not import your plan (overreach.plan v1). Please fix these problems and "
                 + "send the whole JSON again:")
             lines += issues.map { "- " + explanation(of: $0) }
             if !warnings.isEmpty {
-                lines.append("Also remove these fields, which the format does not have:")
+                lines.append("Also review these warnings:")
             }
         }
         lines += warnings.map { "- " + explanation(of: $0) }
@@ -302,6 +314,14 @@ public enum PlanImporter {
     static func explanation(of warning: PlanWarning) -> String {
         switch warning {
         case let .ignoredField(path): "\(path) is not part of the format and was ignored."
+        case let .unreducedDeload(block):
+            "Deload \"\(block)\" does not reduce weekly working sets or average RPE versus the previous block."
+        case let .sessionDuration(routine, minutes, limit):
+            "Routine \"\(routine)\" takes about \(minutes) minutes including rests, "
+                + "above the \(limit)-minute limit."
+        case let .weeklyVolume(block, muscle, sets, guide):
+            "Block \"\(block)\" reaches \(sets) weekly fractional sets for \(muscle.rawValue), "
+                + "above the \(guide)-set guide."
         }
     }
 
@@ -362,8 +382,13 @@ extension PlanImporter {
                 issues.append(.invalidValue(field: "\(path).scheme", value: "missing", expected: "a scheme"))
                 continue
             }
+            if let rest = proposal.restSeconds, !(1...900).contains(rest) {
+                issues.append(.invalidValue(field: "\(path).restSeconds", value: "\(rest)", expected: "1 to 900"))
+            }
             if let parsed = scheme(proposed, field: "\(path).scheme", issues: &issues) {
-                result.append(RoutinePrescription(exerciseID: exercise.id, scheme: parsed))
+                result.append(RoutinePrescription(
+                    exerciseID: exercise.id, scheme: parsed, restSeconds: proposal.restSeconds
+                ))
             }
         }
         return issues.count == before ? result : nil

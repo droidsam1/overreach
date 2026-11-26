@@ -46,8 +46,8 @@ struct PlanImportBlocksTests {
         let preview = try #require(model.preview)
         #expect(preview.canImport)
         #expect(preview.blocks.map(\.name) == ["Strength", "Hypertrophy"])
-        #expect(preview.blocks[0].detail == "Strength · 6 weeks from Jan 4, 2027 · Lower")
-        #expect(preview.blocks[1].detail == "4 weeks from Feb 15, 2027 · Lower")
+        #expect(preview.blocks[0].detail == "Strength · 6 weeks from Jan 4, 2027 · 1 session per week · Lower")
+        #expect(preview.blocks[1].detail == "4 weeks from Feb 15, 2027 · 1 session per week · Lower")
 
         #expect(await model.confirm())
         #expect(model.resultMessage == "Imported 1 routines, 0 exercise settings and a plan of 2 blocks.")
