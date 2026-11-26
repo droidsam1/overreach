@@ -1,5 +1,6 @@
 import Charts
 import DesignSystem
+import Domain
 import SwiftUI
 import TrendsPresentation
 
@@ -8,6 +9,7 @@ struct PerformanceProgressView<Plan: View>: View {
     let plan: Plan
     @State private var runningKind: String?
     @State private var liftID: String?
+    @State private var liftSource: DataSourceKind?
     @State private var strengthMetric: String?
 
     init(model: RecoveryProgressModel, plan: Plan) {
@@ -74,34 +76,50 @@ struct PerformanceProgressView<Plan: View>: View {
     }
 
     private var sensorConfirmation: some View {
-        DisclosureGroup("Confirm heart-rate sensors") {
-            Text("Group runs only when you used the same watch or chest strap.")
-                .font(.footnote).foregroundStyle(.secondary)
-            ForEach(model.runningPulseSensorRows) { row in
-                VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                    NavigationLink(value: PerformanceSession.run(row.run)) {
-                        Text(row.title)
-                    }
-                    Text(row.run.startedAt, format: .dateTime.day().month().year().hour().minute())
-                        .font(.footnote)
-                    Picker("Heart-rate sensor", selection: Binding(
-                        get: { row.selection }, set: { model.choosePulseSensor($0, for: row.id) }
-                    )) {
-                        ForEach(RunningPulseSensor.allCases) { sensor in
-                            Text(sensor.title).tag(sensor)
-                        }
-                    }
-                    .frame(minHeight: 44)
+        let pending = model.pendingPulseSensorRows
+        let confirmed = model.confirmedPulseSensorRows
+        return VStack(alignment: .leading, spacing: Spacing.small) {
+            if !pending.isEmpty {
+                DisclosureGroup("Confirm heart-rate sensors") {
+                    Text("Group runs only when you used the same watch or chest strap.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                    sensorRows(pending)
                 }
-                .padding(.vertical, Spacing.xSmall)
             }
+            if !confirmed.isEmpty {
+                DisclosureGroup("Confirmed sensors") {
+                    sensorRows(confirmed)
+                }
+            }
+        }
+    }
+
+    private func sensorRows(_ rows: [RunningPulseSensorRow]) -> some View {
+        ForEach(rows) { row in
+            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                NavigationLink(value: PerformanceSession.run(row.run)) {
+                    Text(row.title)
+                }
+                Text(row.run.startedAt, format: .dateTime.day().month().year().hour().minute())
+                    .font(.footnote)
+                Picker("Heart-rate sensor", selection: Binding(
+                    get: { row.selection }, set: { model.choosePulseSensor($0, for: row.id) }
+                )) {
+                    ForEach(RunningPulseSensor.allCases) { sensor in
+                        Text(sensor.title).tag(sensor)
+                    }
+                }
+                .frame(minHeight: 44)
+            }
+            .padding(.vertical, Spacing.xSmall)
         }
     }
 
     private var strength: some View {
         let lifts = model.strengthPerformanceOptions
         let lift = lifts.first { $0.id == liftID } ?? lifts.first
-        let series = lift.map { model.strengthPerformance(for: $0) } ?? []
+        let source = lift.flatMap { lift in lift.sources.first { $0 == liftSource } ?? lift.sources.first }
+        let series = lift.map { model.strengthPerformance(for: $0, source: source) } ?? []
         let result = series.first { $0.id == strengthMetric } ?? series.first
         return VStack(alignment: .leading, spacing: Spacing.small) {
             Text("Strength records").font(.headline).accessibilityAddTraits(.isHeader)
@@ -109,7 +127,19 @@ struct PerformanceProgressView<Plan: View>: View {
                 Picker("Lift", selection: selection($liftID, default: lift.id)) {
                     ForEach(lifts) { Text($0.title).tag($0.id) }
                 }
-                .onChange(of: liftID) { strengthMetric = nil }
+                .onChange(of: liftID) {
+                    strengthMetric = nil
+                    liftSource = nil
+                }
+                if lift.sources.count > 1, let source {
+                    Picker("Source", selection: Binding(get: { source }, set: {
+                        liftSource = $0
+                        strengthMetric = nil
+                    })) {
+                        ForEach(lift.sources, id: \.self) { Text($0.displayName).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                }
                 if let result {
                     Picker("Record", selection: selection($strengthMetric, default: result.id)) {
                         ForEach(series) { Text($0.title).tag($0.id) }

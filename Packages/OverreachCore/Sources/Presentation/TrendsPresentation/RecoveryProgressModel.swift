@@ -124,6 +124,14 @@ public final class RecoveryProgressModel {
         }
     }
 
+    public var pendingPulseSensorRows: [RunningPulseSensorRow] {
+        runningPulseSensorRows.filter { $0.selection == .unknown }
+    }
+
+    public var confirmedPulseSensorRows: [RunningPulseSensorRow] {
+        runningPulseSensorRows.filter { $0.selection != .unknown }
+    }
+
     public func choosePulseSensor(_ sensor: RunningPulseSensor, for runID: String) {
         guard runningPulseSensorRows.contains(where: { $0.id == runID }) else { return }
         pulseSensors[runID] = sensor == .unknown ? nil : sensor.rawValue
@@ -139,10 +147,12 @@ public final class RecoveryProgressModel {
         return performance(using: inputs).strengthOptions(inputs.sets, exercises: inputs.exercises)
     }
 
-    public func strengthPerformance(for option: StrengthPerformanceOption) -> [PerformanceSeries] {
+    public func strengthPerformance(
+        for option: StrengthPerformanceOption, source: DataSourceKind? = nil
+    ) -> [PerformanceSeries] {
         guard let inputs = performanceInputs else { return [] }
         return performance(using: inputs).strengthSeries(
-            option, profile: inputs.profile, now: inputs.now, calendar: calendar
+            option, source: source, profile: inputs.profile, now: inputs.now, calendar: calendar
         )
     }
 
@@ -270,8 +280,12 @@ public final class RecoveryProgressModel {
         )
         let segments = await legacy
         guard activeLoad == loadID else { return }
+        let tracks = await Self.loadTracks(
+            runs.filter { $0.source == .garmin && comparison.contains($0.startedAt) }, from: runningTrack
+        )
+        guard activeLoad == loadID else { return }
         let results = Dictionary(uniqueKeysWithValues: PerformanceDistance.allCases.map { distance in
-            (distance, RunningPerformance.bestTimes(for: distance.distance, runs: runs))
+            (distance, RunningPerformance.bestTimes(for: distance.distance, runs: runs, tracks: tracks))
         })
         performanceInputs = PerformanceInputs(
             today: today, now: now, profile: profile, runResults: results, runningSegments: segments,
@@ -333,6 +347,17 @@ public final class RecoveryProgressModel {
             default: return true
             }
         }
+    }
+
+    private nonisolated static func loadTracks(
+        _ runs: [RunActivity], from source: @Sendable (RunActivity) async -> RunningTrack?
+    ) async -> [String: RunningTrack] {
+        var tracks: [String: RunningTrack] = [:]
+        for run in runs {
+            guard !Task.isCancelled else { break }
+            if let track = await source(run) { tracks[run.id] = track }
+        }
+        return tracks
     }
 
     private nonisolated static func loadRunningBlocks(
