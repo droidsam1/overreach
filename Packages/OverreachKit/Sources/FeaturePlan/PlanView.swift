@@ -32,46 +32,24 @@ public struct PlanView<Assistant: View, Progress: View>: View {
 
     public var body: some View {
         NavigationStack {
-            Form {
-                if let message = model.errorMessage {
-                    InlineNotice(Text(message), tone: .critical) { Task { await reload() } }
-                }
-                if model.isAnalysing {
-                    HStack {
-                        ProgressView()
-                        Text("Analysing your history…").foregroundStyle(.secondary)
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.medium) {
+                    if let message = model.errorMessage {
+                        InlineNotice(Text(message), tone: .critical) { Task { await reload() } }
                     }
-                }
-                progressHeader
-                if model.showsHybridCalendar { scheduleSection }
-                if !model.pendingDeloadRows.isEmpty {
-                    Section("Recent break") {
-                        ForEach(model.pendingDeloadRows) { row in
-                            DeloadQuestionView(model: model, row: row)
-                        }
-                    }
-                }
-                currentBlockSection
-                if let next = model.next {
-                    Section("Next") {
-                        Text(next.headline).font(.headline)
-                        if !next.reasons.isEmpty {
-                            DisclosureGroup("Why this recommendation?") {
-                                ExplainedLines(lines: next.reasons)
+                    nextSessionCard
+                    weekCard
+                    if let row = model.pendingDeloadRows.first {
+                        Card {
+                            VStack(alignment: .leading, spacing: Spacing.small) {
+                                SectionHeader(Text("Recent break"))
+                                DeloadQuestionView(model: model, row: row)
                             }
                         }
                     }
+                    links
                 }
-                goalSection
-                planSection
-                if !model.findingLines.isEmpty {
-                    Section("Worth a look") {
-                        ExplainedLines(lines: model.findingLines)
-                    }
-                }
-                blockSection
-                if Progress.self != EmptyView.self { progressSection }
-                Section { assistant }
+                .padding(Spacing.medium)
             }
             .navigationTitle("Plan")
             #if os(iOS)
@@ -89,20 +67,84 @@ public struct PlanView<Assistant: View, Progress: View>: View {
         }
     }
 
-    /// Real progress through the plan: sessions done this week and the block's week (ADR-0041 rule 7). Each bar
-    /// carries its value as text, and VoiceOver reads one sentence per line.
-    @ViewBuilder private var progressHeader: some View {
-        if let progress = model.progress {
-            Section {
-                ForEach(progress.lines, id: \.title) { line in
-                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                        Text(line.title).font(.subheadline.weight(.semibold))
-                        ProgressView(value: line.fraction)
-                    }
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(Text(line.accessibilityLabel))
+    @ViewBuilder private var nextSessionCard: some View {
+        if let row = model.nextSessionRows.first {
+            switch row {
+            case let .run(run):
+                sessionCard(title: run.title, date: run.date) { runEditor = model.editRunningEntry(run.entry) }
+            case let .strength(strength):
+                sessionCard(title: strength.title, date: strength.date) {
+                    strengthEditor = model.editStrengthEntry(strength.entry)
                 }
             }
+        } else if model.next != nil || model.showsHybridCalendar || model.isAnalysing {
+            Card {
+                VStack(alignment: .leading, spacing: Spacing.medium) {
+                    SectionHeader(Text("Next"))
+                    if let next = model.next {
+                        Text(next.headline).font(.title2.bold())
+                        if !next.reasons.isEmpty {
+                            DisclosureGroup("Why this recommendation?") {
+                                ExplainedLines(lines: next.reasons)
+                            }
+                        }
+                    } else if model.isAnalysing {
+                        LoadingState("Analysing your history…")
+                    } else {
+                        Text("No dated sessions. Today follows your usual rotation until you schedule one.")
+                            .foregroundStyle(.secondary)
+                    }
+                    if let rotation = model.pendingRotationSummary {
+                        Label(rotation, systemImage: "repeat").foregroundStyle(.secondary)
+                    }
+                    if model.showsHybridCalendar {
+                        NavigationLink {
+                            HybridCalendarView(model: model)
+                        } label: {
+                            Text("Hybrid calendar").frame(maxWidth: .infinity, minHeight: 44)
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                }
+            }
+        }
+    }
+
+    private func sessionCard(title: String, date: String, edit: @escaping () -> Void) -> some View {
+        Card {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                SectionHeader(Text("Next"))
+                Text(title).font(.title2.bold())
+                Text(date).foregroundStyle(.secondary)
+                Button(action: edit) {
+                    Text("Edit session").frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+    }
+
+    @ViewBuilder private var weekCard: some View {
+        let days = model.weekDays
+        if !days.isEmpty {
+            Card {
+                VStack(alignment: .leading, spacing: Spacing.medium) {
+                    SectionHeader(Text("Your week"))
+                    PlanWeekStrip(days: days)
+                    if let week = model.progress?.week { progressLine(week) }
+                }
+            }
+        }
+    }
+
+    private func progressLine(_ line: PlanProgress.Line) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+            ProgressBar(
+                segments: [.init(fraction: line.fraction, color: StatusTone.positive.accent)],
+                accessibilityLabel: line.accessibilityLabel, accessibilityValue: ""
+            )
+            .accessibilityHidden(true)
+            Text(line.title).font(.subheadline).accessibilityLabel(Text(line.accessibilityLabel))
         }
     }
 
@@ -111,61 +153,88 @@ public struct PlanView<Assistant: View, Progress: View>: View {
         await model.loadCalendarRoutines()
     }
 
-    /// The next dated sessions, each opening its editor to move or change it, and the whole calendar.
-    private var scheduleSection: some View {
-        Section {
-            if let rotation = model.pendingRotationSummary {
-                Label(rotation, systemImage: "repeat")
+    private var links: some View {
+        VStack(spacing: Spacing.small) {
+            if model.showsHybridCalendar {
+                NavigationLink {
+                    HybridCalendarView(model: model)
+                } label: {
+                    linkTile(Text("Calendar"), symbol: "calendar")
+                }
             }
-            if model.nextSessionRows.isEmpty, model.pendingRotationSummary == nil {
-                Text("No dated sessions. Today follows your usual rotation until you schedule one.")
-                    .foregroundStyle(.secondary)
-            }
-            CalendarRows(
-                model: model, rows: model.nextSessionRows, runEditor: $runEditor, strengthEditor: $strengthEditor
-            )
-            NavigationLink(model.hasMoreSessions ? "All training days" : "Hybrid calendar") {
-                HybridCalendarView(model: model)
-            }
-        } header: {
-            Text("Upcoming sessions")
-        }
-    }
-
-    private var goalSection: some View {
-        Section("Goal") {
             NavigationLink {
                 GoalEditView(model: model)
             } label: {
-                VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                    Text(model.goalSummary)
-                    if model.showsRunningPlan, let summary = model.runningGoalSummary {
-                        Text(summary).font(.footnote).foregroundStyle(.secondary)
-                    }
+                linkTile(Text("Goal"), symbol: "target", detail: model.goalSummary)
+            }
+            NavigationLink {
+                blockDetails
+            } label: {
+                linkTile(Text("Current block"), symbol: "square.stack", detail: model.currentBlockTitle)
+            }
+            if Progress.self != EmptyView.self {
+                NavigationLink {
+                    progress
+                } label: {
+                    linkTile(Text("View progress"), symbol: "chart.line.uptrend.xyaxis", detail: model.progressSummary)
                 }
-                .accessibilityElement(children: .combine)
             }
         }
+        .buttonStyle(.plain)
     }
 
-    private var progressSection: some View {
-        Section {
-            NavigationLink {
-                progress
-            } label: {
+    private func linkTile(_ title: Text, symbol: String, detail: String? = nil) -> some View {
+        Card(radius: Radius.tile) {
+            HStack(spacing: Spacing.small) {
+                IconTile(symbolName: symbol, color: StatusTone.positive.accent)
                 VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                    Text("View progress")
-                    Text(model.progressSummary).font(.footnote).foregroundStyle(.secondary)
+                    title.font(.headline)
+                    if let detail { Text(detail).font(.footnote).foregroundStyle(.secondary) }
                 }
-                .accessibilityElement(children: .combine)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").foregroundStyle(.secondary).accessibilityHidden(true)
             }
-        } header: {
-            Text("Progress")
+            .frame(minHeight: 44)
         }
+        .contentShape(.rect)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var blockDetails: some View {
+        Form {
+            if let message = model.errorMessage {
+                InlineNotice(Text(message), tone: .critical) { Task { await reload() } }
+            }
+            currentBlockSection
+            if !model.pendingDeloadRows.isEmpty {
+                Section("Recent break") {
+                    ForEach(model.pendingDeloadRows) { row in
+                        DeloadQuestionView(model: model, row: row)
+                    }
+                }
+            }
+            if !model.findingLines.isEmpty {
+                Section("Worth a look") { ExplainedLines(lines: model.findingLines) }
+            }
+            if let next = model.next {
+                Section("Next") {
+                    Text(next.headline).font(.headline)
+                    ExplainedLines(lines: next.reasons)
+                }
+            }
+            planSection
+            blockSection
+            if Assistant.self != EmptyView.self { Section { assistant } }
+        }
+        .navigationTitle("Current block")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
     }
 
     private var currentBlockSection: some View {
         Section("Current block") {
+            if let block = model.progress?.block { progressLine(block) }
             if let title = model.currentBlockTitle, let start = model.currentBlockStart {
                 Text(title).font(.headline)
                 LabeledContent("Since", value: start.formatted(date: .abbreviated, time: .omitted))
