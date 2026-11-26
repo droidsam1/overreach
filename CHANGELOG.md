@@ -246,6 +246,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Settings → Appearance: light, dark or the same as the iPhone (the default).
 
 ### Fixed
+- Progress lists each lift once, most trained first, with a source filter when several sources have data. Running best times fall back to the recorded track when laps do not cover the distance, and the heart-rate sensor list shows only runs still to confirm.
 - Plan's week now shows recorded runs and logged rest like Today, and a past day with no training counts as a
   rest day in both. The weather provider picker updates as soon as you pick one.
 - Settings opens an editable training profile with a Save button for your goal, personal context, walking routine,
