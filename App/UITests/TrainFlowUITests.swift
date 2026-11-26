@@ -2,10 +2,11 @@ import XCTest
 
 /// Drives the real app (in-memory data, see `AppContainer.uiTesting()`) through flows that unit tests on models
 /// cannot see: a button that renders but does nothing, a sheet that never opens.
+@MainActor
 final class TrainFlowUITests: XCTestCase {
     private var app: XCUIApplication!
 
-    override func setUp() {
+    override func setUp() async throws {
         continueAfterFailure = false
         app = XCUIApplication()
         app.launchArguments = ["-ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
