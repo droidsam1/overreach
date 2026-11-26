@@ -13,6 +13,7 @@ private enum HistoryLayout: String {
 
 /// Strength and runs in a timeline or a month calendar, with steps in the calendar.
 public struct HistoryView: View {
+    @State private var deletionCount = 0
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var model: HistoryModel
     @AppStorage("history.layout") private var layout = HistoryLayout.list
@@ -59,6 +60,7 @@ public struct HistoryView: View {
             #if os(iOS)
             .navigationBarTitleDisplayMode(.large)
             #endif
+            .haptic(.completed, trigger: deletionCount)
             .task { await model.load() }
         }
     }
@@ -100,7 +102,7 @@ public struct HistoryView: View {
                     }
                     .swipeActions {
                         Button(role: .destructive) {
-                            Task { await model.delete(summary.id) }
+                            Task { if await model.delete(summary.id) { deletionCount += 1 } }
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
@@ -242,6 +244,7 @@ public struct SessionDetailView: View {
     @Bindable var model: HistoryModel
     let sessionID: UUID
     let highlightedSetID: UUID?
+    @State private var saveCount = 0
     @State private var editor: SessionEditorModel?
 
     public init(model: HistoryModel, sessionID: UUID, highlightedSetID: UUID? = nil) {
@@ -267,8 +270,12 @@ public struct SessionDetailView: View {
                     }
                     Button("Edit") { editor = model.makeEditor(forSessionID: sessionID) }
                 }
+                .haptic(.completed, trigger: saveCount)
                 .sheet(item: $editor) { editor in
-                    SessionEditorView(model: editor) { model.didSave($0) }
+                    SessionEditorView(model: editor) { session in
+                        model.didSave(session)
+                        saveCount += 1
+                    }
                 }
                 .sheet(item: $model.report) { report in
                     SessionReportSheet(content: SessionReportContent(report))

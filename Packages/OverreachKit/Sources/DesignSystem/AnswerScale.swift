@@ -20,16 +20,19 @@ public struct AnswerScale: View {
     private let selectedID: String?
     private let onSelect: (String) -> Void
     private let tone: StatusTone
+    private let playsSelectionFeedback: Bool
 
     @Environment(\.dynamicTypeSize) private var typeSize
 
     public init(
         options: [AnswerOption], selectedID: String?, tone: StatusTone = .positive,
+        playsSelectionFeedback: Bool = true,
         onSelect: @escaping (String) -> Void
     ) {
         self.options = options
         self.selectedID = selectedID
         self.tone = tone
+        self.playsSelectionFeedback = playsSelectionFeedback
         self.onSelect = onSelect
     }
 
@@ -43,7 +46,7 @@ public struct AnswerScale: View {
                 }
             }
         }
-        .haptic(.selected, trigger: selectedID) { _, new in new != nil }
+        .haptic(.selected, trigger: selectedID) { _, new in playsSelectionFeedback && new != nil }
         .accessibilityElement(children: .contain)
     }
 

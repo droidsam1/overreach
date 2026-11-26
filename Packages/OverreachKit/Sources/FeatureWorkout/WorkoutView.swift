@@ -14,6 +14,7 @@ public struct WorkoutView: View {
     @State private var routineEditor: RoutineEditorModel?
     @State private var isPickingExercise = false
     @State private var isConfirmingDiscard = false
+    @State private var discardCount = 0
     @State private var isShowingGuide = false
     @State private var isReorderingExercises = false
 
@@ -80,7 +81,9 @@ public struct WorkoutView: View {
             .confirmationDialog(
                 "Discard this session?", isPresented: $isConfirmingDiscard, titleVisibility: .visible
             ) {
-                Button("Discard", role: .destructive) { model.discard() }
+                Button("Discard", role: .destructive) {
+                    if model.discard() { discardCount += 1 }
+                }
             }
             .confirmationDialog(
                 "Some exercises are unfinished", isPresented: $model.isConfirmingUnfinished, titleVisibility: .visible
@@ -110,6 +113,8 @@ public struct WorkoutView: View {
                 }
             }
         }
+        .haptic(.completed, trigger: model.summary?.id) { _, new in new != nil }
+        .haptic(.completed, trigger: discardCount)
     }
 
     @ToolbarContentBuilder

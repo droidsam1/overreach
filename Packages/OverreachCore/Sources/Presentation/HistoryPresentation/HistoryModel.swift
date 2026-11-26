@@ -349,7 +349,8 @@ public final class HistoryModel {
         calendar.updateRunChoices(runChoices)
     }
 
-    public func delete(_ sessionID: UUID) async {
+    @discardableResult
+    public func delete(_ sessionID: UUID) async -> Bool {
         do {
             try await workouts.deleteSession(id: sessionID)
             summaries.removeAll { $0.id == sessionID }
@@ -360,8 +361,10 @@ public final class HistoryModel {
             refreshStrength()
             await backup?.backUpIfConfigured(now: clock())
             await health?.removeWorkout(forSessionID: sessionID)
+            return true
         } catch {
             errorMessage = L10n.text("Could not delete the session.")
+            return false
         }
     }
 
