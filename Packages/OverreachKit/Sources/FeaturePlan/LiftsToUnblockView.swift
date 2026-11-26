@@ -10,25 +10,30 @@ struct LiftsToUnblockSection: View {
     let model: PlanModel
 
     var body: some View {
-        Section {
-            ForEach(model.liftsToUnblockRows) { row in
-                NavigationLink {
-                    LiftToUnblockDetail(model: model, id: row.id)
-                } label: {
-                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                        Text(row.name).font(.headline)
-                        Text(row.since).font(.subheadline).foregroundStyle(.secondary)
-                        if let step = row.nextStep {
-                            Text(step.text).font(.subheadline)
+        Card {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                SectionHeader(Text("Lifts to unblock"))
+                ForEach(model.liftsToUnblockRows) { row in
+                    NavigationLink {
+                        LiftToUnblockDetail(model: model, id: row.id)
+                    } label: {
+                        VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                            Text(row.name).font(.headline)
+                            Text(row.since).font(.subheadline).foregroundStyle(.secondary)
+                            if let step = row.nextStep {
+                                Text(step.text).font(.subheadline)
+                            }
                         }
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .contentShape(.rect)
+                        .accessibilityElement(children: .combine)
                     }
-                    .accessibilityElement(children: .combine)
+                    .buttonStyle(.plain)
                 }
+                Text("Current lifts that stopped progressing. Each needs a change to that lift, not a deload.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
-        } header: {
-            Text("Lifts to unblock")
-        } footer: {
-            Text("Current lifts that stopped progressing. Each needs a change to that lift, not a deload.")
         }
     }
 }
@@ -41,40 +46,34 @@ private struct LiftToUnblockDetail: View {
 
     var body: some View {
         if let row = model.liftsToUnblockRows.first(where: { $0.id == id }) {
-            Form {
-                if let message = model.errorMessage {
-                    InlineNotice(Text(message), tone: .critical)
-                }
-                Section {
-                    Text(row.since)
-                }
-                if let step = row.nextStep {
-                    Section("Next step") {
-                        ExplainedLines(lines: [step])
-                        if let change = row.change {
-                            Button(change.title) { confirmsChange = true }
-                                .disabled(model.isApplyingLiftChange)
-                                .confirmationDialog(
-                                    change.title, isPresented: $confirmsChange, titleVisibility: .visible
-                                ) {
-                                    Button("Apply") {
-                                        Task { await model.applyNextStep(for: row.id) }
-                                    }
-                                    Button("Cancel", role: .cancel) {}
-                                } message: {
-                                    Text(change.confirmation)
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.medium) {
+                    if let message = model.errorMessage {
+                        InlineNotice(Text(message), tone: .critical)
+                    }
+                    Card {
+                        VStack(alignment: .leading, spacing: Spacing.small) {
+                            Text(row.since).font(.headline)
+                            if let step = row.nextStep {
+                                SectionHeader(Text("Next step"))
+                                ExplainedLines(lines: [step])
+                                nextStepAction(row)
+                                if let note = row.note {
+                                    Text(note).font(.footnote).foregroundStyle(.secondary)
                                 }
+                            }
                         }
-                        if let note = row.note {
-                            Text(note).font(.footnote).foregroundStyle(.secondary)
+                    }
+                    if !row.otherSteps.isEmpty {
+                        Card {
+                            VStack(alignment: .leading, spacing: Spacing.small) {
+                                SectionHeader(Text("Other options"))
+                                ExplainedLines(lines: row.otherSteps)
+                            }
                         }
                     }
                 }
-                if !row.otherSteps.isEmpty {
-                    Section("Other options") {
-                        ExplainedLines(lines: row.otherSteps)
-                    }
-                }
+                .padding(Spacing.medium)
             }
             .navigationTitle(row.name)
             #if os(iOS)
@@ -82,6 +81,20 @@ private struct LiftToUnblockDetail: View {
             #endif
         } else {
             ContentUnavailableView("No longer stalled", systemImage: "checkmark.circle")
+        }
+    }
+
+    @ViewBuilder private func nextStepAction(_ row: LiftToUnblockRow) -> some View {
+        if let change = row.change {
+            Button(change.title) { confirmsChange = true }
+                .buttonStyle(.borderedProminent)
+                .disabled(model.isApplyingLiftChange)
+                .confirmationDialog(change.title, isPresented: $confirmsChange, titleVisibility: .visible) {
+                    Button("Apply") { Task { await model.applyNextStep(for: row.id) } }
+                    Button("Cancel", role: .cancel) {}
+                } message: {
+                    Text(change.confirmation)
+                }
         }
     }
 }

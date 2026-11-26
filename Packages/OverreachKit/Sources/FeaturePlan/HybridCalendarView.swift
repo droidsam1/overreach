@@ -11,36 +11,51 @@ struct HybridCalendarView: View {
     init(model: PlanModel) { self.model = model }
 
     var body: some View {
-        List {
-            if let message = model.errorMessage {
-                InlineNotice(Text(message), tone: .critical)
-            }
-            Section("Upcoming training days") {
-                if model.upcomingCalendarRows.isEmpty {
-                    Text("No upcoming training days.").foregroundStyle(.secondary)
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: Spacing.medium) {
+                if let message = model.errorMessage {
+                    InlineNotice(Text(message), tone: .critical)
                 }
-                CalendarRows(
-                    model: model, rows: model.upcomingCalendarRows, runEditor: $runEditor,
-                    strengthEditor: $strengthEditor
-                )
-            }
-            if !model.recordedRunCalendarRows.isEmpty {
-                Section("Recent recorded runs") {
-                    ForEach(model.recordedRunCalendarRows) { run in
-                        CalendarRowLabel(
-                            title: run.title, date: run.date, status: run.status, symbol: "figure.run", isRest: false
-                        )
+                if !model.weekDays.isEmpty {
+                    Card {
+                        VStack(alignment: .leading, spacing: Spacing.small) {
+                            SectionHeader(Text("Your week"))
+                            PlanWeekStrip(days: model.weekDays)
+                        }
+                    }
+                }
+                Card {
+                    VStack(alignment: .leading, spacing: Spacing.small) {
+                        SectionHeader(Text("Upcoming training days"))
+                        if model.upcomingCalendarRows.isEmpty {
+                            Text("No upcoming training days.").foregroundStyle(.secondary)
+                        }
+                        rows(model.upcomingCalendarRows)
+                    }
+                }
+                if !model.recordedRunCalendarRows.isEmpty {
+                    Card {
+                        VStack(alignment: .leading, spacing: Spacing.small) {
+                            SectionHeader(Text("Recent recorded runs"))
+                            ForEach(model.recordedRunCalendarRows) { run in
+                                CalendarRowLabel(
+                                    title: run.title, date: run.date, status: run.status,
+                                    symbol: "figure.run", isRest: false
+                                )
+                            }
+                        }
+                    }
+                }
+                if !model.pastCalendarRows.isEmpty {
+                    Card {
+                        VStack(alignment: .leading, spacing: Spacing.small) {
+                            SectionHeader(Text("Past training days"))
+                            rows(model.pastCalendarRows)
+                        }
                     }
                 }
             }
-            if !model.pastCalendarRows.isEmpty {
-                Section("Past training days") {
-                    CalendarRows(
-                        model: model, rows: model.pastCalendarRows, runEditor: $runEditor,
-                        strengthEditor: $strengthEditor
-                    )
-                }
-            }
+            .padding(Spacing.medium)
         }
         .navigationTitle("Hybrid calendar")
         #if os(iOS)
@@ -60,6 +75,11 @@ struct HybridCalendarView: View {
         }
         .task { await model.loadCalendarRoutines() }
         .calendarEditors(model: model, run: $runEditor, strength: $strengthEditor)
+    }
+
+    private func rows(_ rows: [HybridCalendarRow]) -> some View {
+        CalendarRows(model: model, rows: rows, runEditor: $runEditor, strengthEditor: $strengthEditor)
+            .buttonStyle(.plain)
     }
 }
 
@@ -113,8 +133,10 @@ private struct CalendarRowLabel: View {
                 }
             }
         } icon: {
-            Image(systemName: isRest ? "bed.double" : symbol)
+            IconTile(symbolName: isRest ? "bed.double" : symbol, color: .accentColor)
         }
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .contentShape(.rect)
         .accessibilityElement(children: .combine)
     }
 }

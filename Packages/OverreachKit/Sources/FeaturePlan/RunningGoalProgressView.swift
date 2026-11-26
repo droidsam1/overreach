@@ -10,13 +10,16 @@ struct RunningGoalProgressView: View {
     init(model: PlanModel) { self.model = model }
 
     var body: some View {
-        List {
+        ScrollView {
             if let progress = model.runningGoalProgress {
-                Section {
-                    Text(progress.goal).font(.headline)
-                    Text(progress.status).font(.subheadline)
-                }
-                Section("Linked runs") {
+                VStack(alignment: .leading, spacing: Spacing.medium) {
+                    Card {
+                        VStack(alignment: .leading, spacing: Spacing.small) {
+                            Text(progress.goal).font(.title2.bold())
+                            Text(progress.status).foregroundStyle(.secondary)
+                        }
+                    }
+                    SectionHeader(Text("Linked runs"))
                     if progress.rows.isEmpty {
                         Text("Link a recorded run in the running calendar to see it here.")
                             .foregroundStyle(.secondary)
@@ -25,18 +28,23 @@ struct RunningGoalProgressView: View {
                         Button {
                             selected = row
                         } label: {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(row.date + " · " + row.summary).foregroundStyle(.primary)
-                                Text(row.painStatus).font(.footnote).foregroundStyle(.secondary)
-                                if row.meetsGoal {
-                                    Label("Meets your goal", systemImage: "checkmark.circle")
-                                        .font(.footnote)
+                            Card {
+                                VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                                    Text(row.date + " · " + row.summary).font(.headline)
+                                    Text(row.painStatus).font(.subheadline).foregroundStyle(.secondary)
+                                    if row.meetsGoal {
+                                        Label("Meets your goal", systemImage: "checkmark.circle")
+                                            .font(.footnote)
+                                    }
                                 }
+                                .frame(minHeight: 44, alignment: .leading)
+                                .accessibilityElement(children: .combine)
                             }
-                            .accessibilityElement(children: .combine)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
+                .padding(Spacing.medium)
             }
         }
         .navigationTitle("Running goal progress")

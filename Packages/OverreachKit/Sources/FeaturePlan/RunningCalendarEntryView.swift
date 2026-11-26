@@ -34,9 +34,13 @@ struct RunningCalendarEntryView: View {
                 }
                 if let notice = model.sessionCeilingNotice(for: draft) {
                     Section {
-                        InlineNotice(Text(notice.explanation.text), tone: .caution)
-                        Text(notice.explanation.evidence).font(.caption).foregroundStyle(.secondary)
-                        Button(notice.shortenTitle) { draft = notice.shortened }
+                        Card(tone: .caution) {
+                            VStack(alignment: .leading, spacing: Spacing.small) {
+                                InlineNotice(Text(notice.explanation.text), tone: .caution)
+                                Text(notice.explanation.evidence).font(.caption).foregroundStyle(.secondary)
+                                Button(notice.shortenTitle) { draft = notice.shortened }
+                            }
+                        }
                     }
                 }
                 if draft.showsWorkoutDetails {
