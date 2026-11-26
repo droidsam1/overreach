@@ -26,10 +26,10 @@ struct SessionEditorView: View {
                 if !model.issueMessages.isEmpty || model.errorMessage != nil {
                     Section {
                         if let message = model.errorMessage {
-                            Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                            InlineNotice(Text(message), tone: .critical)
                         }
                         ForEach(model.issueMessages, id: \.self) { message in
-                            Label(message, systemImage: "exclamationmark.circle").foregroundStyle(.orange)
+                            InlineNotice(Text(message), tone: .caution)
                         }
                     }
                 }

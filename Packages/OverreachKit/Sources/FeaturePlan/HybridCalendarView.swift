@@ -1,3 +1,4 @@
+import DesignSystem
 import Domain
 import PlanPresentation
 import SwiftUI
@@ -12,7 +13,7 @@ struct HybridCalendarView: View {
     var body: some View {
         List {
             if let message = model.errorMessage {
-                Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                InlineNotice(Text(message), tone: .critical)
             }
             Section("Upcoming training days") {
                 if model.upcomingCalendarRows.isEmpty {
@@ -108,7 +109,7 @@ private struct CalendarRowLabel: View {
                 if isRest { Text("Planned rest").font(.footnote).foregroundStyle(.secondary) }
                 if let status { Text(status).font(.footnote).foregroundStyle(.secondary) }
                 if let warning {
-                    Label(warning, systemImage: "exclamationmark.triangle").font(.footnote).foregroundStyle(.orange)
+                    InlineNotice(Text(warning), tone: .caution)
                 }
             }
         } icon: {
@@ -147,7 +148,7 @@ struct StrengthCalendarEntryView: View {
         NavigationStack {
             Form {
                 if let message = model.errorMessage {
-                    Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                    InlineNotice(Text(message), tone: .critical)
                 }
                 DatePicker("Date", selection: $draft.date, displayedComponents: .date)
                 Picker("Routine", selection: $draft.routineID) {

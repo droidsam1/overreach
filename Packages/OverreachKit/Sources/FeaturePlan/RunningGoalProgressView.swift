@@ -1,3 +1,4 @@
+import DesignSystem
 import Domain
 import PlanPresentation
 import SwiftUI
@@ -67,7 +68,7 @@ private struct RunningPainView: View {
         NavigationStack {
             Form {
                 if let message = model.errorMessage {
-                    Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                    InlineNotice(Text(message), tone: .critical)
                 }
                 Section {
                     Picker("Pain during the run", selection: $during) { severityAnswers }

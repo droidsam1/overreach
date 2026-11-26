@@ -1,3 +1,4 @@
+import DesignSystem
 import HistoryPresentation
 import SwiftUI
 
@@ -9,7 +10,7 @@ struct RunMatchReviewLink: View {
 
     var body: some View {
         if !reviews.isEmpty {
-            NavigationLink("Review run matches") {
+            NavigationLink {
                 List {
                     ForEach(reviews) { review in
                         Section {
@@ -38,7 +39,11 @@ struct RunMatchReviewLink: View {
                 #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
                 #endif
+            } label: {
+                MatchReviewCard(title: "Review run matches", symbol: "figure.run", count: reviews.count)
             }
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         }
     }
 

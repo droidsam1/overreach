@@ -273,8 +273,7 @@ private struct SessionList: View {
                 Button("Retry saving draft", systemImage: "arrow.clockwise") { model.retryDraftAccess() }
             }
             if let message = model.errorMessage {
-                Label(message, systemImage: "exclamationmark.triangle")
-                    .foregroundStyle(.red)
+                InlineNotice(Text(message), tone: .critical)
             }
             if let deload = model.deloadNotice {
                 Label(deload, systemImage: "arrow.down.right.circle.fill")
@@ -471,7 +470,7 @@ private struct ProgressionPicker: View {
                     ProgressView("Saving progression…")
                 }
                 if let message = model.progressionSaveError {
-                    Label(message, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                    InlineNotice(Text(message), tone: .critical)
                 }
             }
             .navigationTitle("Choose progression")

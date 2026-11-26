@@ -12,9 +12,7 @@ hybrid athlete. The device and external review steps below have their own accept
 
 ## Ready to implement
 
-2. [#297](https://github.com/droidsam1/overreach/issues/297) — Train, History, Plan: replace ad-hoc status colours with InlineNotice.
 3. [#298](https://github.com/droidsam1/overreach/issues/298) — Train: start screen as hero card with one verb and routine cards.
-4. [#300](https://github.com/droidsam1/overreach/issues/300) — History: cards, summary-first details and shared empty states.
 6. [#301](https://github.com/droidsam1/overreach/issues/301) — Plan: two-level layout with hero, week strip and link tiles.
 7. [#302](https://github.com/droidsam1/overreach/issues/302) — Settings, Garmin, Exercises, Onboarding, Ask AI: tone badges and InlineNotice.
 8. [#303](https://github.com/droidsam1/overreach/issues/303) — Recovery & Progress: SignalTrendChart and Why-style signal cards.

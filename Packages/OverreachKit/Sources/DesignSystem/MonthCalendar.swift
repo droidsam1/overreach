@@ -20,6 +20,7 @@ public struct CalendarDayView: View {
     private let isRest: Bool
 
     @ScaledMetric(relativeTo: .body) private var ringSize: CGFloat = 34
+    @ScaledMetric(relativeTo: .caption2) private var markerSize: CGFloat = 7
 
     /// - Parameter ringFraction: 0…1, or `nil` for no ring.
     public init(
@@ -66,15 +67,16 @@ public struct CalendarDayView: View {
                     Circle().strokeBorder(Color.accentColor, lineWidth: 1).padding(-2)
                 }
             }
+            let marker = min(markerSize, 10)
             HStack(spacing: Spacing.xSmall) {
                 RoundedRectangle(cornerRadius: 1).fill(ActivityColor.strength)
-                    .frame(width: 7, height: 7)
+                    .frame(width: marker, height: marker)
                     .opacity(showsStrength ? 1 : 0)
                 Circle().fill(ActivityColor.run)
-                    .frame(width: 7, height: 7)
+                    .frame(width: marker, height: marker)
                     .opacity(showsRun ? 1 : 0)
                 if isRest {
-                    Image(systemName: "moon.fill").font(.system(size: 7)).foregroundStyle(.secondary)
+                    Image(systemName: "moon.fill").font(.system(size: marker)).foregroundStyle(.secondary)
                 }
             }
             .accessibilityHidden(true)

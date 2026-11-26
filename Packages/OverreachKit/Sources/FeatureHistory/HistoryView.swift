@@ -78,8 +78,7 @@ public struct HistoryView: View {
                 lastTimeCard(last)
             }
             if let message = model.errorMessage {
-                Label(message, systemImage: "exclamationmark.triangle")
-                    .foregroundStyle(.red)
+                InlineNotice(Text(message), tone: .critical) { Task { await model.load() } }
             }
             if let warning = model.runWarning {
                 StatusLabel(title: warning, tone: .caution)
@@ -125,21 +124,26 @@ public struct HistoryView: View {
                 }
             }
             if model.isLoading && model.rows.isEmpty {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
+                LoadingState()
             } else if model.showsEmptyState {
-                ContentUnavailableView {
-                    Label("No activities yet", systemImage: "calendar")
-                } description: {
-                    Text("Finished workouts and runs from connected sources appear here.")
-                } actions: {
+                VStack(spacing: Spacing.small) {
+                    ListEmptyState(
+                        title: "No activities yet", systemImage: "calendar",
+                        description: Text("Finished workouts and runs from connected sources appear here.")
+                    )
                     Button("Open Train", action: onOpenTrain)
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                 }
+                .listRowSeparator(.hidden)
             } else if model.showsFilteredEmptyState {
-                ContentUnavailableView("No matching activities", systemImage: "line.3.horizontal.decrease.circle")
-                Button("Clear search and filters") { model.clearFilters() }
+                VStack(spacing: Spacing.small) {
+                    ListEmptyState(title: "No matching activities", systemImage: "line.3.horizontal.decrease.circle")
+                    Button("Clear search and filters") { model.clearFilters() }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                }
+                .listRowSeparator(.hidden)
             }
         }
         .refreshable { await model.load() }
@@ -151,12 +155,13 @@ public struct HistoryView: View {
     }
 
     private func lastTimeCard(_ last: LastExerciseResult) -> some View {
-        Section("Last time") {
-            NavigationLink {
-                SessionDetailView(model: model, sessionID: last.sessionID)
-            } label: {
+        NavigationLink {
+            SessionDetailView(model: model, sessionID: last.sessionID)
+        } label: {
+            Card {
                 VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                    Text(last.exerciseName).font(.headline)
+                    SectionHeader(Text("Last time"))
+                    Text(last.exerciseName).font(.title3.weight(.semibold))
                     Text(last.date, format: .dateTime.weekday().day().month().year())
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -167,6 +172,8 @@ public struct HistoryView: View {
                 .accessibilityElement(children: .combine)
             }
         }
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
     }
 
     private var filters: some View {
@@ -282,6 +289,19 @@ public struct SessionDetailView: View {
 
     private func content(_ detail: SessionDetail) -> some View {
         List {
+            HistorySummaryCard(date: detail.startedAt) {
+                HistorySummaryTile(label: "Sets", value: Text(detail.workingSets))
+                HistorySummaryTile(label: "Volume", value: Text(detail.volume))
+                if let duration = detail.durationSeconds {
+                    HistorySummaryTile(
+                        label: "Duration",
+                        value: Text(
+                            Duration.seconds(duration),
+                            format: .units(allowed: [.hours, .minutes], width: .abbreviated)
+                        )
+                    )
+                }
+            }
             SessionInfo(detail: detail)
             if let recording = detail.recording {
                 RecordedStrengthMetrics(recording: recording)
@@ -313,9 +333,7 @@ public struct SessionDetailView: View {
                         Text(notes).font(.footnote).foregroundStyle(.secondary)
                     }
                     if !entry.countsForProgression {
-                        Label("Unfinished: not counted for progression", systemImage: "flag")
-                            .font(.footnote)
-                            .foregroundStyle(.orange)
+                        InlineNotice(Text("Unfinished: not counted for progression"), tone: .caution)
                     }
                 }
             }
@@ -327,20 +345,12 @@ public struct SessionDetailView: View {
     }
 }
 
-/// Date, duration, focus and notes of a session.
+/// Sources, focus and notes of a session.
 private struct SessionInfo: View {
     let detail: SessionDetail
 
     var body: some View {
         Section {
-            LabeledContent("Date") {
-                Text(detail.startedAt, format: .dateTime.weekday().day().month().year().hour().minute())
-            }
-            if let duration = detail.durationSeconds {
-                LabeledContent("Duration") {
-                    Text(Duration.seconds(duration), format: .units(allowed: [.hours, .minutes], width: .abbreviated))
-                }
-            }
             ForEach(detail.rotationLabels, id: \.self) { Text($0) }
             LabeledContent("Sources", value: detail.sourceText)
             if let focus = detail.focus {
