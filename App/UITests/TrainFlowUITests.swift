@@ -36,7 +36,9 @@ final class TrainFlowUITests: XCTestCase {
     func testAddASecondExercise() {
         app.buttons["Start empty session"].tap()
         for name in ["Bench Press (Barbell)", "Bent Over Row (Barbell)"] {
-            app.buttons["Add exercise"].firstMatch.tap()
+            let addExercise = app.buttons["Add exercise"]
+            for _ in 0..<6 where !addExercise.isHittable { app.swipeUp() }
+            addExercise.tap()
             XCTAssertTrue(app.navigationBars["Add exercise"].waitForExistence(timeout: 5))
             app.buttons[name].tap()
             XCTAssertTrue(app.staticTexts[name].waitForExistence(timeout: 5), "\(name) joins the session")
