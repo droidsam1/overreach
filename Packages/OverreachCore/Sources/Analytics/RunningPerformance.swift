@@ -14,6 +14,8 @@ public enum RunningPerformance {
         case lapBoundaries
         case wholeActivity
         case nearWholeActivity
+        /// Fastest stretch of the recorded track, for activities whose laps do not cover the distance.
+        case trackSamples
     }
 
     public struct BestTime: Equatable, Sendable {
@@ -28,8 +30,12 @@ public enum RunningPerformance {
 
     /// One elapsed result per canonical activity, fastest first. Resolve cross-source matches and explicit
     /// separations before calling this method. Ties retain the earliest session.
-    public static func bestTimes(for distance: Distance, runs: [RunActivity]) -> [BestTime] {
-        runs.compactMap { time(for: distance, in: $0) }
+    /// `tracks` (by activity id) is the fallback when summary distance and laps give no result, as for a 3 km run
+    /// without 1 km laps.
+    public static func bestTimes(
+        for distance: Distance, runs: [RunActivity], tracks: [String: RunningTrack] = [:]
+    ) -> [BestTime] {
+        runs.compactMap { time(for: distance, in: $0) ?? trackTime(for: distance, in: $0, track: tracks[$0.id]) }
             .sorted {
                 ($0.elapsedSeconds, $0.run.startedAt, $0.run.id, $0.run.source.rawValue)
                     < ($1.elapsedSeconds, $1.run.startedAt, $1.run.id, $1.run.source.rawValue)
@@ -71,6 +77,42 @@ public enum RunningPerformance {
             run: run, distance: distance, elapsedSeconds: elapsed, coverage: .nearWholeActivity,
             observedDistanceMeters: run.distanceMeters
         )
+    }
+
+    private static let maximumSampleGapSeconds = 15.0
+
+    /// Fastest continuous stretch of `distance` in the track. Windows spanning a gap in the samples (a pause)
+    /// are skipped, and the start is interpolated between the two samples around it.
+    private static func trackTime(for distance: Distance, in run: RunActivity, track: RunningTrack?) -> BestTime? {
+        let target = Double(distance.rawValue)
+        guard let track, run.distanceMeters >= target else { return nil }
+        let points = track.samples.compactMap { sample -> (time: Double, meters: Double)? in
+            guard let meters = sample.distanceMeters, meters.isFinite, meters >= 0 else { return nil }
+            return (sample.date.timeIntervalSinceReferenceDate, meters)
+        }
+        let ordered = zip(points, points.dropFirst()).allSatisfy { $0.time <= $1.time && $0.meters <= $1.meters }
+        guard points.count >= 2, ordered else { return nil }
+        var start = 0
+        var best: Double?
+        for end in 1..<points.count {
+            if points[end].time - points[end - 1].time > maximumSampleGapSeconds { start = end }
+            while start + 1 < end, points[end].meters - points[start + 1].meters >= target { start += 1 }
+            guard start < end, points[end].meters - points[start].meters >= target else { continue }
+            let from = points[start]
+            let next = points[start + 1]
+            let wanted = points[end].meters - target
+            let startTime = next.meters > from.meters
+                ? from.time + (next.time - from.time) * (wanted - from.meters) / (next.meters - from.meters)
+                : from.time
+            let elapsed = points[end].time - startTime
+            if plausiblePace(distance: target, timer: elapsed), elapsed < (best ?? .infinity) { best = elapsed }
+        }
+        return best.map {
+            BestTime(
+                run: run, distance: distance, elapsedSeconds: $0, coverage: .trackSamples,
+                observedDistanceMeters: target
+            )
+        }
     }
 
     private static func isExactDistance(_ distance: Double, target: Double) -> Bool {

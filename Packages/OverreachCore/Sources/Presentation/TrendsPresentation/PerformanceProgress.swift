@@ -47,11 +47,20 @@ public struct PerformanceSeries: Identifiable, Sendable {
     public var context: String?
 }
 
+/// One lift. Records compare one source at a time, so a lift trained in several sources offers them as a filter.
 public struct StrengthPerformanceOption: Identifiable, Sendable {
     public let id: String
     public let title: String
+    /// Sources with sets in the period, the one with most sessions first.
+    public let sources: [DataSourceKind]
     let exercise: Exercise
     let sets: [StrengthPerformance.RecordedSet]
+}
+
+private struct RankedLift {
+    let option: StrengthPerformanceOption
+    let count: Int
+    let last: Date
 }
 
 struct PerformanceProgress {
@@ -83,7 +92,8 @@ struct PerformanceProgress {
         return PerformancePoint(
             id: .run(result.run), date: result.run.startedAt, value: result.elapsedSeconds,
             valueText: isBound ? L10n.format("≤ {1}", clock) : clock,
-            detail: isBound ? L10n.format("{1} · Observed at {2} m", source, observedMeters) : source
+            detail: isBound ? L10n.format("{1} · Observed at {2} m", source, observedMeters)
+                : result.coverage == .trackSamples ? L10n.format("{1} · From the recorded track", source) : source
         )
     }
 
@@ -129,34 +139,42 @@ struct PerformanceProgress {
         }
     }
 
+    /// One option per exercise, the most trained in the period first.
     func strengthOptions(
         _ sets: [StrengthPerformance.RecordedSet], exercises: [Exercise]
     ) -> [StrengthPerformanceOption] {
         let names = Exercise.displayNames(exercises)
         let byExercise = Dictionary(grouping: sets, by: \.exerciseID)
-        return exercises.flatMap { exercise -> [StrengthPerformanceOption] in
-            guard let exerciseSets = byExercise[exercise.id] else { return [] }
-            let bySource = Dictionary(grouping: exerciseSets, by: \.source)
-            return DataSourceKind.allCases.compactMap { source in
-                guard let cohort = bySource[source], cohort.contains(where: { window.includes($0.date) }) else {
-                    return nil
-                }
-                let name = names[exercise.id] ?? exercise.name
-                return StrengthPerformanceOption(
-                    id: "\(exercise.id):\(source.rawValue)",
-                    title: L10n.format("{1} · {2}", name, source.displayName),
-                    exercise: exercise, sets: cohort
-                )
-            }
+        let options = exercises.compactMap { exercise -> RankedLift? in
+            guard let exerciseSets = byExercise[exercise.id] else { return nil }
+            let visible = exerciseSets.filter { window.includes($0.date) }
+            guard !visible.isEmpty else { return nil }
+            let sessions = { (sets: [StrengthPerformance.RecordedSet]) in Set(sets.map(\.sessionID)).count }
+            let sources = DataSourceKind.allCases
+                .map { source in (source, visible.filter { $0.source == source }) }
+                .filter { !$0.1.isEmpty }
+                .sorted { sessions($0.1) > sessions($1.1) }
+                .map(\.0)
+            let option = StrengthPerformanceOption(
+                id: exercise.id.uuidString, title: names[exercise.id] ?? exercise.name, sources: sources,
+                exercise: exercise, sets: exerciseSets
+            )
+            return RankedLift(option: option, count: sessions(visible), last: visible.map(\.date).max() ?? .distantPast)
         }
-        .sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+        return options.sorted {
+            ($0.count, $0.last) != ($1.count, $1.last)
+                ? ($0.count, $0.last) > ($1.count, $1.last)
+                : $0.option.title.localizedStandardCompare($1.option.title) == .orderedAscending
+        }.map(\.option)
     }
 
     func strengthSeries(
-        _ option: StrengthPerformanceOption, profile: AthleteProfile?, now: Date, calendar: Calendar
+        _ option: StrengthPerformanceOption, source: DataSourceKind? = nil, profile: AthleteProfile?, now: Date,
+        calendar: Calendar
     ) -> [PerformanceSeries] {
         let exercise = option.exercise
-        let sets = option.sets
+        let chosen = source ?? option.sources.first
+        let sets = option.sets.filter { $0.source == chosen }
         let visible = sets.filter { window.includes($0.date) }
         var series = [
             record(.heaviestLoad, id: "heaviest", title: L10n.text("Heaviest set"), in: sets),

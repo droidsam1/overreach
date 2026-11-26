@@ -95,6 +95,27 @@ struct RunningPerformanceTests {
         #expect(RunningPerformance.bestTimes(for: .oneKilometer, runs: canonical).isEmpty)
     }
 
+    @Test func fallsBackToTheFastestKilometreOfTheTrack() {
+        // 3 km at 5:00/km for the first 2 km, then 4:00/km; one sample per 10 s.
+        var samples: [RunningTrack.Sample] = []
+        var meters = 0.0
+        for second in stride(from: 0, through: 1_000, by: 10) {
+            samples.append(.init(date: Date(timeIntervalSince1970: Double(second)), distanceMeters: meters))
+            meters += (meters < 2_000 ? 10.0 / 300 : 10.0 / 240) * 1_000
+        }
+        let run = activity(distance: 3_000, timer: 1_000, elapsed: 1_000)
+        let track = RunningTrack(samples: samples)
+        let best = RunningPerformance.bestTimes(for: .oneKilometer, runs: [run], tracks: ["run": track]).first
+        #expect(best?.coverage == .trackSamples)
+        #expect(abs((best?.elapsedSeconds ?? 0) - 240) < 1)
+        #expect(RunningPerformance.bestTimes(for: .oneKilometer, runs: [run]).isEmpty)
+        let paused = RunningTrack(samples: samples.enumerated().map { index, sample in
+            .init(date: sample.date.addingTimeInterval(index >= 50 ? 60 : 0), distanceMeters: sample.distanceMeters)
+        })
+        let withPause = RunningPerformance.bestTimes(for: .oneKilometer, runs: [run], tracks: ["run": paused]).first
+        #expect((withPause?.elapsedSeconds ?? 0) >= 240)
+    }
+
     private func activity(
         id: String = "run", day: Int = 0, distance: Double, timer: Double, elapsed: Double?, laps: [RunLap]? = nil
     ) -> RunActivity {

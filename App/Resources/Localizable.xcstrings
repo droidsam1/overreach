@@ -3469,6 +3469,23 @@
         }
       }
     },
+    "Confirmed sensors": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensores confirmados"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensores confirmados"
+          }
+        }
+      }
+    },
     "Connect": {
       "extractionState": "manual",
       "localizations": {
@@ -26198,6 +26215,23 @@
         }
       }
     },
+    "{1} · From the recorded track": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · Del recorrido grabado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} · Do percorrido gravado"
+          }
+        }
+      }
+    },
     "{1} · No logged session": {
       "extractionState": "manual",
       "localizations": {
@@ -26364,23 +26398,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} · semana {2} de {3}"
-          }
-        }
-      }
-    },
-    "{1} · {2}": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "{1} · {2}"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "{1} · {2}"
           }
         }
       }
