@@ -55,6 +55,33 @@ struct ExerciseCatalogTests {
         #expect(custom.knownNames == ["Landmine Press", "mina"])
     }
 
+    @Test func legacyBroadMappingsDecodeAndBuiltInsGainTheirReviewedDetail() throws {
+        let bench = try #require(ExerciseCatalog.builtIn.first { $0.name == "Bench Press (Barbell)" })
+        var oldBench = bench
+        oldBench.secondaryMuscles = [.shoulders, .triceps]
+        oldBench.movementPattern = nil
+        let encoder = JSONEncoder()
+        let decoder = JSONDecoder()
+        #expect(try decoder.decode(Exercise.self, from: encoder.encode(oldBench)) == bench)
+
+        oldBench.secondaryMuscles.insert(.forearms)
+        let override = try decoder.decode(Exercise.self, from: encoder.encode(oldBench))
+        #expect(override.secondaryMuscles == [.shoulders, .triceps, .forearms])
+        #expect(override.movementPattern == .horizontalPush)
+
+        let custom = Exercise(name: "My row", primaryMuscles: [.back], secondaryMuscles: [.shoulders], isCustom: true)
+        #expect(try decoder.decode(Exercise.self, from: encoder.encode(custom)) == custom)
+    }
+
+    @Test func newMuscleLabelsAndMovementPatternRoundTripInABackup() throws {
+        let exercise = Exercise(
+            name: "My cable row", primaryMuscles: [.upperBack, .lats], secondaryMuscles: [.rearDelts],
+            equipment: .cable, isCustom: true, movementPattern: .horizontalPull
+        )
+        let backup = BackupDocument(createdAt: Date(timeIntervalSince1970: 0), exercises: [exercise])
+        #expect(try BackupCodec.decode(BackupCodec.encode(backup)) == backup)
+    }
+
     @Test func stableIDsAreDeterministicAndDistinct() {
         #expect(UUID.stable("a") == UUID.stable("a"))
         #expect(UUID.stable("a") != UUID.stable("b"))

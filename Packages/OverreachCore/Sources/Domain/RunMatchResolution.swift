@@ -25,6 +25,20 @@ public struct RunMatchCandidate: Sendable {
 public struct RunMatchResolution: Sendable {
     public let runs: [RunDeduplication.CombinedRun]
     public let candidates: [RunMatchCandidate]
+
+    /// Runs suitable for totals. Ambiguous pairs may contain duplicate recordings until reviewed.
+    public var unambiguousRuns: [RunActivity] {
+        let ambiguous = candidates.filter { !$0.isSeparate }
+        let garmin = Set(ambiguous.map(\.pair.garminID))
+        let health = Set(ambiguous.map(\.pair.appleHealthID))
+        return runs.map(\.activity).filter { run in
+            switch run.source {
+            case .garmin: return !garmin.contains(run.id)
+            case .appleHealth: return !health.contains(run.id)
+            default: return true
+            }
+        }
+    }
 }
 
 extension RunDeduplication {

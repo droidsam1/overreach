@@ -245,7 +245,7 @@ struct BackupFormatV1Tests {
 
     @Test func everySectionLoads() throws {
         let document = try decoded()
-        #expect(document.formatVersion == 1)
+        #expect(document.formatVersion == BackupDocument.currentFormatVersion)
         #expect(document.appVersion == "0.1.0")
         #expect(document.sessions.count == 2)
         #expect(document.exercises.count == 1)
@@ -308,8 +308,8 @@ struct BackupFormatV1Tests {
     }
 
     @Test func newerFormatsAreRefusedAndOlderOnesNeedAStep() throws {
-        let newer = Self.fixture.replacingOccurrences(of: "\"formatVersion\" : 1", with: "\"formatVersion\" : 2")
-        #expect(throws: BackupError.newerFormat(2)) { try BackupCodec.decode(Data(newer.utf8)) }
+        let newer = Self.fixture.replacingOccurrences(of: "\"formatVersion\" : 1", with: "\"formatVersion\" : 99")
+        #expect(throws: BackupError.newerFormat(99)) { try BackupCodec.decode(Data(newer.utf8)) }
         let older = Self.fixture.replacingOccurrences(of: "\"formatVersion\" : 1", with: "\"formatVersion\" : 0")
         #expect(throws: BackupError.notABackup) { try BackupCodec.decode(Data(older.utf8)) }
     }

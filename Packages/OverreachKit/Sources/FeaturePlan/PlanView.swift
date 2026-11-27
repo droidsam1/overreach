@@ -206,6 +206,43 @@ public struct PlanView<Assistant: View, Progress: View>: View {
                 InlineNotice(Text(message), tone: .critical) { Task { await reload() } }
             }
             currentBlockSection
+            if !model.specializationOptions.isEmpty {
+                Section {
+                    NavigationLink("Muscle priorities") {
+                        Form {
+                            Section {
+                                ForEach(model.specializationOptions, id: \.value) { option in
+                                    Toggle(
+                                        option.name,
+                                        isOn: Binding(
+                                            get: { model.specializedMuscles.contains(option.value) },
+                                            set: { _ in Task { await model.toggleSpecialization(option.value) } }
+                                        )
+                                    )
+                                    .disabled(model.isSavingProfile)
+                                }
+                            } footer: {
+                                Text("Choose muscles this block intentionally prioritizes.")
+                            }
+                        }
+                        .navigationTitle("Muscle priorities")
+                    }
+                }
+            }
+            if !model.muscleBalanceRows.isEmpty {
+                Section("Muscle balance") {
+                    ForEach(model.muscleBalanceRows) { row in
+                        VStack(alignment: .leading, spacing: Spacing.small) {
+                            Text(row.text)
+                            Text(row.evidenceText).font(.footnote).foregroundStyle(.secondary)
+                            Button("Dismiss") { model.dismissMuscleBalance(row.id) }
+                                .buttonStyle(.borderless)
+                                .frame(minHeight: 44)
+                                .accessibilityHint(Text(row.text))
+                        }
+                    }
+                }
+            }
             if !model.pendingDeloadRows.isEmpty {
                 Section("Recent break") {
                     ForEach(model.pendingDeloadRows) { row in

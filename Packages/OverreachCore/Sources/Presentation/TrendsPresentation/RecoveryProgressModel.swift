@@ -186,7 +186,8 @@ public final class RecoveryProgressModel {
         runningSegments: @escaping RunningSegmentLoader = { _ in [] },
         runningTrack: @escaping @Sendable (RunActivity) async -> RunningTrack? = { _ in nil },
         pulseSensors: [String: String] = [:],
-        savePulseSensors: @escaping @MainActor ([String: String]) -> Void = { _ in }
+        savePulseSensors: @escaping @MainActor ([String: String]) -> Void = { _ in },
+        balanceDismissals: MuscleBalanceDismissals = .init()
     ) {
         recordLoader = TrainingRecordLoader(
             sources: sources, activity: activity, checkIns: checkIns, workouts: workouts, exercises: exercises,
@@ -203,9 +204,18 @@ public final class RecoveryProgressModel {
         self.runningTrack = runningTrack
         self.pulseSensors = pulseSensors
         self.savePulseSensors = savePulseSensors
+        self.balanceDismissals = balanceDismissals
     }
 
     // MARK: Screen state
+
+    public private(set) var muscleBalanceRows: [MuscleBalanceRow] = []
+    private let balanceDismissals: MuscleBalanceDismissals
+
+    public func dismissMuscleBalance(_ id: String) {
+        balanceDismissals.dismiss(id, in: MuscleBalanceAudit.historyScope)
+        muscleBalanceRows.removeAll { $0.id == id }
+    }
 
     public var showsFailure: Bool { !failureLines.isEmpty }
     /// No reading from any source yet.
@@ -218,7 +228,9 @@ public final class RecoveryProgressModel {
         showsRecoveryTrends || SectionAvailability.recovery(readings: readings.filter(\.isAvailable).count)
     }
     /// Recent load needs something logged to compare: a session, a run or everyday movement.
-    public var showsRecentLoad: Bool { showsLoadTrends || SectionAvailability.recentLoad(rows: loadRows.count) }
+    public var showsRecentLoad: Bool {
+        showsLoadTrends || !muscleBalanceRows.isEmpty || SectionAvailability.recentLoad(rows: loadRows.count)
+    }
     /// Progress needs a performance observation, a goal, or a lift trained in two sessions.
     public var showsProgress: Bool {
         showsPerformance || SectionAvailability.progress(
@@ -271,7 +283,16 @@ public final class RecoveryProgressModel {
         let connected = await garminConnection != nil
         guard activeLoad == loadID else { return }
         let record = snapshot.record
-        let runs = performanceRuns(snapshot.runOriginals, now: now)
+        let runs = RunDeduplication.resolve(snapshot.runOriginals, choices: runChoices()).unambiguousRuns
+            .filter { $0.startedAt <= now }
+        if MuscleBalanceAudit.isReleased && !snapshot.localReadFailed {
+            let findings = record.muscleBalance(profile: profile, resolvedRuns: runs, now: now, calendar: calendar)
+            muscleBalanceRows = balanceDismissals.visible(
+                findings.map { MuscleBalanceRow($0, format: format) }, in: MuscleBalanceAudit.historyScope
+            )
+        } else {
+            muscleBalanceRows = []
+        }
         async let legacy = runningSegments(runs)
         let comparison = PerformanceComparison(through: today, days: TrendRange.days90.days, calendar: calendar)
         let blocks = await Self.loadRunningBlocks(
@@ -332,21 +353,6 @@ public final class RecoveryProgressModel {
         isGarminConnected = connected
         wearsGarmin = profile?.wearables.contains(.garmin) ?? false
         hasLoaded = true
-    }
-
-    private func performanceRuns(_ originals: [RunActivity], now: Date) -> [RunActivity] {
-        let resolved = RunDeduplication.resolve(originals, choices: runChoices())
-        let ambiguous = resolved.candidates.filter { !$0.isSeparate }
-        let garmin = Set(ambiguous.map(\.pair.garminID))
-        let health = Set(ambiguous.map(\.pair.appleHealthID))
-        return resolved.runs.map(\.activity).filter { run in
-            guard run.startedAt <= now else { return false }
-            switch run.source {
-            case .garmin: return !garmin.contains(run.id)
-            case .appleHealth: return !health.contains(run.id)
-            default: return true
-            }
-        }
     }
 
     private nonisolated static func loadTracks(

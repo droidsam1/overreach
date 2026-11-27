@@ -2993,6 +2993,23 @@
         }
       }
     },
+    "Choose muscles this block intentionally prioritizes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige los músculos a los que quieres dar prioridad en este bloque."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolle os músculos aos que queres dar prioridade neste bloque."
+          }
+        }
+      }
+    },
     "Choose progression": {
       "extractionState": "manual",
       "localizations": {
@@ -3652,6 +3669,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "Conectado"
+          }
+        }
+      }
+    },
+    "Consider including a horizontal pull.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valora incluir un tirón horizontal."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valora incluír un tirón horizontal."
+          }
+        }
+      }
+    },
+    "Consider including a vertical pull.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valora incluir un tirón vertical."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valora incluír un tirón vertical."
+          }
+        }
+      }
+    },
+    "Consider more direct work for {1} alongside pressing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valora añadir trabajo directo para {1} a tus ejercicios de empuje."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valora engadir traballo directo para {1} aos teus exercicios de empuxe."
+          }
+        }
+      }
+    },
+    "Consider spreading sets for {1} across sessions.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valora repartir las series de {1} entre varias sesiones."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valora repartir as series de {1} entre varias sesións."
           }
         }
       }
@@ -6444,6 +6529,23 @@
         }
       }
     },
+    "Evidence: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evidencia: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evidencia: {1}"
+          }
+        }
+      }
+    },
     "Exercise focus": {
       "extractionState": "manual",
       "localizations": {
@@ -6627,6 +6729,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Exportar copia de seguranza…"
+          }
+        }
+      }
+    },
+    "Extra sets for {1} may add little benefit at this weekly volume.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con este volumen semanal, añadir series de {1} puede aportar poco."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con este volume semanal, engadir series de {1} pode achegar pouco."
           }
         }
       }
@@ -6984,6 +7103,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "De {1}"
+          }
+        }
+      }
+    },
+    "Front delts": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deltoides anteriores"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deltoides anteriores"
           }
         }
       }
@@ -7872,6 +8008,23 @@
         }
       }
     },
+    "Hip hinge": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bisagra de cadera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bisagra de cadeira"
+          }
+        }
+      }
+    },
     "History": {
       "extractionState": "manual",
       "localizations": {
@@ -7919,6 +8072,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mantendo: o teu mellor 1RM estimado das últimas {1} sesións ({2}) non supera o das {3} anteriores ({4}), pero estás cumprindo os obxectivos: segue así."
+          }
+        }
+      }
+    },
+    "Horizontal pull": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tracción horizontal"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tracción horizontal"
+          }
+        }
+      }
+    },
+    "Horizontal push": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empuje horizontal"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empuxe horizontal"
           }
         }
       }
@@ -9827,6 +10014,23 @@
         }
       }
     },
+    "Lats": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dorsales"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dorsais"
+          }
+        }
+      }
+    },
     "Learn more": {
       "extractionState": "manual",
       "localizations": {
@@ -11051,6 +11255,23 @@
         }
       }
     },
+    "Movement pattern": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Patrón de movimiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Patrón de movemento"
+          }
+        }
+      }
+    },
     "Moving time": {
       "extractionState": "manual",
       "localizations": {
@@ -11081,6 +11302,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Músculo"
+          }
+        }
+      }
+    },
+    "Muscle balance": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equilibrio muscular"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equilibrio muscular"
+          }
+        }
+      }
+    },
+    "Muscle priorities": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prioridades musculares"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prioridades musculares"
           }
         }
       }
@@ -11782,6 +12037,23 @@
         }
       }
     },
+    "No direct sets for {1}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin series directas para {1}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen series directas para {1}."
+          }
+        }
+      }
+    },
     "No earlier weeks to compare with": {
       "extractionState": "manual",
       "localizations": {
@@ -11897,6 +12169,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Xa non está estancado."
+          }
+        }
+      }
+    },
+    "No lower-body strength sets.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin series de fuerza para el tren inferior."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen series de forza para o tren inferior."
           }
         }
       }
@@ -12424,6 +12713,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non hai días de adestramento próximos."
+          }
+        }
+      }
+    },
+    "No upper-body strength sets.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin series de fuerza para el tren superior."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen series de forza para o tren superior."
           }
         }
       }
@@ -14468,6 +14774,23 @@
         }
       }
     },
+    "Pulling volume is low compared with pushing volume.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El volumen de tirón es bajo respecto al de empuje."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O volume de tirón é baixo respecto ao de empuxe."
+          }
+        }
+      }
+    },
     "Pulse trending higher at comparable pace": {
       "extractionState": "manual",
       "localizations": {
@@ -14532,6 +14855,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cuádriceps"
+          }
+        }
+      }
+    },
+    "Quadriceps volume is high with no direct hamstring work.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El volumen de cuádriceps es alto y no hay trabajo directo de isquiotibiales."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O volume de cuádriceps é alto e non hai traballo directo de isquiotibiais."
           }
         }
       }
@@ -14889,6 +15229,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lecturas fóra do intervalo plausible."
+          }
+        }
+      }
+    },
+    "Rear delts": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deltoides posteriores"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deltoides posteriores"
           }
         }
       }
@@ -17681,6 +18038,23 @@
         }
       }
     },
+    "Sets for {1} are well below your usual volume across muscles.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haces muchas menos series de {1} que las habituales en tus otros grupos musculares."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fas moitas menos series de {1} que as habituais nos teus outros grupos musculares."
+          }
+        }
+      }
+    },
     "Sets marked W are suggested warm-ups. Mark the ones you do; they are saved apart and do not count for progress. Swipe to delete the ones you skip.": {
       "extractionState": "manual",
       "localizations": {
@@ -18034,6 +18408,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Enfermo"
+          }
+        }
+      }
+    },
+    "Side delts": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deltoides laterales"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deltoides laterais"
           }
         }
       }
@@ -18731,6 +19122,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fontes e cobertura"
+          }
+        }
+      }
+    },
+    "Squat pattern": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Patrón de sentadilla"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Patrón de agachamento"
           }
         }
       }
@@ -21846,6 +22254,23 @@
         }
       }
     },
+    "Unspecified": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin especificar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sen especificar"
+          }
+        }
+      }
+    },
     "Until %@": {
       "extractionState": "manual",
       "localizations": {
@@ -21944,6 +22369,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Actualiza"
+          }
+        }
+      }
+    },
+    "Upper back": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Espalda alta"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parte alta das costas"
           }
         }
       }
@@ -22420,6 +22862,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Variar o volume e a intensidade co tempo mellora a forza máxima (1RM) máis que adestrar sempre igual."
+          }
+        }
+      }
+    },
+    "Vertical pull": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tracción vertical"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tracción vertical"
+          }
+        }
+      }
+    },
+    "Vertical push": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empuje vertical"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empuxe vertical"
           }
         }
       }
@@ -23083,6 +23559,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Semana {1} de {2} do bloque"
+          }
+        }
+      }
+    },
+    "Weekly volume for {1} is low.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El volumen semanal de {1} es bajo."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O volume semanal de {1} é baixo."
+          }
+        }
+      }
+    },
+    "Weekly volume for {1} is very high. Consider whether the extra sets help.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El volumen semanal de {1} es muy alto. Valora si las series adicionales te ayudan."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O volume semanal de {1} é moi alto. Valora se as series adicionais che axudan."
           }
         }
       }
@@ -25565,6 +26075,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} km é máis dun {2} por riba da túa carreira máis longa dos 30 días anteriores ({3} km). As carreiras soltas por riba diso asociáronse con máis lesións por sobrecarga."
+          }
+        }
+      }
+    },
+    "{1} km run in the analysis period": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} km de carrera en el período analizado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} km de carreira no período analizado"
           }
         }
       }

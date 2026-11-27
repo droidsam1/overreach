@@ -14,6 +14,7 @@ public enum MarkdownReportRenderer {
             today(report),
             dailyTrends(report),
             sessions(report),
+            muscleBalance(report),
             runs(report, calendar: calendar),
             checkIns(report),
             question(report),
@@ -181,6 +182,11 @@ public enum MarkdownReportRenderer {
             lines.append("- \(checkIn.day): \(parts.isEmpty ? "–" : parts.joined(separator: "; "))")
         }
         return lines
+    }
+
+    private static func muscleBalance(_ report: TrainingReport) -> [String] {
+        guard !report.muscleBalance.isEmpty else { return [] }
+        return ["## Muscle balance", ""] + report.muscleBalance.map { "- \($0)" }
     }
 
     private static func question(_ report: TrainingReport) -> [String] {

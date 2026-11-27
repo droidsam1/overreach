@@ -76,6 +76,7 @@ public final class AskAIModel {
     private let clock: @Sendable () -> Date
     private let calendar: Calendar
     private let directory: URL
+    private let balanceDismissals: MuscleBalanceDismissals
 
     public init(
         workouts: any WorkoutRepository,
@@ -92,7 +93,8 @@ public final class AskAIModel {
         appVersion: String? = nil,
         clock: @escaping @Sendable () -> Date = { Date() },
         calendar: Calendar = .current,
-        directory: URL = FileManager.default.temporaryDirectory
+        directory: URL = FileManager.default.temporaryDirectory,
+        balanceDismissals: MuscleBalanceDismissals = .init()
     ) {
         self.activityMatchChoices = activityMatchChoices
         recordLoader = TrainingRecordLoader(
@@ -104,6 +106,7 @@ public final class AskAIModel {
         self.clock = clock
         self.calendar = calendar
         self.directory = directory
+        self.balanceDismissals = balanceDismissals
     }
 
     public func setPeriod(_ period: ContextPeriod) async {
@@ -150,7 +153,8 @@ public final class AskAIModel {
         let assessment = snapshot.assessment(profile: profile, now: now, calendar: calendar)
         let record = snapshot.record
         let choices = activityMatchChoices()
-        let runs = RunDeduplication.resolve(snapshot.runOriginals, choices: choices.runs).runs
+        let runResolution = RunDeduplication.resolve(snapshot.runOriginals, choices: choices.runs)
+        let runs = runResolution.runs
         let strength = StrengthActivityMatching.resolve(
             sessions: snapshot.allSessions, activities: snapshot.strengthOriginals, choices: choices.strength
         ).matches
@@ -172,7 +176,23 @@ public final class AskAIModel {
         context = ContextPackBuilder.build(
             input, period: first...today, now: now, calendar: calendar, matchedStrength: strength
         )
+        context?.muscleBalance = muscleBalance(
+            record: record, profile: profile, runs: runResolution.unambiguousRuns, now: now
+        )
         exportSelection()
+    }
+
+    private func muscleBalance(
+        record: TrainingRecord, profile: AthleteProfile?, runs: [RunActivity], now: Date
+    ) -> [ContextPack.BalanceSuggestion]? {
+        guard MuscleBalanceAudit.isReleased else { return nil }
+        let findings = record.muscleBalance(profile: profile, resolvedRuns: runs, now: now, calendar: calendar)
+        let rows = balanceDismissals.visible(findings.map { MuscleBalanceRow($0) }, in: MuscleBalanceAudit.historyScope)
+        guard !rows.isEmpty else { return nil }
+        return rows.map {
+            .init(text: $0.text, evidenceKey: $0.evidence.key, evidenceLevel: $0.evidence.level.rawValue,
+                  runningContext: $0.runningContext)
+        }
     }
 
     private func exportSelection() {

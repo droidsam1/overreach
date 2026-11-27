@@ -23,6 +23,7 @@ public struct MergeConfirmation: Hashable, Sendable {
 @Observable
 public final class ExerciseEditorModel {
     public var draft: MappingDraft
+    public var movementPattern: MovementPattern?
     public var name: String
     /// Other names, separated by commas. Used by search and to match imported exercises.
     public var aliasesText: String
@@ -32,6 +33,7 @@ public final class ExerciseEditorModel {
     public private(set) var pendingMerge: MergeConfirmation?
 
     public let muscleOptions: [Option<MuscleGroup>] = MuscleGroup.allCases.map { Option(value: $0, name: $0.displayName) }
+    public let movementPatternOptions = MovementPattern.allCases.map { Option(value: $0, name: $0.displayName) }
     public let equipmentOptions: [Option<Equipment>] = Equipment.allCases.map { Option(value: $0, name: $0.displayName) }
 
     private let list: ExercisesModel
@@ -46,6 +48,7 @@ public final class ExerciseEditorModel {
         isNew = false
         let exercise = list.exercise(id: exerciseID)
         draft = exercise.map(MappingDraft.init) ?? MappingDraft()
+        movementPattern = exercise?.movementPattern
         name = exercise?.name ?? ""
         initialAliasesText = exercise?.aliases.sorted().joined(separator: ", ") ?? ""
         aliasesText = initialAliasesText
@@ -155,6 +158,7 @@ public final class ExerciseEditorModel {
         edited.primaryMuscles = draft.primary
         edited.secondaryMuscles = draft.secondary
         edited.equipment = draft.equipment
+        edited.movementPattern = movementPattern
         return await list.saveExercise(edited)
     }
 

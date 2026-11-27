@@ -102,10 +102,13 @@ public struct TrainingBlock: Hashable, Codable, Sendable {
     public var sessionsPerWeek: Int?
     /// Weeks added to the block to make up for missed sessions, so the same missed sessions are not counted twice.
     public var extendedWeeks: Int
+    /// A declared muscle emphasis, when this block deliberately gives other muscles less work.
+    public var specializedMuscles: Set<MuscleGroup>?
 
     public init(
         focus: TrainingFocus, start: CalendarDay, plannedWeeks: Int? = nil, isDeclared: Bool, name: String? = nil,
-        routineIDs: [UUID] = [], sessionsPerWeek: Int? = nil, extendedWeeks: Int = 0
+        routineIDs: [UUID] = [], sessionsPerWeek: Int? = nil, extendedWeeks: Int = 0,
+        specializedMuscles: Set<MuscleGroup>? = nil
     ) {
         self.focus = focus
         self.start = start
@@ -115,6 +118,7 @@ public struct TrainingBlock: Hashable, Codable, Sendable {
         self.routineIDs = routineIDs
         self.sessionsPerWeek = sessionsPerWeek
         self.extendedWeeks = extendedWeeks
+        self.specializedMuscles = specializedMuscles
     }
 
     /// Sessions a week the plan expects (at least one).
@@ -129,6 +133,7 @@ public struct TrainingBlock: Hashable, Codable, Sendable {
 extension TrainingBlock {
     private enum CodingKeys: String, CodingKey {
         case focus, start, plannedWeeks, isDeclared, name, routineIDs, sessionsPerWeek, extendedWeeks
+        case specializedMuscles
     }
 
     /// Tolerant decoding (ADR-0018): blocks saved before plans existed have no name or routines.
@@ -142,7 +147,8 @@ extension TrainingBlock {
             name: try container.decodeIfPresent(String.self, forKey: .name),
             routineIDs: try container.decodeIfPresent([UUID].self, forKey: .routineIDs) ?? [],
             sessionsPerWeek: try container.decodeIfPresent(Int.self, forKey: .sessionsPerWeek),
-            extendedWeeks: try container.decodeIfPresent(Int.self, forKey: .extendedWeeks) ?? 0
+            extendedWeeks: try container.decodeIfPresent(Int.self, forKey: .extendedWeeks) ?? 0,
+            specializedMuscles: try container.decodeIfPresent(Set<MuscleGroup>.self, forKey: .specializedMuscles)
         )
     }
 }

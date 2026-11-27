@@ -25,6 +25,7 @@ public enum MuscleRole: String, CaseIterable, Hashable, Sendable {
 @Observable
 public final class NewExerciseModel: Identifiable {
     public let id = UUID()
+    public var movementPattern: MovementPattern?
     public var name: String {
         didSet { fillFromName() }
     }
@@ -34,6 +35,7 @@ public final class NewExerciseModel: Identifiable {
     public private(set) var isSaving = false
 
     public let muscleOptions = MuscleGroup.allCases.map { Option(value: $0, name: $0.displayName) }
+    public let movementPatternOptions = MovementPattern.allCases.map { Option(value: $0, name: $0.displayName) }
     public let equipmentOptions = Equipment.allCases.map { Option(value: $0, name: $0.displayName) }
     public let roleOptions = MuscleRole.allCases.map { Option(value: $0, name: $0.displayName) }
 
@@ -121,7 +123,8 @@ public final class NewExerciseModel: Identifiable {
             primaryMuscles: draft.primary,
             secondaryMuscles: draft.secondary,
             equipment: draft.equipment,
-            isCustom: true
+            isCustom: true,
+            movementPattern: movementPattern
         )
         do {
             try await repository.save(exercise)

@@ -175,13 +175,13 @@ Lifters under-predict reps to failure by ~1 rep on average and get less accurate
 Refs: Halperin et al. 2022, Sports Med (meta-analysis). Cut-offs are heuristic. Reviewed 2026-11-16.
 
 ### `volume-dose-response` — strong
-Weekly set volume has a positive dose-response with diminishing returns for hypertrophy (and smaller for
-strength); counting indirect sets as 0.5 ("fractional") fits best. Per-session benefits plateau around ~11
-fractional sets per muscle (preprint).
-→ Effective sets per muscle use 1 / 0.5 weighting; stall suggestions add/remove a set relative to a
-configurable 10–20 weekly fractional sets range (heuristic within the evidence).
-Refs: Pelland et al. 2026, Sports Med 56(2):481–505 (meta-regressions, 67 studies); Remmert et al. 2025 (SportRxiv
-preprint). Reviewed 2026-11-20 (`docs/evidence-review-2026-11.md`).
+Weekly set volume has a positive dose-response with diminishing returns for hypertrophy and strength. Counting
+indirect sets as 0.5 (fractional) fit the weekly data best.
+→ Effective sets per muscle use 1 / 0.5 weighting. Stall suggestions compare against a configurable 10–20
+weekly fractional sets range (heuristic). For the separate per-session estimate, see
+`muscle-balance-session-volume`.
+Refs: [Pelland et al. 2026](https://pubmed.ncbi.nlm.nih.gov/41343037/) (67 studies),
+[Schoenfeld et al. 2017](https://pubmed.ncbi.nlm.nih.gov/27433992/). Reviewed 2026-11-27.
 
 ### `plan-duration-estimate` — heuristic
 The import preview budgets 30 seconds per working set plus the prescribed rest between sets of each exercise,
@@ -384,6 +384,95 @@ Reviewed 2026-11-20.
 ### `focus-heuristics` — heuristic
 Set classification cut-offs (≤ 6 reps at ≥ 78 % e1RM = strength; ≥ 15 reps = endurance; 60 % majority), streak
 lengths, block lengths (4–8 weeks), templates and deload placement. All configurable. Reviewed 2026-11-16.
+
+## Muscle balance
+
+### `muscle-balance-maintenance` — heuristic
+A 32-week trial tested one-third and one-ninth of the previous training dose after 16 weeks of training.
+Both reduced doses preserved muscle size gains in younger adults. Older adults lost those gains despite
+retaining much of their strength. This provides moderate evidence that maintenance doses can be lower than
+growth doses. A short resistance program can also improve 1RM in trained men.
+→ Zero direct sets describes the logged stimulus. ~4 fractional sets per week is a heuristic for reviewing
+low coverage across training goals. The maintenance trials used reduced doses and did not establish that cutoff.
+Refs: [Bickel et al. 2011](https://pubmed.ncbi.nlm.nih.gov/21131862/),
+[Spiering et al. 2021](https://doi.org/10.1519/JSC.0000000000003964),
+[Iversen et al. 2021](https://doi.org/10.1007/s40279-021-01490-1),
+[Androulakis-Korakakis et al. 2020](https://pubmed.ncbi.nlm.nih.gov/31797219/).
+
+### `muscle-balance-volume` — limited
+Baz-Valle et al. suggested 12–20 weekly sets per muscle as a general hypertrophy range in young trained
+men. Pelland et al. found diminishing marginal gains as weekly volume rose. Neither establishes a cutoff
+in fractional sets for individual lifters.
+→ The weekly review levels around 20–22 and 30 fractional sets flag possible diminishing returns.
+Refs: [Baz-Valle et al. 2022](https://pubmed.ncbi.nlm.nih.gov/35291645/),
+[Pelland et al. 2026](https://pubmed.ncbi.nlm.nih.gov/41343037/).
+
+### `muscle-balance-session-volume` — limited
+The Remmert et al. preprint estimated 11 fractional sets per session for hypertrophy (Table 1). Above
+that point the model did not give an improvement over its smallest detectable effect more than 50%
+probability in any comparison to a higher modeled dose. The estimate quantifies detectability and gives
+no physiological ceiling.
+→ ~11 fractional sets in one session is a provisional prompt to consider spreading the sets across sessions.
+Ref: [Remmert et al. 2025](https://sportrxiv.org/index.php/server/preprint/download/537/1148/1071) (preprint).
+
+### `muscle-balance-push-pull` — heuristic
+The shoulder literature on overhead athletes considers rotator-cuff strength ratios. Those measurements
+cannot establish a ratio of pressing and pulling sets in recreational strength training.
+→ ~0.75 pulling sets per pushing set is a descriptive balance prompt.
+Ref: [Cools et al. 2015](https://pmc.ncbi.nlm.nih.gov/articles/PMC4647145/).
+
+### `muscle-balance-delts` — heuristic
+Deltoid EMG varies by exercise and deltoid portion. A within-person trial in 24 trained adults found that
+lateral deltoid thickness increased 3.3–4.6% after eight weeks of dumbbell or cable raises. These data give
+no weekly set requirement tied to pressing volume.
+→ The direct side- and rear-delt review thresholds are heuristics.
+Refs: [Campos et al. 2020](https://pmc.ncbi.nlm.nih.gov/articles/PMC7706677/),
+[Youdas et al. 2021](https://pubmed.ncbi.nlm.nih.gov/32940548/),
+[Rabello et al. 2024](https://pubmed.ncbi.nlm.nih.gov/39593452/),
+[Larsen et al. 2025](https://doi.org/10.3389/fphys.2025.1611468).
+
+### `muscle-balance-pulling-patterns` — heuristic
+Exercise selection changes which areas of the upper back and shoulders are recruited. The cited studies
+measure acute activation or give exercise selection guidance. They offer no outcome comparison for
+including both vertical and horizontal pulling.
+→ A pulling pattern absent over two weeks is a prompt to review exercise variety.
+Refs: [Youdas et al. 2021](https://pubmed.ncbi.nlm.nih.gov/32940548/),
+[Iversen et al. 2021](https://doi.org/10.1007/s40279-021-01490-1).
+
+### `muscle-balance-hamstrings` — limited
+Across 8,459 athletes, mostly footballers, van Dyk et al. reported a hamstring-injury risk ratio of
+0.49 (95% CI 0.32–0.74) for programs that included Nordics. Transfer to a set-count
+rule is limited. Prospective studies and reviews of strength screening report mixed results across tests and
+populations.
+→ Several weeks of quadriceps work without direct hamstring sets is a descriptive finding about training coverage.
+Refs: [van Dyk et al. 2019](https://bjsm.bmj.com/content/53/21/1362),
+[Green et al. 2020](https://pubmed.ncbi.nlm.nih.gov/32299793/),
+[Lee et al. 2018](https://pubmed.ncbi.nlm.nih.gov/29233665/),
+[Opar et al. 2015](https://pubmed.ncbi.nlm.nih.gov/25137368/),
+[Opar et al. 2021](https://pubmed.ncbi.nlm.nih.gov/33914283/).
+
+### `muscle-balance-relative-volume` — heuristic
+The lifter's median logged volume provides a reference for identifying lower-volume muscle groups.
+The fraction of that median used to flag a group is a product default.
+
+### `muscle-balance-regions` — heuristic
+An empty upper- or lower-body region describes the recorded or projected training. A preferred
+upper-to-lower set ratio has no basis in the reviewed studies.
+
+### `muscle-balance-running` — moderate
+Schumann et al. found comparable maximal strength and hypertrophy outcomes for concurrent training and
+strength training alone on average, with smaller explosive strength gains. Huiberts et al. found
+some subgroup differences, including smaller lower-body strength adaptations in men doing concurrent
+training. Strength work can improve running economy. These outcomes provide no conversion between
+running distance and muscle-specific resistance sets.
+→ Show kilometres alongside lower-body findings as training context.
+Refs: [Schumann et al. 2022](https://pubmed.ncbi.nlm.nih.gov/34757594/),
+[Huiberts et al. 2024](https://doi.org/10.1007/s40279-023-01943-9),
+[Wilson et al. 2012](https://pubmed.ncbi.nlm.nih.gov/22002517/),
+[Balsalobre-Fernández et al. 2016](https://pubmed.ncbi.nlm.nih.gov/26694507/),
+[Blagrove et al. 2018](https://doi.org/10.1007/s40279-017-0835-7).
+
+Reviewed 2026-11-27. See [ADR-0047](adr/0047-muscle-balance-alerts.md) for rollout criteria.
 
 ## Training plans
 

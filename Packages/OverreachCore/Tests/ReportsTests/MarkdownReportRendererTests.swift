@@ -151,6 +151,13 @@ struct MarkdownReportRendererTests {
         #expect(MarkdownReportRenderer.formatPace(nil) == "–")
     }
 
+    @Test func includesMuscleBalanceWithEvidenceAndRunningContext() {
+        let finding = "No direct hamstring work. (Evidence: limited) · 15 km run in the analysis period"
+        let report = TrainingReport(generatedAt: .now, muscleBalance: [finding])
+        #expect(MarkdownReportRenderer.render(report).contains("## Muscle balance\n\n- \(finding)"))
+        #expect(!MarkdownReportRenderer.render(TrainingReport(generatedAt: .now)).contains("## Muscle balance"))
+    }
+
     @Test func emptyReportStillRenders() {
         let markdown = MarkdownReportRenderer.render(TrainingReport(generatedAt: Date(timeIntervalSince1970: 0)))
         #expect(markdown.contains("No data for today."))

@@ -42,7 +42,12 @@ extension MuscleGroup {
         switch self {
         case .chest: L10n.text("Chest")
         case .back: L10n.text("Back")
+        case .lats: L10n.text("Lats")
+        case .upperBack: L10n.text("Upper back")
         case .shoulders: L10n.text("Shoulders")
+        case .frontDelts: L10n.text("Front delts")
+        case .sideDelts: L10n.text("Side delts")
+        case .rearDelts: L10n.text("Rear delts")
         case .biceps: L10n.text("Biceps")
         case .triceps: L10n.text("Triceps")
         case .forearms: L10n.text("Forearms")
@@ -66,6 +71,19 @@ extension DisciplinePriority {
         case .balanced: L10n.text("Balanced")
         case .running: L10n.text("Running first")
         case .strength: L10n.text("Strength first")
+        }
+    }
+}
+
+extension MovementPattern {
+    public var displayName: String {
+        switch self {
+        case .verticalPush: L10n.text("Vertical push")
+        case .horizontalPush: L10n.text("Horizontal push")
+        case .verticalPull: L10n.text("Vertical pull")
+        case .horizontalPull: L10n.text("Horizontal pull")
+        case .squat: L10n.text("Squat pattern")
+        case .hinge: L10n.text("Hip hinge")
         }
     }
 }
