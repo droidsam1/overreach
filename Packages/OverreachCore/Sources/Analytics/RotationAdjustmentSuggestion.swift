@@ -59,21 +59,25 @@ extension RotationAdjustment {
     }
 
     /// - Parameters:
-    ///   - projection: The detected rotation; without it nothing is suggested.
+    ///   - projection: The detected rotation, used to evaluate calendar changes.
+    ///   - session: A dated assignment or the session chosen for today. Evaluated without calendar changes
+    ///     when the caller supplies no projection.
     ///   - carryover: Level of the recorded run (`RunCarryover`); unknown suggests nothing.
     ///   - readiness: Today's level. Red keeps its own rules and suggests nothing here.
     ///   - previousLegSession: The latest leg session before the run, usually `projection.last`.
     ///   - runDay: The day of the recorded run.
     ///   - recorded: Adjustments already accepted; a session already postponed is not postponed again.
     public static func suggest(
-        projection: RotationProjection?, carryover: RunCarryover.Level, readiness: ReadinessLevel,
+        projection: RotationProjection?, session: RotationProjection.Session? = nil,
+        carryover: RunCarryover.Level, readiness: ReadinessLevel,
         previousLegSession: RotationProjection.Session?, runDay: CalendarDay,
         recorded: [RotationAdjustment] = [], legResponse: CheckIn.LegResponse? = nil,
         calendar: Calendar = .current, settings: Settings = .init()
     ) -> Suggestion? {
+        guard let next = projection?.upcoming.first ?? session else { return nil }
         let reportsHeavy = legResponse == .heavy
         let reportsLimited = legResponse == .limited
-        guard let projection, let next = projection.upcoming.first, readiness != .red, carryover != .unknown,
+        guard readiness != .red, carryover != .unknown,
               next.demand == .heavy || (next.demand == .moderate && (reportsHeavy || reportsLimited))
         else { return nil }
 
@@ -94,6 +98,8 @@ extension RotationAdjustment {
         }
         guard !reasons.isEmpty else { return suggestion(.keep) }
 
+        let fallback = suggestion(reportsLimited ? .holdLegWork : .keepCapped(maxRPE: settings.cappedRPE), reasons)
+        guard let projection else { return fallback }
         if let lighter = swapPartner(
             in: projection, avoidLegWork: reportsLimited, settings: settings, calendar: calendar
         ) {
@@ -108,8 +114,7 @@ extension RotationAdjustment {
         if !alreadyPostponed, postponementKeepsHeavyGap(projection, settings: settings, calendar: calendar) {
             return suggestion(.postpone(days: settings.postponeDays), reasons)
         }
-        return reportsLimited ? suggestion(.holdLegWork, reasons)
-            : suggestion(.keepCapped(maxRPE: settings.cappedRPE), reasons)
+        return fallback
     }
 
     /// The first later slot without leg demand, else with moderate demand, that the heavy slot can trade places with:

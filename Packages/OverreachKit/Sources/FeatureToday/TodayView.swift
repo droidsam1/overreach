@@ -284,10 +284,12 @@ public struct TodayView: View {
                             set: { model.setShowsOptionalStrength($0) }
                         )
                     ) {
-                        if let option = model.strengthOption { strengthDetails(option) }
+                        if let option = model.strengthOption {
+                            strengthDetails(option, runAdvice: model.optionalStrengthRunAdvice)
+                        }
                     }
                 }
-                if model.scheduledStrengthToday != nil, let option = model.strengthOption {
+                if model.showsScheduledStrengthExample, let option = model.strengthOption {
                     DisclosureGroup("Compare with an easy strength option") { strengthDetails(option) }
                 }
             }
@@ -802,7 +804,7 @@ public struct TodayView: View {
         .accessibilityElement(children: .combine)
     }
 
-    private func strengthDetails(_ option: StrengthOption) -> some View {
+    private func strengthDetails(_ option: StrengthOption, runAdvice: [String] = []) -> some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
             if let heading = option.heading {
                 Text(heading).font(.subheadline)
@@ -810,16 +812,22 @@ public struct TodayView: View {
             if !model.showsNextSessionInDeload {
                 nextSessionPicker
             }
-            ForEach(option.exerciseRows) { row in
-                VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                    Text(row.title).font(.subheadline.weight(.semibold))
-                    Text(row.reference).foregroundStyle(.secondary)
-                    Text(row.suggestion)
+            if runAdvice.isEmpty {
+                ForEach(option.exerciseRows) { row in
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        Text(row.title).font(.subheadline.weight(.semibold))
+                        Text(row.reference).foregroundStyle(.secondary)
+                        Text(row.suggestion)
+                    }
+                    .font(.subheadline)
                 }
-                .font(.subheadline)
+                Text(option.guidance).font(.subheadline)
+                Text(option.evidence).font(.caption).foregroundStyle(.secondary)
+            } else {
+                ForEach(runAdvice, id: \.self) { line in
+                    Text(line).font(.subheadline)
+                }
             }
-            Text(option.guidance).font(.subheadline)
-            Text(option.evidence).font(.caption).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, Spacing.small)
