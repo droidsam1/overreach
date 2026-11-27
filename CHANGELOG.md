@@ -283,6 +283,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   stalls or the working weight.
 
 ### Changed
+- Progress shows imported Strong and Overreach lifting sessions together in one chart per exercise and metric.
 - First-run setup asks two things: your goal and your devices, where you also choose how to start (train, import from
   Strong or restore a backup). The sex, cycle and walking questions moved to Today, shown one at a time only when
   the answer would change a recommendation (a cycle question when recovery readings exist and you never answered
