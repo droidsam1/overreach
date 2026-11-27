@@ -2160,6 +2160,23 @@
         }
       }
     },
+    "Backups include imported Garmin activities and daily health metrics when available.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las copias incluyen las actividades importadas de Garmin y las métricas de salud diarias disponibles."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As copias inclúen as actividades importadas de Garmin e as métricas de saúde diarias dispoñibles."
+          }
+        }
+      }
+    },
     "Balanced": {
       "extractionState": "manual",
       "localizations": {
@@ -7171,6 +7188,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Garmin"
+          }
+        }
+      }
+    },
+    "Garmin activities: {1}. Days with metrics: {2}.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actividades de Garmin: {1}. Días con métricas: {2}."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actividades de Garmin: {1}. Días con métricas: {2}."
           }
         }
       }
@@ -20707,6 +20741,23 @@
         }
       }
     },
+    "The backup contains data this device is missing. Restore it before backing up.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La copia contiene datos que faltan en este dispositivo. Restáurala antes de hacer otra copia."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A copia contén datos que faltan neste dispositivo. Restáuraa antes de facer outra copia."
+          }
+        }
+      }
+    },
     "The blocks after it move back by the same time.": {
       "extractionState": "manual",
       "localizations": {
@@ -20788,23 +20839,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "O ficheiro non é un CSV de texto."
-          }
-        }
-      }
-    },
-    "The folder has a backup and this device has no sessions yet. Restore it first.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La carpeta tiene una copia y este dispositivo aún no tiene sesiones. Restáurala primero."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O cartafol ten unha copia e este dispositivo aínda non ten sesións. Restáuraa primeiro."
           }
         }
       }

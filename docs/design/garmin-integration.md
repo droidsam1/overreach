@@ -303,6 +303,10 @@ values win where both have them (HRV, sleep stages), and Health fills the rest.
     the expiry date the person picked (30 days to 1 year).
 - **Kill switch.** Disconnecting deletes the key and token; imported values stay (they are the user's data,
   `sources` shows where they came from).
+- **Portable backups.** Manual and automatic backups include the cached daily metrics, runs (with saved laps),
+  strength recordings, and walks and hikes. They carry the activity IDs and existing units. Restore works offline,
+  keeps current records when IDs or days overlap, and leaves the normal Garmin resync window in place. The
+  backup omits credentials, API payloads, precise GPS tracks and sync state. See [#324](https://github.com/droidsam1/overreach/issues/324).
 - **Provenance.** `DailyMetrics.sources` already records Garmin; reasons on Today can say "HRV from Garmin".
 
 ### Strength workouts recorded on the watch

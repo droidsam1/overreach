@@ -95,7 +95,8 @@ final class AppContainer {
         self.onboardingStatus = onboardingStatus
         self.backup = RepositoryBackupService(
             workouts: workouts, exercises: exercises, checkIns: checkIns, profiles: profiles, progression: progression,
-            routines: routines, destination: backupDestination, appVersion: Self.appVersion
+            routines: routines, destination: backupDestination, appVersion: Self.appVersion,
+            garmin: garmin as? any GarminBackupStore
         )
         self.metricsSources = metricsSources
         self.activitySources = activitySources

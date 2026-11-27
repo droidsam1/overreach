@@ -12,6 +12,7 @@ public actor RepositoryBackupService: BackupService {
     private let profiles: any ProfileRepository
     private let progression: any ProgressionSettingsRepository
     private let routines: any RoutineRepository
+    private let garmin: (any GarminBackupStore)?
     private let destination: any BackupDestination
     private let appVersion: String?
 
@@ -26,7 +27,8 @@ public actor RepositoryBackupService: BackupService {
         progression: any ProgressionSettingsRepository,
         routines: any RoutineRepository,
         destination: any BackupDestination,
-        appVersion: String? = nil
+        appVersion: String? = nil,
+        garmin: (any GarminBackupStore)? = nil
     ) {
         self.workouts = workouts
         self.exercises = exercises
@@ -36,6 +38,7 @@ public actor RepositoryBackupService: BackupService {
         self.routines = routines
         self.destination = destination
         self.appVersion = appVersion
+        self.garmin = garmin
     }
 
     public func isConfigured() async -> Bool {
@@ -53,8 +56,10 @@ public actor RepositoryBackupService: BackupService {
     public func backUp(now: Date) async throws -> BackupSummary {
         guard await destination.isConfigured() else { throw BackupError.notConfigured }
         let document = try await makeDocument(now: now)
-        if document.sessions.isEmpty, let existing = try? await latestBackup(), !existing.sessions.isEmpty {
-            throw BackupError.wouldOverwriteWithEmpty
+        if let existing = try? await latestBackup() {
+            let missingSessions = document.sessions.isEmpty && !existing.sessions.isEmpty
+            let missingGarmin = document.garmin == nil && existing.summary.hasGarminData
+            if missingSessions || missingGarmin { throw BackupError.wouldOverwriteWithEmpty }
         }
         try await destination.write(try BackupCodec.encode(document), at: now)
         return document.summary
@@ -95,16 +100,21 @@ public actor RepositoryBackupService: BackupService {
         if try await profiles.profile() == AthleteProfile() {
             try await profiles.save(document.profile)
         }
+        if let backup = document.garmin {
+            try await garmin?.restoreBackup(backup)
+        }
         return document.summary
     }
 
     public func hasUserData() async throws -> Bool {
         let sessions = try await workouts.sessions(from: .distantPast, to: .distantFuture)
-        return !sessions.isEmpty
+        if !sessions.isEmpty { return true }
+        return await garmin?.backupSnapshot().isEmpty == false
     }
 
     private func makeDocument(now: Date) async throws -> BackupDocument {
-        BackupDocument(
+        let snapshot = await garmin?.backupSnapshot()
+        return BackupDocument(
             createdAt: now,
             appVersion: appVersion,
             sessions: try await workouts.sessions(from: .distantPast, to: .distantFuture),
@@ -114,7 +124,8 @@ public actor RepositoryBackupService: BackupService {
             progressionSettings: try await progression.allProgressionSettings()
                 .map { ProgressionSettingsEntry(exerciseID: $0.key, settings: $0.value) }
                 .sorted { $0.exerciseID.uuidString < $1.exerciseID.uuidString },
-            routines: try await routines.allRoutines()
+            routines: try await routines.allRoutines(),
+            garmin: snapshot?.isEmpty == false ? snapshot : nil
         )
     }
 }

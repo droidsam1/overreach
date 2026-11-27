@@ -48,7 +48,7 @@ public final class BackupModel {
             L10n.format(
                 "A backup with {1} sessions from {2} was found in your backup folder.",
                 $0.sessions, Self.dateText($0.createdAt)
-            )
+            ) + Self.garminDetails($0)
         }
     }
 
@@ -77,7 +77,14 @@ public final class BackupModel {
     }
 
     static func describe(_ summary: BackupSummary) -> String {
-        L10n.format("{1} sessions from {2}.", summary.sessions, dateText(summary.createdAt))
+        L10n.format("{1} sessions from {2}.", summary.sessions, dateText(summary.createdAt)) + garminDetails(summary)
+    }
+
+    private static func garminDetails(_ summary: BackupSummary) -> String {
+        guard summary.hasGarminData else { return "" }
+        return " " + L10n.format(
+            "Garmin activities: {1}. Days with metrics: {2}.", summary.garminActivities, summary.garminMetricDays
+        )
     }
 
     static func dateText(_ date: Date) -> String {
@@ -125,7 +132,7 @@ public final class BackupModel {
         } catch BackupError.notConfigured {
             message = L10n.text("Choose a backup folder first.")
         } catch BackupError.wouldOverwriteWithEmpty {
-            message = L10n.text("The folder has a backup and this device has no sessions yet. Restore it first.")
+            message = L10n.text("The backup contains data this device is missing. Restore it before backing up.")
         } catch {
             message = L10n.text("Backup failed. Check that the folder is still available.")
         }
@@ -183,7 +190,7 @@ public final class BackupModel {
     public func checkRestoreOffer() async {
         guard (try? await service.hasUserData()) == false,
               let backup = try? await service.latestBackup(),
-              !backup.sessions.isEmpty else { return }
+              backup.summary.sessions > 0 || backup.summary.hasGarminData else { return }
         restoreOffer = backup.summary
     }
 
@@ -214,7 +221,7 @@ public final class BackupModel {
         defer { isWorking = false }
         do {
             let summary = try await service.restore(from: data)
-            message = L10n.format("Restored {1} sessions.", summary.sessions)
+            message = L10n.format("Restored {1} sessions.", summary.sessions) + Self.garminDetails(summary)
         } catch {
             message = L10n.text("Restore failed. Nothing already on this device was removed.")
         }

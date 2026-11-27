@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Backups include imported Garmin activities and daily metrics for offline restore (#324).
 - Recovery shows a "Sleep and training times" card from the last 28 days: usual bedtime, wake time and training
   start, and only the observations the timing analysis returns, each with its evidence level. It appears after a
   week of nights or five sessions and never changes load, readiness or the plan (#347).

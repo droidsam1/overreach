@@ -294,6 +294,7 @@ public struct SettingsView<Library: View>: View {
             Text("Backup")
         } footer: {
             Text("Backs up after every session and when you leave the app. Keeps the last 14 days of copies.")
+            Text("Backups include imported Garmin activities and daily health metrics when available.")
         }
     }
 

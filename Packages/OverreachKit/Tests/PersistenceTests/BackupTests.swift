@@ -19,10 +19,21 @@ private actor MemoryDestination: BackupDestination {
     func latest() -> Data? { files.max { $0.key < $1.key }?.value }
 }
 
-private func makeService(store: InMemoryStore, destination: any BackupDestination) -> RepositoryBackupService {
+private actor MemoryGarminBackup: GarminBackupStore {
+    private var snapshot: GarminBackup
+
+    init(_ snapshot: GarminBackup = GarminBackup()) { self.snapshot = snapshot }
+
+    func backupSnapshot() -> GarminBackup { snapshot }
+    func restoreBackup(_ backup: GarminBackup) { snapshot = backup }
+}
+
+private func makeService(
+    store: InMemoryStore, destination: any BackupDestination, garmin: (any GarminBackupStore)? = nil
+) -> RepositoryBackupService {
     RepositoryBackupService(
         workouts: store, exercises: store, checkIns: store, profiles: store, progression: store, routines: store,
-        destination: destination, appVersion: "test"
+        destination: destination, appVersion: "test", garmin: garmin
     )
 }
 
@@ -97,6 +108,30 @@ struct BackupServiceTests {
         }
         #expect(await empty.backUpIfConfigured(now: .now) == false)
         #expect(try await empty.latestBackup()?.sessions.count == 1)
+    }
+
+    @Test func garminOnlyBackupIsExportedAndProtectedUntilRestore() async throws {
+        let day = CalendarDay(year: 2026, month: 11, day: 27)
+        var metrics = DailyMetrics(day: day, sources: [.garmin])
+        metrics.setHRV(45, .rmssd)
+        let garmin = GarminBackup(metrics: [metrics])
+        let destination = MemoryDestination()
+        let service = makeService(store: InMemoryStore(), destination: destination, garmin: MemoryGarminBackup(garmin))
+        #expect(await service.backUpIfConfigured(now: .now))
+        #expect(try await service.latestBackup()?.garmin == garmin)
+        let data = try await service.exportData(now: .now)
+        #expect(try BackupCodec.decode(data).garmin == garmin)
+
+        let restored = MemoryGarminBackup()
+        let fresh = makeService(store: InMemoryStore(), destination: destination, garmin: restored)
+        #expect(try await fresh.hasUserData() == false)
+        await #expect(throws: BackupError.wouldOverwriteWithEmpty) {
+            try await fresh.backUp(now: .now)
+        }
+        let summary = try await fresh.restore(from: data)
+        #expect(summary.garminMetricDays == 1)
+        #expect(await restored.backupSnapshot() == garmin)
+        #expect(try await fresh.hasUserData())
     }
 
     @Test func automaticBackupIsSkippedWithoutAFolder() async {

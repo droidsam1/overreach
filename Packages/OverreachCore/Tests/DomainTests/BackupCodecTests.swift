@@ -41,6 +41,7 @@ struct BackupCodecTests {
         #expect(decoded.sessions.isEmpty)
         #expect(decoded.profile == AthleteProfile())
         #expect(decoded.routines.isEmpty)
+        #expect(decoded.garmin == nil)
     }
 
     @Test func weightUnitRoundTripsAndOlderProfilesDefaultToKilograms() throws {

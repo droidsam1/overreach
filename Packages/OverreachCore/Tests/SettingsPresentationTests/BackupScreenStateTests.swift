@@ -74,6 +74,18 @@ struct BackupScreenStateTests {
         #expect(offer.hasSuffix("was found in your backup folder."))
     }
 
+    @Test func offersToRestoreAGarminOnlyBackup() async throws {
+        let day = CalendarDay(year: 2026, month: 11, day: 27)
+        let backup = BackupDocument(
+            createdAt: .now, garmin: GarminBackup(metrics: [DailyMetrics(day: day, sources: [.garmin])])
+        )
+        let model = BackupModel(service: StubBackupService(latest: backup))
+        await model.checkRestoreOffer()
+        #expect(model.restoreOffer == backup.summary)
+        let offer = try #require(model.restoreOfferMessage)
+        #expect(offer.contains("Garmin activities: 0. Days with metrics: 1."))
+    }
+
     @Test func pendingRestoreExplainsTheMerge() throws {
         let model = BackupModel(service: StubBackupService(latest: nil))
         #expect(model.pendingRestoreMessage == nil)

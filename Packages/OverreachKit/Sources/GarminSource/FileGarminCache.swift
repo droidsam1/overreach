@@ -17,19 +17,15 @@ public actor FileGarminCache: GarminCacheStore {
         return try? JSONDecoder().decode(GarminCache.self, from: data)
     }
 
-    public func save(_ cache: GarminCache) {
-        do {
-            try FileManager.default.createDirectory(
-                at: url.deletingLastPathComponent(), withIntermediateDirectories: true
-            )
-            let data = try JSONEncoder().encode(cache)
-            #if os(iOS)
-            try data.write(to: url, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
-            #else
-            try data.write(to: url, options: .atomic)
-            #endif
-        } catch {
-            // A cache that cannot be written only means the next launch asks Garmin again.
-        }
+    public func save(_ cache: GarminCache) throws {
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(), withIntermediateDirectories: true
+        )
+        let data = try JSONEncoder().encode(cache)
+        #if os(iOS)
+        try data.write(to: url, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+        #else
+        try data.write(to: url, options: .atomic)
+        #endif
     }
 }
