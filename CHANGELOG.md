@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- Recovery shows sleep timing variation alongside the number of nights with bed and wake times. Training start
+  time variation appears as a descriptive measurement (#349).
+
 ### Added
 - Backups include imported Garmin activities and daily metrics for offline restore (#324).
 - Ask AI lets you select health metric groups and preview and confirm the report before sharing (#324).

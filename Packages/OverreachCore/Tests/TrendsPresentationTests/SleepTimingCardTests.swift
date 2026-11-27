@@ -10,34 +10,40 @@ struct SleepTimingCardTests {
 
     private func report(
         nights: Int = 14, bedtime: Double? = 23 * 60, wake: Double? = 7 * 60, sessions: Int = 0,
-        training: Double? = nil, insights: [CircadianTiming.Insight] = []
+        training: Double? = nil, midpoint: Double? = 29, trainingSpread: Double? = nil,
+        insights: [CircadianTiming.Insight] = []
     ) -> CircadianTiming.Report {
         CircadianTiming.Report(
             nights: nights, usualBedtime: bedtime, usualWake: wake, bedtimeSpread: nil, wakeSpread: nil,
-            midpointSpread: nil, regularityIndex: nil, weekendShift: nil, sessions: sessions,
-            usualTrainingStart: training, trainingSpread: nil, hardSessions: 0, hardSessionsNearBed: 0,
+            midpointSpread: midpoint, regularityIndex: nil, weekendShift: nil, sessions: sessions,
+            usualTrainingStart: training, trainingSpread: trainingSpread, hardSessions: 0, hardSessionsNearBed: 0,
             insights: insights
         )
     }
 
     @Test func hiddenWithoutEnoughNightsOrSessions() {
-        #expect(SleepTimingCard(report(nights: 4, bedtime: nil, wake: nil, sessions: 3)) == nil)
+        #expect(SleepTimingCard(report(nights: 4, bedtime: nil, wake: nil, sessions: 3, midpoint: nil)) == nil)
     }
 
-    @Test func regularScheduleShowsOnlyTheNeutralSummary() throws {
+    @Test func regularSleepShowsVariationAndCoverage() throws {
         let card = try #require(SleepTimingCard(report(sessions: 6, training: 18 * 60 + 30), format: spanish))
-        #expect(card.rows.map(\.label) == ["Usual bedtime", "Usual wake time", "Usual training start"])
-        #expect(card.rows.map(\.value) == ["23:00", "7:00", "18:30"])
-        #expect(card.summary == "Your sleep and training times look steady.")
+        #expect(card.rows.map(\.label) == [
+            "Usual bedtime", "Usual wake time", "Sleep midpoint variation", "Usual training start",
+        ])
+        #expect(card.rows.map(\.value) == ["23:00", "7:00", "29 min", "18:30"])
+        #expect(card.summary == "Your sleep schedule looked steady on the nights with recorded times.")
         #expect(card.observations.isEmpty)
-        #expect(card.footnote == "From the last 28 days: 14 nights, 6 sessions. Observations, not a diagnosis.")
+        #expect(card.footnote ==
+            "Last 28 days: 14 nights with bed and wake times, 6 sessions with start and end times.")
     }
 
     @Test func sessionsAloneShowTheTrainingTime() throws {
         let card = try #require(
-            SleepTimingCard(report(nights: 2, bedtime: nil, wake: nil, sessions: 5, training: 7 * 60), format: spanish)
+            SleepTimingCard(report(nights: 2, bedtime: nil, wake: nil, sessions: 5, training: 7 * 60, midpoint: nil),
+                            format: spanish)
         )
         #expect(card.rows.map(\.label) == ["Usual training start"])
+        #expect(card.summary == nil)
     }
 
     @Test func irregularSleepIsWordedAsLongTermHealth() throws {
@@ -66,11 +72,15 @@ struct SleepTimingCardTests {
         #expect(card.observations.first?.evidenceText == "Evidence: limited evidence")
     }
 
-    @Test func variableTrainingTimeRanksNoTimeOfDay() throws {
-        let card = try #require(SleepTimingCard(report(insights: [.variableTrainingTime(spreadMinutes: 150)])))
-        let text = try #require(card.observations.first?.text)
-        #expect(text.contains("about 2 h 30 min"))
-        #expect(text.contains("no time of day is better"))
+    @Test func variableTrainingTimeIsDescriptiveAndDoesNotHideSteadySleep() throws {
+        let card = try #require(SleepTimingCard(report(
+            nights: 8, sessions: 14, training: 18 * 60, trainingSpread: 135.8,
+            insights: [.variableTrainingTime(spreadMinutes: 136)]
+        )))
+        #expect(card.rows.last?.label == "Training start time variation")
+        #expect(card.rows.last?.value == "136 min")
+        #expect(card.summary != nil)
+        #expect(card.observations.isEmpty)
     }
 
     @Test func hardSessionsNearBedSuggestFinishingEarlier() throws {

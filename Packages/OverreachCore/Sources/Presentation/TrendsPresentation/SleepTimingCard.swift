@@ -21,7 +21,7 @@ public struct SleepTimingCard: Hashable, Sendable {
     }
 
     public let rows: [Row]
-    /// The neutral line shown when nothing stands out.
+    /// A sleep summary when the available nights show a steady schedule.
     public let summary: String?
     public let observations: [Observation]
     public let footnote: String
@@ -35,25 +35,44 @@ public struct SleepTimingCard: Hashable, Sendable {
         if let wake = report.usualWake {
             rows.append(Row(label: L10n.text("Usual wake time"), value: Self.clock(wake, format: format)))
         }
+        if let spread = report.midpointSpread {
+            rows.append(Row(
+                label: L10n.text("Sleep midpoint variation"),
+                value: L10n.format("{1} min", String(Int(spread.rounded())))
+            ))
+        }
         if let training = report.usualTrainingStart {
             rows.append(Row(label: L10n.text("Usual training start"), value: Self.clock(training, format: format)))
         }
+        if let spread = report.trainingSpread {
+            rows.append(Row(
+                label: L10n.text("Training start time variation"),
+                value: L10n.format("{1} min", String(Int(spread.rounded())))
+            ))
+        }
         guard !rows.isEmpty else { return nil }
         self.rows = rows
-        observations = report.insights.map { insight in
-            Observation(
-                text: Self.text(insight, format: format),
+        observations = report.insights.compactMap { insight in
+            guard let text = Self.text(insight, format: format) else { return nil }
+            return Observation(
+                text: text,
                 evidenceText: L10n.format("Evidence: {1}", insight.evidence.level.displayName)
             )
         }
-        summary = observations.isEmpty ? L10n.text("Your sleep and training times look steady.") : nil
+        let irregularSleep = report.insights.contains { insight in
+            if case .irregularSleep = insight { return true }
+            return false
+        }
+        summary = report.midpointSpread != nil && !irregularSleep
+            ? L10n.text("Your sleep schedule looked steady on the nights with recorded times.")
+            : nil
         footnote = L10n.format(
-            "From the last {1} days: {2} nights, {3} sessions. Observations, not a diagnosis.",
+            "Last {1} days: {2} nights with bed and wake times, {3} sessions with start and end times.",
             String(SleepTrainingTiming.windowDays), String(report.nights), String(report.sessions)
         )
     }
 
-    static func text(_ insight: CircadianTiming.Insight, format: Format) -> String {
+    static func text(_ insight: CircadianTiming.Insight, format: Format) -> String? {
         switch insight {
         case let .irregularSleep(index?, _):
             L10n.format(
@@ -73,12 +92,8 @@ public struct SleepTimingCard: Hashable, Sendable {
                     + "work can make this misleading.",
                 duration(minutes, format: format)
             )
-        case let .variableTrainingTime(spread):
-            L10n.format(
-                "Your training start time varies by about {1}. A steady time goes with training more often; no "
-                    + "time of day is better than another.",
-                duration(spread, format: format)
-            )
+        case .variableTrainingTime:
+            nil
         case let .hardSessionsNearBed(count, total):
             L10n.format(
                 "{1} of {2} hard sessions ended less than an hour before your usual bedtime. Finishing about 2 h "
