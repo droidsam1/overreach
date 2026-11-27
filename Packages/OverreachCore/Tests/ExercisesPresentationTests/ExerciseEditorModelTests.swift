@@ -76,6 +76,32 @@ struct ExerciseEditorModelTests {
         #expect(editor.muscleOptions.count == MuscleGroup.allCases.count)
     }
 
+    @Test func customArtworkSuggestionsFollowTheDraftAndSelectionSurvivesReload() async throws {
+        let (list, store) = await makeList()
+        let editor = try #require(list.editor(for: imported.id))
+        #expect(editor.suggestedIllustrations.first?.id == "bench-press")
+        #expect(editor.suggestedIllustrations.count <= 3)
+        editor.name = "Peso muerto rumano con pausa"
+        #expect(editor.suggestedIllustrations.first?.id == "romanian-deadlift")
+        editor.illustrationSearchText = "elevaciones laterales"
+        #expect(editor.illustrationOptions.contains { $0.id == "cable-lateral-raise" })
+
+        editor.selectIllustration("dead-bug")
+        editor.selectIllustration("unknown-artwork")
+        editor.setPrimary(.core, true)
+        #expect(await editor.save())
+        let stored = try #require(await store.allExercises().first { $0.id == imported.id })
+        let encoded = try JSONEncoder().encode(stored)
+        #expect(try JSONDecoder().decode(Exercise.self, from: encoded).illustrationID == "dead-bug")
+        #expect(list.allRows.first { $0.id == stored.id }?.illustration == "dead-bug")
+
+        let reopened = try #require(list.editor(for: stored.id))
+        #expect(reopened.illustration == "dead-bug")
+        reopened.selectIllustration(nil)
+        #expect(await reopened.save())
+        #expect(list.allRows.first { $0.id == stored.id }?.illustration == nil)
+    }
+
     @Test func copyThenSaveMapsTheExercise() async throws {
         let (list, store) = await makeList()
         let editor = try #require(list.editor(for: imported.id))

@@ -11,6 +11,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   time variation appears as a descriptive measurement (#349).
 
 ### Added
+- The exercise catalog shows illustrated thumbnails and three poses in exercise details, with equipment icons
+  for exercises without matching artwork. Custom exercises can use any bundled illustration, with suggestions
+  based on their names and aliases.
 - Backups include imported Garmin activities and daily metrics for offline restore (#324).
 - Ask AI lets you select health metric groups and preview and confirm the report before sharing (#324).
 - AI context exports include usual sleep and training times, timing variations and evidence-linked observations

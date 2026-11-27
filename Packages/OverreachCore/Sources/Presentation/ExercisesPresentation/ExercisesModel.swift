@@ -12,6 +12,8 @@ public struct ExerciseRow: Identifiable, Hashable, Sendable {
     public let muscles: String
     public let needsMuscles: Bool
     public let sessionCount: Int
+    public let illustration: String?
+    public let equipmentSymbol: String
 
     public var sessionCountAccessibilityText: String {
         sessionCount == 1 ? L10n.text("1 session") : L10n.format("{1} sessions", sessionCount.formatted())
@@ -220,7 +222,9 @@ public final class ExercisesModel {
             name: exercise.displayName,
             muscles: MuscleGroup.displayList(exercise.primaryMuscles),
             needsMuscles: exercise.needsMuscleMapping,
-            sessionCount: sessionCount(of: exercise.id)
+            sessionCount: sessionCount(of: exercise.id),
+            illustration: ExerciseArtwork.illustration(for: exercise),
+            equipmentSymbol: ExerciseArtwork.symbol(for: exercise.equipment)
         )
     }
 

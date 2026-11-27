@@ -75,19 +75,33 @@ private struct ExerciseRowLink: View {
         NavigationLink {
             EditorScreen(list: model, exerciseID: row.id)
         } label: {
-            VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                Text(row.name)
+            HStack(spacing: Spacing.small) {
                 Group {
-                    if row.needsMuscles {
-                        StatusLabel(title: L10n.text("No muscles assigned"), tone: .caution)
+                    if let illustration = row.illustration {
+                        ExercisePose(illustration: illustration, index: 1)
                     } else {
-                        Text(row.muscles)
+                        Image(systemName: row.equipmentSymbol)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
                     }
                 }
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                .frame(width: 44, height: 44)
+                .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                    Text(row.name)
+                    Group {
+                        if row.needsMuscles {
+                            StatusLabel(title: L10n.text("No muscles assigned"), tone: .caution)
+                        } else {
+                            Text(row.muscles)
+                        }
+                    }
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                }
+                .accessibilityElement(children: .combine)
             }
-            .accessibilityElement(children: .combine)
         }
         .badge(row.sessionCount)
         .accessibilityValue(row.sessionCountAccessibilityText)
@@ -151,6 +165,7 @@ struct ExerciseEditorView: View {
             if model.canEditNames {
                 namesSection
             }
+            ExerciseArtworkSection(model: model)
             if !model.suggestions.isEmpty {
                 Section {
                     ForEach(model.suggestions) { suggestion in

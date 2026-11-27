@@ -29,6 +29,8 @@ public final class ExerciseEditorModel {
     public var aliasesText: String
     /// Text typed in the merge-target search.
     public var mergeSearchText = ""
+    public var illustrationSearchText = ""
+    public private(set) var selectedIllustration: String?
     /// Set when the user picked a merge target; cleared by confirming or cancelling.
     public private(set) var pendingMerge: MergeConfirmation?
 
@@ -49,6 +51,7 @@ public final class ExerciseEditorModel {
         let exercise = list.exercise(id: exerciseID)
         draft = exercise.map(MappingDraft.init) ?? MappingDraft()
         movementPattern = exercise?.movementPattern
+        selectedIllustration = exercise.flatMap(ExerciseArtwork.illustration(for:))
         name = exercise?.name ?? ""
         initialAliasesText = exercise?.aliases.sorted().joined(separator: ", ") ?? ""
         aliasesText = initialAliasesText
@@ -68,6 +71,25 @@ public final class ExerciseEditorModel {
     // MARK: Screen state
 
     private var exercise: Exercise? { list.exercise(id: exerciseID) }
+
+    public var illustration: String? {
+        if canEditNames { return selectedIllustration }
+        guard let exercise, exercise.equipment == draft.equipment else { return nil }
+        return ExerciseArtwork.illustration(for: exercise)
+    }
+
+    public var illustrationCreditURL: URL? { ExerciseArtwork.creditURL }
+
+    public var suggestedIllustrations: [ExerciseIllustrationOption] {
+        let subject = Exercise(
+            id: exerciseID, name: trimmedName, primaryMuscles: [], equipment: draft.equipment, aliases: editedAliases
+        )
+        return ExerciseArtwork.suggestions(for: subject)
+    }
+
+    public var illustrationOptions: [ExerciseIllustrationOption] {
+        ExerciseArtwork.options(matching: illustrationSearchText)
+    }
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
 
@@ -134,6 +156,12 @@ public final class ExerciseEditorModel {
 
     public func setSecondary(_ muscle: MuscleGroup, _ isOn: Bool) { draft.setSecondary(muscle, isOn) }
 
+    public func selectIllustration(_ id: String?) {
+        guard canEditNames else { return }
+        if let id, !ExerciseArtwork.contains(id) { return }
+        selectedIllustration = id
+    }
+
     public func copyMuscles(from suggestionID: UUID) {
         guard let other = list.exercise(id: suggestionID) else { return }
         draft.copy(from: other)
@@ -159,6 +187,7 @@ public final class ExerciseEditorModel {
         edited.secondaryMuscles = draft.secondary
         edited.equipment = draft.equipment
         edited.movementPattern = movementPattern
+        edited.illustrationID = selectedIllustration
         return await list.saveExercise(edited)
     }
 
