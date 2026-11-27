@@ -8,6 +8,8 @@ public struct MuscleBalanceRow: Identifiable, Sendable {
 
     public var evidenceText: String { L10n.format("Evidence: {1}", evidence.level.displayName) }
 
+    public var dismissAccessibilityLabel: String { L10n.format("Dismiss finding: {1}", text) }
+
     public init(_ finding: MuscleBalanceFinding, format: Format = .init()) {
         id = finding.id
         evidence = finding.evidence

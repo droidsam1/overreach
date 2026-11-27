@@ -350,13 +350,13 @@ final class AppContainer {
 
     private var muscleBalanceDismissals: MuscleBalanceDismissals {
         let key = "muscleBalance.dismissedFindings"
+        let defaults = Self.isUITesting ? UserDefaults(suiteName: Self.uiTestingSuite) ?? .standard : .standard
         return MuscleBalanceDismissals(
             read: { scope in
-                let scopes = UserDefaults.standard.dictionary(forKey: key) as? [String: [String]]
+                let scopes = defaults.dictionary(forKey: key) as? [String: [String]]
                 return Set(scopes?[scope] ?? [])
             },
             save: { scope, ids in
-                let defaults = UserDefaults.standard
                 var scopes = defaults.dictionary(forKey: key) as? [String: [String]] ?? [:]
                 scopes[scope] = ids.sorted()
                 defaults.set(scopes, forKey: key)
