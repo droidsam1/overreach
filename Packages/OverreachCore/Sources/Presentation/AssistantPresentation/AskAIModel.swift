@@ -185,9 +185,10 @@ public final class AskAIModel {
     private func muscleBalance(
         record: TrainingRecord, profile: AthleteProfile?, runs: [RunActivity], now: Date
     ) -> [ContextPack.BalanceSuggestion]? {
-        guard MuscleBalanceAudit.isReleased else { return nil }
         let findings = record.muscleBalance(profile: profile, resolvedRuns: runs, now: now, calendar: calendar)
-        let rows = balanceDismissals.visible(findings.map { MuscleBalanceRow($0) }, in: MuscleBalanceAudit.historyScope)
+        let rows = balanceDismissals.visible(
+            MuscleBalanceAudit.rows(for: findings), in: MuscleBalanceAudit.historyScope
+        )
         guard !rows.isEmpty else { return nil }
         return rows.map {
             .init(text: $0.text, evidenceKey: $0.evidence.key, evidenceLevel: $0.evidence.level.rawValue,

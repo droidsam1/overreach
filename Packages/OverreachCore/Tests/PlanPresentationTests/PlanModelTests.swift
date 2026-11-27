@@ -66,11 +66,13 @@ struct PlanModelTests {
         )
         let model = PlanModel(
             profiles: store, workouts: store, exercises: store, progression: store, routines: store,
-            clock: { fixedNow }, calendar: calendar, balanceDismissals: dismissals, showsMuscleBalance: true
+            clock: { fixedNow }, calendar: calendar, balanceDismissals: dismissals
         )
         await model.load()
         let id = try #require(model.muscleBalanceRows.first?.id)
-        #expect(model.muscleBalanceRows.count > 1)
+        #expect(Set(model.muscleBalanceRows.map(\.id)) == [
+            "missingPullPattern-horizontalPull", "missingPullPattern-verticalPull", "emptyRegion-upper",
+        ])
         model.dismissMuscleBalance(id)
         await model.load()
         #expect(!model.muscleBalanceRows.contains { $0.id == id })

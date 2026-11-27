@@ -56,8 +56,7 @@ upper-to-lower set ratio fall outside the audit.
 - The analyzer lives in `Analytics/MuscleBalance.swift`. Findings have texts in English, Spanish and Galician
   and link to the evidence register.
 - Catalog migration touches many built-in exercises; mapping review is real work.
-- Thresholds are heuristics: validate them against real histories before they become visible, as for circadian
-  timing.
+- The personal rollout uses the rule selection below. Review alert frequency again before a wider rollout.
 
 ## Reference verification
 
@@ -77,9 +76,20 @@ and topic.
 
 ## Rollout validation
 
-One real backup was replayed on 2026-11-27. Four rules fired in more than half of that history's assessed
-weeks. This is a single-participant result. Keep the current thresholds under review and the new findings hidden
-until the replay includes several participants. Record cohort-level rates here once that data is available.
+One real backup was replayed on 2026-11-27 for the app's personal rollout. Four rules fired in more than
+half of the assessed weeks: no direct work, low weekly volume, low pull volume relative to push, and low direct
+side or rear delt volume. Withhold these four rules from muscle balance in Plan, Trends and Assistant exports.
+The separate Plan guidance still uses its existing `FocusBalance` rules.
+
+Enable the new findings for high and very high weekly volume, high single-session volume, missing pulling
+patterns, high quadriceps volume without direct hamstring work, lagging muscles and an empty body region.
+Each enabled rule fired in fewer than half of the assessed weeks or had zero hits. Keep thresholds and
+evidence levels as defined above. Apply the same selection to projected plans and logged history. The
+single-athlete replay supports this personal rollout. Review the rates with additional histories before
+a wider rollout.
+
+### Reproduce the replay
+
 Use one Overreach backup per consenting participant. From the repository root, run:
 
 ```shell
@@ -93,9 +103,7 @@ rolling windows as of each week's end. Weeks without analyzable recent training 
 without any assessed weeks are excluded. Older exports or incomplete mappings can limit coverage.
 Running distance is absent from a portable backup and does not affect whether a rule fires.
 
-The CSV reports how many participants and assessed weeks triggered each rule at least once. Use
-the included denominators to record rates, check which rules fire for most participants, and review
-the flagged cases for context before adjusting the thresholds or enabling findings. Keep the
-backups local and record only aggregate counts in this ADR. A synthetic smoke test with
-format-1 and format-2 backups verified the participant and weekly counters, including zero-count
-rules. Rollout requires the real-history results.
+The CSV reports how many participants and assessed weeks triggered each rule at least once, including
+rules withheld from the app. Use the denominators to calculate rates and review flagged cases before
+changing thresholds. Keep backups and individual counts local. A smoke test with synthetic format-1
+and format-2 backups verified the counters, including zero-count rules.

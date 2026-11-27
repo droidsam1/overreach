@@ -67,8 +67,21 @@ public struct MuscleBalanceDismissals: Sendable {
     }
 }
 
-/// Keep findings off all user surfaces until the history replay in ADR-0047 is reviewed.
+/// Rules available on user surfaces after the personal rollout decision in ADR-0047.
 public enum MuscleBalanceAudit {
-    public static let isReleased = false
     public static let historyScope = "history"
+
+    public static func rows(for findings: [MuscleBalanceFinding], format: Format = .init()) -> [MuscleBalanceRow] {
+        findings.filter { isVisible($0.rule) }.map { MuscleBalanceRow($0, format: format) }
+    }
+
+    private static func isVisible(_ rule: MuscleBalanceFinding.Rule) -> Bool {
+        switch rule {
+        case .highVolume, .veryHighVolume, .highSessionVolume, .missingPullPattern,
+             .noHamstringWork, .laggingMuscle, .emptyRegion:
+            return true
+        case .noDirectWork, .lowVolume, .lowPullVolume, .lowDeltVolume:
+            return false
+        }
+    }
 }
