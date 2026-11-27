@@ -22,8 +22,7 @@ Sideloadly instala la app, pero al firmarla con tu Apple ID **quita el permiso d
 desde un Mac con Xcode:
 
 1. En el Mac, instala Xcode desde la App Store y ábrelo una vez.
-2. En Xcode, ve a **Xcode → Settings → Accounts → + → Apple ID** y añade tu Apple ID personal (en un Mac del
-   trabajo, no uses la cuenta de la empresa).
+2. En Xcode, ve a **Xcode → Settings → Accounts → + → Apple ID** y añade tu Apple ID.
 3. Conecta el iPhone por cable y desbloquéalo.
 4. Abre **Terminal**, pega esta línea y pulsa Intro:
 
