@@ -70,6 +70,27 @@ struct RecoveryProgressModelTests {
         #expect(model.recoverySummary == "Loading…")
     }
 
+    @Test func sleepTimingCardAppearsWithAWeekOfNights() async {
+        let nights = (-9...0).map { offset in
+            day(offset) { metrics in
+                let wake = metrics.day.startDate(in: calendar).addingTimeInterval(7 * 3_600)
+                metrics.sleepSeconds = 8 * 3_600
+                metrics.sleepStart = wake.addingTimeInterval(-8 * 3_600)
+                metrics.sleepEnd = wake
+            }
+        }
+        let model = RecoveryProgressModel(sources: [DaysSource(days: nights)], calendar: calendar)
+        let noon = CalendarDay(now, calendar: calendar).startDate(in: calendar).addingTimeInterval(12 * 3_600)
+        await model.load(now: noon)
+        #expect(model.sleepTiming?.rows.count == 2)
+        #expect(model.sleepTiming?.summary == "Your sleep and training times look steady.")
+        #expect(model.sleepTiming?.observations.isEmpty == true)
+
+        let empty = RecoveryProgressModel(sources: [DaysSource()], calendar: calendar)
+        await empty.load(now: now)
+        #expect(empty.sleepTiming == nil)
+    }
+
     @Test func withoutAnySourceDataEveryReadingSaysItIsMissing() async {
         let model = RecoveryProgressModel(sources: [DaysSource()], calendar: calendar)
         await model.load(now: now)

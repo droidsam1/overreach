@@ -7090,6 +7090,23 @@
         }
       }
     },
+    "From the last {1} days: {2} nights, {3} sessions. Observations, not a diagnosis.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De los últimos {1} días: {2} noches, {3} sesiones. Son observaciones, no un diagnóstico."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dos últimos {1} días: {2} noites, {3} sesións. Son observacións, non un diagnóstico."
+          }
+        }
+      }
+    },
     "From {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -13210,6 +13227,23 @@
         }
       }
     },
+    "On weekends you sleep about {1} later than on weekdays. Weekends stand in for days off, so shift work can make this misleading.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los fines de semana duermes unos {1} más tarde que entre semana. El fin de semana se usa como día libre, así que con turnos de trabajo puede no ser exacto."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As fins de semana durmes uns {1} máis tarde ca entre semana. A fin de semana úsase como día libre, así que con quendas de traballo pode non ser exacto."
+          }
+        }
+      }
+    },
     "One Call needs your own OpenWeather key and a One Call subscription. OpenWeather asks for a card; the first 1,000 calls a day are free. The key stays here and only goes to OpenWeather.": {
       "extractionState": "manual",
       "localizations": {
@@ -18684,6 +18718,23 @@
         }
       }
     },
+    "Sleep and training times": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horarios de sueño y entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horarios de sono e adestramento"
+          }
+        }
+      }
+    },
     "Sleep data for last night is unavailable.": {
       "extractionState": "manual",
       "localizations": {
@@ -20843,6 +20894,23 @@
         }
       }
     },
+    "The middle of your sleep shifts by about {1} from night to night. Regular sleep and wake times go with lower long-term health risk, whatever your training.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El punto medio de tu sueño se mueve unos {1} de una noche a otra. Acostarse y despertarse a horas regulares se asocia con menos riesgo para la salud a largo plazo, entrenes como entrenes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O punto medio do teu sono móvese uns {1} dunha noite a outra. Deitarse e espertar a horas regulares asóciase cun menor risco para a saúde a longo prazo, adestres como adestres."
+          }
+        }
+      }
+    },
     "The plan could not be read: {1}.": {
       "extractionState": "manual",
       "localizations": {
@@ -22713,6 +22781,23 @@
         }
       }
     },
+    "Usual bedtime": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hora habitual de acostarte"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hora habitual de deitarte"
+          }
+        }
+      }
+    },
     "Usual range {1}–{2}": {
       "extractionState": "manual",
       "localizations": {
@@ -22743,6 +22828,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Obxectivo habitual · {1} × {2}"
+          }
+        }
+      }
+    },
+    "Usual training start": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hora habitual de entrenar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hora habitual de adestrar"
+          }
+        }
+      }
+    },
+    "Usual wake time": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hora habitual de despertarte"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hora habitual de espertar"
           }
         }
       }
@@ -25280,6 +25399,40 @@
         }
       }
     },
+    "Your sleep and training times look steady.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus horarios de sueño y entrenamiento son estables."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os teus horarios de sono e adestramento son estables."
+          }
+        }
+      }
+    },
+    "Your sleep and wake times shift from night to night (regularity {1} of 100). Regular sleep and wake times go with lower long-term health risk, whatever your training.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus horas de acostarte y despertarte cambian de una noche a otra (regularidad {1} de 100). Acostarse y despertarse a horas regulares se asocia con menos riesgo para la salud a largo plazo, entrenes como entrenes."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As túas horas de deitarte e espertar cambian dunha noite a outra (regularidade {1} de 100). Deitarse e espertar a horas regulares asóciase cun menor risco para a saúde a longo prazo, adestres como adestres."
+          }
+        }
+      }
+    },
     "Your stress": {
       "extractionState": "manual",
       "localizations": {
@@ -25293,6 +25446,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "O teu estrés"
+          }
+        }
+      }
+    },
+    "Your training start time varies by about {1}. A steady time goes with training more often; no time of day is better than another.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La hora a la que empiezas a entrenar varía unos {1}. Un horario fijo se asocia con entrenar más a menudo; ninguna hora del día es mejor que otra."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A hora á que comezas a adestrar varía uns {1}. Un horario fixo asóciase con adestrar máis a miúdo; ningunha hora do día é mellor ca outra."
           }
         }
       }
@@ -25960,6 +26130,23 @@
         }
       }
     },
+    "{1} h": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} h"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} h"
+          }
+        }
+      }
+    },
     "{1} h vs week": {
       "extractionState": "manual",
       "localizations": {
@@ -25973,6 +26160,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} h vs semana"
+          }
+        }
+      }
+    },
+    "{1} h {2} min": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} h {2} min"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} h {2} min"
           }
         }
       }
@@ -26262,6 +26466,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "{1} ms o {2}"
+          }
+        }
+      }
+    },
+    "{1} of {2} hard sessions ended less than an hour before your usual bedtime. Finishing about 2 h earlier, or keeping those sessions easier, protects sleep.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} de {2} sesiones duras terminaron menos de una hora antes de tu hora habitual de acostarte. Terminar unas 2 h antes, o hacer esas sesiones más suaves, protege el sueño."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "{1} de {2} sesións duras remataron menos dunha hora antes da túa hora habitual de deitarte. Rematar unhas 2 h antes, ou facer esas sesións máis suaves, protexe o sono."
           }
         }
       }
