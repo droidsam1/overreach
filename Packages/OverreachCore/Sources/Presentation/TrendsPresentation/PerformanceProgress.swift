@@ -36,10 +36,22 @@ public struct PerformanceSeries: Identifiable, Sendable {
         case elapsedSeconds, weight, reps, heartRate
     }
 
+    public enum ResultKind: Equatable, Sendable {
+        case recorded, estimated, upperBound
+
+        public var title: String {
+            switch self {
+            case .recorded: L10n.text("Recorded")
+            case .estimated: L10n.text("Estimated")
+            case .upperBound: L10n.text("Time upper bound")
+            }
+        }
+    }
+
     public let id: String
     public let title: String
     public let unit: Unit
-    public let isEstimated: Bool
+    public let resultKind: ResultKind
     public let points: [PerformancePoint]
     public let best: PerformancePoint?
     public internal(set) var comparison: String
@@ -77,7 +89,7 @@ struct PerformanceProgress {
             guard !nearby.isEmpty else { return [measured] }
             let bound = makeSeries(
                 "\(kind.rawValue)-bound", title: L10n.format("{1} · Time upper bounds", title),
-                unit: .elapsedSeconds, points: nearby, comparesMedians: false
+                unit: .elapsedSeconds, points: nearby, resultKind: .upperBound
             )
             return [measured, bound]
         }
@@ -184,7 +196,7 @@ struct PerformanceProgress {
         var estimated = makeSeries(
             "estimated", title: L10n.text("Estimated 1RM"), unit: .weight,
             points: estimates.map { strengthPoint($0.set, value: $0.weightKg, unit: .weight) },
-            estimated: true
+            resultKind: .estimated
         )
         let observations = estimates.map {
             PerformanceTrend.Observation(
@@ -212,7 +224,7 @@ struct PerformanceProgress {
                 title: L10n.format("Most reps at {1}", format.weight(load)), in: sets, unit: .reps
             ))
         }
-        return series.filter { !$0.points.isEmpty || $0.isEstimated }
+        return series.filter { !$0.points.isEmpty || $0.resultKind == .estimated }
     }
 
     private func record(
@@ -240,7 +252,7 @@ struct PerformanceProgress {
 
     func makeSeries(
         _ id: String, title: String, unit: PerformanceSeries.Unit, points: [PerformancePoint],
-        estimated: Bool = false, comparesMedians: Bool = true, includesPrevious: Bool = false
+        resultKind: PerformanceSeries.ResultKind = .recorded, includesPrevious: Bool = false
     ) -> PerformanceSeries {
         let visible = points.filter { includesPrevious ? window.contains($0.date) : window.includes($0.date) }
             .sorted { $0.date < $1.date }
@@ -253,14 +265,14 @@ struct PerformanceProgress {
             String(summary.currentCount), String(summary.previousCount)
         )
         let comparison: String
-        if comparesMedians, let delta = summary.delta {
+        if resultKind != .upperBound, let delta = summary.delta {
             let direction = delta < 0 ? "−" : delta > 0 ? "+" : ""
             comparison = L10n.format("Median change {1} · {2}", direction + text(abs(delta), unit: unit), counts)
         } else {
             comparison = counts
         }
         return PerformanceSeries(
-            id: id, title: title, unit: unit, isEstimated: estimated, points: visible, best: best,
+            id: id, title: title, unit: unit, resultKind: resultKind, points: visible, best: best,
             comparison: comparison
         )
     }
