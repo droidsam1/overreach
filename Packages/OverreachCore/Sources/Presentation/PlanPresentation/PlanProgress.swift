@@ -106,11 +106,56 @@ extension PlanModel {
     /// This week's sessions and the block's week, for the top of Plan. `nil` without a plan.
     public var progress: PlanProgress? { PlanProgress.make(weekProgress) }
 
+    public var completedTrainingCalendarRows: [CompletedTrainingCalendarRow] {
+        let now = now
+        let runs = completedCalendarRuns(through: now)
+        let days = Set(weekProgress(through: now, runs: runs)?.days.map(\.day) ?? [])
+        let style = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).day().month(.abbreviated).year()
+
+        let strength = weekSessions.filter { $0.isCompleted(through: now) }.map { session in
+            (session.startedAt, CompletedTrainingCalendarRow(
+                id: "strength:\(session.id)", title: session.name,
+                date: session.startedAt.formatted(style), isRun: false
+            ))
+        }
+        let running = runs.map { run in
+            (run.startedAt, CompletedTrainingCalendarRow(
+                id: "run:\(run.source.rawValue):\(run.id)", title: run.name ?? L10n.text("Run"),
+                date: run.startedAt.formatted(style), isRun: true
+            ))
+        }
+        return (strength + running)
+            .filter { days.contains(CalendarDay($0.0, calendar: calendar)) }
+            .sorted { $0.0 > $1.0 }
+            .map { $0.1 }
+    }
+
+    private func completedCalendarRuns(through now: Date) -> [RunActivity] {
+        let linked = profile.goal?.scheduledRuns.filter { $0.purpose != .rest && !$0.isPostponed }
+            .compactMap(\.completion) ?? []
+        let missing = linked.filter { completion in !recentRuns.contains(where: { completion.matches($0) }) }
+        let snapshots = missing.map { completion in
+            RunActivity(
+                id: completion.activityID, source: completion.source, startedAt: completion.startedAt,
+                durationSeconds: completion.durationSeconds, distanceMeters: completion.distanceMeters ?? 0
+            )
+        }
+        return (recentRuns + snapshots).filter { run in
+            run.durationSeconds.isFinite && run.durationSeconds >= 0
+                && run.startedAt.addingTimeInterval(run.durationSeconds) <= now
+        }
+    }
+
     private var weekProgress: WeekProgress? {
+        let now = now
+        return weekProgress(through: now, runs: completedCalendarRuns(through: now))
+    }
+
+    private func weekProgress(through now: Date, runs: [RunActivity]) -> WeekProgress? {
         let goal = profile.goal.flatMap { $0.kind == .hybrid ? $0 : nil }
         return WeekProgress.make(
             .init(strength: goal?.scheduledStrength ?? [], runs: goal?.scheduledRuns ?? [],
-                  sessions: weekSessions, recordedRuns: recentRuns, restDays: profile.restDays,
+                  sessions: weekSessions, recordedRuns: runs, restDays: profile.restDays,
                   currentBlock: currentBlock),
             now: now, calendar: calendar
         )

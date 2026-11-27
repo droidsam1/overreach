@@ -3401,6 +3401,23 @@
         }
       }
     },
+    "Completed this week": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completado esta semana"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completado esta semana"
+          }
+        }
+      }
+    },
     "Conditions": {
       "extractionState": "manual",
       "localizations": {
@@ -15450,23 +15467,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carga recente"
-          }
-        }
-      }
-    },
-    "Recent recorded runs": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Carreras registradas recientes"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Carreiras rexistradas recentes"
           }
         }
       }

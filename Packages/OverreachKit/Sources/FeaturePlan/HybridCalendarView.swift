@@ -11,6 +11,7 @@ struct HybridCalendarView: View {
     init(model: PlanModel) { self.model = model }
 
     var body: some View {
+        let completedTraining = model.completedTrainingCalendarRows
         ScrollView {
             LazyVStack(alignment: .leading, spacing: Spacing.medium) {
                 if let message = model.errorMessage {
@@ -33,14 +34,14 @@ struct HybridCalendarView: View {
                         rows(model.upcomingCalendarRows)
                     }
                 }
-                if !model.recordedRunCalendarRows.isEmpty {
+                if !completedTraining.isEmpty {
                     Card {
                         VStack(alignment: .leading, spacing: Spacing.small) {
-                            SectionHeader(Text("Recent recorded runs"))
-                            ForEach(model.recordedRunCalendarRows) { run in
+                            SectionHeader(Text("Completed this week"))
+                            ForEach(completedTraining) { session in
                                 CalendarRowLabel(
-                                    title: run.title, date: run.date, status: run.status,
-                                    symbol: "figure.run", isRest: false
+                                    title: session.title, date: session.date, status: nil,
+                                    symbol: session.symbol, isRest: false
                                 )
                             }
                         }
