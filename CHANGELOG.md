@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Recovery shows a "Sleep and training times" card from the last 28 days: usual bedtime, wake time and training
+  start, and only the observations the timing analysis returns, each with its evidence level. It appears after a
+  week of nights or five sessions and never changes load, readiness or the plan (#347).
 - Sleep regularity now uses a Sleep Regularity Index built from bed and wake times of consecutive nights (or the
   sleep-midpoint spread when nights have gaps) instead of bedtime spread alone, so shifting wake times count and a
   weekend-only lie-in stays social jetlag (#351).

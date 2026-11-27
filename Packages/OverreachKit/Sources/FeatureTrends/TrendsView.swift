@@ -188,6 +188,7 @@ private struct RecoveryDetail: View {
                         ReadingCard(reading: reading)
                     }
                 }
+                if let timing = model.sleepTiming { SleepTimingCardView(card: timing) }
                 if model.showsRecoveryTrends { TrendSection(model: model, charts: model.recoveryCharts) }
             }
             .padding(Spacing.medium)
@@ -221,6 +222,32 @@ private struct ReadingCard: View {
                     }
                     .font(.subheadline)
                 }
+            }
+        }
+    }
+}
+
+private struct SleepTimingCardView: View {
+    let card: SleepTimingCard
+
+    var body: some View {
+        Card {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                Text("Sleep and training times").font(.headline).accessibilityAddTraits(.isHeader)
+                ForEach(card.rows) { row in
+                    LabeledContent(row.label, value: row.value).font(.subheadline)
+                }
+                if let summary = card.summary {
+                    Text(summary).font(.subheadline).foregroundStyle(.secondary)
+                }
+                ForEach(card.observations) { observation in
+                    VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                        Text(observation.text).font(.subheadline)
+                        Text(observation.evidenceText).font(.footnote).foregroundStyle(.secondary)
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+                Text(card.footnote).font(.footnote).foregroundStyle(.secondary)
             }
         }
     }

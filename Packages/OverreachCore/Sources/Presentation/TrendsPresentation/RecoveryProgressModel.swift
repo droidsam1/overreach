@@ -19,6 +19,8 @@ public final class RecoveryProgressModel {
     }
 
     public private(set) var readings: [RecoveryReading] = []
+    /// Usual sleep and training times with their observations; `nil` until there is enough data (ADR-0045).
+    public private(set) var sleepTiming: SleepTimingCard?
     public private(set) var loadRows: [RecentLoadRow] = []
     public private(set) var weeklyLoad: WeeklyLoadReading?
     /// The interval of the trend charts, shared by the Recovery and Recent load details.
@@ -223,9 +225,10 @@ public final class RecoveryProgressModel {
     public var showsConnectGarmin: Bool {
         garmin != nil && !isGarminConnected && hasLoaded && (wearsGarmin || hasNoReadings)
     }
-    /// The Recovery row needs at least one reading (ADR-0041, rule 6).
+    /// The Recovery row needs at least one reading (ADR-0041, rule 6), or enough nights or sessions for timing.
     public var showsRecovery: Bool {
-        showsRecoveryTrends || SectionAvailability.recovery(readings: readings.filter(\.isAvailable).count)
+        showsRecoveryTrends || sleepTiming != nil
+            || SectionAvailability.recovery(readings: readings.filter(\.isAvailable).count)
     }
     /// Recent load needs something logged to compare: a session, a run or everyday movement.
     public var showsRecentLoad: Bool {
@@ -324,6 +327,13 @@ public final class RecoveryProgressModel {
         ).values.max() ?? 0
         readings = RecoveryReadings(calendar: calendar, format: format)
             .readings(readiness: readiness, history: record.metrics, today: today)
+        sleepTiming = SleepTimingCard(
+            SleepTrainingTiming.report(
+                metrics: snapshot.metrics.value, sessions: record.sessions, runs: runs, recordings: record.recordings,
+                now: now, calendar: calendar
+            ),
+            format: format
+        )
         loadRows = RecentLoad(calendar: calendar, format: format).rows(record: record, today: today)
         weeklyLoad = profile.flatMap {
             record.weeklyLoad(profile: $0, today: today, calendar: calendar)

@@ -73,6 +73,29 @@ public enum CircadianTiming {
         public var hardSessions: Int
         public var hardSessionsNearBed: Int
         public var insights: [Insight]
+
+        public init(
+            nights: Int = 0, usualBedtime: Double? = nil, usualWake: Double? = nil, bedtimeSpread: Double? = nil,
+            wakeSpread: Double? = nil, midpointSpread: Double? = nil, regularityIndex: Double? = nil,
+            weekendShift: Double? = nil, sessions: Int = 0, usualTrainingStart: Double? = nil,
+            trainingSpread: Double? = nil, hardSessions: Int = 0, hardSessionsNearBed: Int = 0,
+            insights: [Insight] = []
+        ) {
+            self.nights = nights
+            self.usualBedtime = usualBedtime
+            self.usualWake = usualWake
+            self.bedtimeSpread = bedtimeSpread
+            self.wakeSpread = wakeSpread
+            self.midpointSpread = midpointSpread
+            self.regularityIndex = regularityIndex
+            self.weekendShift = weekendShift
+            self.sessions = sessions
+            self.usualTrainingStart = usualTrainingStart
+            self.trainingSpread = trainingSpread
+            self.hardSessions = hardSessions
+            self.hardSessionsNearBed = hardSessionsNearBed
+            self.insights = insights
+        }
     }
 
     public enum Insight: Hashable, Sendable {

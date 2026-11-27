@@ -71,8 +71,13 @@ bed. Insights: `irregularSleep` (from the index, or the midpoint spread when nig
 regularity index below 70 (≥ 5 consecutive pairs) else 60 min midpoint spread, 60 min weekend shift, 2 h training
 spread, 60 min buffer, 25 % share. A weekend-only shift raises `socialJetlag`, not `irregularSleep`.
 
+`TrainingServices.SleepTrainingTiming.report` feeds it the last 28 days: nights from merged `DailyMetrics.sleepInterval`,
+and logged sessions, deduplicated runs and watch strength recordings not matching a logged session. Hard = session
+RPE ≥ 8, a race, or a hard training effect (the `RunCarryover` thresholds). Recovery & Progress shows it as
+`TrendsPresentation.SleepTimingCard` in the Recovery detail: usual bedtime, wake and training start, then either a
+neutral line or each observation with its evidence level. Hidden until ≥ 7 nights or ≥ 5 sessions.
+
 ## Continue from here
 
-- [#347](https://github.com/droidsam1/overreach/issues/347) — Recovery card with real data and localized texts.
-- [#348](https://github.com/droidsam1/overreach/issues/348) — AI context export.
+- [#348](https://github.com/droidsam1/overreach/issues/348) — AI context export; call `SleepTrainingTiming.report`.
 - [#349](https://github.com/droidsam1/overreach/issues/349) — Validate the thresholds on real histories.
