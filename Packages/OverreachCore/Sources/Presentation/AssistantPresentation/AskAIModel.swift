@@ -179,6 +179,9 @@ public final class AskAIModel {
         context?.muscleBalance = muscleBalance(
             record: record, profile: profile, runs: runResolution.unambiguousRuns, now: now
         )
+        context?.sleepTrainingTiming = ContextPack.SleepTrainingTimingSummary(
+            snapshot.sleepTrainingTiming(resolvedRuns: runResolution.unambiguousRuns, now: now, calendar: calendar)
+        )
         exportSelection()
     }
 

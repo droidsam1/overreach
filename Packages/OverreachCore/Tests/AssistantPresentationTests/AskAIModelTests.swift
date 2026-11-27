@@ -127,12 +127,63 @@ struct AskAIModelTests {
         #expect(model.errorMessage == "Could not prepare your data. Try again.")
     }
 
+    @Test func timingFromMergedSleepWindowsRequiresHealthOptIn() async throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .gmt
+        let now = self.now
+        let today = CalendarDay(now, calendar: calendar)
+        let nights = (1...8).map { daysAgo -> DailyMetrics in
+            let day = today.adding(days: -daysAgo, calendar: calendar)
+            let midnight = day.startDate(in: calendar)
+            var metrics = DailyMetrics(day: day, sources: [.garmin])
+            metrics.sleepSeconds = 8 * 3_600
+            metrics.sleepStart = midnight.addingTimeInterval(-3_600)
+            metrics.sleepEnd = midnight.addingTimeInterval(7 * 3_600)
+            return metrics
+        }
+        let store = TestStore()
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let model = AskAIModel(
+            workouts: store, exercises: store, progression: store, profiles: store, routines: store,
+            sources: [ExportSleepSource(nights: nights)], clock: { now }, calendar: calendar, directory: directory
+        )
+        await model.prepare()
+        let url = try #require(model.fileURL)
+        let withoutHealth = try ContextMessage.decode(Data(contentsOf: url))
+        #expect(withoutHealth.sleepTrainingTiming == nil)
+        model.setIncludesHealth(true)
+        let withHealth = try ContextMessage.decode(Data(contentsOf: url))
+        let timing = try #require(withHealth.sleepTrainingTiming)
+        #expect(withHealth.version == 1)
+        #expect(timing.windowDays == 28)
+        #expect(timing.nights == 8)
+        #expect(timing.usualBedtimeMinutesAfterMidnight.map { abs($0 - 1_380) < 0.01 } == true)
+        #expect(timing.usualWakeMinutesAfterMidnight.map { abs($0 - 420) < 0.01 } == true)
+        #expect(timing.usualTrainingStartMinutesAfterMidnight == nil)
+        model.setIncludesHealth(false)
+        let redacted = try ContextMessage.decode(Data(contentsOf: url))
+        #expect(redacted.sleepTrainingTiming == nil)
+    }
+
     @Test func optionsAreNamed() {
         let model = makeModel()
         #expect(model.periodOptions.map(\.value) == ContextPeriod.allCases)
         #expect(model.periodOptions.allSatisfy { !$0.name.isEmpty })
         #expect(model.requestOptions.count == StarterRequest.allCases.count)
     }
+}
+
+private struct ExportSleepSource: MetricsSource {
+    let nights: [DailyMetrics]
+    let kind: DataSourceKind = .garmin
+
+    func isAvailable() async -> Bool { true }
+    func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics] {
+        nights.filter { range.contains($0.day) }
+    }
+    func runs(from start: Date, to end: Date) async throws -> [RunActivity] { [] }
 }
 
 private struct ExportRunSource: MetricsSource {
