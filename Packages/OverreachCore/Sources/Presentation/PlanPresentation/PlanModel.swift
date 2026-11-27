@@ -93,10 +93,9 @@ public final class PlanModel {
     public private(set) var muscleBalanceRows: [MuscleBalanceRow] = []
     private var balanceDismissalScope: String?
     private let dismissals: MuscleBalanceDismissals
-    private let showsMuscleBalance: Bool
 
     public var specializationOptions: [Option<MuscleGroup>] {
-        guard showsMuscleBalance, currentBlock?.isDeclared == true else { return [] }
+        guard currentBlock?.isDeclared == true else { return [] }
         return MuscleGroup.allCases.filter { !$0.isLegacyAggregate && $0 != .core && $0 != .forearms }
             .map { Option(value: $0, name: $0.displayName) }
     }
@@ -139,8 +138,7 @@ public final class PlanModel {
         clock: @escaping @Sendable () -> Date = { Date() },
         calendar: Calendar = .current, runSources: [any MetricsSource] = [],
         recordedStrength: (any RecordedStrengthSource)? = nil,
-        balanceDismissals: MuscleBalanceDismissals = .init(),
-        showsMuscleBalance: Bool = MuscleBalanceAudit.isReleased
+        balanceDismissals: MuscleBalanceDismissals = .init()
     ) {
         self.profiles = profiles
         self.workouts = workouts
@@ -152,7 +150,6 @@ public final class PlanModel {
         self.runSources = runSources
         self.recordedStrength = recordedStrength
         self.dismissals = balanceDismissals
-        self.showsMuscleBalance = showsMuscleBalance
         targetDate = clock().addingTimeInterval(Self.defaultTargetWeeks * 7 * 86_400)
         runningDraft = RunningPlanDraft(goal: nil)
     }
@@ -532,23 +529,21 @@ extension PlanModel {
         }
     }
 
-    /// Saves the setting change behind the lift's next step (after the user confirmed `LiftChange`).
     private func updateMuscleBalance(
         block: TrainingBlock?, routines: [Routine], exercises: [UUID: Exercise], settings: [UUID: ProgressionSettings]
     ) {
         muscleBalanceRows = []
         balanceDismissalScope = nil
-        guard showsMuscleBalance, let block, block.isDeclared else { return }
+        guard let block, block.isDeclared else { return }
         let scope = "plan.\(block.start)"
         balanceDismissalScope = scope
-        muscleBalanceRows = dismissals.visible(
-            MuscleBalance.findings(
-                plan: block, routines: routines, exercises: exercises, exerciseSettings: settings, profile: profile
-            ).map { MuscleBalanceRow($0) },
-            in: scope
+        let findings = MuscleBalance.findings(
+            plan: block, routines: routines, exercises: exercises, exerciseSettings: settings, profile: profile
         )
+        muscleBalanceRows = dismissals.visible(MuscleBalanceAudit.rows(for: findings), in: scope)
     }
 
+    /// Saves the setting change behind the lift's next step (after the user confirmed `LiftChange`).
     public func applyNextStep(for exerciseID: UUID) async {
         guard !isApplyingLiftChange, !changedLifts.contains(exerciseID),
               let lift = stalledLifts.first(where: { $0.exerciseID == exerciseID }),

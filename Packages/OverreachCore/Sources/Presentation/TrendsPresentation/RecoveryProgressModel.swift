@@ -285,10 +285,10 @@ public final class RecoveryProgressModel {
         let record = snapshot.record
         let runs = RunDeduplication.resolve(snapshot.runOriginals, choices: runChoices()).unambiguousRuns
             .filter { $0.startedAt <= now }
-        if MuscleBalanceAudit.isReleased && !snapshot.localReadFailed {
+        if !snapshot.localReadFailed {
             let findings = record.muscleBalance(profile: profile, resolvedRuns: runs, now: now, calendar: calendar)
             muscleBalanceRows = balanceDismissals.visible(
-                findings.map { MuscleBalanceRow($0, format: format) }, in: MuscleBalanceAudit.historyScope
+                MuscleBalanceAudit.rows(for: findings, format: format), in: MuscleBalanceAudit.historyScope
             )
         } else {
             muscleBalanceRows = []
