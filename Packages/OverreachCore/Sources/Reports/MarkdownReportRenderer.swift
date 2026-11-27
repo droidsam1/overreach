@@ -13,6 +13,7 @@ public enum MarkdownReportRenderer {
             athleteContext(report),
             today(report),
             dailyTrends(report),
+            sleepTrainingTiming(report.sleepTrainingTiming),
             sessions(report),
             muscleBalance(report),
             runs(report, calendar: calendar),

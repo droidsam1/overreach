@@ -328,10 +328,7 @@ public final class RecoveryProgressModel {
         readings = RecoveryReadings(calendar: calendar, format: format)
             .readings(readiness: readiness, history: record.metrics, today: today)
         sleepTiming = SleepTimingCard(
-            SleepTrainingTiming.report(
-                metrics: snapshot.metrics.value, sessions: record.sessions, runs: runs, recordings: record.recordings,
-                now: now, calendar: calendar
-            ),
+            snapshot.sleepTrainingTiming(resolvedRuns: runs, now: now, calendar: calendar),
             format: format
         )
         loadRows = RecentLoad(calendar: calendar, format: format).rows(record: record, today: today)

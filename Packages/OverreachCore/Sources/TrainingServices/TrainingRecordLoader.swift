@@ -48,6 +48,15 @@ public struct TrainingRecordLoader: Sendable {
         public let settingsFailed: Bool
         public let localReadFailed: Bool
 
+        public func sleepTrainingTiming(
+            resolvedRuns: [RunActivity], now: Date, calendar: Calendar = .current
+        ) -> CircadianTiming.Report {
+            SleepTrainingTiming.report(
+                metrics: metrics.value, sessions: record.sessions, runs: resolvedRuns,
+                recordings: record.recordings, now: now, calendar: calendar
+            )
+        }
+
         public func assessment(
             profile: AthleteProfile?, now: Date, settings: ReadinessRules.Settings = .init(),
             calendar: Calendar = .current
