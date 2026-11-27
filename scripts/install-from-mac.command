@@ -77,9 +77,9 @@ fi
 if [ "$(printf '%s\n' "$PERSONAL" | grep -c . || true)" = "1" ]; then
     TEAM_LINE="$PERSONAL"
 else
-    # Several teams (e.g. a work account): never pick one silently.
+    # Several teams: never pick one silently.
     CHOICES="$(printf '%s\n' "$TEAMS" | awk -F'\t' '{ printf "%s\"%s (%s)%s\"", sep, $2, $1, ($3 == "free" ? " · personal" : ""); sep = ", " }')"
-    PICKED="$(osascript -e "choose from list {$CHOICES} with title \"Overreach\" with prompt \"¿Con qué cuenta firmo la app? Elige tu Apple ID personal, no la de la empresa.\"" 2>/dev/null || true)"
+    PICKED="$(osascript -e "choose from list {$CHOICES} with title \"Overreach\" with prompt \"¿Con qué cuenta firmo la app?\"" 2>/dev/null || true)"
     [ -n "$PICKED" ] && [ "$PICKED" != "false" ] || fail "Cancelado."
     TEAM_ID="$(printf '%s' "$PICKED" | sed -E 's/.*\(([A-Z0-9]+)\).*/\1/')"
     TEAM_LINE="$(printf '%s\n' "$TEAMS" | awk -F'\t' -v id="$TEAM_ID" '$1 == id')"
