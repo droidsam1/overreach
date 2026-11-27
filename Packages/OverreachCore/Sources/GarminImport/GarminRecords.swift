@@ -206,15 +206,3 @@ public struct GarminActivity: Hashable, Sendable {
         return typeKey.contains("walk") || typeKey.contains("hik")
     }
 }
-
-/// A Garmin walking or hiking activity, kept with its activity id so a later sync replaces it instead of adding it
-/// twice.
-public struct GarminWalk: Identifiable, Hashable, Codable, Sendable {
-    public var id: String
-    public var walk: WalkBout
-
-    public init(id: String, walk: WalkBout) {
-        self.id = id
-        self.walk = walk
-    }
-}

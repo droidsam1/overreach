@@ -27,6 +27,7 @@ public struct BackupDocument: Hashable, Codable, Sendable {
     public var profile: AthleteProfile
     public var progressionSettings: [ProgressionSettingsEntry]
     public var routines: [Routine]
+    public var garmin: GarminBackup?
 
     public init(
         formatVersion: Int = BackupDocument.currentFormatVersion,
@@ -37,7 +38,8 @@ public struct BackupDocument: Hashable, Codable, Sendable {
         checkIns: [CheckIn] = [],
         profile: AthleteProfile = AthleteProfile(),
         progressionSettings: [ProgressionSettingsEntry] = [],
-        routines: [Routine] = []
+        routines: [Routine] = [],
+        garmin: GarminBackup? = nil
     ) {
         self.formatVersion = formatVersion
         self.createdAt = createdAt
@@ -48,11 +50,12 @@ public struct BackupDocument: Hashable, Codable, Sendable {
         self.profile = profile
         self.progressionSettings = progressionSettings
         self.routines = routines
+        self.garmin = garmin
     }
 
     private enum CodingKeys: String, CodingKey {
         case formatVersion, createdAt, appVersion, sessions, exercises, checkIns, profile, progressionSettings
-        case routines
+        case routines, garmin
     }
 
     /// Tolerant decoding: sections added in later versions fall back to empty, so old backups keep loading.
@@ -69,7 +72,8 @@ public struct BackupDocument: Hashable, Codable, Sendable {
             progressionSettings: try container.decodeIfPresent(
                 [ProgressionSettingsEntry].self, forKey: .progressionSettings
             ) ?? [],
-            routines: try container.decodeIfPresent([Routine].self, forKey: .routines) ?? []
+            routines: try container.decodeIfPresent([Routine].self, forKey: .routines) ?? [],
+            garmin: try container.decodeIfPresent(GarminBackup.self, forKey: .garmin)
         )
     }
 
@@ -79,7 +83,9 @@ public struct BackupDocument: Hashable, Codable, Sendable {
             sessions: sessions.count,
             exercises: exercises.count,
             checkIns: checkIns.count,
-            progressionSettings: progressionSettings.count
+            progressionSettings: progressionSettings.count,
+            garminActivities: garmin?.activityCount ?? 0,
+            garminMetricDays: garmin?.metrics.count ?? 0
         )
     }
 }
@@ -90,13 +96,22 @@ public struct BackupSummary: Hashable, Sendable {
     public var exercises: Int
     public var checkIns: Int
     public var progressionSettings: Int
+    public var garminActivities: Int
+    public var garminMetricDays: Int
 
-    public init(createdAt: Date, sessions: Int, exercises: Int, checkIns: Int, progressionSettings: Int) {
+    public var hasGarminData: Bool { garminActivities > 0 || garminMetricDays > 0 }
+
+    public init(
+        createdAt: Date, sessions: Int, exercises: Int, checkIns: Int, progressionSettings: Int,
+        garminActivities: Int = 0, garminMetricDays: Int = 0
+    ) {
         self.createdAt = createdAt
         self.sessions = sessions
         self.exercises = exercises
         self.checkIns = checkIns
         self.progressionSettings = progressionSettings
+        self.garminActivities = garminActivities
+        self.garminMetricDays = garminMetricDays
     }
 }
 
@@ -109,8 +124,7 @@ public enum BackupError: Error, Equatable, Sendable {
     case notConfigured
     /// The chosen folder can no longer be accessed (moved, deleted or permission lost).
     case folderUnavailable
-    /// This device has no sessions but the folder holds a backup with sessions: writing would replace it with an
-    /// empty one (typically right after a reinstall). Restore first.
+    /// The folder holds sessions or Garmin data absent from this device, typically after a reinstall.
     case wouldOverwriteWithEmpty
 }
 

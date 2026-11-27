@@ -90,7 +90,7 @@ public struct GarminCache: Codable, Hashable, Sendable {
         self.metrics = metrics
     }
 
-    /// The cache with `range` replaced by a fresh sync. Activities are merged by id, the fresh copy winning.
+    /// Merge the records returned by a sync. Fresh records win and days with no response keep their cached values.
     func merging(
         _ metrics: [DailyMetrics], runs: [RunActivity], strength: [RecordedStrengthActivity], walks: [GarminWalk] = [],
         range: ClosedRange<CalendarDay>, at date: Date, calendar: Calendar
@@ -98,17 +98,10 @@ public struct GarminCache: Codable, Hashable, Sendable {
         let oldest = range.upperBound.adding(days: -Self.retentionDays, calendar: calendar)
         let oldestDate = oldest.startDate(in: calendar)
         var merged = self
-        merged.metrics = (self.metrics.filter { !range.contains($0.day) } + metrics)
+        merged.metrics = Self.merge(self.metrics, metrics, id: \.day)
             .filter { $0.day >= oldest }
             .sorted { $0.day < $1.day }
-        // A fresh activity list has no laps: keep the ones fetched before.
-        let knownLaps = Dictionary(self.runs.compactMap { run in run.laps.map { (run.id, $0) } }) { first, _ in first }
-        let runs = runs.map { run in
-            var run = run
-            if run.laps == nil { run.laps = knownLaps[run.id] }
-            return run
-        }
-        merged.runs = Self.merge(self.runs, runs, id: \.id).filter { $0.startedAt >= oldestDate }
+        merged.runs = Self.mergeRuns(self.runs, runs).filter { $0.startedAt >= oldestDate }
         merged.strength = Self.merge(self.strength, strength, id: \.id).filter { $0.startedAt >= oldestDate }
         merged.walks = Self.merge(self.walks ?? [], walks, id: \.id).filter { $0.walk.start >= oldestDate }
         merged.refreshedRunPerformanceMetadata = true
@@ -117,33 +110,59 @@ public struct GarminCache: Codable, Hashable, Sendable {
         return merged
     }
 
-    private static func merge<T>(_ old: [T], _ new: [T], id: KeyPath<T, String>) -> [T]
-    where T: Identifiable, T.ID == String {
-        let fresh = Set(new.map { $0[keyPath: id] })
-        return old.filter { !fresh.contains($0[keyPath: id]) } + new
+    var backup: GarminBackup {
+        GarminBackup(metrics: metrics, runs: runs, strength: strength, walks: walks ?? [])
+    }
+
+    func restoring(_ backup: GarminBackup) -> GarminCache {
+        var merged = self
+        // The current cache can contain more recent sync results than the backup.
+        merged.metrics = Self.merge(backup.metrics, metrics, id: \.day).sorted { $0.day < $1.day }
+        merged.runs = Self.mergeRuns(backup.runs.filter { $0.source == .garmin }, runs)
+        merged.strength = Self.merge(backup.strength.filter { $0.source == .garmin }, strength, id: \.id)
+        if !backup.walks.isEmpty {
+            merged.walks = Self.merge(backup.walks.filter { $0.walk.source == .garmin }, walks ?? [], id: \.id)
+        }
+        return merged
+    }
+
+    private static func mergeRuns(_ previous: [RunActivity], _ latest: [RunActivity]) -> [RunActivity] {
+        // A fresh list has no laps. Keep the ones already fetched for the activity.
+        let knownLaps = Dictionary(previous.compactMap { run in run.laps.map { (run.id, $0) } }) { first, _ in first }
+        let enriched = latest.map { run in
+            var run = run
+            if run.laps == nil { run.laps = knownLaps[run.id] }
+            return run
+        }
+        return Self.merge(previous, enriched, id: \.id)
+    }
+
+    private static func merge<T, ID: Hashable>(_ old: [T], _ new: [T], id: KeyPath<T, ID>) -> [T] {
+        unique(old + new, id: id)
     }
 
     /// Older caches may already contain repeated activity IDs from overlapping pages.
     mutating func removeDuplicateActivities() {
-        runs = Self.unique(runs)
-        strength = Self.unique(strength)
-        walks = walks.map(Self.unique)
+        runs = Self.unique(runs, id: \.id)
+        strength = Self.unique(strength, id: \.id)
+        walks = walks.map { Self.unique($0, id: \.id) }
     }
 
-    private static func unique<T: Identifiable>(_ records: [T]) -> [T] {
-        var seen: Set<T.ID> = []
-        return Array(records.reversed().filter { seen.insert($0.id).inserted }.reversed())
+    private static func unique<T, ID: Hashable>(_ records: [T], id: KeyPath<T, ID>) -> [T] {
+        var seen: Set<ID> = []
+        return Array(records.reversed().filter { seen.insert($0[keyPath: id]).inserted }.reversed())
     }
 }
 
 public protocol GarminCacheStore: Sendable {
     func load() async -> GarminCache?
-    func save(_ cache: GarminCache) async
+    func save(_ cache: GarminCache) async throws
 }
 
 /// The Garmin account and the Garmin metrics source in one place (ADR-0022). Pure Swift: the iPhone supplies the
 /// Keychain, URLSession and a file; tests supply fakes.
-public actor GarminService: GarminAccount, MetricsSource, ActivitySource, RecordedStrengthSource, RunningTrackSource {
+public actor GarminService: GarminAccount, MetricsSource, ActivitySource, RecordedStrengthSource, RunningTrackSource,
+    GarminBackupStore {
     public nonisolated let kind: DataSourceKind = .garmin
     /// A sync older than this runs again when the app reads metrics (launch, foreground, Today).
     public static let autoSyncInterval: TimeInterval = 30 * 60
@@ -157,6 +176,7 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
     private let calendar: Calendar
     private var cache: GarminCache?
     private var running: Task<GarminSyncSummary, any Error>?
+    private var cacheWrite: Task<Void, any Error>?
 
     public init(
         transport: any GarminTransport,
@@ -200,9 +220,11 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
     ) async throws(GarminAccountError) -> GarminSyncSummary {
         // One sync at a time: a second caller waits for the first instead of asking Garmin twice.
         if let running { return try await syncResult(running) }
-        let task = Task { try await self.performSync(progress: progress) }
+        let task = Task {
+            defer { running = nil }
+            return try await performSync(progress: progress)
+        }
         running = task
-        defer { running = nil }
         return try await syncResult(task)
     }
 
@@ -226,8 +248,8 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
     /// Available while a key is saved or anything was imported before (imported data stays after disconnecting).
     public func isAvailable() async -> Bool {
         if await secrets.loadKey() != nil { return true }
-        let cache = await loadCache()
-        return !cache.metrics.isEmpty || !cache.runs.isEmpty
+        let snapshot = await backupSnapshot()
+        return !snapshot.isEmpty
     }
 
     public func dailyMetrics(in range: ClosedRange<CalendarDay>) async throws -> [DailyMetrics] {
@@ -270,6 +292,33 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
         return days.sorted().map { day in
             DailyActivity(day: day, steps: steps[day], walks: (walks[day] ?? []).sorted { $0.start < $1.start })
         }
+    }
+
+    // MARK: Backup
+
+    public func backupSnapshot() async -> GarminBackup {
+        await loadCache().backup
+    }
+
+    public func restoreBackup(_ backup: GarminBackup) async throws {
+        _ = await loadCache()
+        // A sync can be working from an older snapshot. Apply the backup after it publishes its result.
+        while let running {
+            _ = try? await running.value
+        }
+        try await saveCache((cache ?? GarminCache()).restoring(backup))
+    }
+
+    private func saveCache(_ snapshot: GarminCache) async throws {
+        cache = snapshot
+        let previous = cacheWrite
+        let store = cacheStore
+        let write = Task {
+            _ = try? await previous?.value
+            try await store.save(snapshot)
+        }
+        cacheWrite = write
+        try await write.value
     }
 
     // MARK: Sync
@@ -370,8 +419,8 @@ public actor GarminService: GarminAccount, MetricsSource, ActivitySource, Record
         if !enrichment.reachedRateLimit {
             updated.runningTracks = await withRunningTracks(updated, today: today, key: key.value)
         }
-        self.cache = updated
-        await cacheStore.save(updated)
+        // Reads can still use the in-memory sync result if this cache write fails.
+        try? await saveCache(updated)
         await secrets.saveToken(await client.currentToken)
         return GarminSyncSummary(
             days: metrics.count,

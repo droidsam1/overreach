@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Backups include imported Garmin activities and daily metrics for offline restore (#324).
 - AI context exports include usual sleep and training times, timing variations and evidence-linked observations
   when health data sharing is enabled (#348).
 - Recovery shows a "Sleep and training times" card from the last 28 days: usual bedtime, wake time and training
