@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- Sleep regularity now uses a Sleep Regularity Index built from bed and wake times of consecutive nights (or the
+  sleep-midpoint spread when nights have gaps) instead of bedtime spread alone, so shifting wake times count and a
+  weekend-only lie-in stays social jetlag (#351).
 - AI plan previews show weekly session counts, flag routines over their time budget, and flag blocks with high weekly
   volume. Per-exercise rest intervals from the plan drive the workout timer, and marked deloads are checked against
   the previous block. The next-block request shares the reply template and optional availability with the context. Health data

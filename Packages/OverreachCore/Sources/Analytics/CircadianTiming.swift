@@ -3,7 +3,8 @@ import Foundation
 
 /// Evidence behind the timing insights (ADR-0045, `docs/evidence.md` → Circadian timing).
 public enum CircadianEvidence {
-    /// Irregular sleep timing predicts mortality independently of duration (Windred et al. 2024, observational).
+    /// Irregular sleep timing (Sleep Regularity Index) predicts mortality independently of duration
+    /// (Windred et al. 2024, observational).
     public static let sleepRegularity = EvidenceReference(key: "sleep-regularity", level: .limited)
     /// Weekend-vs-weekday shift of the sleep midpoint: small observational associations (social jetlag).
     public static let socialJetlag = EvidenceReference(key: "social-jetlag", level: .limited)
@@ -33,8 +34,13 @@ public enum CircadianTiming {
     public struct Settings: Hashable, Sendable {
         public var minimumNights = 7
         public var minimumSessions = 5
-        /// Bedtime spread (circular SD) above which the schedule is flagged as irregular. Heuristic.
-        public var irregularBedtimeMinutes = 60.0
+        /// Sleep Regularity Index below which sleep is flagged as irregular. Heuristic: the UK Biobank median was 81
+        /// (IQR 73.8–86.3), so below 70 is roughly the least regular fifth (Windred et al. 2024).
+        public var irregularRegularityIndex = 70.0
+        /// Pairs of consecutive nights the index needs; with fewer, the midpoint spread decides.
+        public var minimumRegularityPairs = 5
+        /// Sleep-midpoint spread (circular SD) above which sleep is flagged when the index is unavailable. Heuristic.
+        public var irregularMidpointMinutes = 60.0
         /// Weekend-vs-weekday midpoint shift above which it is mentioned. Heuristic.
         public var socialJetlagMinutes = 60.0
         /// Start-time spread above which training time is called variable. Heuristic.
@@ -54,6 +60,11 @@ public enum CircadianTiming {
         public var usualWake: Double?
         public var bedtimeSpread: Double?
         public var wakeSpread: Double?
+        /// Circular SD of the sleep midpoint: moves with both bedtime and wake time.
+        public var midpointSpread: Double?
+        /// Sleep Regularity Index, −100...100: 100 = asleep and awake at the same clock minutes on consecutive days.
+        /// Built from main sleep spans only (naps and night wakings are not seen), so it reads higher than actigraphy.
+        public var regularityIndex: Double?
         /// Weekend midpoint minus weekday midpoint, in minutes. Positive = later on weekends.
         public var weekendShift: Double?
         public var sessions: Int
@@ -65,14 +76,15 @@ public enum CircadianTiming {
     }
 
     public enum Insight: Hashable, Sendable {
-        case irregularBedtime(spreadMinutes: Int)
+        /// `regularityIndex` is nil when too few consecutive nights exist and the midpoint spread decided.
+        case irregularSleep(regularityIndex: Int?, midpointSpreadMinutes: Int)
         case socialJetlag(minutes: Int)
         case variableTrainingTime(spreadMinutes: Int)
         case hardSessionsNearBed(count: Int, total: Int)
 
         public var evidence: EvidenceReference {
             switch self {
-            case .irregularBedtime: CircadianEvidence.sleepRegularity
+            case .irregularSleep: CircadianEvidence.sleepRegularity
             case .socialJetlag: CircadianEvidence.socialJetlag
             case .variableTrainingTime: CircadianEvidence.trainingTimeConsistency
             case .hardSessionsNearBed: CircadianEvidence.eveningExercise
@@ -90,6 +102,9 @@ public enum CircadianTiming {
 
         let bedtime = enough ? circularMean(bedtimes) : nil
         let bedSpread = enough ? circularSpread(bedtimes) : nil
+        let midSpread = enough ? circularSpread(valid.map { midpoint($0, calendar: calendar) }) : nil
+        let regularity =
+            enough ? regularityIndex(valid, calendar: calendar, minimumPairs: settings.minimumRegularityPairs) : nil
         let shift = enough ? weekendShift(valid, calendar: calendar) : nil
 
         let timed = sessions.filter { $0.start < $0.end }
@@ -105,8 +120,16 @@ public enum CircadianTiming {
         } ?? 0
 
         var insights: [Insight] = []
-        if let bedSpread, bedSpread > settings.irregularBedtimeMinutes {
-            insights.append(.irregularBedtime(spreadMinutes: Int(bedSpread.rounded())))
+        if let midSpread {
+            let irregular =
+                regularity.map { $0 < settings.irregularRegularityIndex }
+                ?? (midSpread > settings.irregularMidpointMinutes)
+            if irregular {
+                insights.append(
+                    .irregularSleep(
+                        regularityIndex: regularity.map { Int($0.rounded()) },
+                        midpointSpreadMinutes: Int(midSpread.rounded())))
+            }
         }
         if let shift, shift > settings.socialJetlagMinutes {
             insights.append(.socialJetlag(minutes: Int(shift.rounded())))
@@ -120,7 +143,8 @@ public enum CircadianTiming {
 
         return Report(
             nights: valid.count, usualBedtime: bedtime, usualWake: enough ? circularMean(wakes) : nil,
-            bedtimeSpread: bedSpread, wakeSpread: enough ? circularSpread(wakes) : nil, weekendShift: shift,
+            bedtimeSpread: bedSpread, wakeSpread: enough ? circularSpread(wakes) : nil, midpointSpread: midSpread,
+            regularityIndex: regularity, weekendShift: shift,
             sessions: timed.count, usualTrainingStart: enoughSessions ? circularMean(starts) : nil,
             trainingSpread: trainingSpread, hardSessions: hard.count, hardSessionsNearBed: near, insights: insights)
     }
@@ -152,17 +176,45 @@ public enum CircadianTiming {
         return (-2 * log(resultant)).squareRoot() / (2 * .pi) * 1440
     }
 
+    static func midpoint(_ span: Span, calendar: Calendar) -> Double {
+        minuteOfDay(span.start.addingTimeInterval(span.end.timeIntervalSince(span.start) / 2), calendar: calendar)
+    }
+
+    /// Sleep Regularity Index (Phillips et al. 2017) from one main sleep per day: each night is placed in the 24 h
+    /// window from noon before its wake day, and nights on consecutive wake days are compared minute by minute.
+    /// SRI = 200 × (share of minutes in the same state) − 100. Nil with fewer than `minimumPairs` consecutive pairs.
+    static func regularityIndex(_ nights: [Span], calendar: Calendar, minimumPairs: Int) -> Double? {
+        var byDay: [Date: (start: Double, end: Double)] = [:]
+        for night in nights {
+            let day = calendar.startOfDay(for: night.end)
+            guard let anchor = calendar.date(byAdding: .hour, value: -12, to: day) else { continue }
+            let start = max(0, min(1440, night.start.timeIntervalSince(anchor) / 60))
+            let end = max(0, min(1440, night.end.timeIntervalSince(anchor) / 60))
+            if let kept = byDay[day], kept.end - kept.start >= end - start { continue }
+            byDay[day] = (start, end)
+        }
+        var agreements: [Double] = []
+        for (day, first) in byDay {
+            guard let next = calendar.date(byAdding: .day, value: 1, to: day), let second = byDay[next] else {
+                continue
+            }
+            let overlap = max(0, min(first.end, second.end) - max(first.start, second.start))
+            let differing = (first.end - first.start) + (second.end - second.start) - 2 * overlap
+            agreements.append(1 - differing / 1440)
+        }
+        guard agreements.count >= minimumPairs else { return nil }
+        return 200 * agreements.reduce(0, +) / Double(agreements.count) - 100
+    }
+
     /// Mean midpoint of nights waking on Saturday/Sunday minus the rest. Free days stand in for the unknown work
     /// schedule, so this misreads shift workers.
     private static func weekendShift(_ nights: [Span], calendar: Calendar) -> Double? {
-        func midpoint(_ span: Span) -> Double {
-            minuteOfDay(span.start.addingTimeInterval(span.end.timeIntervalSince(span.start) / 2), calendar: calendar)
-        }
         func isFree(_ span: Span) -> Bool { [1, 7].contains(calendar.component(.weekday, from: span.end)) }
         let free = nights.filter(isFree)
         let work = nights.filter { !isFree($0) }
         guard free.count >= 2, work.count >= 3,
-            let freeMid = circularMean(free.map(midpoint)), let workMid = circularMean(work.map(midpoint))
+            let freeMid = circularMean(free.map { midpoint($0, calendar: calendar) }),
+            let workMid = circularMean(work.map { midpoint($0, calendar: calendar) })
         else { return nil }
         var diff = freeMid - workMid
         if diff > 720 { diff -= 1440 }
