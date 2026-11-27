@@ -57,6 +57,14 @@ public final class TodayModel {
     public let rotationFeedback: RotationFeedback
     private var rotationDecision: TodayRotationDecision?
     private var legResponseRelevant = false
+    private var liftRunContext: LiftRunContext?
+
+    private struct LiftRunContext {
+        let run: RunActivity
+        let carryover: RunCarryover.Assessment
+        let previousLegs: RotationProjection.Session?
+        let now: Date
+    }
     private var rotationSwapRoutine: Routine?
     private var nameBasedRotationRoutine: UUID?
     private var dismissedRotationDay: CalendarDay?
@@ -140,6 +148,7 @@ public final class TodayModel {
     }
 
     public var rotationExplanation: [String] {
+        if strengthInputs?.assignedRoutine != nil { return strengthRunAdvice }
         guard dismissedRotationDay != loadedDay, rotationCanBeShown else { return [] }
         return rotationDecision?.explanation ?? []
     }
@@ -509,8 +518,7 @@ public final class TodayModel {
 
     /// Alternatives to the hero: an optional run or an easy strength session.
     public var showsOtherOptions: Bool {
-        runningOption?.isOptional == true || canRequestStrengthOption || scheduledStrengthToday != nil
-            && strengthOption != nil
+        runningOption?.isOptional == true || canRequestStrengthOption || showsScheduledStrengthExample
     }
 
     /// Hides the prompt until the next load.
@@ -927,6 +935,7 @@ public final class TodayModel {
         runProgression = nil
         heroTrainingAction = .train
         rotationDecision = nil
+        liftRunContext = nil
         legResponseRelevant = false
         rotationSwapRoutine = nil
         nameBasedRotationRoutine = nil
@@ -995,8 +1004,8 @@ public final class TodayModel {
         let record = snapshot.record
         trainingReadFailed = record.runReadFailed || snapshot.sessionsFailed
         let choices = activityMatchChoices()
-        let companionStart = range.upperBound.adding(days: 1 - RunCompanionSlots.lookbackDays, calendar: calendar)
-        let since = companionStart.startDate(in: calendar)
+        let since = range.upperBound.adding(days: 1 - RunCompanionSlots.lookbackDays, calendar: calendar)
+            .startDate(in: calendar)
         let companionRuns = snapshot.runOriginals.filter {
             $0.startedAt >= since && $0.durationSeconds.isFinite && $0.durationSeconds > 0
                 && $0.startedAt.addingTimeInterval($0.durationSeconds) <= now
@@ -1048,7 +1057,6 @@ public final class TodayModel {
         tomorrowSessions = TodayDone.outlook(
             goal: goal, tomorrow: today.adding(days: 1, calendar: calendar), routines: record.routines, format: format
         )
-        let pendingRuns = activeRuns.filter { $0.completion == nil }
         let nextSlot = recentWorkouts?.planned ?? recentWorkouts?.rotation?.next
         let strengthDone = training.hasStrength
         let usesRotation = recentWorkouts?.planned == nil && assignment == nil && !strengthDone
@@ -1061,14 +1069,18 @@ public final class TodayModel {
         heroTrainingAction = trainingAction(
             strength: strengthDone ? nil : strength,
             strengthRest: resolved.postponed || (assignment != nil && assignment?.routineID == nil),
-            runs: pendingRuns, priority: goal?.effectivePriority ?? .balanced,
+            runs: activeRuns.filter { $0.completion == nil }, priority: goal?.effectivePriority ?? .balanced,
             trainedToday: training.hasTrained,
             strengthPlanned: !strengthDone && assignment?.routineID != nil
         )
-        if usesRotation, !resolved.swapped, !resolved.postponed, !restLoggedToday, strength != nil,
-           !record.runReadFailed, !snapshot.localReadFailed {
+        if !strengthDone, !restLoggedToday, !record.runReadFailed, !snapshot.localReadFailed {
             let runs = RunDeduplication.resolve(snapshot.runOriginals, choices: choices.runs).runs.map(\.activity)
-            loadRotationDecision(rotation, runs: runs, record: record, profile: profile, now: now)
+            if usesRotation, !resolved.swapped, !resolved.postponed, strength != nil, let rotation {
+                loadRotationDecision(rotation, runs: runs, record: record, profile: profile, now: now)
+            }
+            if rotationDecision == nil, !training.hasTrained || assignedRoutine != nil {
+                liftRunContext = liftRun(runs, record: record, profile: profile, now: now)
+            }
         }
         completedSessions = heroTrainingAction == .trainedToday ? TodayDone.completedSessions(
             record, plannedRuns: activeRuns, effortScale: profile?.effortScale ?? .rpe,
@@ -1081,9 +1093,10 @@ public final class TodayModel {
                             exercises: record.exercises, runs: activeRuns)
         )
         guard assignment == nil || assignedRoutine != nil,
-              readiness.level == .amber, !readiness.reasons.contains(where: \.advisesSkippingTraining),
+              readiness.level == .amber || liftRunContext != nil && readiness.level != .red,
+              !readiness.reasons.contains(where: \.advisesSkippingTraining),
               workouts != nil, !snapshot.sessionsFailed,
-              !strengthDone else { return }
+              !strengthDone, !training.hasTrained || assignedRoutine != nil else { return }
         if assignment == nil, activeRuns.contains(where: { $0.purpose == .race && $0.completion == nil }) { return }
         loadStrengthOption(
             today: today, now: now, profile: profile, assignedRoutine: assignedRoutine, snapshot: snapshot
@@ -1163,21 +1176,16 @@ public final class TodayModel {
                        exerciseIDs: session.entries.map(\.exerciseID))
     }
 
-    private func loadRotationDecision(
-        _ rotation: RotationProjection?, runs: [RunActivity], record: TrainingRecord,
-        profile: AthleteProfile?, now: Date
-    ) {
-        let today = CalendarDay(now, calendar: calendar)
-        guard case .startStrength = heroTrainingAction,
-              let rotation, let next = rotation.upcoming.first, next.day == today, next.demand != .none,
-              let run = runs.filter({
-                  let end = $0.startedAt.addingTimeInterval($0.durationSeconds)
-                  return $0.durationSeconds.isFinite && $0.durationSeconds > 0 && end <= now
-                      && end.timeIntervalSince(now) >= -RunCarryover.recentWindow
-                      && $0.startedAt >= rotation.last.day.startDate(in: calendar)
-              }).max(by: { $0.startedAt < $1.startedAt }) else { return }
-        legResponseRelevant = true
-        let legResponse = checkIn?.legResponse
+    private func liftRun(
+        _ runs: [RunActivity], record: TrainingRecord, profile: AthleteProfile?, since: Date? = nil, now: Date
+    ) -> LiftRunContext? {
+        let earliest = since ?? record.sessions.filter { $0.isCompleted(through: now) }.map(\.startedAt).max()
+        guard let run = runs.filter({ activity in
+            let end = activity.startedAt.addingTimeInterval(activity.durationSeconds)
+            return activity.durationSeconds.isFinite && activity.durationSeconds > 0 && end <= now
+                && end.timeIntervalSince(now) >= -RunCarryover.recentWindow
+                && (earliest.map { activity.startedAt >= $0 } ?? true)
+        }).max(by: { $0.startedAt < $1.startedAt }) else { return nil }
         let previous = RotationProjection.previousLegSession(
             before: run.startedAt, sessions: record.sessions, exercises: record.exercises, calendar: calendar
         )
@@ -1187,6 +1195,24 @@ public final class TodayModel {
             run: run, recentRuns: runs, checkIn: checkIn, nextSessionStart: now,
             painReport: painReports(of: goal).last { $0.matches(run) }, tag: tag
         )
+        return LiftRunContext(run: run, carryover: carryover, previousLegs: previous, now: now)
+    }
+
+    private func loadRotationDecision(
+        _ rotation: RotationProjection, runs: [RunActivity], record: TrainingRecord,
+        profile: AthleteProfile?, now: Date
+    ) {
+        let today = CalendarDay(now, calendar: calendar)
+        guard case .startStrength = heroTrainingAction,
+              let next = rotation.upcoming.first, next.day == today, next.demand != .none,
+              let context = liftRun(
+                  runs, record: record, profile: profile, since: rotation.last.day.startDate(in: calendar), now: now
+              ) else { return }
+        legResponseRelevant = true
+        let legResponse = checkIn?.legResponse
+        let run = context.run
+        let previous = context.previousLegs
+        let carryover = context.carryover
         guard let suggestion = RotationAdjustment.suggest(
             projection: rotation, carryover: carryover.level, readiness: readiness.level,
             previousLegSession: previous, runDay: CalendarDay(run.startedAt, calendar: calendar),
@@ -1373,7 +1399,7 @@ public final class TodayModel {
 
     /// Only a dated strength session gets a comparison without asking.
     public var canRequestStrengthOption: Bool {
-        strengthInputs != nil && strengthInputs?.assignedRoutine == nil
+        strengthInputs != nil && strengthInputs?.assignedRoutine == nil && !restLoggedToday
     }
 
     public var showsOptionalStrength: Bool {
@@ -1481,6 +1507,37 @@ public final class TodayModel {
         } else {
             strengthChoiceNote = nil
         }
+    }
+
+    public var showsScheduledStrengthExample: Bool {
+        scheduledStrengthToday != nil && strengthOption != nil && readiness.level == .amber
+    }
+
+    public var optionalStrengthRunAdvice: [String] {
+        showsOptionalStrength ? strengthRunAdvice : []
+    }
+
+    private var strengthRunAdvice: [String] {
+        guard !isLoading, !restLoggedToday, let day = loadedDay, let inputs = strengthInputs,
+              inputs.assignedRoutine != nil || showsOptionalStrength, let context = liftRunContext else { return [] }
+        let routine = inputs.assignedRoutine ?? inputs.plannedRoutine
+        let slot = routine.map { SessionRotation.Slot(id: $0.id.uuidString, name: $0.name) } ?? nextWorkout?.slot
+        guard let slot, let last = inputs.sessions.filter({
+            SessionRotation.slot(for: $0).id == slot.id && $0.isCompleted(through: context.now)
+        }).max(by: { $0.startedAt < $1.startedAt }) else { return [] }
+        let next = RotationProjection.Session(
+            day: day, slot: slot, demand: RotationProjection.demand(of: last, exercises: inputs.catalog)
+        )
+        guard let suggestion = RotationAdjustment.suggest(
+            projection: nil, session: next, carryover: context.carryover.level, readiness: readiness.level,
+            previousLegSession: context.previousLegs, runDay: CalendarDay(context.run.startedAt, calendar: calendar),
+            legResponse: checkIn?.legResponse, calendar: calendar
+        ) else { return [] }
+        return TodayRotationDecision(
+            suggestion: suggestion, carryover: context.carryover, next: next, partner: nil, upcoming: [],
+            run: context.run, legResponse: checkIn?.legResponse, previousLegs: context.previousLegs,
+            readiness: readiness.level, now: context.now, calendar: calendar, format: format
+        ).explanation
     }
 
     private func rebuildStrengthOption() {

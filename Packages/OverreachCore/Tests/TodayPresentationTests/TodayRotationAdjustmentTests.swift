@@ -20,15 +20,20 @@ struct TodayRotationAdjustmentTests {
     private let bench = Exercise(name: "Bench", primaryMuscles: [.chest], equipment: .barbell)
 
     private func history(
-        allHeavy: Bool = false, templates: Bool = true, torsoFirst: Bool = false
+        allHeavy: Bool = false, templates: Bool = true, torsoFirst: Bool = false,
+        variableRest: Bool = false, repeatC: Bool = false, completedToday: Bool = false
     ) -> (TestStore, [Routine]) {
         let routines = ["A", "B", "C", "D"].enumerated().map { index, name in
             let heavy = allHeavy || (torsoFirst ? index == 1 : index < 2)
             return Routine(name: name, exerciseIDs: [heavy ? squat.id : bench.id])
         }
-        let cycle = routines + routines
+        var cycle = routines + routines
+        if repeatC { cycle[cycle.count - 1] = routines[2] }
+        if completedToday { cycle.append(routines[0]) }
         let sessions = cycle.enumerated().map { index, routine in
-            let start = now.addingTimeInterval(-Double((cycle.count - index) * 2) * 86_400)
+            let baseGap = (cycle.count - index) * 2 + (variableRest && index.isMultiple(of: 2) ? 1 : 0)
+            let start = now.addingTimeInterval(index == cycle.count - 1 && completedToday
+                ? -3_600 : -Double(baseGap) * 86_400)
             return StrengthSession(
                 name: routine.name, startedAt: start, endedAt: start.addingTimeInterval(3_600),
                 entries: routine.exerciseIDs.map {
@@ -67,6 +72,54 @@ struct TodayRotationAdjustmentTests {
         )
         await model.load(now: date)
         return model
+    }
+
+    @Test func variableRestUsesRecentRunOnlyAfterRequestingStrength() async {
+        let (store, _) = history(variableRest: true)
+        let model = await load(store, hard: false, hoursSinceStart: 20)
+        #expect(model.canRequestStrengthOption)
+        #expect(model.optionalStrengthRunAdvice.isEmpty)
+
+        model.setShowsOptionalStrength(true)
+        #expect(model.optionalStrengthRunAdvice.first == "Keep A as planned.")
+        #expect(model.optionalStrengthRunAdvice.contains { $0.contains("Park run") })
+        #expect(model.rotationOffer == nil)
+        #expect(model.scheduledStrengthToday == nil)
+
+        model.setShowsOptionalStrength(false)
+        #expect(model.optionalStrengthRunAdvice.isEmpty)
+    }
+
+    @Test func repeatedSlotUsesTheAthletesChoiceWithoutReordering() async throws {
+        let (store, _) = history(repeatC: true)
+        let model = await load(store)
+        model.setShowsOptionalStrength(true)
+        let next = try #require(model.strengthChoices.first { $0.title == "B" })
+        model.chooseStrengthSession(next.id)
+
+        #expect(model.optionalStrengthRunAdvice.first?.contains("Keep B at the previous load") == true)
+        #expect(model.rotationOffer == nil)
+        #expect(try await store.profile().rotationAdjustments.isEmpty)
+    }
+
+    @Test func aCompletedLiftHidesTheOption() async {
+        let (store, _) = history(variableRest: true, completedToday: true)
+        let model = await load(store)
+        model.setShowsOptionalStrength(true)
+        #expect(!model.canRequestStrengthOption)
+        #expect(model.optionalStrengthRunAdvice.isEmpty)
+    }
+
+    @Test func aRunTodayLeavesTheStrengthSlotPending() async {
+        let (store, _) = history(variableRest: true)
+        let model = await load(store, hoursSinceStart: 2)
+        #expect(model.nextAction == .trainedToday)
+        #expect(!model.canRequestStrengthOption)
+
+        let tomorrow = now.addingTimeInterval(86_400)
+        let next = await load(store, at: tomorrow, hoursSinceStart: 2)
+        next.setShowsOptionalStrength(true)
+        #expect(next.optionalStrengthRunAdvice.first?.contains("Keep A at the previous load") == true)
     }
 
     @Test func heavyButFunctionalLegsKeepAWithAnEffortCap() async throws {

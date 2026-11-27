@@ -156,6 +156,11 @@ public struct RotationProjection: Hashable, Sendable {
         return nil
     }
 
+    public static func demand(of session: StrengthSession, exercises: [Exercise]) -> Demand {
+        let lower = Set(exercises.lazy.filter { $0.primaryMuscles.contains { $0.region == .lower } }.map(\.id))
+        return classify(session, lower: lower, settings: .init())
+    }
+
     static func classify(_ session: StrengthSession, lower: Set<UUID>, settings: Settings) -> Demand {
         let sets = session.entries.filter { lower.contains($0.exerciseID) }.flatMap(\.sets).filter(\.isWorking)
         guard !sets.isEmpty else { return .none }
