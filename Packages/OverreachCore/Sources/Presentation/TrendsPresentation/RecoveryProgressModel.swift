@@ -150,11 +150,11 @@ public final class RecoveryProgressModel {
     }
 
     public func strengthPerformance(
-        for option: StrengthPerformanceOption, source: DataSourceKind? = nil
+        for option: StrengthPerformanceOption
     ) -> [PerformanceSeries] {
         guard let inputs = performanceInputs else { return [] }
         return performance(using: inputs).strengthSeries(
-            option, source: source, profile: inputs.profile, now: inputs.now, calendar: calendar
+            option, profile: inputs.profile, now: inputs.now, calendar: calendar
         )
     }
 

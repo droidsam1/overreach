@@ -29,6 +29,21 @@ public struct PerformancePoint: Identifiable, Sendable {
     public let value: Double
     public let valueText: String
     public let detail: String
+    let source: DataSourceKind?
+
+    public var sourceName: String? { source?.displayName }
+
+    init(
+        id: PerformanceSession, date: Date, value: Double, valueText: String, detail: String,
+        source: DataSourceKind? = nil
+    ) {
+        self.id = id
+        self.date = date
+        self.value = value
+        self.valueText = valueText
+        self.detail = detail
+        self.source = source
+    }
 }
 
 public struct PerformanceSeries: Identifiable, Sendable {
@@ -57,14 +72,24 @@ public struct PerformanceSeries: Identifiable, Sendable {
     public internal(set) var comparison: String
     public var trend: String?
     public var context: String?
+    let sources: Set<DataSourceKind>
+
+    public var hasMultipleSources: Bool { sources.count > 1 }
+    let format: Format
+
+    public func axisLabel(_ value: Double) -> String {
+        switch unit {
+        case .weight: format.weight(value)
+        case .reps, .heartRate: format.number(value)
+        case .elapsedSeconds: format.minutesAndSeconds(Int(value.rounded()))
+        }
+    }
 }
 
-/// One lift. Records compare one source at a time, so a lift trained in several sources offers them as a filter.
+/// One exercise with recorded sets in the selected period.
 public struct StrengthPerformanceOption: Identifiable, Sendable {
     public let id: String
     public let title: String
-    /// Sources with sets in the period, the one with most sessions first.
-    public let sources: [DataSourceKind]
     let exercise: Exercise
     let sets: [StrengthPerformance.RecordedSet]
 }
@@ -162,13 +187,8 @@ struct PerformanceProgress {
             let visible = exerciseSets.filter { window.includes($0.date) }
             guard !visible.isEmpty else { return nil }
             let sessions = { (sets: [StrengthPerformance.RecordedSet]) in Set(sets.map(\.sessionID)).count }
-            let sources = DataSourceKind.allCases
-                .map { source in (source, visible.filter { $0.source == source }) }
-                .filter { !$0.1.isEmpty }
-                .sorted { sessions($0.1) > sessions($1.1) }
-                .map(\.0)
             let option = StrengthPerformanceOption(
-                id: exercise.id.uuidString, title: names[exercise.id] ?? exercise.name, sources: sources,
+                id: exercise.id.uuidString, title: names[exercise.id] ?? exercise.name,
                 exercise: exercise, sets: exerciseSets
             )
             return RankedLift(option: option, count: sessions(visible), last: visible.map(\.date).max() ?? .distantPast)
@@ -181,16 +201,17 @@ struct PerformanceProgress {
     }
 
     func strengthSeries(
-        _ option: StrengthPerformanceOption, source: DataSourceKind? = nil, profile: AthleteProfile?, now: Date,
+        _ option: StrengthPerformanceOption, profile: AthleteProfile?, now: Date,
         calendar: Calendar
     ) -> [PerformanceSeries] {
         let exercise = option.exercise
-        let chosen = source ?? option.sources.first
-        let sets = option.sets.filter { $0.source == chosen }
+        let sets = option.sets
+        let groupedSets = Dictionary(grouping: sets, by: \.source)
+        let setsBySource = DataSourceKind.allCases.compactMap { groupedSets[$0] }
         let visible = sets.filter { window.includes($0.date) }
         var series = [
-            record(.heaviestLoad, id: "heaviest", title: L10n.text("Heaviest set"), in: sets),
-            record(.measuredOneRepMax, id: "max", title: L10n.text("Recorded max single"), in: sets)
+            record(.heaviestLoad, id: "heaviest", title: L10n.text("Heaviest set"), in: setsBySource),
+            record(.measuredOneRepMax, id: "max", title: L10n.text("Recorded max single"), in: setsBySource)
         ]
         let estimates = StrengthPerformance.estimatedOneRepMax(in: sets, exercise: exercise)
         var estimated = makeSeries(
@@ -208,20 +229,20 @@ struct PerformanceProgress {
             observations, context: .init(through: now, profile: profile, calendar: calendar)
         )
         estimated.trend = trendText(trend)
-        if sets.first?.source == .app, StrengthPerformance.equationVersion(for: exercise) != nil {
+        if visible.contains(where: { $0.source == .app }), StrengthPerformance.equationVersion(for: exercise) != nil {
             series.append(estimated)
         }
         for reps in Set(visible.map(\.reps)).sorted() {
             series.append(record(
                 .loadAtReps(reps), id: "reps-\(reps)", title: L10n.format("Heaviest at {1} reps", String(reps)),
-                in: sets
+                in: setsBySource
             ))
         }
         var shownLoads: Set<String> = []
         for load in Set(visible.map(\.weightKg)).sorted() where shownLoads.insert(format.weight(load)).inserted {
             series.append(record(
                 .repsAtLoad(load), id: "weight-\(load)",
-                title: L10n.format("Most reps at {1}", format.weight(load)), in: sets, unit: .reps
+                title: L10n.format("Most reps at {1}", format.weight(load)), in: setsBySource, unit: .reps
             ))
         }
         return series.filter { !$0.points.isEmpty || $0.resultKind == .estimated }
@@ -229,9 +250,9 @@ struct PerformanceProgress {
 
     private func record(
         _ metric: StrengthPerformance.Record, id: String, title: String,
-        in sets: [StrengthPerformance.RecordedSet], unit: PerformanceSeries.Unit = .weight
+        in setsBySource: [[StrengthPerformance.RecordedSet]], unit: PerformanceSeries.Unit = .weight
     ) -> PerformanceSeries {
-        let results = StrengthPerformance.records(in: sets, matching: metric)
+        let results = setsBySource.flatMap { StrengthPerformance.records(in: $0, matching: metric) }
         return makeSeries(id, title: title, unit: unit, points: results.map {
             strengthPoint($0, value: unit == .reps ? Double($0.reps) : $0.weightKg, unit: unit)
         })
@@ -246,7 +267,7 @@ struct PerformanceProgress {
         }
         return PerformancePoint(
             id: .strength(sessionID: set.sessionID, setID: set.setID), date: set.date, value: value,
-            valueText: text(value, unit: unit), detail: detail
+            valueText: text(value, unit: unit), detail: detail, source: set.source
         )
     }
 
@@ -255,7 +276,7 @@ struct PerformanceProgress {
         resultKind: PerformanceSeries.ResultKind = .recorded, includesPrevious: Bool = false
     ) -> PerformanceSeries {
         let visible = points.filter { includesPrevious ? window.contains($0.date) : window.includes($0.date) }
-            .sorted { $0.date < $1.date }
+            .sorted { ($0.date, $0.source?.rawValue ?? "") < ($1.date, $1.source?.rawValue ?? "") }
         let best = unit == .heartRate ? nil : visible.min { left, right in
             unit == .elapsedSeconds ? left.value < right.value : left.value > right.value
         }
@@ -265,15 +286,19 @@ struct PerformanceProgress {
             String(summary.currentCount), String(summary.previousCount)
         )
         let comparison: String
-        if resultKind != .upperBound, let delta = summary.delta {
+        // Imported and local sets can use different load conventions.
+        let comparisonSources = Set(points.lazy.filter { window.contains($0.date) }.compactMap(\.source))
+        if resultKind != .upperBound, comparisonSources.count <= 1, let delta = summary.delta {
             let direction = delta < 0 ? "−" : delta > 0 ? "+" : ""
             comparison = L10n.format("Median change {1} · {2}", direction + text(abs(delta), unit: unit), counts)
         } else {
             comparison = counts
         }
+        let visibleSources = Set(visible.compactMap(\.source))
         return PerformanceSeries(
             id: id, title: title, unit: unit, resultKind: resultKind, points: visible, best: best,
-            comparison: comparison
+            comparison: comparison, sources: visibleSources,
+            format: format
         )
     }
 

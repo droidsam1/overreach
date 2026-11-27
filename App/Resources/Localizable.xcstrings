@@ -19993,23 +19993,6 @@
         }
       }
     },
-    "Strength records": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Marcas de fuerza"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Marcas de forza"
-          }
-        }
-      }
-    },
     "Strength rest day": {
       "extractionState": "manual",
       "localizations": {
