@@ -219,7 +219,7 @@ public enum ContextPackBuilder {
         }
     }
 
-    private static func watch(_ recording: RecordedStrengthActivity) -> ContextPack.Watch {
+    public static func watch(_ recording: RecordedStrengthActivity) -> ContextPack.Watch {
         .init(
             source: recording.source.rawValue,
             averageHeartRate: recording.averageHeartRate.map { rounded($0, places: 0) },
@@ -323,7 +323,14 @@ public enum ContextPackBuilder {
             vo2Max: rounded(day.vo2Max),
             trainingReadiness: rounded(day.trainingReadiness),
             acuteLoad: rounded(day.acuteLoad),
-            recoveryTimeHours: rounded(day.recoveryTimeHours)
+            recoveryTimeHours: rounded(day.recoveryTimeHours),
+            hrvNightlyHighMs: rounded(day.hrvNightlyHighMs),
+            hrvStatus: day.hrvStatus,
+            respirationRate: rounded(day.respirationRate),
+            spo2Average: rounded(day.spo2Average),
+            lightSleepSeconds: rounded(day.lightSleepSeconds, places: 0),
+            awakeSeconds: rounded(day.awakeSeconds, places: 0),
+            trainingStatus: day.trainingStatus
         )
     }
 

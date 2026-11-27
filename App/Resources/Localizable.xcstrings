@@ -3452,6 +3452,23 @@
         }
       }
     },
+    "Confirm report": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar informe"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar informe"
+          }
+        }
+      }
+    },
     "Confirmed race on {1}. Comparable HRV ({2}) before it: {3}. After it: {4}.": {
       "extractionState": "manual",
       "localizations": {
@@ -7923,6 +7940,40 @@
         }
       }
     },
+    "Health metrics": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Métricas de salud"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Métricas de saúde"
+          }
+        }
+      }
+    },
+    "Heart rate and HRV": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frecuencia cardíaca y VFC"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frecuencia cardíaca e VFC"
+          }
+        }
+      }
+    },
     "Heart rate at comparable pace": {
       "extractionState": "manual",
       "localizations": {
@@ -8973,23 +9024,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Incluír o axuste de seguimento do ciclo"
-          }
-        }
-      }
-    },
-    "Include health data": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Incluir datos de salud"
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Incluír datos de saúde"
           }
         }
       }
@@ -14570,6 +14604,23 @@
         }
       }
     },
+    "Preview report": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsualizar informe"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previsualizar informe"
+          }
+        }
+      }
+    },
     "Previous leg session: {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -14719,6 +14770,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Levantamentos prioritarios (%lld)"
+          }
+        }
+      }
+    },
+    "Profile biometrics and check-ins": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datos biométricos y registros de bienestar"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datos biométricos e rexistros de benestar"
           }
         }
       }
@@ -15586,6 +15654,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Historial de recuperación"
+          }
+        }
+      }
+    },
+    "Recovery metrics": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Métricas de recuperación"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Métricas de recuperación"
           }
         }
       }
@@ -19551,6 +19636,23 @@
         }
       }
     },
+    "Steps and walks": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasos y caminatas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasos e camiñadas"
+          }
+        }
+      }
+    },
     "Steps and walks; sleep if you track it in Health.": {
       "extractionState": "manual",
       "localizations": {
@@ -22012,6 +22114,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carga de adestramento"
+          }
+        }
+      }
+    },
+    "Training load and fitness": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga de entrenamiento y forma física"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carga de adestramento e forma física"
           }
         }
       }

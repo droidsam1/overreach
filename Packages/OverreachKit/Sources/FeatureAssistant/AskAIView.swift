@@ -16,6 +16,7 @@ public struct AskAIView: View {
     @State private var didCopy = false
     @State private var didCopyFormat = false
     @State private var isPickingFile = false
+    @State private var showsPreview = false
 
     public init(model: AskAIModel, importer: PlanImportModel) {
         _model = State(initialValue: model)
@@ -62,13 +63,17 @@ public struct AskAIView: View {
                         }
                     ))
                 }
-                Toggle("Include health data", isOn: Binding(
-                    get: { model.includesHealth },
-                    set: {
-                        model.setIncludesHealth($0)
-                        didCopy = false
+                DisclosureGroup("Health metrics") {
+                    ForEach(model.metricOptions) { option in
+                        Toggle(option.name, isOn: Binding(
+                            get: { model.metricGroups.contains(option.value) },
+                            set: {
+                                model.setMetric(option.value, included: $0)
+                                didCopy = false
+                            }
+                        ))
                     }
-                ))
+                }
                 Toggle("Include cycle tracking setting", isOn: Binding(
                     get: { model.includesCycle },
                     set: {
@@ -85,6 +90,8 @@ public struct AskAIView: View {
                 InlineNotice(Text(message), tone: .critical) { Task { await model.prepare() } }
             }
             Section {
+                Button("Preview report", systemImage: "doc.text.magnifyingglass") { showsPreview = true }
+                    .disabled(model.previewMessage == nil)
                 if let message = model.message {
                     ShareLink(item: message) {
                         Label("Share with an AI app", systemImage: "square.and.arrow.up")
@@ -137,8 +144,37 @@ public struct AskAIView: View {
         .fileImporter(isPresented: $isPickingFile, allowedContentTypes: [.json, .plainText, .text]) { result in
             readPicked(result)
         }
+        .sheet(isPresented: $showsPreview) {
+            reportPreview
+        }
         .sheet(isPresented: $importer.isShowingPreview) {
             PlanImportPreviewView(model: importer)
+        }
+    }
+
+    private var reportPreview: some View {
+        NavigationStack {
+            ScrollView {
+                if let preview = model.previewMessage {
+                    Text(preview)
+                        .font(.footnote.monospaced())
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                }
+            }
+            .navigationTitle("Preview report")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { showsPreview = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Confirm report") {
+                        model.confirmPreview()
+                        showsPreview = false
+                    }
+                    .disabled(model.previewMessage == nil)
+                }
+            }
         }
     }
 

@@ -17,8 +17,12 @@ read it.
 
 Shared from **Plan → Ask AI**. The JSON attachment contains the context data.
 For **Plan my next block**, the shareable text also includes the reply schema, an example, the request and any
-training availability the user enters. Health data and the cycle tracking setting are separate opt-ins, both off
-by default. Without health data, the export excludes profile biometrics, check-ins, daily metrics, the daily
+training availability the user enters. Choose the period and any health metric groups to include: sleep, heart rate and HRV, recovery,
+training load and fitness, steps and walks, or profile biometrics and check-ins. Each group and the cycle tracking
+setting are off by default. The app previews the exact report and requires confirmation before enabling the share
+sheet, clipboard and file export. Editing the selection requires a new confirmation. Restored Garmin data is read
+from the on-device cache. The export contains normalized fields and excludes credentials, raw provider payloads
+and precise GPS routes. Without health data, the export excludes profile biometrics, check-ins, daily metrics, the daily
 assessment, strength watch summaries, and heart rate, load and training effect from runs. The daily assessment is also excluded when cycle tracking is configured and the cycle setting
 is kept private. Training notes are
 included and can contain information the user entered manually.
@@ -37,10 +41,12 @@ The context's top-level fields:
 | `sessions` | Optional `rotationAdjustments` (see below). Oldest first: `id`, `date`, `startedAt`, `durationSeconds`, `name`, `focus`, `source`, `sessionRPE`, `notes`, and `exercises` with `exercise` (name), `notes`, `sets` and `countsForProgression` (`false` when the app excludes the exercise from progression, such as after a cap or an unfinished workout), and `watch` when a watch recorded the same workout (`source`, `averageHeartRate`, `maxHeartRate`, Garmin `trainingLoad` in its own units, `aerobicTrainingEffect`, `anaerobicTrainingEffect`) |
 | `exerciseTrends` | Per exercise in the period: `exposures`, `status` (`progressing`, `holding`, `stalled`, `notEnoughData`, judged over the last year with a working exposure in the last 28 days), `lastWorkingWeightKg`, and `estimatedOneRepMaxKg` per session (`date`, `kg`) |
 | `checkIns` | `date`, `isSick`, `energy` (1–5), `soreness` (1–5), `note` |
-| `dailyMetrics` | Per day and `source`: HRV, its statistic (`hrvMetric`: Garmin `rmssd` or Apple Watch `sdnn`, never comparable) and its baseline, resting heart rate, sleep (total, deep, REM, score), body battery, stress, steps, VO2max, training readiness, acute load, recovery time |
-| `sleepTrainingTiming` | Optional summary from the same recent sleep and training analysis used in Recovery & Progress. Requires the health data opt-in. |
+| `dailyMetrics` | Per day and `source`: HRV, its statistic (`hrvMetric`: Garmin `rmssd` or Apple Watch `sdnn`, never comparable) and its baseline, resting heart rate, sleep (total, deep, REM, score), body battery, stress, steps, VO2max, training readiness, acute load, recovery time, and optional HRV high and status, light and awake sleep time, respiration rate, oxygen saturation and training status |
+| `sleepTrainingTiming` | Optional summary from the same recent sleep and training analysis used in Recovery & Progress. Requires all health metric groups, as does the daily assessment. |
 | `today` | Optional local readiness and deload decisions for `period.to`, and `training`: what was already done that day. See the decision fields below. |
 | `runs` | `date`, `startedAt`, `source`, `durationSeconds`, `distanceMeters`, `paceSecondsPerKm`, heart rate, elevation, training load and effect; when the watch recorded them, `movingDurationSeconds`, `lapCount` and the run/walk split (see below) |
+| `walks` | Optional matched movement summaries when steps and walks are selected. Includes start, source, duration, steps, distance and elevation when available. Average heart rate requires the heart group. |
+| `strengthRecordings` | Optional watch-only strength workouts when heart or load metrics are selected. Includes start, source, duration and selected watch metrics. Workouts matched to logged sessions use the session's `watch` field. |
 | `rotationAdjustments` | Optional accepted schedule changes in the period, including pending ones. Each has `plannedDay`, optional `movedToDay`, optional `replacementSlotID` and `displacedSlotID`, and an `outcome`. |
 
 The optional `muscleBalance` array holds strength balance suggestions from recent logged sessions. Entries

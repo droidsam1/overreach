@@ -100,7 +100,7 @@ public struct TrainingRecordLoader: Sendable {
         async let checkInHistory = try? checkIns?.checkIns(in: checkInStart...today)
         async let current = try? checkIns?.checkIn(for: today)
         async let cycleContext = readCycle(profile: profile, today: today, calendar: calendar)
-        async let walks = readMovement(today: today, calendar: calendar)
+        async let walks = readMovement(today: today, exportFrom: exportFrom, calendar: calendar)
 
         let reading = await allMetrics
         let metrics = SourceReader.mergedDailyMetrics(reading)
@@ -109,8 +109,12 @@ public struct TrainingRecordLoader: Sendable {
         let walkOriginals = activity.flatMap(\.walks).filter {
             $0.durationSeconds.isFinite && $0.durationSeconds > 0 && $0.end <= now
         }
-        let movement = Self.mergeMovement(history: historyMetrics, activity: activity, walks: walkOriginals,
-                                          calendar: calendar)
+        let movementFirst = movementStart(today, calendar: calendar)
+        let movement = Self.mergeMovement(
+            history: historyMetrics, activity: activity.filter { $0.day >= movementFirst },
+            walks: walkOriginals.filter { CalendarDay($0.start, calendar: calendar) >= movementFirst },
+            calendar: calendar
+        )
         let (sessions, exercises, progression, routines) = await (logged, catalog, stored, templates)
         let (runReading, strength, checkIns, latest) = await (runs, recordings, checkInHistory, current)
         let checkIn = latest.flatMap { $0.day == today ? $0 : nil } ?? checkIns?.last { $0.day == today }
@@ -157,10 +161,16 @@ public struct TrainingRecordLoader: Sendable {
         return CycleContext(mode: profile.cycleTracking, events: events)
     }
 
-    private func readMovement(today: CalendarDay, calendar: Calendar) async -> [DailyActivity] {
-        let start = today.adding(
+    private func movementStart(_ today: CalendarDay, calendar: Calendar) -> CalendarDay {
+        today.adding(
             days: Workload.usualStartOffset - EverydayMovement.Settings().baselineDays, calendar: calendar
         )
+    }
+
+    private func readMovement(
+        today: CalendarDay, exportFrom: CalendarDay?, calendar: Calendar
+    ) async -> [DailyActivity] {
+        let start = min(movementStart(today, calendar: calendar), exportFrom ?? today)
         var readings: [DailyActivity] = []
         for source in activity {
             readings += (try? await source.dailyActivity(in: start...today)) ?? []

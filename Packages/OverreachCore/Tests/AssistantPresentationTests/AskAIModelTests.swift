@@ -35,7 +35,12 @@ struct AskAIModelTests {
         let model = makeModel()
         await model.prepare()
 
+        #expect(model.message == nil)
+        #expect(model.fileURL == nil)
+        let preview = try #require(model.previewMessage)
+        model.confirmPreview()
         let message = try #require(model.message)
+        #expect(preview == message)
         #expect(message.hasPrefix("Overreach training context (overreach.context v1)"))
         #expect(model.summary?.hasPrefix("1 sessions · 1 exercises · ") == true)
         #expect(model.errorMessage == nil)
@@ -72,25 +77,30 @@ struct AskAIModelTests {
         )
 
         await model.prepare()
+        model.confirmPreview()
         let linked = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
         #expect(linked.runs.isEmpty)
         #expect(linked.sessions.first?.watch == nil)
         #expect(linked.today == nil)
-        model.setIncludesHealth(true)
+        for group in ContextMetricGroup.allCases { model.setMetric(group, included: true) }
+        model.confirmPreview()
         let withHealth = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
         #expect(withHealth.sessions.first?.watch?.averageHeartRate == 125)
-        model.setIncludesHealth(false)
+        for group in ContextMetricGroup.allCases { model.setMetric(group, included: false) }
+        model.confirmPreview()
         let withoutHealth = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
         #expect(withoutHealth.sessions.first?.watch == nil)
 
         choices = ActivityMatchChoices(runs: [runPair: .separate], strength: [liftPair: .separate])
         await model.prepare()
+        model.confirmPreview()
         let separated = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
         #expect(separated.runs.map(\.source) == ["appleHealth"])
         #expect(separated.sessions.first?.watch == nil)
         #expect(separated.sessions.first?.exercises.first?.sets.count == 1)
 
         await model.setPeriod(.sixMonths)
+        model.confirmPreview()
         let extended = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
         #expect(extended.runs.count == 2)
     }
@@ -110,17 +120,18 @@ struct AskAIModelTests {
 
         model.setRequest(.nextBlock)
         model.setAvailability("Mondays and Fridays, 45 minutes")
-        #expect(try #require(model.message).contains(PlanMessage.jsonSchema))
-        #expect(try #require(model.message).contains("Mondays and Fridays, 45 minutes"))
-        #expect(try #require(model.message).hasSuffix("Help me plan my next training block."))
+        #expect(try #require(model.previewMessage).contains(PlanMessage.jsonSchema))
+        #expect(try #require(model.previewMessage).contains("Mondays and Fridays, 45 minutes"))
+        #expect(try #require(model.previewMessage).hasSuffix("Help me plan my next training block."))
 
         model.setRequest(nil)
-        #expect(try #require(model.message).hasSuffix("```"))
+        #expect(try #require(model.previewMessage).hasSuffix("```"))
     }
 
     @Test func aFailureIsExplainedAndNothingIsOffered() async {
         let model = makeModel(failing: true)
         await model.prepare()
+        model.confirmPreview()
 
         #expect(model.message == nil)
         #expect(model.fileURL == nil)
@@ -150,11 +161,12 @@ struct AskAIModelTests {
             sources: [ExportSleepSource(nights: nights)], clock: { now }, calendar: calendar, directory: directory
         )
         await model.prepare()
-        let url = try #require(model.fileURL)
-        let withoutHealth = try ContextMessage.decode(Data(contentsOf: url))
+        model.confirmPreview()
+        let withoutHealth = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
         #expect(withoutHealth.sleepTrainingTiming == nil)
-        model.setIncludesHealth(true)
-        let withHealth = try ContextMessage.decode(Data(contentsOf: url))
+        for group in ContextMetricGroup.allCases { model.setMetric(group, included: true) }
+        model.confirmPreview()
+        let withHealth = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
         let timing = try #require(withHealth.sleepTrainingTiming)
         #expect(withHealth.version == 1)
         #expect(timing.windowDays == 28)
@@ -162,9 +174,72 @@ struct AskAIModelTests {
         #expect(timing.usualBedtimeMinutesAfterMidnight.map { abs($0 - 1_380) < 0.01 } == true)
         #expect(timing.usualWakeMinutesAfterMidnight.map { abs($0 - 420) < 0.01 } == true)
         #expect(timing.usualTrainingStartMinutesAfterMidnight == nil)
-        model.setIncludesHealth(false)
-        let redacted = try ContextMessage.decode(Data(contentsOf: url))
+        for group in ContextMetricGroup.allCases { model.setMetric(group, included: false) }
+        model.confirmPreview()
+        let redacted = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
         #expect(redacted.sleepTrainingTiming == nil)
+    }
+
+    @Test func sharesOnlySelectedMetricsAndRequiresConfirmationAfterEdits() async throws {
+        let now = self.now
+        let calendar = Calendar(identifier: .gregorian)
+        let today = CalendarDay(now, calendar: calendar)
+        let older = today.adding(days: -70, calendar: calendar)
+        let walk = WalkBout(
+            start: older.startDate(in: calendar), durationSeconds: 600, distanceMeters: 800,
+            averageHeartRate: 105, source: .garmin
+        )
+        let watch = RecordedStrengthActivity(
+            id: "watch-recording", source: .garmin, startedAt: walk.end,
+            durationSeconds: 1_800, averageHeartRate: 120, trainingLoad: 45
+        )
+        let store = TestStore()
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let model = AskAIModel(
+            workouts: store, exercises: store, progression: store, profiles: store, routines: store,
+            sources: [ExportSleepSource(nights: [garminMetrics(on: older)])],
+            recordedStrength: ExportStrengthSource(watch), activity: [ExportWalkSource(day: older, walk: walk)],
+            clock: { now }, calendar: calendar, directory: directory
+        )
+
+        await model.prepare()
+        model.setMetric(.heart, included: true)
+        model.setMetric(.movement, included: true)
+        #expect(model.message == nil)
+        #expect(model.fileURL == nil)
+        model.confirmPreview()
+        let selected = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
+        #expect(selected.dailyMetrics.first?.hrvMs == 47)
+        #expect(selected.dailyMetrics.first?.sleepSeconds == nil)
+        #expect(selected.dailyMetrics.first?.acuteLoad == nil)
+        #expect(selected.walks?.first?.averageHeartRate == 105)
+        #expect(selected.strengthRecordings?.first?.watch?.averageHeartRate == 120)
+        #expect(selected.strengthRecordings?.first?.watch?.trainingLoad == nil)
+
+        model.setMetric(.heart, included: false)
+        #expect(model.message == nil)
+        #expect(model.fileURL == nil)
+        model.confirmPreview()
+        let movement = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
+        #expect(movement.walks?.first?.distanceMeters == 800)
+        #expect(movement.walks?.first?.averageHeartRate == nil)
+        #expect(movement.strengthRecordings == nil)
+
+        await model.setPeriod(.fourWeeks)
+        #expect(model.message == nil)
+        model.confirmPreview()
+        let recent = try ContextMessage.decode(Data(contentsOf: #require(model.fileURL)))
+        #expect(recent.walks == nil)
+    }
+
+    private func garminMetrics(on day: CalendarDay) -> DailyMetrics {
+        var metrics = DailyMetrics(day: day, sources: [.garmin])
+        metrics.hrvRMSSDMs = 47
+        metrics.sleepSeconds = 27_000
+        metrics.acuteLoad = 321
+        return metrics
     }
 
     @Test func optionsAreNamed() {
@@ -206,5 +281,14 @@ private struct ExportStrengthSource: RecordedStrengthSource {
 
     func strengthActivities(from start: Date, to end: Date) async -> [RecordedStrengthActivity] {
         (start...end).contains(recording.startedAt) ? [recording] : []
+    }
+}
+
+private struct ExportWalkSource: ActivitySource {
+    let day: CalendarDay
+    let walk: WalkBout
+
+    func dailyActivity(in range: ClosedRange<CalendarDay>) async throws -> [DailyActivity] {
+        range.contains(day) ? [DailyActivity(day: day, walks: [walk])] : []
     }
 }

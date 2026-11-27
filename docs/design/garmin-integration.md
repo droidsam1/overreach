@@ -442,3 +442,9 @@ When several pairs are plausible, use **Review strength matches** to link or sep
 match** in the session detail restores the watch-only workout. Choices are stored on the device by session UUID
 and recording source and ID. History applies them to the list, calendar and details. Apple Health reconciliation
 continues to follow [ADR-0023](../adr/0023-no-duplicate-strength-workouts-in-health.md).
+
+For device verification, follow [#11](https://github.com/droidsam1/overreach/issues/11). Export a backup,
+reinstall, then restore offline before entering a Garmin key. Check the restored activities and daily metrics
+in History and Recovery & Progress, and preview a report in Ask AI with only selected metric groups.
+Restore the same file again, then reconnect Garmin and sync. Check that matching records appear once,
+including activities also available through Apple Health.
