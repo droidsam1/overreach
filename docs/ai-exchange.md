@@ -38,6 +38,7 @@ The context's top-level fields:
 | `exerciseTrends` | Per exercise in the period: `exposures`, `status` (`progressing`, `holding`, `stalled`, `notEnoughData`, judged over the last year with a working exposure in the last 28 days), `lastWorkingWeightKg`, and `estimatedOneRepMaxKg` per session (`date`, `kg`) |
 | `checkIns` | `date`, `isSick`, `energy` (1–5), `soreness` (1–5), `note` |
 | `dailyMetrics` | Per day and `source`: HRV, its statistic (`hrvMetric`: Garmin `rmssd` or Apple Watch `sdnn`, never comparable) and its baseline, resting heart rate, sleep (total, deep, REM, score), body battery, stress, steps, VO2max, training readiness, acute load, recovery time |
+| `sleepTrainingTiming` | Optional summary from the same recent sleep and training analysis used in Recovery & Progress. Requires the health data opt-in. |
 | `today` | Optional local readiness and deload decisions for `period.to`, and `training`: what was already done that day. See the decision fields below. |
 | `runs` | `date`, `startedAt`, `source`, `durationSeconds`, `distanceMeters`, `paceSecondsPerKm`, heart rate, elevation, training load and effect; when the watch recorded them, `movingDurationSeconds`, `lapCount` and the run/walk split (see below) |
 | `rotationAdjustments` | Optional accepted schedule changes in the period, including pending ones. Each has `plannedDay`, optional `movedToDay`, optional `replacementSlotID` and `displacedSlotID`, and an `outcome`. |
@@ -56,6 +57,16 @@ recorded changes can omit the carry-over level. Schedule slot IDs identify the o
 routine by UUID or use a `name:` prefix for rotations inferred from workout names.
 
 ### Values
+
+- **Sleep and training timing:** `windowDays` (28, ending on `period.to`), `nights` and `sessions` give coverage.
+  `usualBedtimeMinutesAfterMidnight`, `usualWakeMinutesAfterMidnight` and `usualTrainingStartMinutesAfterMidnight`
+  are local clock times. `bedtimeSpreadMinutes`, `wakeSpreadMinutes`, `midpointSpreadMinutes` and
+  `trainingSpreadMinutes` are circular standard deviations. `weekendShiftMinutes` is the signed difference between
+  weekend and weekday sleep midpoints. `regularityIndex` ranges from −100 to 100, using the main sleep spans.
+  `hardSessionsNearBed` counts sessions ending close to usual bedtime among `hardSessions` and requires a usual
+  bedtime. Missing timing estimates are omitted. `insights` holds the returned observations with a `kind`
+  (`irregularSleep`, `socialJetlag`, `variableTrainingTime` or `hardSessionsNearBed`), `evidenceKey` and
+  `evidenceLevel`. See [circadian timing](design/circadian-timing.md) for how to interpret the observations.
 
 - **Hybrid running goal:** `athlete.goal.running` has `distanceMeters`, optional `targetSeconds` and `aimsForPainFree`.
   Optional `athlete.goal.runningSchedule` contains entries with an `id`, local `day`, `purpose` (`easy`,

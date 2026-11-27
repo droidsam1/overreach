@@ -8,6 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added
 - Backups include imported Garmin activities and daily metrics for offline restore (#324).
+- AI context exports include usual sleep and training times, timing variations and evidence-linked observations
+  when health data sharing is enabled (#348).
 - Recovery shows a "Sleep and training times" card from the last 28 days: usual bedtime, wake time and training
   start, and only the observations the timing analysis returns, each with its evidence level. It appears after a
   week of nights or five sessions and never changes load, readiness or the plan (#347).
@@ -38,6 +40,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Recovery & Progress shows observed 1, 5 and 10 km running times, recorded strength results and eligible
   estimated 1RM trends for the last 30 or 90 days. Select a chart point or session row to open its source.
   Plan progress, deloads and rest history remain available from Progress.
+- Performance cards label recorded results, estimates and time upper bounds and show each with its own chart
+  symbol (#333).
 - Progress can compare Garmin heart rate during steady running blocks at similar pace and slope. Confirm the
   sensor for each run when its source is unknown, and open the running activities linked from the comparison.
 - Today asks how the legs respond to a warm-up after a recent run when the next rotation slot works the legs.

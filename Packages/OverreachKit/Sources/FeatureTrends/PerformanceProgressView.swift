@@ -65,14 +65,15 @@ struct PerformanceProgressView<Plan: View>: View {
             if let series = model.comparableHeartRate {
                 PerformanceSeriesCard(series: series)
             } else {
-                Text("Compare steady blocks from both periods using the same heart-rate sensor.")
-                    .font(.subheadline).foregroundStyle(.secondary)
+                Card {
+                    Text("Compare steady blocks from both periods using the same heart-rate sensor.")
+                        .font(.subheadline).foregroundStyle(.secondary)
+                }
             }
-            if !model.runningPulseSensorRows.isEmpty { sensorConfirmation }
+            if !model.runningPulseSensorRows.isEmpty {
+                Card { sensorConfirmation }
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Spacing.medium)
-        .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.tile))
     }
 
     private var sensorConfirmation: some View {
@@ -161,19 +162,22 @@ private struct PerformanceSeriesCard: View {
     let series: PerformanceSeries
 
     var body: some View {
+        Card { content }
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: Spacing.small) {
-            if let best = series.best {
-                AdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: Spacing.small) {
-                    Text(series.title).font(.headline)
-                    Spacer()
+            SectionHeader(Text(series.title)) {
+                if let best = series.best {
                     Text(best.valueText).font(.title3.weight(.heavy)).monospacedDigit()
                 }
-                .accessibilityElement(children: .combine)
-                .accessibilityAddTraits(.isHeader)
-            } else if series.points.isEmpty {
+            }
+            .accessibilityElement(children: .combine)
+            if series.points.isEmpty {
                 Text("No results in this period").font(.subheadline).foregroundStyle(.secondary)
             } else {
-                Text(series.title).font(.headline)
+                Label(series.resultKind.title, systemImage: resultSymbolName)
+                    .font(.footnote).foregroundStyle(.secondary)
             }
             Text(series.comparison).font(.subheadline).foregroundStyle(.secondary)
             if let context = series.context {
@@ -199,9 +203,22 @@ private struct PerformanceSeriesCard: View {
                 }
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Spacing.medium)
-        .background(Color.secondary.opacity(0.12), in: .rect(cornerRadius: Radius.tile))
+    }
+
+    private var resultSymbolName: String {
+        switch series.resultKind {
+        case .recorded: "circle.fill"
+        case .estimated: "diamond.fill"
+        case .upperBound: "triangle.fill"
+        }
+    }
+
+    private var resultSymbol: BasicChartSymbolShape {
+        switch series.resultKind {
+        case .recorded: .circle
+        case .estimated: .diamond
+        case .upperBound: .triangle
+        }
     }
 
     private var chart: some View {
@@ -210,7 +227,7 @@ private struct PerformanceSeriesCard: View {
                 x: .value("Date", point.date),
                 y: .value("Result", point.value)
             )
-            .symbol(series.isEstimated ? BasicChartSymbolShape.diamond : .circle)
+            .symbol(resultSymbol)
             .foregroundStyle(Color.accentColor)
         }
         .chartXAxis {

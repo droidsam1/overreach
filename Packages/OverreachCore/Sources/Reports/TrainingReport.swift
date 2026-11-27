@@ -1,3 +1,4 @@
+import Analytics
 import Domain
 import Foundation
 
@@ -37,6 +38,7 @@ public struct TrainingReport: Sendable {
     public var question: String?
     /// Rendered balance suggestions from the same audit used in Trends.
     public var muscleBalance: [String]
+    public var sleepTrainingTiming: CircadianTiming.Report?
 
     public init(
         generatedAt: Date,
@@ -48,7 +50,8 @@ public struct TrainingReport: Sendable {
         recentRuns: [RunActivity] = [],
         checkIns: [CheckIn] = [],
         question: String? = nil,
-        muscleBalance: [String] = []
+        muscleBalance: [String] = [],
+        sleepTrainingTiming: CircadianTiming.Report? = nil
     ) {
         self.generatedAt = generatedAt
         self.athleteContext = athleteContext
@@ -60,5 +63,6 @@ public struct TrainingReport: Sendable {
         self.checkIns = checkIns
         self.question = question
         self.muscleBalance = muscleBalance
+        self.sleepTrainingTiming = sleepTrainingTiming
     }
 }

@@ -6444,6 +6444,23 @@
         }
       }
     },
+    "Estimated": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estimado"
+          }
+        }
+      }
+    },
     "Estimated 1RM": {
       "extractionState": "manual",
       "localizations": {
@@ -15403,6 +15420,23 @@
         }
       }
     },
+    "Recorded": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Registrado"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rexistrado"
+          }
+        }
+      }
+    },
     "Recorded max single": {
       "extractionState": "manual",
       "localizations": {
@@ -21400,6 +21434,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tempo restante %@"
+          }
+        }
+      }
+    },
+    "Time upper bound": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Límite superior de tiempo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Límite superior de tempo"
           }
         }
       }

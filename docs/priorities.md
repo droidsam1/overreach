@@ -12,10 +12,6 @@ hybrid athlete. The device and external review steps below have their own accept
 
 ## Ready to implement
 
-13. [#347](https://github.com/droidsam1/overreach/issues/347) — Recovery: sleep and training timing card (ADR-0045).
-14. [#348](https://github.com/droidsam1/overreach/issues/348) — AI context: include sleep and training timing.
-15. [#351](https://github.com/droidsam1/overreach/issues/351) — CircadianTiming: regularity from sleep midpoint and wake time.
-
 ## Needs a person or an iPhone
 
 Agents can prepare these but not finish them.

@@ -5,6 +5,26 @@ import Testing
 
 @Suite("Markdown report")
 struct MarkdownReportRendererTests {
+    @Test func rendersOnlyAvailableTimingAndItsEvidence() {
+        let report = TrainingReport(
+            generatedAt: .now,
+            sleepTrainingTiming: .init(
+                nights: 8, usualBedtime: 1_435, usualWake: 420, midpointSpread: 78,
+                insights: [.irregularSleep(regularityIndex: nil, midpointSpreadMinutes: 78)]
+            )
+        )
+        let markdown = MarkdownReportRenderer.render(report)
+        #expect(markdown.contains("## Sleep and training timing"))
+        #expect(markdown.contains("Usual bedtime 23:55 local time"))
+        #expect(markdown.contains("Usual wake time 07:00 local time"))
+        #expect(markdown.contains("Sleep midpoint spread 78 min"))
+        #expect(markdown.contains("Evidence level limited (`sleep-regularity`)"))
+        #expect(!markdown.contains("Usual training start"))
+        #expect(!markdown.contains("Sleep Regularity Index"))
+        let empty = TrainingReport(generatedAt: .now, sleepTrainingTiming: .init())
+        #expect(!MarkdownReportRenderer.render(empty).contains("## Sleep and training timing"))
+    }
+
     private func utcCalendar() throws -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try #require(TimeZone(secondsFromGMT: 0))

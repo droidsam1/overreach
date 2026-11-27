@@ -37,6 +37,8 @@ public struct ContextPack: Codable, Hashable, Sendable {
     public var imports: [ImportFormat]?
     /// Balance suggestions computed from logged strength work, with optional running distance for context.
     public var muscleBalance: [BalanceSuggestion]?
+    /// Recent sleep and training timing. Shared only with health data.
+    public var sleepTrainingTiming: SleepTrainingTimingSummary?
 
     public struct BalanceSuggestion: Codable, Hashable, Sendable {
         public var text: String
@@ -69,6 +71,7 @@ public struct ContextPack: Codable, Hashable, Sendable {
             copy.dailyMetrics = []
             copy.checkIns = []
             copy.today = nil
+            copy.sleepTrainingTiming = nil
             for index in copy.sessions.indices { copy.sessions[index].watch = nil }
             for index in copy.runs.indices {
                 copy.runs[index].averageHeartRate = nil
