@@ -96,7 +96,7 @@ let package = Package(
         ),
         .target(
             name: "AssistantPresentation",
-            dependencies: ["Domain", "TrainingServices", "PresentationKit", "AIExchange"],
+            dependencies: ["Domain", "TrainingServices", "PresentationKit", "AIExchange", "Analytics"],
             path: "Sources/Presentation/AssistantPresentation"
         ),
 

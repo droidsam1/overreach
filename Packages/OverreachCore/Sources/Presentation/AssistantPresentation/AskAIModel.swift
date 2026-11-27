@@ -1,4 +1,5 @@
 import AIExchange
+import Analytics
 import Domain
 import Foundation
 import Observation
@@ -52,10 +53,11 @@ public enum StarterRequest: String, CaseIterable, Sendable {
 public final class AskAIModel {
     public private(set) var period = ContextPeriod.twelveWeeks
     public private(set) var request: StarterRequest?
-    public private(set) var includesHealth = false
+    public private(set) var metricGroups: Set<ContextMetricGroup> = []
     public private(set) var includesCycle = false
     public private(set) var availability = ""
-    /// The text to share or copy; `nil` until prepared.
+    public private(set) var previewMessage: String?
+    /// The text to share or copy after the preview is confirmed.
     public private(set) var message: String?
     /// The same context as a `.json` file, for chat apps that take attachments.
     public private(set) var fileURL: URL?
@@ -67,6 +69,9 @@ public final class AskAIModel {
     public let periodOptions = ContextPeriod.allCases.map { Option(value: $0, name: $0.displayName) }
     public let requestOptions = StarterRequest.allCases.map { Option(value: $0, name: $0.displayName) }
 
+    public let metricOptions = ContextMetricGroup.allCases.map { Option(value: $0, name: $0.displayName) }
+
+    private var preparationID = UUID()
     private var json: String?
     private var context: ContextPack?
     private let recordLoader: TrainingRecordLoader
@@ -120,8 +125,12 @@ public final class AskAIModel {
         render()
     }
 
-    public func setIncludesHealth(_ includesHealth: Bool) {
-        self.includesHealth = includesHealth
+    public func setMetric(_ group: ContextMetricGroup, included: Bool) {
+        if included {
+            metricGroups.insert(group)
+        } else {
+            metricGroups.remove(group)
+        }
         exportSelection()
     }
 
@@ -135,18 +144,22 @@ public final class AskAIModel {
         render()
     }
 
-    /// Reads the data of the period and prepares the message and the file.
+    /// Reads the selected period and prepares the report preview.
     public func prepare() async {
+        let id = UUID()
+        preparationID = id
         isPreparing = true
+        discardPreview()
         errorMessage = nil
-        defer { isPreparing = false }
         let now = clock()
         let today = CalendarDay(now, calendar: calendar)
         let first = today.adding(days: 1 - period.weeks * 7, calendar: calendar)
         let start = first.startDate(in: calendar)
         let profile = try? await profiles.profile()
         let snapshot = await recordLoader.load(now: now, profile: profile, exportFrom: first, calendar: calendar)
-        guard !snapshot.localReadFailed else {
+        guard preparationID == id else { return }
+        isPreparing = false
+        guard !Task.isCancelled, !snapshot.localReadFailed else {
             clearPreparedData()
             return
         }
@@ -176,6 +189,7 @@ public final class AskAIModel {
         context = ContextPackBuilder.build(
             input, period: first...today, now: now, calendar: calendar, matchedStrength: strength
         )
+        setRecordedActivities(snapshot, strength: strength, dates: start...now)
         context?.muscleBalance = muscleBalance(
             record: record, profile: profile, runs: runResolution.unambiguousRuns, now: now
         )
@@ -183,6 +197,19 @@ public final class AskAIModel {
             snapshot.sleepTrainingTiming(resolvedRuns: runResolution.unambiguousRuns, now: now, calendar: calendar)
         )
         exportSelection()
+    }
+
+    private func setRecordedActivities(
+        _ snapshot: TrainingRecordLoader.Snapshot, strength: StrengthActivityMatches, dates: ClosedRange<Date>
+    ) {
+        let walks = EverydayMovement.removingDuplicateWalks(snapshot.walkOriginals)
+            .filter { dates.contains($0.start) }
+            .map(ContextPack.Walk.init)
+        context?.walks = walks.isEmpty ? nil : walks
+        let recordings = strength.unmatched.filter { dates.contains($0.startedAt) }
+            .sorted { $0.startedAt < $1.startedAt }
+            .map { ContextPack.StrengthRecording($0, watch: ContextPackBuilder.watch($0)) }
+        context?.strengthRecordings = recordings.isEmpty ? nil : recordings
     }
 
     private func muscleBalance(
@@ -201,14 +228,11 @@ public final class AskAIModel {
 
     private func exportSelection() {
         guard let context else { return }
-        let pack = context.selectingHealthData(health: includesHealth, cycle: includesCycle)
+        let pack = context.selectingMetrics(metricGroups, cycle: includesCycle)
         do {
             let data = try ContextMessage.json(pack)
-            let url = directory.appendingPathComponent("overreach-context-\(pack.period.to).json")
-            try data.write(to: url, options: .atomic)
             errorMessage = nil
             json = String(decoding: data, as: UTF8.self)
-            fileURL = url
             summary = L10n.format(
                 "{1} sessions · {2} exercises · {3} KB", pack.sessions.count, pack.exerciseTrends.count,
                 max(1, (data.count + 1023) / 1024)
@@ -219,17 +243,36 @@ public final class AskAIModel {
         }
     }
 
-    private func clearPreparedData() {
+    public func confirmPreview() {
+        guard let json, let previewMessage else { return }
+        let url = directory.appendingPathComponent("overreach-context-\(UUID().uuidString).json")
+        do {
+            try Data(json.utf8).write(to: url, options: .atomic)
+            fileURL = url
+            message = previewMessage
+        } catch {
+            clearPreparedData()
+        }
+    }
+
+    private func discardPreview() {
         context = nil
         json = nil
         message = nil
         fileURL = nil
         summary = nil
+        previewMessage = nil
+    }
+
+    private func clearPreparedData() {
+        discardPreview()
         errorMessage = L10n.text("Could not prepare your data. Try again.")
     }
 
     private func render() {
-        message = json.map { json in
+        message = nil
+        fileURL = nil
+        previewMessage = json.map { json in
             guard request == .nextBlock else { return ContextMessage.text(json: json, request: request?.text) }
             let available = availability.trimmingCharacters(in: .whitespacesAndNewlines)
             var instructions = [PlanMessage.formatGuide]
@@ -238,6 +281,19 @@ public final class AskAIModel {
             }
             instructions.append(StarterRequest.nextBlock.text)
             return ContextMessage.text(json: json, request: instructions.joined(separator: "\n\n"))
+        }
+    }
+}
+
+extension ContextMetricGroup {
+    fileprivate var displayName: String {
+        switch self {
+        case .sleep: L10n.text("Sleep")
+        case .heart: L10n.text("Heart rate and HRV")
+        case .recovery: L10n.text("Recovery metrics")
+        case .load: L10n.text("Training load and fitness")
+        case .movement: L10n.text("Steps and walks")
+        case .personal: L10n.text("Profile biometrics and check-ins")
         }
     }
 }

@@ -30,6 +30,8 @@ public struct ContextPack: Codable, Hashable, Sendable {
     public var checkIns: [CheckInInfo]
     public var dailyMetrics: [Metrics]
     public var runs: [Run]
+    public var walks: [Walk]?
+    public var strengthRecordings: [StrengthRecording]?
     public var today: Today?
     /// Accepted schedule changes during the period, including changes still pending.
     public var rotationAdjustments: [RotationScheduleChange]?
@@ -52,36 +54,6 @@ public struct ContextPack: Codable, Hashable, Sendable {
             self.evidenceLevel = evidenceLevel
             self.runningContext = runningContext
         }
-    }
-
-    /// Removes structured health and cycle fields before preparing a shareable copy.
-    public func selectingHealthData(health: Bool, cycle: Bool) -> Self {
-        var copy = self
-        if !cycle, copy.athlete.cycleTracking != nil {
-            copy.athlete.cycleTracking = nil
-            // The assessment can include cycle-adjusted baselines and reasons.
-            copy.today = nil
-        }
-        if !health {
-            copy.athlete.sex = nil
-            copy.athlete.birthYear = nil
-            copy.athlete.bodyMassKg = nil
-            copy.athlete.maxHeartRate = nil
-            copy.athlete.restingHeartRate = nil
-            copy.dailyMetrics = []
-            copy.checkIns = []
-            copy.today = nil
-            copy.sleepTrainingTiming = nil
-            for index in copy.sessions.indices { copy.sessions[index].watch = nil }
-            for index in copy.runs.indices {
-                copy.runs[index].averageHeartRate = nil
-                copy.runs[index].maxHeartRate = nil
-                copy.runs[index].trainingLoad = nil
-                copy.runs[index].aerobicTrainingEffect = nil
-                copy.runs[index].anaerobicTrainingEffect = nil
-            }
-        }
-        return copy
     }
 
     public struct ImportFormat: Codable, Hashable, Sendable {
@@ -334,6 +306,13 @@ public struct ContextPack: Codable, Hashable, Sendable {
         public var trainingReadiness: Double?
         public var acuteLoad: Double?
         public var recoveryTimeHours: Double?
+        public var hrvNightlyHighMs: Double?
+        public var hrvStatus: String?
+        public var respirationRate: Double?
+        public var spo2Average: Double?
+        public var lightSleepSeconds: Double?
+        public var awakeSeconds: Double?
+        public var trainingStatus: String?
     }
 
     public struct Run: Codable, Hashable, Sendable {

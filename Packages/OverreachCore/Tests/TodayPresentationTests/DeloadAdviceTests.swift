@@ -369,8 +369,9 @@ struct DeloadAdviceTests {
             workouts: store, exercises: store, progression: store, profiles: store, routines: store,
             checkIns: checkIns, sources: [source], clock: { fixedNow }, calendar: calendar, directory: directory
         )
-        assistant.setIncludesHealth(true)
+        for group in ContextMetricGroup.allCases { assistant.setMetric(group, included: true) }
         await assistant.setPeriod(.fourWeeks)
+        assistant.confirmPreview()
         let url = try #require(assistant.fileURL)
         let data = try Data(contentsOf: url)
         let pack = try ContextMessage.decode(data)
