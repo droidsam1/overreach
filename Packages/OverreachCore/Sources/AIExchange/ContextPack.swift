@@ -35,6 +35,22 @@ public struct ContextPack: Codable, Hashable, Sendable {
     public var rotationAdjustments: [RotationScheduleChange]?
     /// Formats the app can import back. Optional, added after v1 shipped.
     public var imports: [ImportFormat]?
+    /// Balance suggestions computed from logged strength work, with optional running distance for context.
+    public var muscleBalance: [BalanceSuggestion]?
+
+    public struct BalanceSuggestion: Codable, Hashable, Sendable {
+        public var text: String
+        public var evidenceKey: String
+        public var evidenceLevel: String
+        public var runningContext: String?
+
+        public init(text: String, evidenceKey: String, evidenceLevel: String, runningContext: String? = nil) {
+            self.text = text
+            self.evidenceKey = evidenceKey
+            self.evidenceLevel = evidenceLevel
+            self.runningContext = runningContext
+        }
+    }
 
     /// Removes structured health and cycle fields before preparing a shareable copy.
     public func selectingHealthData(health: Bool, cycle: Bool) -> Self {

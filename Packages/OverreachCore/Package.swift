@@ -6,6 +6,7 @@ let package = Package(
     name: "OverreachCore",
     platforms: [.iOS(.v18), .macOS(.v15)],
     products: [
+        .executable(name: "muscle-balance-replay", targets: ["MuscleBalanceReplay"]),
         .library(name: "Domain", targets: ["Domain"]),
         .library(name: "Analytics", targets: ["Analytics"]),
         .library(name: "StrongImport", targets: ["StrongImport"]),
@@ -30,6 +31,7 @@ let package = Package(
         .library(name: "Fixtures", targets: ["Fixtures"]),
     ],
     targets: [
+        .executableTarget(name: "MuscleBalanceReplay", dependencies: ["Analytics", "Domain"]),
         // Entities and protocols. Depends on nothing.
         .target(name: "Domain"),
         // Deterministic training analytics (load, progression, readiness).

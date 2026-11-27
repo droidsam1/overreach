@@ -2,6 +2,7 @@ import Domain
 import Fixtures
 import Foundation
 import PlanPresentation
+import PresentationKit
 import Testing
 
 private struct CalendarRunSource: MetricsSource {
@@ -45,6 +46,39 @@ struct PlanModelTests {
         )
         await model.load()
         return (model, store)
+    }
+
+    @Test func balanceDismissalSurvivesReloadAndSpecializationIsSaved() async throws {
+        let routine = Routine(name: "Lower", exerciseIDs: [squat.id])
+        let store = TestStore(exercises: [squat], routines: [routine])
+        let fixedNow = now
+        var profile = AthleteProfile()
+        profile.declaredBlocks = [
+            TrainingBlock(
+                focus: .strength, start: CalendarDay(now, calendar: calendar), plannedWeeks: 6,
+                isDeclared: true, routineIDs: [routine.id]
+            ),
+        ]
+        try await store.save(profile)
+        var scopes: [String: Set<String>] = [:]
+        let dismissals = MuscleBalanceDismissals(
+            read: { scopes[$0, default: []] }, save: { scopes[$0] = $1 }
+        )
+        let model = PlanModel(
+            profiles: store, workouts: store, exercises: store, progression: store, routines: store,
+            clock: { fixedNow }, calendar: calendar, balanceDismissals: dismissals, showsMuscleBalance: true
+        )
+        await model.load()
+        let id = try #require(model.muscleBalanceRows.first?.id)
+        #expect(model.muscleBalanceRows.count > 1)
+        model.dismissMuscleBalance(id)
+        await model.load()
+        #expect(!model.muscleBalanceRows.contains { $0.id == id })
+        #expect(scopes.values.contains { $0.contains(id) })
+
+        await model.toggleSpecialization(.quadriceps)
+        #expect(model.specializedMuscles == [.quadriceps])
+        #expect(try await store.profile().declaredBlocks.first?.specializedMuscles == [.quadriceps])
     }
 
     @Test func goalKindAndPriorityLifts() async throws {

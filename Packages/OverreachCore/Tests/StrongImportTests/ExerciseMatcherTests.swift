@@ -12,11 +12,26 @@ struct ExerciseMatcherTests {
         #expect(matcher.created.isEmpty)
     }
 
+    @Test func matchedPullsAndIsolationExercisesKeepTheirCatalogMetadata() {
+        var matcher = ExerciseMatcher(catalog: ExerciseCatalog.builtIn)
+        let pulldown = matcher.resolve("Lat Pulldown (Cable)")
+        #expect(pulldown.primaryMuscles == [.lats])
+        #expect(pulldown.movementPattern == .verticalPull)
+        let row = matcher.resolve("Remo sentado (polea)")
+        #expect(row.primaryMuscles == [.upperBack])
+        #expect(row.movementPattern == .horizontalPull)
+        let reverseFly = matcher.resolve("Reverse Fly (Machine)")
+        #expect(reverseFly.primaryMuscles == [.rearDelts])
+        #expect(reverseFly.movementPattern == nil)
+        #expect(matcher.created.isEmpty)
+    }
+
     @Test func unknownNamesBecomeCustomExercises() {
         var matcher = ExerciseMatcher(catalog: ExerciseCatalog.builtIn)
         let created = matcher.resolve("Zercher Squat")
         #expect(created.isCustom)
         #expect(created.needsMuscleMapping)
+        #expect(created.movementPattern == nil)
         #expect(matcher.created == [created])
     }
 }

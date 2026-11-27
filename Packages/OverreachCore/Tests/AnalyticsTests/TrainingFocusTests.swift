@@ -116,6 +116,25 @@ struct FocusBalanceTests {
         #expect(findings.contains(.exerciseFocusMismatch(exerciseID: squat.id, declared: .strength, observed: .hypertrophy)))
     }
 
+    @Test func detailedMappingPreservesBroadFocusVolumeWithoutDoubleCounting() {
+        let detailed = Exercise(
+            id: squat.id, name: "Combined pull", primaryMuscles: [.lats, .upperBack],
+            secondaryMuscles: [.upperBack, .rearDelts, .sideDelts]
+        )
+        let broad = Exercise(
+            id: squat.id, name: detailed.name, primaryMuscles: [.back], secondaryMuscles: [.shoulders]
+        )
+        let profile = AthleteProfile(goal: TrainingGoal(kind: .hypertrophy))
+        let expected = FocusBalance.findings(
+            sessions: hypertrophyOnly, exercises: [squat.id: broad], profile: profile,
+            now: day(20), settings: threeWeeks
+        )
+        #expect(FocusBalance.findings(
+            sessions: hypertrophyOnly, exercises: [squat.id: detailed], profile: profile,
+            now: day(20), settings: threeWeeks
+        ) == expected)
+    }
+
     @Test func hypertrophyGoalFlagsUntrainedMuscles() {
         let profile = AthleteProfile(goal: TrainingGoal(kind: .hypertrophy))
         let findings = FocusBalance.findings(

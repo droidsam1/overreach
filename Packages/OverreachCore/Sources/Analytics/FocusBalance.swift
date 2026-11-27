@@ -120,7 +120,9 @@ public enum FocusBalance {
         // Per-muscle volume and focus mix.
         let weeks = Double(settings.windowDays) / 7
         let perMuscle = muscleFocusSets(observedSessions: recent, index: index, exercises: exercises)
-        let tracked: [MuscleGroup] = MuscleGroup.allCases.filter { $0 != .core && $0 != .forearms }
+        let tracked: [MuscleGroup] = MuscleGroup.allCases.filter { muscle in
+            muscle == muscle.broadGroup && muscle != .core && muscle != .forearms
+        }
         for muscle in tracked {
             let byFocus = perMuscle[muscle] ?? [:]
             let total = byFocus.values.reduce(0, +)
@@ -169,10 +171,12 @@ public enum FocusBalance {
         for session in observedSessions {
             for (exerciseID, focus) in FocusClassifier.setFoci(of: session, index: index) {
                 guard let exercise = exercises[exerciseID] else { continue }
-                for muscle in exercise.primaryMuscles {
+                let primary = Set(exercise.primaryMuscles.map(\.broadGroup))
+                let secondary = Set(exercise.secondaryMuscles.map(\.broadGroup)).subtracting(primary)
+                for muscle in primary {
                     result[muscle, default: [:]][focus, default: 0] += 1
                 }
-                for muscle in exercise.secondaryMuscles where !exercise.primaryMuscles.contains(muscle) {
+                for muscle in secondary {
                     result[muscle, default: [:]][focus, default: 0] += 0.5
                 }
             }

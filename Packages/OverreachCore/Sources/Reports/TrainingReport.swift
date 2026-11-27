@@ -35,6 +35,8 @@ public struct TrainingReport: Sendable {
     public var recentRuns: [RunActivity]
     public var checkIns: [CheckIn]
     public var question: String?
+    /// Rendered balance suggestions from the same audit used in Trends.
+    public var muscleBalance: [String]
 
     public init(
         generatedAt: Date,
@@ -45,7 +47,8 @@ public struct TrainingReport: Sendable {
         recentSessions: [SessionSummary] = [],
         recentRuns: [RunActivity] = [],
         checkIns: [CheckIn] = [],
-        question: String? = nil
+        question: String? = nil,
+        muscleBalance: [String] = []
     ) {
         self.generatedAt = generatedAt
         self.athleteContext = athleteContext
@@ -56,5 +59,6 @@ public struct TrainingReport: Sendable {
         self.recentRuns = recentRuns
         self.checkIns = checkIns
         self.question = question
+        self.muscleBalance = muscleBalance
     }
 }

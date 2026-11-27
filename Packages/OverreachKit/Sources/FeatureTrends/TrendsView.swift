@@ -248,6 +248,25 @@ private struct RecentLoadDetail: View {
                 ForEach(model.loadRows) { row in
                     LoadCard(row: row)
                 }
+                if !model.muscleBalanceRows.isEmpty {
+                    Card {
+                        DisclosureGroup("Muscle balance") {
+                            ForEach(model.muscleBalanceRows) { row in
+                                VStack(alignment: .leading, spacing: Spacing.small) {
+                                    Text(row.text)
+                                    if let running = row.runningContext { Text(running) }
+                                    Text(row.evidenceText).font(.footnote).foregroundStyle(.secondary)
+                                    Button("Dismiss") { model.dismissMuscleBalance(row.id) }
+                                        .buttonStyle(.borderless)
+                                        .frame(minHeight: 44)
+                                        .accessibilityHint(Text(row.text))
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, Spacing.small)
+                            }
+                        }
+                    }
+                }
                 if model.showsLoadTrends { TrendSection(model: model, charts: model.weeklyCharts) }
             }
             .padding(Spacing.medium)

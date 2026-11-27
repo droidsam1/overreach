@@ -90,7 +90,18 @@ public final class PlanModel {
     private(set) var weekSessions: [StrengthSession] = []
     private var pendingRotationName: String?
     private var strengthRecordedDays: Set<CalendarDay> = []
-    /// The current week of the declared block with planned routines, when there is one.
+    public private(set) var muscleBalanceRows: [MuscleBalanceRow] = []
+    private var balanceDismissalScope: String?
+    private let dismissals: MuscleBalanceDismissals
+    private let showsMuscleBalance: Bool
+
+    public var specializationOptions: [Option<MuscleGroup>] {
+        guard showsMuscleBalance, currentBlock?.isDeclared == true else { return [] }
+        return MuscleGroup.allCases.filter { !$0.isLegacyAggregate && $0 != .core && $0 != .forearms }
+            .map { Option(value: $0, name: $0.displayName) }
+    }
+
+    public var specializedMuscles: Set<MuscleGroup> { currentBlock?.specializedMuscles ?? [] }
 
     // Editable state of the screen.
     /// Whether the goal has a target date. Change it with `setHasTargetDate(_:)`.
@@ -127,7 +138,9 @@ public final class PlanModel {
         routines: (any RoutineRepository)? = nil,
         clock: @escaping @Sendable () -> Date = { Date() },
         calendar: Calendar = .current, runSources: [any MetricsSource] = [],
-        recordedStrength: (any RecordedStrengthSource)? = nil
+        recordedStrength: (any RecordedStrengthSource)? = nil,
+        balanceDismissals: MuscleBalanceDismissals = .init(),
+        showsMuscleBalance: Bool = MuscleBalanceAudit.isReleased
     ) {
         self.profiles = profiles
         self.workouts = workouts
@@ -138,6 +151,8 @@ public final class PlanModel {
         self.routines = routines
         self.runSources = runSources
         self.recordedStrength = recordedStrength
+        self.dismissals = balanceDismissals
+        self.showsMuscleBalance = showsMuscleBalance
         targetDate = clock().addingTimeInterval(Self.defaultTargetWeeks * 7 * 86_400)
         runningDraft = RunningPlanDraft(goal: nil)
     }
@@ -295,8 +310,25 @@ public final class PlanModel {
             if showsHybridCalendar { await loadCalendarRoutines() }
             await analyse(sessions: sessions, from: start, now: now)
         } catch {
+            muscleBalanceRows = []
             errorMessage = L10n.text("Could not load your plan.")
         }
+    }
+
+    public func toggleSpecialization(_ muscle: MuscleGroup) async {
+        guard let currentBlock, specializationOptions.contains(where: { $0.value == muscle }),
+              let index = profile.declaredBlocks.lastIndex(of: currentBlock) else { return }
+        var updated = profile
+        var muscles = specializedMuscles
+        if muscles.remove(muscle) == nil { muscles.insert(muscle) }
+        updated.declaredBlocks[index].specializedMuscles = muscles.isEmpty ? nil : muscles
+        await persist(updated)
+    }
+
+    public func dismissMuscleBalance(_ id: String) {
+        guard let scope = balanceDismissalScope else { return }
+        dismissals.dismiss(id, in: scope)
+        muscleBalanceRows.removeAll { $0.id == id }
     }
 
     // MARK: Actions
@@ -420,9 +452,12 @@ public final class PlanModel {
         isAnalysing = true
         defer { isAnalysing = false }
         let settings: [UUID: ProgressionSettings]
+        let settingsLoaded: Bool
         do {
             settings = try await progression.allProgressionSettings()
+            settingsLoaded = true
         } catch {
+            settingsLoaded = false
             settings = [:]
             errorMessage = L10n.text("Some exercise settings could not be read, so this analysis may be incomplete.")
         }
@@ -470,6 +505,10 @@ public final class PlanModel {
             ImportedPlanProgressRow(block: $0.block, weeks: $0.weeks, calendar: calendar)
         }
         currentBlock = analysis.currentBlock
+        updateMuscleBalance(
+            block: settingsLoaded ? analysis.currentBlock : nil, routines: routines,
+            exercises: exercises, settings: settings
+        )
         suggestion = analysis.suggestion
         plan = analysis.plan
         findings = analysis.findings
@@ -494,6 +533,22 @@ extension PlanModel {
     }
 
     /// Saves the setting change behind the lift's next step (after the user confirmed `LiftChange`).
+    private func updateMuscleBalance(
+        block: TrainingBlock?, routines: [Routine], exercises: [UUID: Exercise], settings: [UUID: ProgressionSettings]
+    ) {
+        muscleBalanceRows = []
+        balanceDismissalScope = nil
+        guard showsMuscleBalance, let block, block.isDeclared else { return }
+        let scope = "plan.\(block.start)"
+        balanceDismissalScope = scope
+        muscleBalanceRows = dismissals.visible(
+            MuscleBalance.findings(
+                plan: block, routines: routines, exercises: exercises, exerciseSettings: settings, profile: profile
+            ).map { MuscleBalanceRow($0) },
+            in: scope
+        )
+    }
+
     public func applyNextStep(for exerciseID: UUID) async {
         guard !isApplyingLiftChange, !changedLifts.contains(exerciseID),
               let lift = stalledLifts.first(where: { $0.exerciseID == exerciseID }),

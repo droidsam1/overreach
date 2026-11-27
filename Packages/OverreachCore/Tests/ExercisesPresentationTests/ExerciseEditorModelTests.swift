@@ -106,6 +106,7 @@ struct ExerciseEditorModelTests {
         editor.setPrimary(.quadriceps, true)
         editor.setSecondary(.core, true)
         editor.draft.equipment = .barbell
+        editor.movementPattern = .squat
         #expect(editor.canSave)
         #expect(await editor.save())
 
@@ -115,6 +116,7 @@ struct ExerciseEditorModelTests {
         #expect(stored.primaryMuscles == [.quadriceps])
         #expect(stored.secondaryMuscles == [.core])
         #expect(stored.equipment == .barbell)
+        #expect(stored.movementPattern == .squat)
         #expect(list.allRows.map(\.name).contains("Zercher Squat"))
     }
 

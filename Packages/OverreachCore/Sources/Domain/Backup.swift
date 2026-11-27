@@ -16,7 +16,7 @@ public struct ProgressionSettingsEntry: Hashable, Codable, Sendable {
 /// Built-in catalog exercises are not included unless the user changed them; they are part of the app.
 public struct BackupDocument: Hashable, Codable, Sendable {
     /// Bump when the format changes in a way older apps cannot read.
-    public static let currentFormatVersion = 1
+    public static let currentFormatVersion = 2
 
     public var formatVersion: Int
     public var createdAt: Date
@@ -138,16 +138,21 @@ public enum BackupCodec {
         }
     }
 
-    /// Brings an older backup up to the current format, one version at a time (ADR-0018). Format 1 is current, so
-    /// there is nothing to do yet. When the format changes in a way tolerant decoding cannot absorb (a rename, a
-    /// new meaning, a different unit), raise `BackupDocument.currentFormatVersion` and add the step from the
-    /// previous version here, as a JSON-to-JSON transform, with a frozen fixture of the old version in the tests.
+    /// Brings an older backup up to the current format, one version at a time (ADR-0018).
+    /// Version 2 adds detailed muscle labels. Decoding preserves the old broad labels and
+    /// fills in unchanged built-in mappings from the catalog.
     static func migrate(_ data: Data, from version: Int) throws -> Data {
         guard version >= 1 else { throw BackupError.notABackup }
         var current = data
         var step = version
         while step < BackupDocument.currentFormatVersion {
             switch step {
+            case 1:
+                guard var object = try JSONSerialization.jsonObject(with: current) as? [String: Any] else {
+                    throw BackupError.notABackup
+                }
+                object["formatVersion"] = 2
+                current = try JSONSerialization.data(withJSONObject: object)
             default: throw BackupError.notABackup  // every older version needs a step
             }
             step += 1

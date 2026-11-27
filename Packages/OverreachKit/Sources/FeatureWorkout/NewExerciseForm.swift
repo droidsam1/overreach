@@ -55,6 +55,12 @@ struct NewExerciseForm: View {
                         Text(option.name).tag(option.value)
                     }
                 }
+                Picker("Movement pattern", selection: $model.movementPattern) {
+                    Text("Unspecified").tag(nil as MovementPattern?)
+                    ForEach(model.movementPatternOptions) { option in
+                        Text(option.name).tag(Optional(option.value))
+                    }
+                }
             }
             Section {
                 ForEach(model.muscleOptions) { muscle in

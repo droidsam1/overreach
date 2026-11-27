@@ -1,4 +1,5 @@
 import DesignSystem
+import Domain
 import ExercisesPresentation
 import PresentationKit
 import SwiftUI
@@ -165,6 +166,14 @@ struct ExerciseEditorView: View {
                 Picker("Equipment", selection: $model.draft.equipment) {
                     ForEach(model.equipmentOptions) { option in
                         Text(option.name).tag(option.value)
+                    }
+                }
+                if model.canEditNames {
+                    Picker("Movement pattern", selection: $model.movementPattern) {
+                        Text("Unspecified").tag(nil as MovementPattern?)
+                        ForEach(model.movementPatternOptions) { option in
+                            Text(option.name).tag(Optional(option.value))
+                        }
                     }
                 }
             }

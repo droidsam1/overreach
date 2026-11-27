@@ -1,6 +1,6 @@
 # 0047 — Muscle balance alerts for routines and training history
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-26
 
 ## Context
@@ -13,24 +13,10 @@ months without knowing. `Workload` compares the whole week with the usual week; 
 The model also limits what can be checked: `MuscleGroup.back` covers lats, upper back and rear delts, and
 `shoulders` covers front, side and rear delts.
 
-Research run on 2026-11-26 (three searches, summaries only; most full texts not read). Findings:
-
-| Topic | What the evidence supports | Level |
-| --- | --- | --- |
-| Maintenance needs far less volume than growth; effort matters more than volume (Spiering 2021, narrative review; Bickel 2011, RCT) | "Under-trained" is a real concept | moderate |
-| Exact maintenance threshold in sets/week | No study fixes one; ~4 fractional sets is a default | heuristic |
-| Diminishing returns with weekly volume; fractional counting fits best (Pelland 2026, meta-regression) | Matches `volume-dose-response` | moderate |
-| Harm from high volume | No solid evidence of harm in normal training; 12–20 sets/week is a common "moderate" band (Baz-Valle 2022) | limited |
-| ~11 fractional sets per session plateau (Remmert 2025) | **Preprint; figures contradictory in secondary reports, not confirmed** | limited |
-| Push:pull volume ratio preventing shoulder injury | No trial supports it. Evidence is on rotator-cuff strength in overhead athletes, not gym volume | heuristic |
-| Rear delt responds best to reverse flies / rear-delt work (EMG, small samples) | EMG is not hypertrophy | limited |
-| Need for both vertical and horizontal pulling | No outcome data | heuristic |
-| Which muscles lag in recreational lifters | No population data | heuristic |
-| Eccentric hamstring work (Nordic) cuts hamstring injuries by about half (van Dyk 2019 meta-analysis) | Mostly football, risk of bias | moderate (intervention) |
-| Hamstring:quadriceps strength ratio predicts injury | Weak and inconsistent (Green 2020, Lee 2018 reviews) | limited |
-| Upper/lower volume split | No evidence-based ratio | heuristic |
-| Running vs strength volume | Concurrent training does not cancel maximal strength (Schumann 2022); no validated discount of kilometres into leg sets | moderate / heuristic |
-| Core and forearms need direct sets | Limited evidence of benefit | limited |
+The [evidence register](../evidence.md#muscle-balance) records the support and limits for each rule.
+Weekly volume has a dose-response with diminishing returns. Most thresholds for identifying muscle
+or movement imbalances are heuristics. Frequency, direct core and forearm work, and a preferred
+upper-to-lower set ratio fall outside the audit.
 
 ## Decision
 
@@ -40,13 +26,13 @@ Research run on 2026-11-26 (three searches, summaries only; most full texts not 
 2. **Findings are suggestions, never changes** (as ADR-0013). They show their evidence level, can be dismissed,
    and are muted by a declared block that makes the pattern intentional (a specialization block).
 3. **Wording is "balance", not "injury risk".** No finding claims to prevent injury.
-4. **Initial rules and thresholds** (all configurable; levels as above):
+4. **Initial rules and thresholds.** Thresholds are configurable. See the evidence register for levels.
    - *No direct work:* a tracked muscle with 0 direct sets in the window, any goal. *Under-trained:* under ~4
      fractional sets a week (heuristic; extends `lowVolume` to strength and hybrid goals).
    - *Excess:* soft notice from ~20–22 fractional sets a week per muscle, stronger from ~30; framed as "little
      extra benefit", not harm.
-   - *Per session:* a suggestion to split when a muscle gets over ~10–12 fractional sets in one session. Limited
-     until Remmert is confirmed.
+   - *Per session:* a suggestion to split when a muscle gets over ~10–12 fractional sets in one session. Limited.
+     Remmert et al. estimated a detectability limit of 11 fractional sets for hypertrophy in a preprint.
    - *Pull vs push:* soft notice when weekly pull sets (rows and vertical pulls, excluding biceps) are under ~0.75×
      push sets (chest, shoulder press, triceps). Heuristic.
    - *Shoulder detail:* when push is above ~10 sets a week, ask for about 4–6 direct sets each of side and rear
@@ -67,19 +53,49 @@ Research run on 2026-11-26 (three searches, summaries only; most full texts not 
 
 ## Consequences
 
-- New file `Analytics/MuscleBalance.swift`, new `BalanceFinding`-style cases, texts in Spanish and English, and
-  entries in `docs/evidence.md` (levels above) and further reading.
-- `volume-dose-response` in `docs/evidence.md` says the ~11 per-session plateau without saying it is a preprint
-  with unconfirmed figures: its level must be lowered when this is implemented.
+- The analyzer lives in `Analytics/MuscleBalance.swift`. Findings have texts in English, Spanish and Galician
+  and link to the evidence register.
 - Catalog migration touches many built-in exercises; mapping review is real work.
 - Thresholds are heuristics: validate them against real histories before they become visible, as for circadian
   timing.
 
-## Pending verification before citing
+## Reference verification
 
-Only van Dyk 2019, Schumann 2022, Huiberts 2024, Pelland 2026 (abstract), Spiering 2021, Baz-Valle 2022 and Remmert
-2025 (abstract) were opened. Written from memory and still to check: Bickel 2011, Iversen 2021, Schoenfeld 2017,
-Impellizzeri 2020, Green 2020, Lee 2018, Opar 2015/2021, Wilson 2012, Harøy 2019, Balsalobre-Fernández 2016,
-Blagrove 2018, Beyer 2015, Cools 2015, the EMG papers (PMC7706677, PMC7734360, Rabello 2024) and the Schoenfeld
-2025 lateral-raise study. The "Roberts 2021" and "Androulakis-Korakakis 2020" references from the brief could not be
-identified and are dropped.
+Reviewed on 2026-11-27. The evidence register links the source publications for each rule.
+The following papers were checked for applicability and excluded from the rule citations.
+
+- [Impellizzeri et al. 2020](https://andrewvigotsky.com/studies/Impellizzeri_2020_Sports_Med_ACWR.pdf)
+  studied acute-to-chronic workload ratio artifacts. It provides no muscle volume cutoff.
+- [Harøy et al. 2019](https://bjsm.bmj.com/content/53/3/150) tested an adductor exercise intervention
+  in male football players. Its outcome was groin problems.
+- [Beyer et al. 2015](https://pubmed.ncbi.nlm.nih.gov/26018970/) compared two treatments for
+  Achilles tendinopathy. Its results apply to that clinical population.
+
+The minimum-dose strength review was identified as Androulakis-Korakakis et al. (2020) and cited
+for 1RM gains. The brief's “Roberts 2021” citation could not be identified from the author, year
+and topic.
+
+## Rollout validation
+
+One real backup was replayed on 2026-11-27. Four rules fired in more than half of that history's assessed
+weeks. This is a single-participant result. Keep the current thresholds under review and the new findings hidden
+until the replay includes several participants. Record cohort-level rates here once that data is available.
+Use one Overreach backup per consenting participant. From the repository root, run:
+
+```shell
+swift run --package-path Packages/OverreachCore muscle-balance-replay /path/to/backup-a.json /path/to/backup-b.json
+```
+
+The replay uses the current built-in catalog and saved custom mappings, the backup's goal and
+declared blocks, and the production history analyzer. It assesses every completed UTC calendar
+week from the first eligible session through the export date. The analyzer evaluates its usual
+rolling windows as of each week's end. Weeks without analyzable recent training and participants
+without any assessed weeks are excluded. Older exports or incomplete mappings can limit coverage.
+Running distance is absent from a portable backup and does not affect whether a rule fires.
+
+The CSV reports how many participants and assessed weeks triggered each rule at least once. Use
+the included denominators to record rates, check which rules fire for most participants, and review
+the flagged cases for context before adjusting the thresholds or enabling findings. Keep the
+backups local and record only aggregate counts in this ADR. A synthetic smoke test with
+format-1 and format-2 backups verified the participant and weekly counters, including zero-count
+rules. Rollout requires the real-history results.

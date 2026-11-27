@@ -2,17 +2,36 @@ import Foundation
 
 /// Muscle groups used to attribute training volume and fatigue.
 public enum MuscleGroup: String, CaseIterable, Codable, Sendable {
-    case chest, back, shoulders, biceps, triceps, forearms
+    case chest, back, lats, upperBack
+    case shoulders, frontDelts, sideDelts, rearDelts
+    case biceps, triceps, forearms
     case quadriceps, hamstrings, glutes, calves
     case core
 
     public var region: BodyRegion {
         switch self {
-        case .chest, .back, .shoulders, .biceps, .triceps, .forearms: .upper
+        case .chest, .back, .lats, .upperBack, .shoulders, .frontDelts, .sideDelts, .rearDelts,
+             .biceps, .triceps, .forearms: .upper
         case .quadriceps, .hamstrings, .glutes, .calves: .lower
         case .core: .core
         }
     }
+
+    /// A stored mapping whose volume cannot be attributed to a more specific muscle.
+    public var isLegacyAggregate: Bool { self == .back || self == .shoulders }
+
+    /// The original grouping for analyses that track the same series across catalog versions.
+    public var broadGroup: MuscleGroup {
+        switch self {
+        case .lats, .upperBack: .back
+        case .frontDelts, .sideDelts, .rearDelts: .shoulders
+        default: self
+        }
+    }
+}
+
+public enum MovementPattern: String, CaseIterable, Codable, Sendable {
+    case verticalPush, horizontalPush, verticalPull, horizontalPull, squat, hinge
 }
 
 public enum BodyRegion: String, Codable, Sendable {
@@ -32,6 +51,7 @@ public struct Exercise: Identifiable, Hashable, Codable, Sendable {
     /// Muscles that count 0.5 effective sets per working set.
     public var secondaryMuscles: Set<MuscleGroup>
     public var equipment: Equipment
+    public var movementPattern: MovementPattern?
     public var isCustom: Bool
     /// Other names for the same exercise (e.g. Spanish names, names used by other apps). Used when importing.
     public var aliases: Set<String>
@@ -43,7 +63,8 @@ public struct Exercise: Identifiable, Hashable, Codable, Sendable {
         secondaryMuscles: Set<MuscleGroup> = [],
         equipment: Equipment = .other,
         isCustom: Bool = false,
-        aliases: Set<String> = []
+        aliases: Set<String> = [],
+        movementPattern: MovementPattern? = nil
     ) {
         self.id = id
         self.name = name
@@ -52,6 +73,34 @@ public struct Exercise: Identifiable, Hashable, Codable, Sendable {
         self.equipment = equipment
         self.isCustom = isCustom
         self.aliases = aliases
+        self.movementPattern = movementPattern
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, primaryMuscles, secondaryMuscles, equipment, isCustom, aliases, movementPattern
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            id: try container.decode(UUID.self, forKey: .id),
+            name: try container.decode(String.self, forKey: .name),
+            primaryMuscles: try container.decode(Set<MuscleGroup>.self, forKey: .primaryMuscles),
+            secondaryMuscles: try container.decode(Set<MuscleGroup>.self, forKey: .secondaryMuscles),
+            equipment: try container.decode(Equipment.self, forKey: .equipment),
+            isCustom: try container.decode(Bool.self, forKey: .isCustom),
+            aliases: try container.decode(Set<String>.self, forKey: .aliases),
+            movementPattern: try container.decodeIfPresent(MovementPattern.self, forKey: .movementPattern)
+        )
+        if !isCustom, !container.contains(.movementPattern), let builtIn = ExerciseCatalog.exercise(withID: id) {
+            movementPattern = builtIn.movementPattern
+            let originalPrimary = Set(builtIn.primaryMuscles.map(\.broadGroup))
+            let originalSecondary = Set(builtIn.secondaryMuscles.map(\.broadGroup)).subtracting(originalPrimary)
+            if primaryMuscles == originalPrimary, secondaryMuscles == originalSecondary {
+                primaryMuscles = builtIn.primaryMuscles
+                secondaryMuscles = builtIn.secondaryMuscles
+            }
+        }
     }
 
     /// Whether the exercise still needs a muscle-group mapping (e.g. an unknown name found during an import).

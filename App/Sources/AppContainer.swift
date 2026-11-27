@@ -170,7 +170,7 @@ final class AppContainer {
             routines: routines, checkIns: checkIns, sources: metricsSources,
             recordedStrength: historyRecordedStrength, activity: activitySources, cycle: cycleSource,
             activityMatchChoices: readActivityMatchChoices,
-            appVersion: Self.appVersion
+            appVersion: Self.appVersion, balanceDismissals: muscleBalanceDismissals
         )
     }
 
@@ -280,7 +280,8 @@ final class AppContainer {
             runChoices: { self.readActivityMatchChoices().runs },
             runningTrack: { await trackSource?.runningTrack(for: $0) },
             pulseSensors: defaults.dictionary(forKey: pulseKey) as? [String: String] ?? [:],
-            savePulseSensors: { defaults.set($0, forKey: pulseKey) }
+            savePulseSensors: { defaults.set($0, forKey: pulseKey) },
+            balanceDismissals: muscleBalanceDismissals
         )
     }
 
@@ -346,10 +347,27 @@ final class AppContainer {
         )
     }
 
+    private var muscleBalanceDismissals: MuscleBalanceDismissals {
+        let key = "muscleBalance.dismissedFindings"
+        return MuscleBalanceDismissals(
+            read: { scope in
+                let scopes = UserDefaults.standard.dictionary(forKey: key) as? [String: [String]]
+                return Set(scopes?[scope] ?? [])
+            },
+            save: { scope, ids in
+                let defaults = UserDefaults.standard
+                var scopes = defaults.dictionary(forKey: key) as? [String: [String]] ?? [:]
+                scopes[scope] = ids.sorted()
+                defaults.set(scopes, forKey: key)
+            }
+        )
+    }
+
     func makePlanModel() -> PlanModel {
         PlanModel(
             profiles: profiles, workouts: workouts, exercises: exercises, progression: progression,
-            routines: routines, runSources: metricsSources, recordedStrength: recordedStrength
+            routines: routines, runSources: metricsSources, recordedStrength: recordedStrength,
+            balanceDismissals: muscleBalanceDismissals
         )
     }
 

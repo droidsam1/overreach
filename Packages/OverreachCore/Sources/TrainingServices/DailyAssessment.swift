@@ -99,6 +99,21 @@ public struct TrainingRecord: Sendable {
 }
 
 extension TrainingRecord {
+    /// Audit the strength log using resolved runs only as context for lower-body suggestions.
+    public func muscleBalance(
+        profile: AthleteProfile?, resolvedRuns: [RunActivity], now: Date, calendar: Calendar
+    ) -> [MuscleBalanceFinding] {
+        let start = MuscleBalance.historyWindowStart(now: now, calendar: calendar).startDate(in: calendar)
+        let window = start...now
+        let metres = resolvedRuns.lazy.filter { window.contains($0.startedAt) }.map(\.distanceMeters)
+            .filter { $0.isFinite && $0 > 0 }.reduce(0, +)
+        let byID = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        return MuscleBalance.findings(
+            history: sessions, exercises: byID, profile: profile ?? AthleteProfile(), now: now,
+            runningKilometres: runReadFailed || metres == 0 ? nil : metres / 1_000, calendar: calendar
+        )
+    }
+
     /// The same effort-weighted load used in the deload assessment, when comparable weeks are available.
     public func weeklyLoad(
         profile: AthleteProfile, today: CalendarDay, calendar: Calendar

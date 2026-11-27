@@ -42,6 +42,10 @@ The context's top-level fields:
 | `runs` | `date`, `startedAt`, `source`, `durationSeconds`, `distanceMeters`, `paceSecondsPerKm`, heart rate, elevation, training load and effect; when the watch recorded them, `movingDurationSeconds`, `lapCount` and the run/walk split (see below) |
 | `rotationAdjustments` | Optional accepted schedule changes in the period, including pending ones. Each has `plannedDay`, optional `movedToDay`, optional `replacementSlotID` and `displacedSlotID`, and an `outcome`. |
 
+The optional `muscleBalance` array holds strength balance suggestions from recent logged sessions. Entries
+give the localized `text`, an `evidenceKey` and `evidenceLevel`, and optional `runningContext` for lower-body
+findings. The audit uses its own recent analysis window. Running distance supplies context for those suggestions.
+
 ### Rotation adjustments
 
 A session's optional `rotationAdjustments` lists the recorded changes that applied to that workout.
