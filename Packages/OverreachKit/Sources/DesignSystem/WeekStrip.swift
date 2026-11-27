@@ -32,7 +32,7 @@ public enum WeekDayKind: Sendable, CaseIterable {
         switch self {
         case .strengthDone, .plannedStrength: "dumbbell.fill"
         case .runDone, .plannedRun: "figure.run"
-        case .restLogged: "moon.fill"
+        case .restLogged: "figure.mind.and.body"
         case .today: "circle.fill"
         case .empty: nil
         }
