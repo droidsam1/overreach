@@ -82,8 +82,9 @@ struct RecoveryProgressModelTests {
         let model = RecoveryProgressModel(sources: [DaysSource(days: nights)], calendar: calendar)
         let noon = CalendarDay(now, calendar: calendar).startDate(in: calendar).addingTimeInterval(12 * 3_600)
         await model.load(now: noon)
-        #expect(model.sleepTiming?.rows.count == 2)
-        #expect(model.sleepTiming?.summary == "Your sleep and training times look steady.")
+        #expect(model.sleepTiming?.rows.count == 3)
+        #expect(model.sleepTiming?.summary ==
+            "Your sleep schedule looked steady on the nights with recorded times.")
         #expect(model.sleepTiming?.observations.isEmpty == true)
 
         let empty = RecoveryProgressModel(sources: [DaysSource()], calendar: calendar)

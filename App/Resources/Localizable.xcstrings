@@ -7175,23 +7175,6 @@
         }
       }
     },
-    "From the last {1} days: {2} nights, {3} sessions. Observations, not a diagnosis.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "De los últimos {1} días: {2} noches, {3} sesiones. Son observaciones, no un diagnóstico."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dos últimos {1} días: {2} noites, {3} sesións. Son observacións, non un diagnóstico."
-          }
-        }
-      }
-    },
     "From {1}": {
       "extractionState": "manual",
       "localizations": {
@@ -10095,6 +10078,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Últimos {1} días"
+          }
+        }
+      }
+    },
+    "Last {1} days: {2} nights with bed and wake times, {3} sessions with start and end times.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimos {1} días: {2} noches con horas de inicio y fin del sueño y {3} sesiones con horas de inicio y fin."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Últimos {1} días: {2} noites con horas de inicio e fin do sono e {3} sesións con horas de inicio e fin."
           }
         }
       }
@@ -18939,6 +18939,23 @@
         }
       }
     },
+    "Sleep midpoint variation": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variación del punto medio del sueño"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variación do punto medio do sono"
+          }
+        }
+      }
+    },
     "Sleep stages and score": {
       "extractionState": "manual",
       "localizations": {
@@ -22165,6 +22182,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Perfil de adestramento"
+          }
+        }
+      }
+    },
+    "Training start time variation": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variación de la hora de inicio del entrenamiento"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variación da hora de inicio do adestramento"
           }
         }
       }
@@ -25603,23 +25637,6 @@
         }
       }
     },
-    "Your sleep and training times look steady.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tus horarios de sueño y entrenamiento son estables."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Os teus horarios de sono e adestramento son estables."
-          }
-        }
-      }
-    },
     "Your sleep and wake times shift from night to night (regularity {1} of 100). Regular sleep and wake times go with lower long-term health risk, whatever your training.": {
       "extractionState": "manual",
       "localizations": {
@@ -25637,6 +25654,23 @@
         }
       }
     },
+    "Your sleep schedule looked steady on the nights with recorded times.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu horario de sueño fue bastante regular en las noches con horarios registrados."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teu horario de sono foi bastante regular nas noites con horarios rexistrados."
+          }
+        }
+      }
+    },
     "Your stress": {
       "extractionState": "manual",
       "localizations": {
@@ -25650,23 +25684,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "O teu estrés"
-          }
-        }
-      }
-    },
-    "Your training start time varies by about {1}. A steady time goes with training more often; no time of day is better than another.": {
-      "extractionState": "manual",
-      "localizations": {
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "La hora a la que empiezas a entrenar varía unos {1}. Un horario fijo se asocia con entrenar más a menudo; ninguna hora del día es mejor que otra."
-          }
-        },
-        "gl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A hora á que comezas a adestrar varía uns {1}. Un horario fixo asóciase con adestrar máis a miúdo; ningunha hora do día é mellor ca outra."
           }
         }
       }
