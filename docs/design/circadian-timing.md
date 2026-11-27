@@ -64,14 +64,15 @@ performance tip.
 
 ## What is built
 
-`Analytics.CircadianTiming` (pure): circular mean and spread of bedtime, wake time and training start; weekend
-midpoint shift; hard sessions ending within the buffer before bed. Insights: `irregularBedtime`, `socialJetlag`,
+`Analytics.CircadianTiming` (pure): circular mean and spread of bedtime, wake time, sleep midpoint and training start;
+Sleep Regularity Index from consecutive nights; weekend midpoint shift; hard sessions ending within the buffer before
+bed. Insights: `irregularSleep` (from the index, or the midpoint spread when nights have gaps), `socialJetlag`,
 `variableTrainingTime`, `hardSessionsNearBed`. Thresholds (labelled heuristics) live in `CircadianTiming.Settings`:
-60 min bedtime spread, 60 min weekend shift, 2 h training spread, 60 min buffer, 25 % share.
+regularity index below 70 (≥ 5 consecutive pairs) else 60 min midpoint spread, 60 min weekend shift, 2 h training
+spread, 60 min buffer, 25 % share. A weekend-only shift raises `socialJetlag`, not `irregularSleep`.
 
 ## Continue from here
 
 - [#347](https://github.com/droidsam1/overreach/issues/347) — Recovery card with real data and localized texts.
 - [#348](https://github.com/droidsam1/overreach/issues/348) — AI context export.
 - [#349](https://github.com/droidsam1/overreach/issues/349) — Validate the thresholds on real histories.
-- [#351](https://github.com/droidsam1/overreach/issues/351) — Regularity from sleep midpoint and wake time (health lens).

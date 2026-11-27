@@ -663,10 +663,15 @@ stronger predictor of all-cause mortality than sleep duration; the most regular 
 cardiometabolic mortality risk than the least regular. After adjusting for duration the link held for cancer and other
 deaths but not for cardiometabolic deaths, and a 2025 cohort found duration and regularity interact. Observational:
 direction of effect is not established.
-→ Flag a bedtime spread (circular SD) above 60 min over ≥ 7 nights. The 60 min threshold is a labelled heuristic;
-the cohort used a regularity index, not bedtime SD. Same direction in MESA (Huang et al. 2020, J Am Coll Cardiol 75:991: irregular sleep duration and incident
-cardiovascular events; Lunsford-Avery et al. 2018, Sci Rep 8:14158). Refs: Windred et al. 2024, Sleep 47(1):zsad253;
-Sci Rep 2025, doi 10.1038/s41598-025-15828-6. Reviewed 2026-11-25.
+→ Over ≥ 7 nights, compute the Sleep Regularity Index (Phillips et al. 2017) from consecutive nights' bed and wake
+times and flag it below 70; the cohort median was 81 (IQR 73.8–86.3), so 70 is roughly the least regular fifth. With
+fewer than 5 consecutive pairs, flag a sleep-midpoint spread (circular SD) above 60 min instead. Both thresholds are
+labelled heuristics, and the index from main sleep spans misses naps and night wakings, so it reads higher than
+actigraphy. Bedtime spread alone no longer flags: it ignores wake time, which the regularity evidence includes. Worded
+as long-term prevention, independent of training. Same direction in MESA (Huang et al. 2020, J Am Coll Cardiol
+75:991: irregular sleep duration and incident cardiovascular events; Lunsford-Avery et al. 2018, Sci Rep 8:14158).
+Refs: Windred et al. 2024, Sleep 47(1):zsad253; Phillips et al. 2017, Sci Rep 7:3216; Sci Rep 2025,
+doi 10.1038/s41598-025-15828-6. Reviewed 2026-11-27.
 
 ### `social-jetlag` — limited
 Weekend-vs-weekday shift of sleep midpoint shows small observational associations: with BMI (r ≈ 0.12; 23 % higher
