@@ -9,14 +9,19 @@ public actor InMemoryStore: WorkoutRepository, ExerciseRepository, CheckInReposi
     private var sessionsByID: [UUID: StrengthSession]
     private var exercisesByID: [UUID: Exercise]
     private var checkInsByDay: [CalendarDay: CheckIn]
-    private var storedProfile = AthleteProfile()
+    private var storedProfile: AthleteProfile
     private var progressionByExercise: [UUID: ProgressionSettings] = [:]
-    private var routinesByID: [UUID: Routine] = [:]
+    private var routinesByID: [UUID: Routine]
 
-    public init(exercises: [Exercise] = [], sessions: [StrengthSession] = [], checkIns: [CheckIn] = []) {
+    public init(
+        exercises: [Exercise] = [], sessions: [StrengthSession] = [], checkIns: [CheckIn] = [],
+        profile: AthleteProfile = .init(), routines: [Routine] = []
+    ) {
         exercisesByID = Dictionary(exercises.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
         sessionsByID = Dictionary(sessions.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
         checkInsByDay = Dictionary(checkIns.map { ($0.day, $0) }, uniquingKeysWith: { _, last in last })
+        storedProfile = profile
+        routinesByID = Dictionary(routines.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
     }
 
     // MARK: WorkoutRepository

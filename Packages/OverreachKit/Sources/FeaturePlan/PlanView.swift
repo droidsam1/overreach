@@ -233,12 +233,22 @@ public struct PlanView<Assistant: View, Progress: View>: View {
                 Section("Muscle balance") {
                     ForEach(model.muscleBalanceRows) { row in
                         VStack(alignment: .leading, spacing: Spacing.small) {
-                            Text(row.text)
-                            Text(row.evidenceText).font(.footnote).foregroundStyle(.secondary)
-                            Button("Dismiss") { model.dismissMuscleBalance(row.id) }
-                                .buttonStyle(.borderless)
-                                .frame(minHeight: 44)
-                                .accessibilityHint(Text(row.text))
+                            VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                                Text(row.text)
+                                Text(row.evidenceText).font(.footnote).foregroundStyle(.secondary)
+                            }
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityElement(children: .combine)
+
+                            Button {
+                                model.dismissMuscleBalance(row.id)
+                            } label: {
+                                Text("Dismiss")
+                                    .frame(minWidth: 44, minHeight: 44, alignment: .leading)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel(Text(row.dismissAccessibilityLabel))
                         }
                     }
                 }

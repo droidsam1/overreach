@@ -5662,6 +5662,23 @@
         }
       }
     },
+    "Dismiss finding: {1}": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descartar aviso: {1}"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descartar aviso: {1}"
+          }
+        }
+      }
+    },
     "Distance": {
       "extractionState": "manual",
       "localizations": {
