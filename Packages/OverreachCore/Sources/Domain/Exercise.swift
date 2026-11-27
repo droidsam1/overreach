@@ -52,6 +52,8 @@ public struct Exercise: Identifiable, Hashable, Codable, Sendable {
     public var secondaryMuscles: Set<MuscleGroup>
     public var equipment: Equipment
     public var movementPattern: MovementPattern?
+    /// The bundled artwork identifier chosen for a custom exercise.
+    public var illustrationID: String?
     public var isCustom: Bool
     /// Other names for the same exercise (e.g. Spanish names, names used by other apps). Used when importing.
     public var aliases: Set<String>
@@ -64,7 +66,8 @@ public struct Exercise: Identifiable, Hashable, Codable, Sendable {
         equipment: Equipment = .other,
         isCustom: Bool = false,
         aliases: Set<String> = [],
-        movementPattern: MovementPattern? = nil
+        movementPattern: MovementPattern? = nil,
+        illustrationID: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -74,10 +77,12 @@ public struct Exercise: Identifiable, Hashable, Codable, Sendable {
         self.isCustom = isCustom
         self.aliases = aliases
         self.movementPattern = movementPattern
+        self.illustrationID = illustrationID
     }
 
     private enum CodingKeys: String, CodingKey {
         case id, name, primaryMuscles, secondaryMuscles, equipment, isCustom, aliases, movementPattern
+        case illustrationID
     }
 
     public init(from decoder: any Decoder) throws {
@@ -90,7 +95,8 @@ public struct Exercise: Identifiable, Hashable, Codable, Sendable {
             equipment: try container.decode(Equipment.self, forKey: .equipment),
             isCustom: try container.decode(Bool.self, forKey: .isCustom),
             aliases: try container.decode(Set<String>.self, forKey: .aliases),
-            movementPattern: try container.decodeIfPresent(MovementPattern.self, forKey: .movementPattern)
+            movementPattern: try container.decodeIfPresent(MovementPattern.self, forKey: .movementPattern),
+            illustrationID: try container.decodeIfPresent(String.self, forKey: .illustrationID)
         )
         if !isCustom, !container.contains(.movementPattern), let builtIn = ExerciseCatalog.exercise(withID: id) {
             movementPattern = builtIn.movementPattern

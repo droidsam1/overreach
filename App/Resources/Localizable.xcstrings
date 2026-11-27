@@ -1463,6 +1463,23 @@
         }
       }
     },
+    "All illustrations": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todas las ilustraciones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todas as ilustracións"
+          }
+        }
+      }
+    },
     "All sources": {
       "extractionState": "manual",
       "localizations": {
@@ -2989,6 +3006,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Escoller cartafol de iCloud Drive…"
+          }
+        }
+      }
+    },
+    "Choose illustration": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegir ilustración"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escoller ilustración"
           }
         }
       }
@@ -8722,6 +8756,23 @@
         }
       }
     },
+    "Illustrations by Bryl Lim and Everkinetic": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ilustraciones de Bryl Lim y Everkinetic"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ilustracións de Bryl Lim e Everkinetic"
+          }
+        }
+      }
+    },
     "Import": {
       "extractionState": "manual",
       "localizations": {
@@ -12220,6 +12271,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sen exercicios"
+          }
+        }
+      }
+    },
+    "No illustrations": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay ilustraciones"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non hai ilustracións"
           }
         }
       }
@@ -20231,6 +20299,23 @@
         }
       }
     },
+    "Suggested illustrations": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ilustraciones sugeridas"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ilustracións suxeridas"
+          }
+        }
+      }
+    },
     "Suggested ramps for main lifts and the first exercise for each muscle.": {
       "extractionState": "manual",
       "localizations": {
@@ -22726,6 +22811,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Usar valores por defecto"
+          }
+        }
+      }
+    },
+    "Use equipment icon": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar el icono del equipo"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar a icona do equipamento"
           }
         }
       }

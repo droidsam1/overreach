@@ -78,7 +78,7 @@ let package = Package(
         ]),
         .target(name: "FeatureExercises", dependencies: uiDependencies + [
             .product(name: "ExercisesPresentation", package: core),
-        ]),
+        ], resources: [.process("Resources")]),
         .target(name: "FeaturePlan", dependencies: uiDependencies + [
             .product(name: "PlanPresentation", package: core),
         ]),
