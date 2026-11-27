@@ -384,9 +384,9 @@ struct PlanModelTests {
 
         #expect(model.pendingRotationSummary == "Next in your rotation: A")
         #expect(model.upcomingCalendarRows.first?.isRest == true)
-        let row = try #require(model.recordedRunCalendarRows.first)
+        let row = try #require(model.completedTrainingCalendarRows.first)
         #expect(row.title == "Dog run")
-        #expect(row.status == "Run completed · no strength recorded")
+        #expect(row.isRun)
 
         var goal = TrainingGoal(kind: .hybrid, running: RunningGoal(distanceMeters: 5_000))
         let planned = PlannedRun(day: today, purpose: .easy, completion: PlannedRunCompletion(run))
@@ -394,8 +394,32 @@ struct PlanModelTests {
         try await store.save(AthleteProfile(goal: goal))
         await model.load()
 
-        #expect(model.recordedRunCalendarRows.isEmpty)
-        #expect(model.upcomingRunningEntries.first?.status == row.status)
+        #expect(model.completedTrainingCalendarRows.filter(\.isRun).map(\.id) == [row.id])
+        #expect(model.upcomingRunningEntries.first?.status == "Run completed · no strength recorded")
+    }
+
+    @Test func completedCalendarListsRunsAndStrengthForTheSameWeek() async throws {
+        let start = try #require(calendar.dateInterval(of: .weekOfYear, for: now)?.start)
+        let previousWeek = start.addingTimeInterval(-3_600)
+        let run = RunActivity(
+            id: "recent", source: .garmin, name: "Easy run", startedAt: now.addingTimeInterval(-900),
+            durationSeconds: 600, distanceMeters: 1_500
+        )
+        let olderRun = RunActivity(
+            id: "older", source: .garmin, startedAt: previousWeek, durationSeconds: 600, distanceMeters: 1_500
+        )
+        let history = [
+            ("Upper", now.addingTimeInterval(-1_800)), ("Lower", now.addingTimeInterval(-2_700)),
+            ("Previous week", previousWeek)
+        ].map { name, start in
+            StrengthSession(name: name, startedAt: start, endedAt: start.addingTimeInterval(600), entries: [])
+        }
+        let (model, _) = await model(history: history, runSources: [
+            CalendarRunSource(run: run), CalendarRunSource(run: olderRun)
+        ])
+
+        #expect(model.completedTrainingCalendarRows.map(\.title) == ["Easy run", "Upper", "Lower"])
+        #expect(model.weekDays.last(where: { $0.id == CalendarDay(now, calendar: calendar) })?.kind == .strengthDone)
     }
 
     @Test func strengthCalendarIsAvailableWithoutARunningGoal() async {

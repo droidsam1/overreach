@@ -790,26 +790,6 @@ extension PlanModel {
         pendingRotationName.map { L10n.format("Next in your rotation: {1}", $0) }
     }
 
-    /// Actual runs without an explicit calendar link. Linked runs are already shown on their plan rows.
-    public var recordedRunCalendarRows: [RecordedRunCalendarRow] {
-        let now = clock()
-        let start = CalendarDay(now, calendar: calendar).adding(days: -30, calendar: calendar)
-            .startDate(in: calendar)
-        let linked = showsRunningCalendar ? profile.goal?.scheduledRuns.compactMap(\.completion) ?? [] : []
-        let style = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).day().month(.abbreviated).year()
-        return recentRuns.reversed().compactMap { run in
-            guard run.startedAt >= start,
-                  run.durationSeconds.isFinite, run.durationSeconds >= 0,
-                  run.startedAt.addingTimeInterval(run.durationSeconds) <= now,
-                  !linked.contains(where: { $0.matches(run) }) else { return nil }
-            return RecordedRunCalendarRow(
-                id: "\(run.source.rawValue):\(run.id)",
-                title: run.name ?? L10n.text("Run"), date: run.startedAt.formatted(style),
-                status: recordedRunStatus(on: CalendarDay(run.startedAt, calendar: calendar))
-            )
-        }
-    }
-
     private func recordedRunStatus(on day: CalendarDay) -> String {
         strengthRecordedDays.contains(day) ? L10n.text("Completed") : L10n.text("Run completed · no strength recorded")
     }

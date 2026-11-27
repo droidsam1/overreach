@@ -22,11 +22,12 @@ public struct StrengthCalendarRow: Identifiable, Sendable {
     public var id: UUID { entry.id }
 }
 
-public struct RecordedRunCalendarRow: Identifiable, Sendable {
+public struct CompletedTrainingCalendarRow: Identifiable, Sendable {
     public let id: String
     public let title: String
     public let date: String
-    public let status: String
+    public let isRun: Bool
+    public var symbol: String { isRun ? "figure.run" : "dumbbell" }
 }
 
 public enum HybridCalendarRow: Identifiable, Sendable {
