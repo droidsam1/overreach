@@ -1,6 +1,6 @@
 # 0048 — Training load, immunity, allergy symptoms and soreness
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-28
 
 ## Context
@@ -89,7 +89,11 @@ Ranked by support. These are general suggestions, not a prescription.
 ## Consequences
 
 - New evidence entry in [evidence.md](../evidence.md#exercise-immune-load--limited-no-rule). No code changes now.
-- Candidate work, each with its own issue if accepted:
+- Candidate work. Issues: 1 → [#410](https://github.com/droidsam1/overreach/issues/410), 2 →
+  [#411](https://github.com/droidsam1/overreach/issues/411), 4 → [#412](https://github.com/droidsam1/overreach/issues/412),
+  5 → [#413](https://github.com/droidsam1/overreach/issues/413). Candidates 3, 6 and 7 have no issue: 3 needs a replay
+  on real histories first, 6 is folded into the check-in work of [ADR-0049](0049-recovery-stress-and-check-in-questions.md)
+  and 7 waits for device validation.
   1. *Soreness attribution:* show "last heavy leg session N days ago" in Today and the report. Cheap, uses existing
      `LowerBodyLoad` and check-in soreness. Highest value.
   2. *Soreness persistence cue:* check-in soreness 2–3 on day 3+ after a heavy leg session suggests an easier day
