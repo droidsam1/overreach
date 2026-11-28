@@ -94,7 +94,7 @@ public struct SetNumberLabel: View {
         Group {
             if isWarmUp {
                 Text("W")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(StatusTone.caution.accent)
                     .accessibilityLabel("Warm-up set \(number)")
             } else {
                 Text("\(number)")

@@ -79,7 +79,7 @@ struct CheckInView: View {
 
                 if let error = model.errorMessage {
                     Section {
-                        Label(error, systemImage: "exclamationmark.triangle").foregroundStyle(.red)
+                        InlineNotice(Text(error), tone: .critical)
                     }
                 }
             }

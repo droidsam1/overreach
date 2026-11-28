@@ -14,7 +14,7 @@ struct DeloadProposalCard<SessionPreview: View>: View {
         VStack(alignment: .leading, spacing: Spacing.small) {
             Label(DeloadProposalText.title(steadier: steadier), systemImage: "arrow.down.right.circle.fill")
                 .font(.headline)
-                .foregroundStyle(.orange)
+                .foregroundStyle(StatusTone.caution.accent)
                 .accessibilityAddTraits(.isHeader)
             if primaryTitle == nil { Text(explanation.summary).font(.subheadline) }
             if primaryTitle != nil {

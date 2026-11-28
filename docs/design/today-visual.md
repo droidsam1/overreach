@@ -49,10 +49,22 @@ tag "Today" or "Adjusted" (the planned run struck through when the advice change
 Card with title, why it matters, dismiss (×). The check-in shows five options (symbol + word) answered with one tap,
 and "More: sleep, stress, pain…". Other prompts keep their content in the same card.
 
+There is at most one prompt. The strength rotation offer, the run pain question and the soft run offer are prompts
+too and go through the same priority rule (`TodayPrompt.next`): rotation offer, source failure, break confirmation,
+run pain, recent run question, check-in, run offer, connect Health, connect Garmin, dog walk, profile question.
+
 ## Link tiles
 
-Grid of 3–4 tiles (Why · Options · Recovery · History): coloured icon at the top, label at the bottom, 70–76 pt high. Recovery and History switch to their tab; Why and Options push level-2
-screens inside Today.
+Grid of 3–4 tiles (Why · Options · Recovery · History): icon at the top, label at the bottom, 70–76 pt high. Recovery and History switch to their tab; Why and Options push level-2
+screens inside Today. Every icon uses one neutral token, `LinkTile.iconColor` (the app tint). The tiles are routes,
+not statuses, so none takes a `StatusTone` (orange on Why read as a caution), and the kind colours (strength violet,
+run blue, sleep teal) keep their one meaning. Section hints for newly unlocked sections render inside the link row.
+
+## Options
+
+Level 2 behind the Options tile: one `Card` per alternative (run, lift, easy strength comparison) with a title, one
+summary line and one bordered verb button ("Show the run", "Show the session"). The verb opens the details inside the
+same card; there is no third level and no disclosure group. `TodayModel.optionCards` decides which cards exist.
 
 ## Why
 

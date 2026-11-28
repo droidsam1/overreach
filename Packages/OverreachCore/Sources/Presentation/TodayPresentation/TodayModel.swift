@@ -437,13 +437,19 @@ public final class TodayModel {
 
     /// The single prompt under the hero. Fixed at each load: answering or dismissing one reveals the next on the next
     /// load, not at once.
-    public var pendingPrompt: TodayPrompt? {
+    public var pendingPrompt: TodayPrompt? { pendingPrompt(continuing: nil) }
+
+    /// While a workout is in progress the hero continues it, so no strength offer is made.
+    public func pendingPrompt(continuing workout: WorkoutContinuation?) -> TodayPrompt? {
         guard promptHandledLoad != activeLoadCount else { return nil }
-        return TodayPrompt.next(promptFacts)
+        return TodayPrompt.next(promptFacts(continuing: workout))
     }
 
-    private var promptFacts: TodayPrompt.Facts {
+    private func promptFacts(continuing workout: WorkoutContinuation?) -> TodayPrompt.Facts {
         var facts = TodayPrompt.Facts()
+        facts.rotationOffer = workout == nil && rotationOffer != nil
+        facts.runPain = runPainPrompt != nil
+        facts.runOffer = runOffer != nil
         guard showsReadinessCard else { return facts }
         facts.sourceFailure = showsSourceWarning || trainingReadNote != nil
         if case .confirmBreak = deloadAdvice?.state { facts.confirmBreak = true }
@@ -464,17 +470,19 @@ public final class TodayModel {
     }
 
     /// The blocks Today may stack (ADR-0041, rule 3). Everything else lives on a pushed screen.
-    public enum Block: Equatable, Sendable { case hero, scheduledPlan, pendingPrompt, linkRow }
+    public enum Block: Hashable, Sendable { case hero, scheduledPlan, pendingPrompt, linkRow }
 
     /// The most blocks Today shows at once.
     public static let blockBudget = 4
 
-    public var visibleBlocks: [Block] {
+    public var visibleBlocks: [Block] { visibleBlocks(continuing: nil) }
+
+    public func visibleBlocks(continuing workout: WorkoutContinuation?) -> [Block] {
         var blocks: [Block] = [.hero]
         if yourWeek != nil || scheduledStrengthToday != nil || !scheduledRunsToday.isEmpty {
             blocks.append(.scheduledPlan)
         }
-        if pendingPrompt != nil { blocks.append(.pendingPrompt) }
+        if pendingPrompt(continuing: workout) != nil { blocks.append(.pendingPrompt) }
         if !links.isEmpty { blocks.append(.linkRow) }
         return blocks
     }
@@ -514,6 +522,15 @@ public final class TodayModel {
         if showsRecovery { links.append(.recovery) }
         if showsHistory { links.append(.history) }
         return links
+    }
+
+    /// The Options screen: one card per alternative, in the order run, lift, compare.
+    public var optionCards: [TodayOptionCard] {
+        var cards: [TodayOptionCard] = []
+        if let option = runningOption, option.isOptional { cards.append(.run(option)) }
+        if canRequestStrengthOption { cards.append(.lift) }
+        if showsScheduledStrengthExample { cards.append(.compareLift) }
+        return cards
     }
 
     /// Alternatives to the hero: an optional run or an easy strength session.
