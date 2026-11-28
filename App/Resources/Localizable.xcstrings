@@ -585,13 +585,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un levantamiento prioritario"
+            "value": "Un ejercicio prioritario"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un levantamento prioritario"
+            "value": "Un exercicio prioritario"
           }
         }
       }
@@ -840,13 +840,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Por encima de tu intervalo habitual."
+            "value": "Por encima de tu rango habitual."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Por riba do teu intervalo habitual."
+            "value": "Por riba do teu rango habitual."
           }
         }
       }
@@ -1282,7 +1282,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Los consejos se adaptan a tus paseos y nunca eliminan los que no puedes saltarte."
+            "value": "Los consejos se adaptan a tus paseos y nunca eliminan los que no puedes omitir."
           }
         },
         "gl": {
@@ -1503,7 +1503,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Todos los orígenes"
+            "value": "Todas las fuentes"
           }
         },
         "gl": {
@@ -2064,13 +2064,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pulso medio"
+            "value": "Frecuencia cardíaca media"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pulso medio"
+            "value": "Frecuencia cardíaca media"
           }
         }
       }
@@ -2336,13 +2336,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Por debajo de tu intervalo habitual."
+            "value": "Por debajo de tu rango habitual."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Por debaixo do teu intervalo habitual."
+            "value": "Por debaixo do teu rango habitual."
           }
         }
       }
@@ -2438,7 +2438,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ambas significan lo mismo: RPE = 10 − repeticiones en recámara. Tu historial y tus objetivos no cambian."
+            "value": "Ambas significan lo mismo: RPE = 10 − repeticiones en reserva. Tu historial y tus objetivos no cambian."
           }
         },
         "gl": {
@@ -2727,13 +2727,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Completa el check-in"
+            "value": "Completa el registro diario"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Completa o rexistro de benestar"
+            "value": "Completa o rexistro diario"
           }
         }
       }
@@ -3101,7 +3101,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Elige el esfuerzo: cuántas repeticiones te quedaban, como RPE o como repeticiones en recámara."
+            "value": "Elige el esfuerzo: cuántas repeticiones te quedaban, como RPE o como repeticiones en reserva."
           }
         },
         "gl": {
@@ -3158,7 +3158,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Limpar filtros"
+            "value": "Borrar filtros"
           }
         }
       }
@@ -3322,13 +3322,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compara bloques estables de ambos períodos con el mismo sensor de pulso."
+            "value": "Compara bloques estables de ambos periodos con el mismo sensor de frecuencia cardíaca."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compara bloques estables dos dous períodos co mesmo sensor de pulso."
+            "value": "Compara bloques estables dos dous períodos co mesmo sensor de frecuencia cardíaca."
           }
         }
       }
@@ -3509,13 +3509,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Confirmar sensores de pulso"
+            "value": "Confirmar sensores de frecuencia cardíaca"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Confirmar sensores de pulso"
+            "value": "Confirmar sensores de frecuencia cardíaca"
           }
         }
       }
@@ -3849,7 +3849,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Contexto para interpretar la VFC y la frecuencia cardiaca en reposo, nunca una regla fija. Se queda en tu dispositivo."
+            "value": "Contexto para interpretar la VFC y la frecuencia cardíaca en reposo, nunca una regla fija. Se queda en tu dispositivo."
           }
         },
         "gl": {
@@ -4733,7 +4733,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "No se han podido guardar tus respuestas. Inténtalo de nuevo o sáltate la configuración."
+            "value": "No se han podido guardar tus respuestas. Inténtalo de nuevo u omite la configuración."
           }
         },
         "gl": {
@@ -4790,7 +4790,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Non se puido gardar o teu plan. Inténtao de novo."
+            "value": "Non se puido gardar o teu plan. Téntao de novo."
           }
         }
       }
@@ -5538,7 +5538,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "O dor empeorou ou cambiou a túa zancada na última carreira?"
+            "value": "A dor empeorou ou cambiou a túa zancada na última carreira?"
           }
         }
       }
@@ -5861,7 +5861,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Paseas a un can?"
+            "value": "Paseas un can?"
           }
         }
       }
@@ -6246,7 +6246,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Carrera suave · {1} min"
+            "value": "Rodaje suave · {1} min"
           }
         },
         "gl": {
@@ -6960,7 +6960,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Encuentra sesiones de fuerza y carreras juntas, con filtros por tipo y origen."
+            "value": "Encuentra sesiones de fuerza y carreras juntas, con filtros por tipo y fuente."
           }
         },
         "gl": {
@@ -7028,7 +7028,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aquí aparecen los entrenamientos terminados y las carreras de los orígenes conectados."
+            "value": "Aquí aparecen los entrenamientos terminados y las carreras de las fuentes conectadas."
           }
         },
         "gl": {
@@ -7453,13 +7453,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Carga y training effect de Garmin, emparejados con las sesiones que registras aquí."
+            "value": "Carga y efecto de entrenamiento de Garmin, emparejados con las sesiones que registras aquí."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Carga e training effect de Garmin, emparellados coas sesións que rexistras aquí."
+            "value": "Carga e efecto de adestramento de Garmin, emparellados coas sesións que rexistras aquí."
           }
         }
       }
@@ -7946,13 +7946,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "VFC, pulso en reposo, sueño y entrenos a través de Apple Salud."
+            "value": "VFC, frecuencia cardíaca en reposo, sueño y entrenos a través de Apple Salud."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "VFC, pulso en repouso, sono e adestramentos a través de Apple Saúde."
+            "value": "VFC, frecuencia cardíaca en repouso, sono e adestramentos a través de Apple Saúde."
           }
         }
       }
@@ -8082,13 +8082,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sensor de pulso"
+            "value": "Sensor de frecuencia cardíaca"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sensor de pulso"
+            "value": "Sensor de frecuencia cardíaca"
           }
         }
       }
@@ -8728,13 +8728,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ignoradas por inverosímiles: {1} lecturas"
+            "value": "Ignoradas por poco plausibles: {1} lecturas"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ignoradas por inverosímiles: {1} lecturas"
+            "value": "Ignoradas por pouco plausibles: {1} lecturas"
           }
         }
       }
@@ -10275,7 +10275,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Deja pendiente la sesión de pierna de hoy."
+            "value": "Deja pendiente la sesión de piernas de hoy."
           }
         },
         "gl": {
@@ -10649,7 +10649,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Anota RPE o repeticiones en recámara, con una guía para medirlo bien."
+            "value": "Anota RPE o repeticiones en reserva, con una guía para medirlo bien."
           }
         },
         "gl": {
@@ -10734,13 +10734,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Regístralo con sus ejercicios y series. Se le añaden el pulso y la carga del reloj."
+            "value": "Regístralo con sus ejercicios y series. Se le añaden la frecuencia cardíaca y la carga del reloj."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rexístrao cos seus exercicios e series. Engádenselle o pulso e a carga do reloxo."
+            "value": "Rexístrao cos seus exercicios e series. Engádenselle a frecuencia cardíaca e a carga do reloxo."
           }
         }
       }
@@ -10938,13 +10938,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Levantamiento principal"
+            "value": "Ejercicio principal"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Levantamento principal"
+            "value": "Exercicio principal"
           }
         }
       }
@@ -10955,13 +10955,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Los levantamientos principales pesan más al decidir una descarga."
+            "value": "Los ejercicios principales pesan más al decidir una descarga."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Os levantamentos principais pesan máis ao decidir unha descarga."
+            "value": "Os exercicios principais pesan máis ao decidir unha descarga."
           }
         }
       }
@@ -11074,13 +11074,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pulso máximo"
+            "value": "Frecuencia cardíaca máxima"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pulso máximo"
+            "value": "Frecuencia cardíaca máxima"
           }
         }
       }
@@ -11363,7 +11363,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "La mayoría calcula ~1 repetición de menos, más aún en series largas y con cargas ligeras. Si dudas entre dos valores, elige el de más repeticiones en recámara. (evidencia moderada)"
+            "value": "La mayoría calcula ~1 repetición de menos, más aún en series largas y con cargas ligeras. Si dudas entre dos valores, elige el de más repeticiones en reserva. (evidencia moderada)"
           }
         },
         "gl": {
@@ -12723,7 +12723,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sin resultados en este período"
+            "value": "Sin resultados en este periodo"
           }
         },
         "gl": {
@@ -14661,13 +14661,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aplazada en la rotación"
+            "value": "Pospuesta en la rotación"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aprazada na rotación"
+            "value": "Adiada na rotación"
           }
         }
       }
@@ -14865,13 +14865,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Levantamientos prioritarios"
+            "value": "Ejercicios prioritarios"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Levantamentos prioritarios"
+            "value": "Exercicios prioritarios"
           }
         }
       }
@@ -14882,13 +14882,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Levantamientos prioritarios (%lld)"
+            "value": "Ejercicios prioritarios (%lld)"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Levantamentos prioritarios (%lld)"
+            "value": "Exercicios prioritarios (%lld)"
           }
         }
       }
@@ -15069,13 +15069,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El pulso tiende a subir a un ritmo comparable"
+            "value": "La frecuencia cardíaca tiende a subir a un ritmo comparable"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "O pulso tende a subir a un ritmo comparable"
+            "value": "A frecuencia cardíaca tende a subir a un ritmo comparable"
           }
         }
       }
@@ -15086,13 +15086,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El pulso tiende a bajar a un ritmo comparable"
+            "value": "La frecuencia cardíaca tiende a bajar a un ritmo comparable"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "O pulso tende a baixar a un ritmo comparable"
+            "value": "A frecuencia cardíaca tende a baixar a un ritmo comparable"
           }
         }
       }
@@ -15256,7 +15256,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "RPE o repeticiones en recámara, tú eliges"
+            "value": "RPE o repeticiones en reserva, tú eliges"
           }
         },
         "gl": {
@@ -15477,13 +15477,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Se ignoraron lecturas fuera del rango verosímil"
+            "value": "Se ignoraron lecturas fuera del rango plausible"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ignoráronse lecturas fóra do rango verosímil"
+            "value": "Ignoráronse lecturas fóra do rango plausible"
           }
         }
       }
@@ -15494,13 +15494,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lecturas fuera del intervalo plausible."
+            "value": "Lecturas fuera del rango plausible."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lecturas fóra do intervalo plausible."
+            "value": "Lecturas fóra do rango plausible."
           }
         }
       }
@@ -16225,7 +16225,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Repeticiones en recámara (RIR)"
+            "value": "Repeticiones en reserva (RIR)"
           }
         },
         "gl": {
@@ -16582,13 +16582,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Faltan los datos de pulso en reposo de hoy."
+            "value": "Faltan los datos de frecuencia cardíaca en reposo de hoy."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Faltan os datos de pulso en repouso de hoxe."
+            "value": "Faltan os datos de frecuencia cardíaca en repouso de hoxe."
           }
         }
       }
@@ -16599,13 +16599,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tu pulso en reposo está hoy dentro de tu intervalo habitual ({1} lpm, media de referencia de {2} lpm)."
+            "value": "Tu frecuencia cardíaca en reposo está hoy dentro de tu rango habitual ({1} lpm, media de referencia de {2} lpm)."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "O teu pulso en repouso está hoxe dentro do teu intervalo habitual ({1} lpm, media de referencia de {2} lpm)."
+            "value": "A túa frecuencia cardíaca en repouso está hoxe dentro do teu rango habitual ({1} ppm, media de referencia de {2} ppm)."
           }
         }
       }
@@ -16616,13 +16616,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hoy tu pulso en reposo es de {1} lpm."
+            "value": "Hoy tu frecuencia cardíaca en reposo es de {1} lpm."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hoxe o teu pulso en repouso é de {1} lpm."
+            "value": "Hoxe o teu frecuencia cardíaca en repouso é de {1} ppm."
           }
         }
       }
@@ -16820,7 +16820,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reanudar entrenamiento"
+            "value": "Retomar entrenamiento"
           }
         },
         "gl": {
@@ -17506,7 +17506,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "O dor ao correr empeorou ou afectou á túa zancada"
+            "value": "A dor ao correr empeorou ou afectou á túa zancada"
           }
         }
       }
@@ -18146,7 +18146,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sesiones en este período {1} · Período anterior {2}"
+            "value": "Sesiones en este periodo {1} · Periodo anterior {2}"
           }
         },
         "gl": {
@@ -18356,7 +18356,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "As series marcadas con Q son quecementos suxeridos. Marca as que fagas: gárdanse á parte e non contan para o teu progreso. Desliza para borrar as que non fagas."
+            "value": "As series marcadas con Q son quecementos suxeridos. Marca as que fagas: gárdanse aparte e non contan para o teu progreso. Desliza para borrar as que non fagas."
           }
         }
       }
@@ -18809,7 +18809,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saltar"
+            "value": "Omitir"
           }
         },
         "gl": {
@@ -18860,7 +18860,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Saltar configuración"
+            "value": "Omitir configuración"
           }
         },
         "gl": {
@@ -18900,7 +18900,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Salta a sesión de hoxe e volve valorar o dor antes de correr de novo."
+            "value": "Omite a sesión de hoxe e volve valorar a dor antes de correr de novo."
           }
         }
       }
@@ -18917,7 +18917,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Salta o adestramento e consulta cun profesional sanitario antes de volver facer exercicio."
+            "value": "Omite o adestramento e consulta cun profesional sanitario antes de volver facer exercicio."
           }
         }
       }
@@ -19115,13 +19115,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El sueño, la VFC, el pulso en reposo y los pasos vienen de Apple Salud. Puedes cambiarlo en Ajustes."
+            "value": "El sueño, la VFC, la frecuencia cardíaca en reposo y los pasos vienen de Apple Salud. Puedes cambiarlo en Ajustes."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "O sono, a VFC, o pulso en repouso e os pasos veñen de Apple Saúde. Podes cambialo en Axustes."
+            "value": "O sono, a VFC, a frecuencia cardíaca en repouso e os pasos veñen de Apple Saúde. Podes cambialo en Axustes."
           }
         }
       }
@@ -19132,13 +19132,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El sueño, la VFC, el pulso en reposo y los pasos vienen de Apple Salud: de un Apple Watch, de Garmin Connect (activa Apple Salud en sus ajustes) o del propio iPhone. Si ya diste permiso, revisa Salud → Compartir → Apps → Overreach."
+            "value": "El sueño, la VFC, la frecuencia cardíaca en reposo y los pasos vienen de Apple Salud: de un Apple Watch, de Garmin Connect (activa Apple Salud en sus ajustes) o del propio iPhone. Si ya diste permiso, revisa Salud → Compartir → Apps → Overreach."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "O sono, a VFC, o pulso en repouso e os pasos veñen de Apple Saúde: dun Apple Watch, de Garmin Connect (activa Apple Saúde nos seus axustes) ou do propio iPhone. Se xa deches permiso, revisa Saúde → Compartir → Apps → Overreach."
+            "value": "O sono, a VFC, a frecuencia cardíaca en repouso e os pasos veñen de Apple Saúde: dun Apple Watch, de Garmin Connect (activa Apple Saúde nos seus axustes) ou do propio iPhone. Se xa deches permiso, revisa Saúde → Compartir → Apps → Overreach."
           }
         }
       }
@@ -19404,7 +19404,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Origen"
+            "value": "Fuente"
           }
         },
         "gl": {
@@ -19455,7 +19455,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Orígenes"
+            "value": "Fuentes"
           }
         },
         "gl": {
@@ -19795,13 +19795,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pasos y caminatas"
+            "value": "Pasos y paseos"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pasos e camiñadas"
+            "value": "Pasos e paseos"
           }
         }
       }
@@ -21807,7 +21807,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hoxe compara os teus pasos e paseos cun día habitual. Camiñar máis pode influír na túa carga semanal e a aplicación avísate antes de correr ou adestrar pernas."
+            "value": "Hoxe compara os teus pasos e paseos cun día habitual. Camiñar máis pode influír na túa carga semanal e a app avísate antes de correr ou adestrar pernas."
           }
         }
       }
@@ -22175,7 +22175,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Entrena en tus días habituales con un esfuerzo cómodo. Un paseo, una carrera suave o un levantamiento ligero pueden ayudar."
+            "value": "Entrena en tus días habituales con un esfuerzo cómodo. Un paseo, un rodaje suave o un levantamiento ligero pueden ayudar."
           }
         },
         "gl": {
@@ -23218,7 +23218,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Intervalo habitual {1}–{2}"
+            "value": "Rango habitual {1}–{2}"
           }
         }
       }
@@ -24385,7 +24385,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Al terminar la serie, pregúntate: ¿cuántas repeticiones más podría haber hecho con buena técnica? Ese número son tus repeticiones en recámara."
+            "value": "Al terminar la serie, pregúntate: ¿cuántas repeticiones más podría haber hecho con buena técnica? Ese número son tus repeticiones en reserva."
           }
         },
         "gl": {
@@ -24691,13 +24691,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dentro de tu intervalo habitual."
+            "value": "Dentro de tu rango habitual."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dentro do teu intervalo habitual."
+            "value": "Dentro do teu rango habitual."
           }
         }
       }
@@ -24980,13 +24980,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "En el check-in de hoy has indicado que estás enfermo/a."
+            "value": "En el registro diario de hoy has indicado que estás enfermo."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "No rexistro de benestar de hoxe indicaches que tes síntomas de doenza."
+            "value": "No rexistro diario de hoxe indicaches que estás enfermo."
           }
         }
       }
@@ -25966,7 +25966,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "en español"
+            "value": "en castellano"
           }
         },
         "gl": {
@@ -26431,7 +26431,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "{1} lpm"
+            "value": "{1} ppm"
           }
         }
       }
@@ -26680,7 +26680,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "{1} km de carrera en el período analizado"
+            "value": "{1} km de carrera en el periodo analizado"
           }
         },
         "gl": {
@@ -26697,13 +26697,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Levantamientos estancados en este bloque: {1}."
+            "value": "Ejercicios estancados en este bloque: {1}."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Levantamentos estancados neste bloque: {1}."
+            "value": "Exercicios estancados neste bloque: {1}."
           }
         }
       }
@@ -27479,13 +27479,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "{1} · hoy completas el running de la semana"
+            "value": "{1} · hoy completas las carreras de la semana"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "{1} · hoxe completas o running da semana"
+            "value": "{1} · hoxe completas as carreiras da semana"
           }
         }
       }
