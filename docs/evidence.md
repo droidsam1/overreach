@@ -741,6 +741,23 @@ sleep of 0 h or above 18 h are treated as measurement errors and ignored. Sleep 
 separate series, as HRV depends on posture, activity and time of day. An earlier day never stands in for today's
 resting HR or sleep. The ranges are wide engineering limits, not physiological norms. Reviewed 2026-11-21.
 
+### `exercise-immune-load` — limited (no rule)
+Does training load raise the risk of colds or allergy-like symptoms? The "open window" idea is contested (Campbell and
+Turner 2018). Signals of more upper-respiratory symptoms are in marathon and ultra events, heavy blocks and congested
+periods, from narrative reviews, observational data and salivary IgA surrogates. Nothing shows it for moderate hybrid
+training. Named risk factors: sudden load rises, psychological stress, travel, short sleep and low energy availability
+(IOC consensus; Walsh 2011, 2019). Shorter actigraphy sleep went with more clinical colds after rhinovirus exposure
+(Prather 2015, adults, not athletes). Carbohydrate during sessions of about 90 min or more blunts cortisol rises
+(Christ 2024); glutamine, vitamins C/E, probiotics and vitamin D have weak or mixed support; no trial shows exercise
+worsens allergic rhinitis.
+→ No rule and no supplement advice. See [ADR-0048](adr/0048-training-load-immunity-and-soreness.md).
+Refs: [Campbell and Turner 2018](https://pmc.ncbi.nlm.nih.gov/articles/PMC5911985) ·
+[Schwellnus et al. 2016](https://pubmed.ncbi.nlm.nih.gov/27535991/) ·
+[Walsh et al. 2011](https://pubmed.ncbi.nlm.nih.gov/21446353/) ·
+[Prather et al. 2015](https://pmc.ncbi.nlm.nih.gov/articles/PMC4531398) ·
+[Christ et al. 2024](https://www.frontiersin.org/journals/sports-and-active-living/articles/10.3389/fspor.2024.1264814/pdf).
+Reviewed 2026-11-28.
+
 ## Circadian timing
 
 When the athlete sleeps and trains (ADR-0045). Reviewed 2026-11-25. Timing statistics are associations; none of this
