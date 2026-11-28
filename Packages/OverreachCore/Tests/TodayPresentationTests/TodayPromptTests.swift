@@ -47,8 +47,7 @@ struct TodayPromptTests {
         }
     }
 
-    @Test("order: rotation offer, source failure, break, run pain, dog run, check-in, run offer, Health, Garmin, "
-        + "dog walk, profile question")
+    @Test("the full priority order, from rotation offer to profile question")
     func order() {
         #expect(
             TodayPrompt.allCases
