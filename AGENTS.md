@@ -88,6 +88,9 @@ Stored data and Localization cost the most rework when missed. iPhone flows and 
 
 Several agents work at once, each in its own branch or worktree.
 
+- **Fresh main.** Before analysing, reviewing or answering questions about code, run `git fetch` and read
+  `origin/main` (a fresh worktree or `git show origin/main:<path>`), not the local checkout. If the checked-out
+  branch is behind, say so instead of analysing it.
 - **Next task.** In a fresh checkout of `origin/main`, use `python3 scripts/claim-task.py --next --dry-run` to find
   the next issue in [Priorities](docs/priorities.md). To implement it, run `--next` without `--dry-run` before
   reading code. It opens a draft PR and prints `CLAIMED <task> #<PR> <branch>`. Pass a task link for a named
