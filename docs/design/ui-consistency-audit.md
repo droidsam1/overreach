@@ -113,8 +113,11 @@ medical device: no diagnosis wording was found). 61 strings were fixed; the main
 
 - es: source = fuente (not origen); reps in reserve = en reserva (not recámara); lift = ejercicio (not
   levantamiento); skip = omitir (not saltar); period = periodo; range = rango (not intervalo); easy run = rodaje suave.
-- gl: easy run = carreira suave; skip = omitir; bpm = ppm; dor is feminine; keep "aparte", "app".
+- gl: easy run = rodaxe (as before; owner's choice); skip = omitir; bpm = ppm; dor is feminine; keep "aparte", "app".
 - Both: the daily questionnaire is registro diario / rexistro diario, never "check-in" or "benestar" mixed in.
 
-Open questions: "Intervals" = Series (may read as sets), "Updates" = Actualiza (verb as heading), "pulso" vs
-"frecuencia cardiaca", "Readiness" = Preparación vs semáforo, and es "entreno(s)" next to "entrenamiento(s)".
+- Both: heart rate is "frecuencia cardíaca" (es) / "frecuencia cardíaca" (gl), never "pulso"; "FC" stays as the short
+  label. "Intervals" = Series is confirmed.
+
+Open questions: "Updates" = Actualiza (verb as heading), "Readiness" = Preparación vs semáforo, and es "entreno(s)"
+next to "entrenamiento(s)".

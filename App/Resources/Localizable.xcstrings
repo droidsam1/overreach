@@ -2064,13 +2064,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pulso medio"
+            "value": "Frecuencia cardíaca media"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pulso medio"
+            "value": "Frecuencia cardíaca media"
           }
         }
       }
@@ -3322,13 +3322,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compara bloques estables de ambos periodos con el mismo sensor de pulso."
+            "value": "Compara bloques estables de ambos periodos con el mismo sensor de frecuencia cardíaca."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compara bloques estables dos dous períodos co mesmo sensor de pulso."
+            "value": "Compara bloques estables dos dous períodos co mesmo sensor de frecuencia cardíaca."
           }
         }
       }
@@ -3509,13 +3509,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Confirmar sensores de pulso"
+            "value": "Confirmar sensores de frecuencia cardíaca"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Confirmar sensores de pulso"
+            "value": "Confirmar sensores de frecuencia cardíaca"
           }
         }
       }
@@ -3849,7 +3849,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Contexto para interpretar la VFC y la frecuencia cardiaca en reposo, nunca una regla fija. Se queda en tu dispositivo."
+            "value": "Contexto para interpretar la VFC y la frecuencia cardíaca en reposo, nunca una regla fija. Se queda en tu dispositivo."
           }
         },
         "gl": {
@@ -7714,7 +7714,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bo día para unha carreira suave"
+            "value": "Bo día para un rodaxe suave"
           }
         }
       }
@@ -7731,7 +7731,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bo día para unha carreira suave co teu can"
+            "value": "Bo día para un rodaxe suave co teu can"
           }
         }
       }
@@ -7748,7 +7748,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bo día para unha carreira suave con {1}"
+            "value": "Bo día para un rodaxe suave con {1}"
           }
         }
       }
@@ -7946,13 +7946,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "VFC, pulso en reposo, sueño y entrenos a través de Apple Salud."
+            "value": "VFC, frecuencia cardíaca en reposo, sueño y entrenos a través de Apple Salud."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "VFC, pulso en repouso, sono e adestramentos a través de Apple Saúde."
+            "value": "VFC, frecuencia cardíaca en repouso, sono e adestramentos a través de Apple Saúde."
           }
         }
       }
@@ -8082,13 +8082,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sensor de pulso"
+            "value": "Sensor de frecuencia cardíaca"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sensor de pulso"
+            "value": "Sensor de frecuencia cardíaca"
           }
         }
       }
@@ -9465,7 +9465,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mantén a carreira de hoxe suave. Proba {1} min a un ritmo que che permita falar."
+            "value": "Mantén o rodaxe de hoxe suave. Proba {1} min a un ritmo que che permita falar."
           }
         }
       }
@@ -10734,13 +10734,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Regístralo con sus ejercicios y series. Se le añaden el pulso y la carga del reloj."
+            "value": "Regístralo con sus ejercicios y series. Se le añaden la frecuencia cardíaca y la carga del reloj."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rexístrao cos seus exercicios e series. Engádenselle o pulso e a carga do reloxo."
+            "value": "Rexístrao cos seus exercicios e series. Engádenselle a frecuencia cardíaca e a carga do reloxo."
           }
         }
       }
@@ -11074,13 +11074,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pulso máximo"
+            "value": "Frecuencia cardíaca máxima"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pulso máximo"
+            "value": "Frecuencia cardíaca máxima"
           }
         }
       }
@@ -15069,13 +15069,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El pulso tiende a subir a un ritmo comparable"
+            "value": "La frecuencia cardíaca tiende a subir a un ritmo comparable"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "O pulso tende a subir a un ritmo comparable"
+            "value": "A frecuencia cardíaca tende a subir a un ritmo comparable"
           }
         }
       }
@@ -15086,13 +15086,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El pulso tiende a bajar a un ritmo comparable"
+            "value": "La frecuencia cardíaca tiende a bajar a un ritmo comparable"
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "O pulso tende a baixar a un ritmo comparable"
+            "value": "A frecuencia cardíaca tende a baixar a un ritmo comparable"
           }
         }
       }
@@ -16214,7 +16214,7 @@
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cambia a sesión de carreira de hoxe por unha carreira suave a un ritmo que che permita conversar."
+            "value": "Cambia a sesión de carreira de hoxe por unha rodaxe suave a un ritmo que che permita conversar."
           }
         }
       }
@@ -16582,13 +16582,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Faltan los datos de pulso en reposo de hoy."
+            "value": "Faltan los datos de frecuencia cardíaca en reposo de hoy."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Faltan os datos de pulso en repouso de hoxe."
+            "value": "Faltan os datos de frecuencia cardíaca en repouso de hoxe."
           }
         }
       }
@@ -16599,13 +16599,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tu pulso en reposo está hoy dentro de tu rango habitual ({1} lpm, media de referencia de {2} lpm)."
+            "value": "Tu frecuencia cardíaca en reposo está hoy dentro de tu rango habitual ({1} lpm, media de referencia de {2} lpm)."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "O teu pulso en repouso está hoxe dentro do teu rango habitual ({1} ppm, media de referencia de {2} ppm)."
+            "value": "A túa frecuencia cardíaca en repouso está hoxe dentro do teu rango habitual ({1} ppm, media de referencia de {2} ppm)."
           }
         }
       }
@@ -16616,13 +16616,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hoy tu pulso en reposo es de {1} lpm."
+            "value": "Hoy tu frecuencia cardíaca en reposo es de {1} lpm."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hoxe o teu pulso en repouso é de {1} ppm."
+            "value": "Hoxe o teu frecuencia cardíaca en repouso é de {1} ppm."
           }
         }
       }
@@ -19115,13 +19115,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El sueño, la VFC, el pulso en reposo y los pasos vienen de Apple Salud. Puedes cambiarlo en Ajustes."
+            "value": "El sueño, la VFC, la frecuencia cardíaca en reposo y los pasos vienen de Apple Salud. Puedes cambiarlo en Ajustes."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "O sono, a VFC, o pulso en repouso e os pasos veñen de Apple Saúde. Podes cambialo en Axustes."
+            "value": "O sono, a VFC, a frecuencia cardíaca en repouso e os pasos veñen de Apple Saúde. Podes cambialo en Axustes."
           }
         }
       }
@@ -19132,13 +19132,13 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El sueño, la VFC, el pulso en reposo y los pasos vienen de Apple Salud: de un Apple Watch, de Garmin Connect (activa Apple Salud en sus ajustes) o del propio iPhone. Si ya diste permiso, revisa Salud → Compartir → Apps → Overreach."
+            "value": "El sueño, la VFC, la frecuencia cardíaca en reposo y los pasos vienen de Apple Salud: de un Apple Watch, de Garmin Connect (activa Apple Salud en sus ajustes) o del propio iPhone. Si ya diste permiso, revisa Salud → Compartir → Apps → Overreach."
           }
         },
         "gl": {
           "stringUnit": {
             "state": "translated",
-            "value": "O sono, a VFC, o pulso en repouso e os pasos veñen de Apple Saúde: dun Apple Watch, de Garmin Connect (activa Apple Saúde nos seus axustes) ou do propio iPhone. Se xa deches permiso, revisa Saúde → Compartir → Apps → Overreach."
+            "value": "O sono, a VFC, a frecuencia cardíaca en repouso e os pasos veñen de Apple Saúde: dun Apple Watch, de Garmin Connect (activa Apple Saúde nos seus axustes) ou do propio iPhone. Se xa deches permiso, revisa Saúde → Compartir → Apps → Overreach."
           }
         }
       }
