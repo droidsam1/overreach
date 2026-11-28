@@ -103,5 +103,18 @@ Epic: [#247](https://github.com/droidsam1/overreach/issues/247). Order is the or
 - Before screenshots (light/dark) of every screen, using the check in [iPhone UX guide](iphone-ux.md): need a Mac
   with a simulator. Deferred: no simulator is available, and the child issues do not wait for them.
 - Contrast of each screen, VoiceOver order and real Dynamic Type results: the findings above come from the code.
-- Copy in Spanish and Galician was not reviewed.
+- Copy in Spanish and Galician: reviewed, see [Copy review](#copy-review).
 - Mock-ups for the bigger changes (Train start, Plan) go on the design canvas before implementation.
+
+## Copy review
+
+All 1,640 es and gl strings of `Localizable.xcstrings` were read against the English source (the app is not a
+medical device: no diagnosis wording was found). 61 strings were fixed; the main term decisions:
+
+- es: source = fuente (not origen); reps in reserve = en reserva (not recámara); lift = ejercicio (not
+  levantamiento); skip = omitir (not saltar); period = periodo; range = rango (not intervalo); easy run = rodaje suave.
+- gl: easy run = carreira suave; skip = omitir; bpm = ppm; dor is feminine; keep "aparte", "app".
+- Both: the daily questionnaire is registro diario / rexistro diario, never "check-in" or "benestar" mixed in.
+
+Open questions: "Intervals" = Series (may read as sets), "Updates" = Actualiza (verb as heading), "pulso" vs
+"frecuencia cardiaca", "Readiness" = Preparación vs semáforo, and es "entreno(s)" next to "entrenamiento(s)".
