@@ -15,6 +15,7 @@ public struct TodayView: View {
     @State private var showsRunOffer = false
     @State private var showsWhy = false
     @State private var showsOptions = false
+    @State private var revealedOptions: Set<TodayOptionCard.Kind> = []
     @State private var showsForecast = false
     private var forecastModel: TodayForecastModel?
     private var forecastSettings: (() -> AnyView)?
@@ -98,35 +99,31 @@ public struct TodayView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.large) {
-                    header
-                    primaryDecision
-                        .onAppear {
-                            if let kind = heroFeedbackKind { model.recordRotationFeedbackShown(kind) }
+                    ForEach(model.visibleBlocks(continuing: workoutContinuation), id: \.self) { block in
+                        switch block {
+                        case .hero:
+                            header
+                            primaryDecision
+                                .onAppear {
+                                    if let kind = heroFeedbackKind { model.recordRotationFeedbackShown(kind) }
+                                }
+                                .onChange(of: heroFeedbackKind) { _, kind in
+                                    if let kind { model.recordRotationFeedbackShown(kind) }
+                                }
+                        case .scheduledPlan:
+                            TodayWeekCard(
+                                week: model.yourWeek, strength: model.scheduledStrengthToday,
+                                runs: model.scheduledRunsToday, openStrength: onOpenTrain,
+                                openRun: { showsRun = true }
+                            )
+                        case .pendingPrompt:
+                            if let prompt = model.pendingPrompt(continuing: workoutContinuation) {
+                                pendingPrompt(prompt)
+                            }
+                        case .linkRow:
+                            linkRow
                         }
-                        .onChange(of: heroFeedbackKind) { _, kind in
-                            if let kind { model.recordRotationFeedbackShown(kind) }
-                        }
-                    if let offer = rotationOffer {
-                        rotationOfferLine(offer)
-                            .onAppear { model.recordRotationFeedbackShown(offer.kind) }
-                            .onChange(of: offer.kind) { _, kind in model.recordRotationFeedbackShown(kind) }
-                    } else if let offer = model.runOffer {
-                        runOfferLine(offer)
                     }
-                    if model.visibleBlocks.contains(.scheduledPlan) {
-                        TodayWeekCard(
-                            week: model.yourWeek, strength: model.scheduledStrengthToday,
-                            runs: model.scheduledRunsToday, openStrength: onOpenTrain, openRun: { showsRun = true }
-                        )
-                    }
-                    if rotationOffer == nil, let prompt = model.pendingPrompt {
-                        pendingPrompt(prompt)
-                    }
-                    if let prompt = model.runPainPrompt { runPainCard(prompt) }
-                    ForEach(model.newSectionHints, id: \.self) { hint in
-                        Text(hint).font(.subheadline).foregroundStyle(.secondary)
-                    }
-                    if !model.links.isEmpty { linkTiles }
                 }
                 .padding(Spacing.medium)
             }
@@ -156,7 +153,7 @@ public struct TodayView: View {
                                 .overlay(alignment: .topTrailing) {
                                     if settingsBadgeCount > 0 {
                                         Circle()
-                                            .fill(.red)
+                                            .fill(StatusTone.critical.accent)
                                             .frame(width: 8, height: 8)
                                             .accessibilityHidden(true)
                                     }
@@ -223,6 +220,16 @@ public struct TodayView: View {
         model.updateSectionHints()
     }
 
+    /// The link row block: the tiles, with the hints about sections that just unlocked inside it.
+    private var linkRow: some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            ForEach(model.newSectionHints, id: \.self) { hint in
+                Text(hint).font(.subheadline).foregroundStyle(.secondary)
+            }
+            linkTiles
+        }
+    }
+
     private var linkTiles: some View {
         let links = model.links
         let columns = typeSize.isAccessibilitySize ? 2 : links.count
@@ -234,19 +241,19 @@ public struct TodayView: View {
                 switch link {
                 case .why:
                     Button { showsWhy = true } label: {
-                        LinkTile(title: "Why", symbolName: "questionmark.circle", color: .orange)
+                        LinkTile(title: "Why", symbolName: "questionmark.circle")
                     }
                 case .otherOptions:
                     Button { showsOptions = true } label: {
-                        LinkTile(title: "Options", symbolName: "arrow.triangle.branch", color: .blue)
+                        LinkTile(title: "Options", symbolName: "arrow.triangle.branch")
                     }
                 case .recovery:
                     Button(action: onOpenRecovery) {
-                        LinkTile(title: "Recovery", symbolName: "heart.text.square", color: .teal)
+                        LinkTile(title: "Recovery", symbolName: "heart.text.square")
                     }
                 case .history:
                     Button(action: onOpenHistory) {
-                        LinkTile(title: "History", symbolName: "clock.fill", color: .purple)
+                        LinkTile(title: "History", symbolName: "clock.fill")
                     }
                 }
             }
@@ -269,29 +276,12 @@ public struct TodayView: View {
         }
     }
 
-    /// Level 2: alternatives to the hero.
+    /// Level 2: alternatives to the hero, a card each with its summary and one verb. The verb opens the details
+    /// inside the card, so there is no third level.
     private var optionsScreen: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: Spacing.large) {
-                if let option = model.runningOption, option.isOptional {
-                    DisclosureGroup("I want to run today") { easyRun(option) }
-                }
-                if model.canRequestStrengthOption {
-                    DisclosureGroup(
-                        "I want to lift today",
-                        isExpanded: Binding(
-                            get: { model.showsOptionalStrength },
-                            set: { model.setShowsOptionalStrength($0) }
-                        )
-                    ) {
-                        if let option = model.strengthOption {
-                            strengthDetails(option, runAdvice: model.optionalStrengthRunAdvice)
-                        }
-                    }
-                }
-                if model.showsScheduledStrengthExample, let option = model.strengthOption {
-                    DisclosureGroup("Compare with an easy strength option") { strengthDetails(option) }
-                }
+            VStack(alignment: .leading, spacing: Spacing.medium) {
+                ForEach(model.optionCards) { card in optionCard(card) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Spacing.medium)
@@ -300,6 +290,45 @@ public struct TodayView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
+    }
+
+    private func isRevealed(_ kind: TodayOptionCard.Kind) -> Bool {
+        kind == .lift ? model.showsOptionalStrength : revealedOptions.contains(kind)
+    }
+
+    private func optionCard(_ card: TodayOptionCard) -> some View {
+        Card(radius: Radius.tile) {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                Text(card.title).font(.headline).accessibilityAddTraits(.isHeader)
+                Text(card.summary).font(.subheadline).foregroundStyle(.secondary)
+                if isRevealed(card.kind) {
+                    optionDetails(card.kind)
+                } else {
+                    Button(card.verb) {
+                        if card.kind == .lift {
+                            model.setShowsOptionalStrength(true)
+                        } else {
+                            revealedOptions.insert(card.kind)
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private func optionDetails(_ kind: TodayOptionCard.Kind) -> some View {
+        switch kind {
+        case .run:
+            if let option = model.runningOption { easyRun(option) }
+        case .lift:
+            if let option = model.strengthOption {
+                strengthDetails(option, runAdvice: model.optionalStrengthRunAdvice)
+            }
+        case .compareLift:
+            if let option = model.strengthOption { strengthDetails(option) }
+        }
     }
 
     /// The one secondary prompt under the hero (ADR-0041).
@@ -343,6 +372,16 @@ public struct TodayView: View {
                     model.answerDogWalk(withDog: $0)
                 }
             }
+        case .rotationOffer:
+            if let offer = model.rotationOffer {
+                rotationOfferLine(offer)
+                    .onAppear { model.recordRotationFeedbackShown(offer.kind) }
+                    .onChange(of: offer.kind) { _, kind in model.recordRotationFeedbackShown(kind) }
+            }
+        case .runPain:
+            if let prompt = model.runPainPrompt { runPainCard(prompt) }
+        case .runOffer:
+            if let offer = model.runOffer { runOfferLine(offer) }
         case .profileQuestion:
             if let card = model.profileQuestion {
                 ProfileQuestionPrompt(
@@ -577,7 +616,7 @@ public struct TodayView: View {
             case let .confirmBreak(period):
                 Label("Did you already take a break?", systemImage: "questionmark.circle.fill")
                     .font(.headline)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(StatusTone.caution.accent)
                 Text(period.details.dates).font(.subheadline)
                 if let strength = period.details.strength { Text(strength).font(.subheadline) }
                 if let running = period.details.running { Text(running).font(.subheadline) }
@@ -668,15 +707,17 @@ public struct TodayView: View {
     }
 
     private func runPainCard(_ prompt: RunPainPrompt) -> some View {
-        Button { painPrompt = prompt } label: {
-            VStack(alignment: .leading, spacing: Spacing.xSmall) {
-                Text(prompt.title).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
-                Text(prompt.summary).font(.footnote).foregroundStyle(.secondary)
+        Card(radius: Radius.tile) {
+            Button { painPrompt = prompt } label: {
+                VStack(alignment: .leading, spacing: Spacing.xSmall) {
+                    Text(prompt.title).font(.subheadline.weight(.semibold)).foregroundStyle(.primary)
+                    Text(prompt.summary).font(.footnote).foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .accessibilityElement(children: .combine)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityElement(children: .combine)
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
     }
 
     private func easyRun(_ option: RunningOption) -> some View {
@@ -712,20 +753,18 @@ public struct TodayView: View {
         }
     }
 
-    private var rotationOffer: TodayRotationOffer? {
-        workoutContinuation == nil ? model.rotationOffer : nil
-    }
-
     private func rotationOfferLine(_ offer: TodayRotationOffer) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.small) {
-            Text(offer.title).font(.subheadline)
-            Text(offer.orderPreview).font(.footnote).foregroundStyle(.secondary)
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: Spacing.medium) { rotationOfferActions(offer) }
-                VStack(alignment: .leading, spacing: Spacing.small) { rotationOfferActions(offer) }
-            }
-            if let error = model.rotationSaveError {
-                Text(error).font(.footnote).foregroundStyle(StatusTone.critical.accent)
+        Card(radius: Radius.tile) {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                Text(offer.title).font(.subheadline)
+                Text(offer.orderPreview).font(.footnote).foregroundStyle(.secondary)
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: Spacing.medium) { rotationOfferActions(offer) }
+                    VStack(alignment: .leading, spacing: Spacing.small) { rotationOfferActions(offer) }
+                }
+                if let error = model.rotationSaveError {
+                    InlineNotice(Text(error), tone: .critical)
+                }
             }
         }
     }
@@ -741,13 +780,15 @@ public struct TodayView: View {
             .disabled(model.isAcceptingRotation)
     }
 
-    /// One secondary line under the rest hero, not a block of its own (ADR-0041).
+    /// The soft run offer on a rest day: the pending prompt when nothing more urgent is waiting (ADR-0041).
     private func runOfferLine(_ offer: RunOffer) -> some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .center, spacing: Spacing.small) { runOfferContent(offer) }
-            VStack(alignment: .leading, spacing: Spacing.small) { runOfferContent(offer) }
+        Card(radius: Radius.tile) {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .center, spacing: Spacing.small) { runOfferContent(offer) }
+                VStack(alignment: .leading, spacing: Spacing.small) { runOfferContent(offer) }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder private func runOfferContent(_ offer: RunOffer) -> some View {

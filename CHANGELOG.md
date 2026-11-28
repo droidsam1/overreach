@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Changed
+- Today shows at most one prompt: the rotation offer, run pain question and run offer join the same priority rule,
+  section hints sit in the link row, link tiles use one neutral tint, Options are cards, and the remaining ad-hoc
+  status colours use the shared tones (#405).
 - Recovery shows sleep timing variation alongside the number of nights with bed and wake times. Training start
   time variation appears as a descriptive measurement (#349).
 

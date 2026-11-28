@@ -562,6 +562,23 @@
         }
       }
     },
+    "A lighter session than usual, with your exercises and loads.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una sesión más ligera de lo habitual, con tus ejercicios y cargas."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unha sesión máis lixeira do habitual, cos teus exercicios e cargas."
+          }
+        }
+      }
+    },
     "A priority lift": {
       "extractionState": "manual",
       "localizations": {
@@ -18667,6 +18684,40 @@
         }
       }
     },
+    "Show the run": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver la carrera"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver a carreira"
+          }
+        }
+      }
+    },
+    "Show the session": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver la sesión"
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver a sesión"
+          }
+        }
+      }
+    },
     "Sick": {
       "extractionState": "manual",
       "localizations": {
@@ -21825,6 +21876,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carreira prevista hoxe · {1}"
+          }
+        }
+      }
+    },
+    "Today's session with fewer sets and less load.": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La sesión de hoy con menos series y menos carga."
+          }
+        },
+        "gl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A sesión de hoxe con menos series e menos carga."
           }
         }
       }

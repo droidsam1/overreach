@@ -188,6 +188,32 @@ struct TodayRunOfferTests {
         #expect(model.runOffer == nil)
     }
 
+    @Test func theOfferIsTheOnePromptAndFitsTheBlockBudget() async throws {
+        let model = try await model()
+        #expect(model.runOffer != nil)
+        #expect(model.pendingPrompt != nil)
+        #expect(model.visibleBlocks.filter { $0 == .pendingPrompt }.count == 1)
+        #expect(model.visibleBlocks.count <= TodayModel.blockBudget)
+        model.dismissRunOffer()
+        #expect(model.pendingPrompt != .runOffer)
+    }
+
+    @Test func optionsAreOneCardEachWithASummaryAndOneVerb() async throws {
+        let model = try await model()
+        let cards = model.optionCards
+        #expect(cards.isEmpty == !model.showsOtherOptions)
+        #expect(Set(cards.map(\.kind)).count == cards.count)
+        #expect(cards.allSatisfy { !$0.title.isEmpty && !$0.summary.isEmpty && !$0.verb.isEmpty })
+        #expect(cards.contains { $0.kind == .lift } == model.canRequestStrengthOption)
+    }
+
+    @Test func withNoAlternativesThereAreNoOptionCards() async {
+        let model = TodayModel(sources: [], calendar: calendar, format: format)
+        await model.load(now: now)
+        #expect(model.optionCards.isEmpty)
+        #expect(!model.showsOtherOptions)
+    }
+
     @Test func theWeekStripMarksTheWindowDaysWithADot() async throws {
         let model = try await model()
         let week = try #require(model.yourWeek)

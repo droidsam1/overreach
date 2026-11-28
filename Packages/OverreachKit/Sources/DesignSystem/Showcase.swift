@@ -272,9 +272,9 @@ struct VisualTodayGallery: View {
                 section("Check-in and links") {
                     AnswerScale(options: galleryAnswers, selectedID: "4") { _ in }
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.small), count: 2)) {
-                        Button {} label: { LinkTile(title: "Why", symbolName: "questionmark.circle", color: .orange) }
+                        Button {} label: { LinkTile(title: "Why", symbolName: "questionmark.circle") }
                         Button {} label: {
-                            LinkTile(title: "Recovery", symbolName: "heart.text.square", color: .teal)
+                            LinkTile(title: "Recovery", symbolName: "heart.text.square")
                         }
                     }
                     .buttonStyle(.plain)
