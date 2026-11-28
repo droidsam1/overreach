@@ -741,6 +741,47 @@ sleep of 0 h or above 18 h are treated as measurement errors and ignored. Sleep 
 separate series, as HRV depends on posture, activity and time of day. An earlier day never stands in for today's
 resting HR or sleep. The ranges are wide engineering limits, not physiological norms. Reviewed 2026-11-21.
 
+### `recovery-stress-inference` — limited (no stress rule)
+Stress cannot be read from resting HR, HRV or sleep: they move with training, illness, heat, cycle phase, alcohol and
+sleep loss. Alcohol raised nocturnal resting HR by about 3 bpm in a smartwatch study and lowered HRV dose-dependently
+in about 21,000 wearable users. Garmin stress and Body Battery have no independent validation. Stress response and short
+sleep go with injury risk, with small, heterogeneous effects. Self-report tracks load more sensitively than objective
+markers (`readiness-subjective`), and no single marker identifies under-recovery (`deload-recovery-signals`).
+→ Biometrics prompt a question about the cause; the answer explains the deviation. No stress is inferred from the device
+and no anxiety or depression screen is scored. See [ADR-0049](adr/0049-recovery-stress-and-check-in-questions.md).
+Refs: [Saw et al. 2016](https://pmc.ncbi.nlm.nih.gov/articles/PMC4789708) ·
+[Meeusen et al. 2013](https://pubmed.ncbi.nlm.nih.gov/23247672/) ·
+[Kellmann et al. 2018](https://pubmed.ncbi.nlm.nih.gov/29345524/) ·
+[Ivarsson et al.](https://pubmed.ncbi.nlm.nih.gov/27406221/) ·
+[alcohol and nocturnal HR](https://pubmed.ncbi.nlm.nih.gov/40362779/) ·
+[HRV-guided training meta-analysis](https://pubmed.ncbi.nlm.nih.gov/34489178/). Reviewed 2026-11-28.
+
+### `check-in-brief-questions` — limited
+Brief wellness items (soreness, fatigue, sleep quality, stress, mood; Hooper-style) are widely used and respond to
+training load, but custom short scales lack strong validation and no study links them to non-functional overreaching.
+No validated cut-off separates DOMS from injury pain on a 0–10 scale; DOMS peaks at 24–48 h and resolves in 5–7 days.
+GAD-2 is a clinical screen, not a daily monitoring item.
+→ Optional one-tap stress and sleep-quality scales; soreness zone and type only when soreness is 2 or more; pain
+that is focal, worsening or over 7 days points to a clinician. Thresholds are heuristics.
+Refs: [wellness questionnaires review](https://pmc.ncbi.nlm.nih.gov/articles/PMC7534939). Reviewed 2026-11-28.
+
+### `exercise-immune-load` — limited (no rule)
+Does training load raise the risk of colds or allergy-like symptoms? The "open window" idea is contested (Campbell and
+Turner 2018). Signals of more upper-respiratory symptoms are in marathon and ultra events, heavy blocks and congested
+periods, from narrative reviews, observational data and salivary IgA surrogates. Nothing shows it for moderate hybrid
+training. Named risk factors: sudden load rises, psychological stress, travel, short sleep and low energy availability
+(IOC consensus; Walsh 2011, 2019). Shorter actigraphy sleep went with more clinical colds after rhinovirus exposure
+(Prather 2015, adults, not athletes). Carbohydrate during sessions of about 90 min or more blunts cortisol rises
+(Christ 2024); glutamine, vitamins C/E, probiotics and vitamin D have weak or mixed support; no trial shows exercise
+worsens allergic rhinitis.
+→ No rule and no supplement advice. See [ADR-0048](adr/0048-training-load-immunity-and-soreness.md).
+Refs: [Campbell and Turner 2018](https://pmc.ncbi.nlm.nih.gov/articles/PMC5911985) ·
+[Schwellnus et al. 2016](https://pubmed.ncbi.nlm.nih.gov/27535991/) ·
+[Walsh et al. 2011](https://pubmed.ncbi.nlm.nih.gov/21446353/) ·
+[Prather et al. 2015](https://pmc.ncbi.nlm.nih.gov/articles/PMC4531398) ·
+[Christ et al. 2024](https://www.frontiersin.org/journals/sports-and-active-living/articles/10.3389/fspor.2024.1264814/pdf).
+Reviewed 2026-11-28.
+
 ## Circadian timing
 
 When the athlete sleeps and trains (ADR-0045). Reviewed 2026-11-25. Timing statistics are associations; none of this

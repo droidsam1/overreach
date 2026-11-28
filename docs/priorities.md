@@ -12,6 +12,14 @@ hybrid athlete. The device and external review steps below have their own accept
 
 ## Ready to implement
 
+1. [#410](https://github.com/droidsam1/overreach/issues/410) — Show the last heavy leg session and days since it when legs are sore.
+2. [#411](https://github.com/droidsam1/overreach/issues/411) — Suggest an easier day when leg soreness lasts beyond 72 h, after the leg-session helper.
+3. [#414](https://github.com/droidsam1/overreach/issues/414) — Ask what explains an HRV or resting-HR deviation.
+4. [#416](https://github.com/droidsam1/overreach/issues/416) — Add stress and sleep quality scales to the check-in.
+5. [#412](https://github.com/droidsam1/overreach/issues/412) — Show short-sleep nights this week with the 7 h guidance.
+6. [#413](https://github.com/droidsam1/overreach/issues/413) — Add days since the last heavy leg session and run to the report, after the leg-session helper.
+7. [#415](https://github.com/droidsam1/overreach/issues/415) — Ask soreness zone and type plus a joint-pain block; needs the clinical review first.
+
 ## Needs a person or an iPhone
 
 Agents can prepare these but not finish them.
